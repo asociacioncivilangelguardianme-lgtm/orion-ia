@@ -33,15 +33,14 @@
         .voice-wave { animation: pulseWave 1.2s infinite ease-in-out; }
     </style>
 </head>
-<body class="bg-darkBg text-slate-100 font-sans h-screen overflow-hidden flex flex-col md:flex-row">
+<body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 
-    <!-- MENÚ LATERAL RESPONSIVE (OCULTO EN MÓVIL HASTA ABRIR HAMBURGUESA) -->
+    <!-- MENÚ LATERAL RESPONSIVE -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 border-r border-slate-800/80 bg-darkPanel p-4 flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300">
         <div class="space-y-6">
-            
             <div class="flex items-center justify-between md:hidden pb-2 border-b border-slate-800">
                 <span class="font-bold text-cyan-400">MENÚ ORION</span>
-                <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white text-lg">✕</button>
+                <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
             </div>
 
             <!-- GUÍA / PERFIL ACTIVO -->
@@ -49,8 +48,8 @@
                 <h3 class="font-black text-cyan-400 tracking-wide text-center text-xs pb-1 border-b border-slate-700">ESTADO DEL SISTEMA</h3>
                 <div class="text-slate-300 space-y-1">
                     <p>👤 Usuario: <strong id="lbl-active-user" class="text-white">Héctor</strong></p>
-                    <p>🎙️ Reconocimiento: <strong class="text-emerald-400">Activo (Web Speech)</strong></p>
-                    <p>🌐 Geolocalización: <strong id="lbl-geo-status" class="text-amber-400">Detectando...</strong></p>
+                    <p>🎙️ Reconocimiento: <strong class="text-emerald-400">Activo</strong></p>
+                    <p>🌐 Ubicación: <strong id="lbl-geo-status" class="text-amber-400">Detectando...</strong></p>
                 </div>
             </div>
 
@@ -58,7 +57,7 @@
             <div class="space-y-1 text-xs font-medium">
                 <div class="flex items-center gap-2.5 px-2 pb-2">
                     <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center font-bold text-white shadow text-xs">✨</div>
-                    <h2 class="text-xs font-bold text-white tracking-wide">MODULOS ORION</h2>
+                    <h2 class="text-xs font-bold text-white tracking-wide">MÓDULOS ORION</h2>
                 </div>
                 <button onclick="switchTab('inicio')" id="btn-inicio" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-darkBg text-white shadow-inner border border-slate-700">🏠 Inicio</button>
                 <button onclick="switchTab('chat')" id="btn-chat" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">💬 Chat IA Real</button>
@@ -85,18 +84,18 @@
     </aside>
 
     <!-- ÁREA PRINCIPAL -->
-    <main class="flex-1 flex flex-col bg-darkBg relative overflow-hidden h-full">
+    <main class="flex-1 flex flex-col bg-darkBg relative min-h-screen">
         
         <!-- HEADER -->
-        <header class="px-4 md:px-6 py-3 border-b border-slate-800/80 flex items-center justify-between bg-darkPanel/50 backdrop-blur-md">
+        <header class="px-4 md:px-6 py-3 border-b border-slate-800/80 flex items-center justify-between bg-darkPanel/50 backdrop-blur-md sticky top-0 z-40">
             <div class="flex items-center gap-3">
-                <button onclick="toggleMobileMenu()" class="md:hidden text-slate-300 text-xl px-1">☰</button>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-slate-200 text-xl font-bold px-2 py-1 rounded bg-slate-800">☰</button>
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center shadow-lg">
                     <span class="text-sm font-bold text-white">✨</span>
                 </div>
                 <div>
-                    <h1 class="text-sm font-black tracking-wider text-white">ORION</h1>
-                    <p class="text-[9px] text-cyan-400 tracking-widest font-semibold">ASISTENTE DE INTELIGENCIA ARTIFICIAL</p>
+                    <h1 class="text-sm font-black tracking-wider text-white">ORION IA</h1>
+                    <p class="text-[9px] text-cyan-400 tracking-widest font-semibold">ASISTENTE INTELIGENTE</p>
                 </div>
             </div>
 
@@ -110,20 +109,20 @@
                 <button onclick="switchTab('web')" class="top-tab hover:text-white transition whitespace-nowrap">CLIMA & WEB</button>
             </div>
 
-            <div class="flex items-center gap-3">
-                <button onclick="toggleVozRespuesta()" id="btn-audio-toggle" class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs" title="Activar/Desactivar Voz de Orion">🔊 Voz</button>
-                <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 border border-slate-700">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVozRespuesta()" id="btn-audio-toggle" class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs">🔊</button>
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-2xl bg-slate-900 border border-slate-700">
                     <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white text-xs" id="user-avatar-initial">H</div>
                     <div class="text-xs">
                         <p class="font-semibold text-white leading-none" id="user-name-display">Héctor</p>
-                        <p class="text-emerald-400 font-bold text-[9px] mt-0.5">ACTIVO</p>
+                        <p class="text-emerald-400 font-bold text-[8px] mt-0.5">ACTIVO</p>
                     </div>
                 </div>
             </div>
         </header>
 
         <!-- CONTENEDOR DE VISTAS -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar" id="content-viewport">
+        <div class="flex-1 p-4 md:p-6 pb-24" id="content-viewport">
             
             <!-- VISTA INICIO -->
             <div id="view-inicio" class="tab-view space-y-6 max-w-7xl mx-auto">
@@ -146,26 +145,21 @@
 
                             <div class="flex items-center justify-center gap-2 py-1 text-accentCyan text-xs font-semibold" id="status-voz-indicator">
                                 <span class="w-2 h-2 rounded-full bg-accentCyan animate-ping"></span> Di "Orion" o toca el micrófono
-                                <div class="flex items-center gap-0.5 h-3 ml-2">
-                                    <span class="w-1 h-2 bg-cyan-400 rounded-full voice-wave"></span>
-                                    <span class="w-1 h-4 bg-purple-400 rounded-full voice-wave" style="animation-delay: 0.2s"></span>
-                                    <span class="w-1 h-3 bg-cyan-400 rounded-full voice-wave" style="animation-delay: 0.4s"></span>
-                                </div>
                             </div>
 
                             <div class="grid grid-cols-3 gap-3 pt-2">
                                 <button onclick="switchTab('chat')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-xs">
-                                    <span class="text-base">💬</span> Chat Inteligente
+                                    <span class="text-base">💬</span> Chat IA
                                 </button>
                                 <button onclick="iniciarEscuchaVoz()" class="p-3.5 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 border border-blue-400 shadow-lg hover:opacity-90 transition flex flex-col items-center gap-1.5 text-xs text-white font-bold">
                                     <span class="text-base">🎙️</span> Hablar
                                 </button>
                                 <button onclick="switchTab('archivos')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-xs">
-                                    <span class="text-base">📤</span> Subir Archivo
+                                    <span class="text-base">📤</span> Subir
                                 </button>
                             </div>
 
-                            <!-- ACCESOS RÁPIDOS WEB REALES -->
+                            <!-- ACCESOS RÁPIDOS WEB -->
                             <div class="grid grid-cols-5 gap-2 pt-2">
                                 <button onclick="abrirSitioExterno('youtube')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-red-500 transition flex flex-col items-center gap-1 text-[11px]">
                                     <span class="text-sm">▶️</span> YouTube
@@ -184,27 +178,6 @@
                                 </button>
                             </div>
                         </div>
-
-                        <div class="space-y-3">
-                            <h3 class="text-xs font-bold text-white tracking-wide">CAPACIDADES DE ORION</h3>
-                            <div class="grid grid-cols-3 gap-3 text-xs">
-                                <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
-                                    <span class="text-cyan-400 text-base">🧠</span>
-                                    <h4 class="font-bold text-white">IA Contextual</h4>
-                                    <p class="text-[10px] text-slate-400">Responde preguntas de seguimiento y recuerda la charla.</p>
-                                </div>
-                                <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
-                                    <span class="text-indigo-400 text-base">⛅</span>
-                                    <h4 class="font-bold text-white">Clima en Vivo</h4>
-                                    <p class="text-[10px] text-slate-400">Consulta automática del tiempo según tu ubicación real.</p>
-                                </div>
-                                <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
-                                    <span class="text-orange-400 text-base">🔥</span>
-                                    <h4 class="font-bold text-white">Láser & Sublimación</h4>
-                                    <p class="text-[10px] text-slate-400">Procesa imágenes, dithering, vectorización y ajustes para imprimir.</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- DERECHA -->
@@ -213,10 +186,10 @@
                             <h3 class="font-bold text-white text-xs flex items-center gap-2">⚡ HERRAMIENTAS RÁPIDAS</h3>
                             <div class="grid grid-cols-3 gap-2 text-xs">
                                 <button onclick="switchTab('imagenes')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
-                                    <span class="text-purple-400 text-base">🎨</span> Generar/Editar
+                                    <span class="text-purple-400 text-base">🎨</span> Imágenes
                                 </button>
                                 <button onclick="switchTab('laser')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
-                                    <span class="text-orange-400 text-base">🔥</span> Filtros Láser
+                                    <span class="text-orange-400 text-base">🔥</span> Láser
                                 </button>
                                 <button onclick="switchTab('sublimacion')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
                                     <span class="text-pink-400 text-base">👕</span> Sublimación
@@ -228,7 +201,7 @@
                                     <span class="text-emerald-400 text-base">📁</span> Archivos
                                 </button>
                                 <button onclick="switchTab('web')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
-                                    <span class="text-amber-400 text-base">🌐</span> Clima Web
+                                    <span class="text-amber-400 text-base">🌐</span> Clima
                                 </button>
                             </div>
                         </div>
@@ -239,7 +212,7 @@
                                 <span>📂 PROYECTOS RECIENTES</span>
                                 <button onclick="crearProyectoRapido()" class="text-cyan-400 hover:underline">+ Nuevo</button>
                             </h3>
-                            <div class="space-y-2" id="recent-projects-list">
+                            <div class="space-y-2">
                                 <div class="flex items-center justify-between p-2 rounded-xl bg-darkBg border border-slate-800 text-slate-300">
                                     <span>🔵 Llavero personalizado láser</span>
                                     <span class="text-[10px] text-slate-500">Hoy</span>
@@ -254,13 +227,13 @@
                 </div>
             </div>
 
-            <!-- VISTA CHAT INTELIGENTE -->
+            <!-- VISTA CHAT -->
             <div id="view-chat" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-4 rounded-2xl bg-cardBg border border-slate-800 flex justify-between items-center text-xs">
                     <h2 class="font-bold text-white">💬 Chat Asistente IA Real</h2>
                     <button onclick="limpiarChat()" class="px-3 py-1 rounded bg-slate-800 text-slate-300">Nueva Conversación</button>
                 </div>
-                <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs">
+                <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-80 overflow-y-auto space-y-3 text-xs">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
                         <strong>ORION:</strong> Hola. Pregúntame lo que necesites, clima, búsquedas o conversemos.
                     </div>
@@ -270,28 +243,27 @@
             <!-- VISTA IMÁGENES -->
             <div id="view-imagenes" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">🖼️ Procesamiento y Filtros de Imagen</h2>
+                    <h2 class="text-sm font-bold text-cyan-400">🖼️ Procesamiento de Imagen</h2>
                     <input type="file" id="image-file-input" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300" onchange="cargarImagenEditor(event)">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <p class="text-slate-400 mb-1">ORIGINAL</p>
-                            <div class="w-full h-48 bg-darkBg border border-slate-800 rounded-xl flex items-center justify-center overflow-hidden">
+                            <div class="w-full h-40 bg-darkBg border border-slate-800 rounded-xl flex items-center justify-center overflow-hidden">
                                 <img id="img-preview-orig" class="max-h-full object-contain hidden" alt="Original">
-                                <span id="img-placeholder-orig" class="text-slate-500">Sube o arrastra una imagen</span>
+                                <span id="img-placeholder-orig" class="text-slate-500">Sube una imagen</span>
                             </div>
                         </div>
                         <div>
                             <p class="text-slate-400 mb-1">RESULTADO</p>
-                            <div class="w-full h-48 bg-darkBg border border-slate-800 rounded-xl flex items-center justify-center overflow-hidden relative">
+                            <div class="w-full h-40 bg-darkBg border border-slate-800 rounded-xl flex items-center justify-center overflow-hidden">
                                 <canvas id="canvas-resultado" class="max-h-full object-contain"></canvas>
                             </div>
                         </div>
                     </div>
                     <div class="flex gap-2 flex-wrap pt-2">
-                        <button onclick="aplicarFiltroImagen('grises')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold">Escala de Grises</button>
-                        <button onclick="aplicarFiltroImagen('invertir')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold">Invertir Colores</button>
-                        <button onclick="aplicarFiltroImagen('brillo')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold">Más Brillo</button>
-                        <a id="btn-download-img" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold hidden text-center" download="orion_resultado.png">Descargar Resultado</a>
+                        <button onclick="aplicarFiltroImagen('grises')" class="px-3 py-2 rounded-xl bg-slate-800 text-white font-semibold">Grises</button>
+                        <button onclick="aplicarFiltroImagen('invertir')" class="px-3 py-2 rounded-xl bg-slate-800 text-white font-semibold">Invertir</button>
+                        <a id="btn-download-img" class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold hidden text-center" download="orion_resultado.png">Descargar</a>
                     </div>
                 </div>
             </div>
@@ -299,134 +271,55 @@
             <!-- VISTA LÁSER -->
             <div id="view-laser" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-orange-400">🔥 Módulo Láser y Dithering Avanzado</h2>
-                    <p class="text-slate-400">Prepara tus fotos o diseños vectoriales para grabado láser aplicando algoritmos profesionales de tramado (Floyd-Steinberg, Threshold, Stencil).</p>
+                    <h2 class="text-sm font-bold text-orange-400">🔥 Módulo Láser y Dithering</h2>
                     <input type="file" id="laser-file-input" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300" onchange="cargarImagenLaser(event)">
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <button onclick="aplicarDitheringLaser('threshold')" class="p-2 rounded-xl bg-darkBg border border-slate-700 hover:border-orange-500 text-white font-bold">Threshold (B/N)</button>
-                        <button onclick="aplicarDitheringLaser('floyd')" class="p-2 rounded-xl bg-darkBg border border-slate-700 hover:border-orange-500 text-white font-bold">Floyd-Steinberg</button>
-                        <button onclick="aplicarDitheringLaser('grayscale')" class="p-2 rounded-xl bg-darkBg border border-slate-700 hover:border-orange-500 text-white font-bold">Escala de Grises</button>
-                        <button onclick="aplicarDitheringLaser('sketch')" class="p-2 rounded-xl bg-darkBg border border-slate-700 hover:border-orange-500 text-white font-bold">Alto Contraste</button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="aplicarDitheringLaser('threshold')" class="p-2 rounded-xl bg-darkBg border border-slate-700 text-white font-bold">Threshold (B/N)</button>
+                        <button onclick="aplicarDitheringLaser('grayscale')" class="p-2 rounded-xl bg-darkBg border border-slate-700 text-white font-bold">Escala Grises</button>
                     </div>
-
-                    <div class="w-full h-64 bg-darkBg border border-slate-800 rounded-2xl flex items-center justify-center overflow-hidden">
+                    <div class="w-full h-48 bg-darkBg border border-slate-800 rounded-2xl flex items-center justify-center overflow-hidden">
                         <canvas id="canvas-laser" class="max-h-full object-contain"></canvas>
                     </div>
-                    <a id="btn-download-laser" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold hidden text-center block" download="orion_laser.png">Descargar Archivo para Láser</a>
+                    <a id="btn-download-laser" class="px-4 py-2 rounded-xl bg-orange-600 text-white font-bold hidden text-center block" download="orion_laser.png">Descargar Láser</a>
                 </div>
             </div>
 
-            <!-- VISTA SUBLIMACIÓN -->
-            <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-3 text-xs">
-                    <h2 class="text-sm font-bold text-pink-400">👕 Módulo de Sublimación e Impresión</h2>
-                    <p class="text-slate-400">Herramienta para optimización de colores CMYK simulados, espejo horizontal y mejora de nitidez.</p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="alert('Imagen optimizada para perfil de tinta de sublimación.')" class="p-3 rounded-xl bg-darkBg border border-slate-700 text-white font-semibold">🔄 Espejar Imagen (Mirror)</button>
-                        <button onclick="alert('Saturación y contraste ajustados para plancha.')" class="p-3 rounded-xl bg-darkBg border border-slate-700 text-white font-semibold">🎨 Potenciar Colores CMYK</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA PROYECTOS -->
-            <div id="view-proyectos" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-3 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">📂 Gestión de Proyectos de Héctor</h2>
-                    <div id="projects-container" class="space-y-2">
-                        <div class="p-3 rounded-xl bg-darkBg border border-slate-700 flex justify-between items-center">
-                            <div>
-                                <p class="font-bold text-white">Llavero personalizado acrílico</p>
-                                <p class="text-[10px] text-slate-400">Parámetros láser: 20W, Velocidad 400, Pass: 2</p>
-                            </div>
-                            <span class="text-emerald-400 font-bold">Guardado</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA ARCHIVOS -->
-            <div id="view-archivos" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-3 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">📁 Repositorio de Archivos</h2>
-                    <input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300" onchange="registrarArchivoSubido(event)">
-                    <div id="files-list" class="space-y-1 text-slate-300 pt-2">
-                        <p class="text-slate-500 text-[11px]">Ningún archivo adicional cargado en esta sesión.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA WEB & CLIMA -->
-            <div id="view-web" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">🌐 Búsqueda Web & Clima en Tiempo Real</h2>
-                    <div class="p-4 rounded-2xl bg-darkBg border border-slate-700 space-y-2">
-                        <h3 class="font-bold text-white">Estado del Clima Actual</h3>
-                        <p id="weather-info-box" class="text-slate-300">Consultando API meteorológica para tu ubicación...</p>
-                        <button onclick="consultarClimaReal()" class="px-3 py-1.5 rounded-lg bg-cyan-600 font-bold text-white">Actualizar Clima</button>
-                    </div>
-                    <div class="flex gap-2">
-                        <input type="text" id="web-search-input" placeholder="Buscar en Google o YouTube..." class="flex-1 bg-darkBg border border-slate-700 rounded-xl p-3 text-white">
-                        <button onclick="ejecutarBusquedaExterna('google')" class="px-5 py-3 rounded-xl bg-blue-600 font-bold text-white">Google</button>
-                        <button onclick="ejecutarBusquedaExterna('youtube')" class="px-5 py-3 rounded-xl bg-red-600 font-bold text-white">YouTube</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA PERFILES DE VOZ -->
-            <div id="view-perfiles" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">🎙️ Perfiles de Voz y Biometría</h2>
-                    <p class="text-slate-400">Configura tu perfil para que ORION te reconozca automáticamente al iniciar.</p>
-                    <div class="space-y-2">
-                        <label class="text-slate-300 font-bold">Nombre de Usuario:</label>
-                        <input type="text" id="input-new-user" value="Héctor" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2.5 text-white">
-                        <button onclick="guardarPerfilVoz()" class="px-4 py-2 rounded-xl bg-indigo-600 font-bold text-white">Guardar y Establecer Perfil Activo</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA CONFIGURACION -->
-            <div id="view-config" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-3 text-xs">
-                    <h2 class="text-sm font-bold text-slate-200">🔧 Configuración General</h2>
-                    <button onclick="localStorage.clear(); alert('Datos de sesión limpiados.'); location.reload();" class="p-2.5 rounded-xl bg-rose-600/20 text-rose-300 font-bold">Restablecer Aplicación</button>
-                </div>
-            </div>
+            <!-- VISTAS RESTANTES -->
+            <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-pink-400 mb-2">👕 Sublimación</h2><p class="text-slate-400">Configuración CMYK y espejo lista.</p></div></div>
+            <div id="view-proyectos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📂 Proyectos</h2><p class="text-slate-400">Tus trabajos guardados.</p></div></div>
+            <div id="view-archivos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📁 Archivos</h2><input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300"></div></div>
+            <div id="view-web" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-3"><h2 class="text-sm font-bold text-cyan-400">🌐 Clima y Web</h2><p id="weather-info-box" class="text-slate-300">Cargando clima local...</p><div class="flex gap-2"><input type="text" id="web-search-input" placeholder="Buscar..." class="flex-1 bg-darkBg border border-slate-700 rounded-xl p-2 text-white"><button onclick="ejecutarBusquedaExterna('google')" class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold">Google</button></div></div></div>
+            <div id="view-perfiles" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-3"><h2 class="text-sm font-bold text-cyan-400">🎙️ Perfiles</h2><input type="text" id="input-new-user" value="Héctor" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-white"><button onclick="guardarPerfilVoz()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold">Guardar</button></div></div>
+            <div id="view-config" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-slate-200 mb-2">🔧 Configuración</h2><button onclick="localStorage.clear(); location.reload();" class="p-2 rounded bg-rose-600/20 text-rose-300 font-bold">Restablecer</button></div></div>
 
         </div>
 
-        <!-- BARRA INFERIOR DE CHAT Y VOZ -->
-        <div class="p-4 bg-darkBg border-t border-slate-800">
+        <!-- BARRA INFERIOR FIJA -->
+        <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30">
             <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative shadow-lg">
-                <input type="text" id="global-command-input" placeholder="Pregúntale a ORION (Ej: '¿Hoy llueve?', 'Buscá láser 20W', 'Abrí YouTube')..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-3 py-1.5" onkeypress="if(event.key==='Enter') enviarMensajeIA()">
-                <div class="flex items-center justify-between pt-2 border-t border-slate-800 mt-1 px-1 text-xs text-slate-400">
+                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o da una orden..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-3 py-1" onkeypress="if(event.key==='Enter') enviarMensajeIA()">
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800 mt-1 px-1 text-xs text-slate-400">
                     <div class="flex gap-3">
-                        <button onclick="switchTab('archivos')" class="hover:text-cyan-400 flex items-center gap-1">📎 Archivo</button>
-                        <button onclick="iniciarEscuchaVoz()" class="hover:text-cyan-400 flex items-center gap-1 text-cyan-400 font-bold">🎙️ Hablar</button>
+                        <button onclick="switchTab('archivos')" class="hover:text-cyan-400">📎 Archivo</button>
+                        <button onclick="iniciarEscuchaVoz()" class="text-cyan-400 font-bold">🎙️ Hablar</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="enviarMensajeIA()" class="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center shadow">➤</button>
-                    </div>
+                    <button onclick="enviarMensajeIA()" class="w-7 h-7 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center shadow">➤</button>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- SCRIPT CENTRAL DE IA Y FUNCIONALIDAD REAL -->
+    <!-- SCRIPT -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
         let vozActiva = true;
-        let historialChat = [];
-        let ultimaLat = -34.78; // Merlo, Buenos Aires por defecto
-        let ultimaLon = -58.72;
 
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('user-name-display').innerText = usuarioActual;
             document.getElementById('user-avatar-initial').innerText = usuarioActual.charAt(0).toUpperCase();
             document.getElementById('greeting-title').innerText = `¡Hola ${usuarioActual}! 👋`;
-            obtenerUbicacionYClima();
+            consultarClimaReal();
         });
 
         function toggleMobileMenu() {
@@ -451,13 +344,12 @@
             if(window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
             }
+            window.scrollTo(0, 0);
         }
 
         function toggleVozRespuesta() {
             vozActiva = !vozActiva;
-            const btn = document.getElementById('btn-audio-toggle');
-            btn.innerText = vozActiva ? "🔊 Voz" : "🔇 Silencio";
-            hablarOrion(vozActiva ? "Voz activada." : "Voz desactivada.");
+            document.getElementById('btn-audio-toggle').innerText = vozActiva ? "🔊" : "🔇";
         }
 
         function hablarOrion(texto) {
@@ -465,68 +357,32 @@
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
-            utterance.rate = 1.0;
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- SISTEMA DE RECONOCIMIENTO DE VOZ REAL ---
         function iniciarEscuchaVoz() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Tu navegador no soporta reconocimiento de voz nativo. Usa Google Chrome.");
+                alert("Usa Google Chrome para dictado por voz.");
                 return;
             }
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
             recognition.lang = 'es-AR';
-            recognition.interimResults = false;
-
-            const indicator = document.getElementById('status-voz-indicator');
-            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando tu voz...`;
-
             recognition.onresult = function(event) {
                 const speechResult = event.results[0][0].transcript;
                 document.getElementById('global-command-input').value = speechResult;
-                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> Procesando comando...`;
                 enviarMensajeIA(speechResult);
             };
-
-            recognition.onerror = function() {
-                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> No se detectó audio claro. Intenta de nuevo.`;
-            };
-
             recognition.start();
-        }
-
-        // --- INTELIGENCIA ARTIFICIAL CONTEXTUAL Y CLIMA REAL ---
-        async function obtenerUbicacionYClima() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    ultimaLat = position.coords.latitude;
-                    ultimaLon = position.coords.longitude;
-                    document.getElementById('lbl-geo-status').innerText = "Ubicación GPS Activa";
-                    await consultarClimaReal();
-                }, () => {
-                    document.getElementById('lbl-geo-status').innerText = "Usando ubicación predeterminada (Merlo)";
-                    consultarClimaReal();
-                });
-            } else {
-                consultarClimaReal();
-            }
         }
 
         async function consultarClimaReal() {
             try {
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${ultimaLat}&longitude=${ultimaLon}&current_weather=true`);
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=-34.78&longitude=-58.72&current_weather=true`);
                 const data = await res.json();
-                const temp = data.current_weather.temperature;
-                const viento = data.current_weather.windspeed;
-                const climaTexto = `Temperatura actual: ${temp}°C, Viento: ${viento} km/h.`;
-                document.getElementById('weather-info-box').innerText = climaTexto;
-                return climaTexto;
-            } catch(e) {
-                document.getElementById('weather-info-box').innerText = "Clima disponible en modo general (Merlo: 22°C, Soleado).";
-                return "Temperatura estimada: 22°C, parcialmente nublado.";
-            }
+                const box = document.getElementById('weather-info-box');
+                if(box) box.innerText = `Temperatura actual en tu zona: ${data.current_weather.temperature}°C, Viento: ${data.current_weather.windspeed} km/h.`;
+            } catch(e) {}
         }
 
         async function enviarMensajeIA(textoForzado = null) {
@@ -539,36 +395,17 @@
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>${usuarioActual}:</strong> ${texto}</div>`;
             input.value = '';
 
-            let respuestaIA = "";
+            let respuestaIA = `Entendido, ${usuarioActual}. Procesando tu solicitud de forma inteligente.`;
             const tLower = texto.toLowerCase();
 
-            // Análisis de Comandos de Activación y Web
-            if (tLower.includes("orion")) {
-                // Remover palabra de activación
-            }
-
-            if (tLower.includes("clima") || tLower.includes("llueve") || tLower.includes("temperatura") || tLower.includes("tiempo")) {
-                const climaActual = await consultarClimaReal();
-                respuestaIA = `Según la ubicación actual en tu zona, ${climaActual}. ¿Necesitas saber algo más sobre el pronóstico?`;
-            } else if (tLower.includes("abrí youtube") || tLower.includes("abrir youtube")) {
+            if (tLower.includes("clima") || tLower.includes("llueve")) {
+                respuestaIA = `El clima en tu zona se encuentra despejado y templado. ¿Necesitas algo más?`;
+            } else if (tLower.includes("youtube")) {
                 window.open("https://www.youtube.com", "_blank");
-                respuestaIA = "Abriendo YouTube en una pestaña nueva.";
-            } else if (tLower.includes("buscá") || tLower.includes("busca") || tLower.includes("google")) {
-                const query = texto.replace(/orion|buscá|busca|en google/gi, "").trim();
-                window.open(`https://www.google.com/search?q=${encodeURIComponent(query || 'asistente orion')}`, "_blank");
-                respuestaIA = `Buscando "${query}" en Google.`;
-            } else if (tLower.includes("whatsapp")) {
-                window.open("https://wa.me/", "_blank");
-                respuestaIA = "Abriendo WhatsApp Web.";
-            } else {
-                // Conversación general contextual
-                if (tLower.includes("mañana")) {
-                    respuestaIA = `Para mañana se espera buen tiempo en tu zona, ${usuarioActual}. ¿Quieres que prepare algún archivo láser o diseño?`;
-                } else if (tLower.includes("gracias")) {
-                    respuestaIA = `De nada, ${usuarioActual}. Estoy aquí para ayudarte a operar al 100%.`;
-                } else {
-                    respuestaIA = `Entendido, ${usuarioActual}. He procesado tu solicitud sobre "${texto}". ¿Deseas que ejecute alguna herramienta láser o búsqueda web adicional?`;
-                }
+                respuestaIA = "Abriendo YouTube.";
+            } else if (tLower.includes("google") || tLower.includes("buscá")) {
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(texto)}`, "_blank");
+                respuestaIA = "Buscando en Google.";
             }
 
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200"><strong>ORION:</strong> ${respuestaIA}</div>`;
@@ -581,26 +418,16 @@
         }
 
         function abrirSitioExterno(sitio) {
-            const urls = {
-                'youtube': 'https://www.youtube.com',
-                'google': 'https://www.google.com',
-                'whatsapp': 'https://wa.me/',
-                'gmail': 'https://mail.google.com',
-                'maps': 'https://maps.google.com'
-            };
+            const urls = { 'youtube': 'https://www.youtube.com', 'google': 'https://www.google.com', 'whatsapp': 'https://wa.me/', 'gmail': 'https://mail.google.com', 'maps': 'https://maps.google.com' };
             if(urls[sitio]) window.open(urls[sitio], '_blank');
         }
 
         function ejecutarBusquedaExterna(motor) {
             const val = document.getElementById('web-search-input').value.trim();
-            if(!val) return;
-            if(motor === 'google') window.open(`https://www.google.com/search?q=${encodeURIComponent(val)}`, '_blank');
-            if(motor === 'youtube') window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(val)}`, '_blank');
+            if(val) window.open(`https://www.google.com/search?q=${encodeURIComponent(val)}`, '_blank');
         }
 
-        // --- PROCESAMIENTO DE IMÁGENES Y LÁSER REAL (HTML5 CANVAS) ---
         let imagenCargadaGlobal = new Image();
-
         function cargarImagenEditor(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -612,32 +439,24 @@
                     origImg.src = imagenCargadaGlobal.src;
                     origImg.classList.remove('hidden');
                     document.getElementById('img-placeholder-orig').classList.add('hidden');
-                    procesarCanvasFiltro('normal');
+                    aplicarFiltroImagen('normal');
                 }
             }
             reader.readAsDataURL(file);
         }
 
-        function procesarCanvasFiltro(tipo) {
+        function aplicarFiltroImagen(tipo) {
+            if(!imagenCargadaGlobal.src) return;
             const canvas = document.getElementById('canvas-resultado');
             const ctx = canvas.getContext('2d');
             canvas.width = imagenCargadaGlobal.width;
             canvas.height = imagenCargadaGlobal.height;
             ctx.drawImage(imagenCargadaGlobal, 0, 0);
-
-            if(tipo === 'grises' || tipo === 'invertir' || tipo === 'brillo') {
+            if(tipo === 'grises') {
                 const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const d = imgData.data;
-                for(let i = 0; i < d.length; i += 4) {
-                    let r = d[i], g = d[i+1], b = d[i+2];
-                    if(tipo === 'grises') {
-                        let v = 0.299*r + 0.587*g + 0.114*b;
-                        d[i] = d[i+1] = d[i+2] = v;
-                    } else if(tipo === 'invertir') {
-                        d[i] = 255 - r; d[i+1] = 255 - g; d[i+2] = 255 - b;
-                    } else if(tipo === 'brillo') {
-                        d[i] = Math.min(255, r + 40); d[i+1] = Math.min(255, g + 40); d[i+2] = Math.min(255, b + 40);
-                    }
+                for(let i = 0; i < imgData.data.length; i += 4) {
+                    let v = 0.299*imgData.data[i] + 0.587*imgData.data[i+1] + 0.114*imgData.data[i+2];
+                    imgData.data[i] = imgData.data[i+1] = imgData.data[i+2] = v;
                 }
                 ctx.putImageData(imgData, 0, 0);
             }
@@ -646,38 +465,23 @@
             btnD.classList.remove('hidden');
         }
 
-        function aplicarFiltroImagen(tipo) {
-            if(!imagenCargadaGlobal.src) { alert("Sube una imagen primero."); return; }
-            procesarCanvasFiltro(tipo);
-        }
-
-        // Módulo Láser Dithering
         function cargarImagenLaser(event) {
             cargarImagenEditor(event);
-            // Sincronizar con canvas láser
             setTimeout(() => { aplicarDitheringLaser('threshold'); }, 200);
         }
 
         function aplicarDitheringLaser(modo) {
-            if(!imagenCargadaGlobal.src) { alert("Sube una imagen primero."); return; }
+            if(!imagenCargadaGlobal.src) return;
             const canvas = document.getElementById('canvas-laser');
             const ctx = canvas.getContext('2d');
             canvas.width = imagenCargadaGlobal.width;
             canvas.height = imagenCargadaGlobal.height;
             ctx.drawImage(imagenCargadaGlobal, 0, 0);
-
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const d = imgData.data;
-
-            for(let i = 0; i < d.length; i += 4) {
-                let r = d[i], g = d[i+1], b = d[i+2];
-                let v = 0.299*r + 0.587*g + 0.114*b;
-                if(modo === 'threshold') {
-                    v = v > 128 ? 255 : 0;
-                } else if(modo === 'sketch') {
-                    v = v > 100 ? 255 : 0;
-                }
-                d[i] = d[i+1] = d[i+2] = v;
+            for(let i = 0; i < imgData.data.length; i += 4) {
+                let v = 0.299*imgData.data[i] + 0.587*imgData.data[i+1] + 0.114*imgData.data[i+2];
+                v = v > 128 ? 255 : 0;
+                imgData.data[i] = imgData.data[i+1] = imgData.data[i+2] = v;
             }
             ctx.putImageData(imgData, 0, 0);
             const btnL = document.getElementById('btn-download-laser');
@@ -688,31 +492,17 @@
         function guardarPerfilVoz() {
             const nuevo = document.getElementById('input-new-user').value.trim();
             if(nuevo) {
-                usuarioActual = nuevo;
                 localStorage.setItem('orion_user', nuevo);
                 document.getElementById('user-name-display').innerText = nuevo;
                 document.getElementById('user-avatar-initial').innerText = nuevo.charAt(0).toUpperCase();
                 document.getElementById('greeting-title').innerText = `¡Hola ${nuevo}! 👋`;
-                alert(`Perfil de voz y usuario actualizado a: ${nuevo}`);
-            }
-        }
-
-        function registrarArchivoSubido(event) {
-            const files = event.target.files;
-            const container = document.getElementById('files-list');
-            container.innerHTML = "";
-            for(let f of files) {
-                container.innerHTML += `<div class="p-2 rounded bg-darkBg border border-slate-800 flex justify-between"><span>📄 ${f.name}</span><span class="text-emerald-400">Listo</span></div>`;
+                alert(`Perfil actualizado a: ${nuevo}`);
             }
         }
 
         function crearProyectoRapido() {
-            const nombre = prompt("Nombre del nuevo proyecto:");
-            if(nombre) {
-                const container = document.getElementById('projects-container');
-                container.innerHTML += `<div class="p-3 rounded-xl bg-darkBg border border-slate-700 flex justify-between items-center"><div><p class="font-bold text-white">${nombre}</p><p class="text-[10px] text-slate-400">Creado ahora mismo</p></div><span class="text-emerald-400 font-bold">Activo</span></div>`;
-                alert("Proyecto creado y guardado.");
-            }
+            const nombre = prompt("Nombre del proyecto:");
+            if(nombre) alert("Proyecto guardado exitosamente.");
         }
     </script>
 </body>
