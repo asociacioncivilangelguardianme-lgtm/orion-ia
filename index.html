@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORION - Comedor Ángel Guardián</title>
+    <title>ORION - Tu Asistente Inteligente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -145,7 +145,7 @@
                 </div>
                 <div>
                     <h1 class="text-sm font-black tracking-wider text-white">ORION</h1>
-                    <p class="text-[9px] text-amber-400 tracking-widest font-semibold">COMADOR ÁNGEL GUARDIÁN</p>
+                    <p class="text-[9px] text-cyan-400 tracking-widest font-semibold">TU ASISTENTE INTELIGENTE</p>
                 </div>
             </div>
 
@@ -167,7 +167,7 @@
                     <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center font-bold text-white text-xs" id="user-avatar-initial">H</div>
                     <div class="text-xs">
                         <p class="font-semibold text-white leading-none" id="user-name-display">Héctor</p>
-                        <p class="text-amber-400 font-bold text-[9px] mt-0.5">ÁNGEL GUARDIÁN</p>
+                        <p class="text-emerald-400 font-bold text-[9px] mt-0.5">PERFIL ACTIVO</p>
                     </div>
                 </div>
                 <button class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300">☀️</button>
@@ -176,7 +176,7 @@
         </header>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <div class="flex-1 p-4 md:p-6 pb-28" id="content-viewport">
+        <div class="flex-1 p-4 md:p-6 pb-32" id="content-viewport">
             
             <!-- VISTA INICIO -->
             <div id="view-inicio" class="tab-view space-y-6 max-w-7xl mx-auto">
@@ -352,12 +352,12 @@
             <!-- VISTA CHAT INTELIGENTE -->
             <div id="view-chat" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-4 rounded-2xl bg-cardBg border border-slate-800 flex justify-between items-center text-xs">
-                    <h2 class="font-bold text-white">💬 Chat Asistente Inteligente - Comedor Ángel Guardián</h2>
+                    <h2 class="font-bold text-white">💬 Chat Asistente Inteligente</h2>
                     <button onclick="limpiarChat()" class="px-3 py-1 rounded bg-slate-800 text-slate-300">Nueva Conversación</button>
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                        <strong>ORION:</strong> Hola Héctor. Comedor Ángel Guardián activo. Sistema de voz continuo y asistente inteligente listos.
+                        <strong>ORION:</strong> ¡Hola Héctor! Asistente inteligente activo y conectado. Te respondo con voz y total fluidez.
                     </div>
                 </div>
             </div>
@@ -365,7 +365,7 @@
             <!-- VISTA SUBLIMACIÓN -->
             <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-amber-400">👕 Módulo de Sublimación - Comedor Ángel Guardián</h2>
+                    <h2 class="text-sm font-bold text-amber-400">👕 Módulo de Sublimación</h2>
                     <p class="text-slate-400">Selecciona el soporte para generar plantillas y perfiles automáticos:</p>
                     <div class="grid grid-cols-3 gap-3">
                         <button onclick="procesarComandoIA('Dame medidas y perfil CMYK para tazas de cerámica')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-400 text-white font-bold text-left">☕ Tazas y Mates</button>
@@ -392,18 +392,18 @@
 
         </div>
 
-        <!-- BARRA INFERIOR FIJA -->
+        <!-- BARRA INFERIOR FIJA AMPLIADA PARA QUE SE LEA TODO COMPLETO -->
         <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30">
-            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative shadow-lg flex items-center gap-2">
-                <button onclick="iniciarEscuchaVoz()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-sm" title="Hablar por voz">🎙️</button>
-                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o di 'Orion, soy [Tu Nombre]'..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1" onkeypress="if(event.key==='Enter') procesarComandoIA()">
-                <button onclick="procesarComandoIA()" class="w-8 h-8 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 text-white font-bold flex items-center justify-center shadow shrink-0">➤</button>
+            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-3 relative shadow-2xl flex items-center gap-3">
+                <button onclick="iniciarEscuchaVoz()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-base" title="Hablar por voz">🎙️</button>
+                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o da una orden..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComandoIA()">
+                <button onclick="procesarComandoIA()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 text-white font-bold flex items-center justify-center shadow shrink-0 text-xs">Enviar</button>
             </div>
         </div>
 
     </main>
 
-    <!-- SCRIPT DE INTELIGENCIA ARTIFICIAL Y VOZ TIPO SIRI / ALEXA -->
+    <!-- SCRIPT DE INTELIGENCIA ARTIFICIAL Y VOZ FLUIDA -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
         let chatHistory = [];
@@ -453,7 +453,7 @@
             if(urls[servicio]) window.open(urls[servicio], '_blank');
         }
 
-        // --- VOZ DE HOMBRE FLUIDA (ESTILO ASISTENTE) ---
+        // --- VOZ DE HOMBRE FLUIDA (ESTIPO ASISTENTE) ---
         function hablarOrion(texto) {
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -461,7 +461,7 @@
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
             utterance.rate = 1.0;
-            utterance.pitch = 0.85; // Tono grave masculino
+            utterance.pitch = 0.85;
 
             const voces = window.speechSynthesis.getVoices();
             const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft es')));
@@ -476,14 +476,9 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
-        }
-
-        // --- ESCUCHA ACTIVA DE VOZ ---
         function iniciarEscuchaVoz() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Usa Google Chrome para habilitar el micrófono.");
+                alert("Usa Google Chrome para el micrófono.");
                 return;
             }
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -491,12 +486,12 @@
             recognition.lang = 'es-AR';
             
             const indicator = document.getElementById('status-voz-indicator');
-            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando...`;
+            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando voz...`;
 
             recognition.onresult = function(event) {
                 const speechResult = event.results[0][0].transcript;
                 document.getElementById('global-command-input').value = speechResult;
-                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Procesando comando...`;
+                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Procesando...`;
                 procesarComandoIA(speechResult);
             };
 
@@ -530,11 +525,11 @@
                     usuarioActual = nombreDetectado;
                     localStorage.setItem('orion_user', usuarioActual);
                     actualizarInterfazUsuario();
-                    respuestaIA = `¡Hola de nuevo, ${usuarioActual}! Te reconozco perfectamente. Bienvenido al Comedor Ángel Guardián. ¿Qué deseas hacer hoy?`;
+                    respuestaIA = `¡Hola de nuevo, ${usuarioActual}! Te reconozco perfectamente. ¿Qué deseas hacer hoy?`;
                 }
             } else {
                 try {
-                    // LLAMADA SEGURA AL BACKEND DE VERCEL
+                    // LLAMADA AL SERVIDOR DE VERCEL
                     const response = await fetch('https://orion-la-sooty.vercel.app/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -548,16 +543,16 @@
                         chatHistory.push({ role: 'user', text: texto });
                         chatHistory.push({ role: 'model', text: respuestaIA });
                     } else {
-                        throw new Error("Respuesta no válida de Vercel");
+                        throw new Error("Error Vercel");
                     }
                 } catch (error) {
-                    // RESPALDO INTELIGENTE DE TALLER (Garantiza fluidez total tipo Siri/Alexa)
+                    // RESPALDO INTELIGENTE AUTOMÁTICO
                     if(tLower.includes('madera') || tLower.includes('laser') || tLower.includes('algolaser')) {
-                        respuestaIA = `Para tu AlgoLaser MK2 10W trabajando sobre madera, te sugiero una velocidad de 1000 mm/min con potencia al 80% para un grabado perfecto, ${usuarioActual}.`;
+                        respuestaIA = `Para tu AlgoLaser MK2 10W trabajando sobre madera, te sugiero velocidad 1000 mm/min con potencia al 80% para un grabado perfecto, ${usuarioActual}.`;
                     } else if(tLower.includes('cmyk') || tLower.includes('sublimacion') || tLower.includes('taza')) {
-                        respuestaIA = `Para tus trabajos de sublimación en tazas, mantené la plancha a 190°C durante 180 segundos con perfil CMYK optimizado, ${usuarioActual}.`;
+                        respuestaIA = `Para tus trabajos de sublimación, mantené la plancha a 190°C durante 180 segundos con perfil CMYK optimizado, ${usuarioActual}.`;
                     } else {
-                        respuestaIA = `Entendido ${usuarioActual}. He procesado tu solicitud de forma fluida y natural para el Comedor Ángel Guardián. ¿En qué más te puedo ayudar?`;
+                        respuestaIA = `Entendido ${usuarioActual}. He procesado tu solicitud de forma fluida y natural. ¿En qué más te puedo ayudar?`;
                     }
                 }
             }
