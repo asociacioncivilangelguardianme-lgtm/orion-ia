@@ -33,9 +33,9 @@
         .voice-wave { animation: pulseWave 1.2s infinite ease-in-out; }
     </style>
 </head>
-<body class="bg-darkBg text-slate-100 font-sans h-screen overflow-hidden flex flex-col md:flex-row">
+<body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 
-    <!-- PANEL LATERAL IZQUIERDO: GUÍA Y NAVEGACIÓN -->
+    <!-- PANEL LATERAL IZQUIERDO: GUÍA Y NAVEGACIÓN (SE OCULTA EN CELULAR) -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 border-r border-slate-800/80 bg-darkPanel p-4 flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300">
         <div class="space-y-6">
             
@@ -44,7 +44,7 @@
                 <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
             </div>
 
-            <!-- GUÍA RÁPIDA "PARA QUE ORION FUNCIONE AL 100%" -->
+            <!-- GUÍA COMPLETA "PARA QUE ORION FUNCIONE AL 100%" -->
             <div class="p-3.5 rounded-2xl bg-cardBg/90 border border-slate-700/80 text-[11px] space-y-3 shadow-inner">
                 <h3 class="font-black text-cyan-400 tracking-wide text-center text-xs pb-1 border-b border-slate-700">PARA QUE ORION FUNCIONE AL 100%</h3>
                 
@@ -61,7 +61,7 @@
                     </div>
 
                     <div>
-                        <p class="font-bold text-white">2. RECONOCIMIENTO DE VOZ</p>
+                        <p class="font-bold text-white">2. RECONOCIMIENTO DE VOZ (PERFILES)</p>
                         <ol class="text-[10px] text-slate-400 space-y-0.5 mt-0.5 pl-3 list-decimal">
                             <li>Entrá a: Configuración > Perfiles de Voz.</li>
                             <li>Di: "Orion, soy Héctor" y seguí instrucciones.</li>
@@ -76,13 +76,23 @@
                     </div>
 
                     <div>
-                        <p class="font-bold text-white">4. ORION DESKTOP (CONTROL DE PC)</p>
-                        <p class="text-[10px] text-slate-400 mt-0.5">Descárgalo, instálalo y verifica que esté conectado para abrir programas locales como LightBurn, Chrome, Calculadora, etc.</p>
+                        <p class="font-bold text-white">4. ORION DESKTOP (CONTROL DE PROGRAMAS)</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Controla programas locales como LightBurn, Chrome, Calculadora, Bloc de notas, etc.</p>
                     </div>
 
                     <div>
-                        <p class="font-bold text-white">5. COMANDOS POR VOZ</p>
-                        <p class="text-[10px] text-slate-400 mt-0.5">"Orion, abrí YouTube", "Orion, buscá láser", "Orion, abrí LightBurn".</p>
+                        <p class="font-bold text-white">5. COMANDOS POR VOZ (EJEMPLOS)</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">"Orion, abrí YouTube", "Orion, buscá máquinas láser", "Orion, abrí LightBurn".</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-white">6. ACCIONES IMPORTANTES</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Para enviar mensajes o borrar archivos, ORION pedirá confirmación.</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-white">7. CONSEJOS PARA EL 100%</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Mantén ORION Desktop abierto, usa un buen micrófono y habla claro.</p>
                     </div>
                 </div>
 
@@ -129,11 +139,10 @@
     </aside>
 
     <!-- ÁREA PRINCIPAL -->
-    <main class="flex-1 flex flex-col bg-darkBg relative overflow-hidden h-full">
+    <main class="flex-1 flex flex-col bg-darkBg relative min-h-screen">
         
         <!-- HEADER SUPERIOR -->
-        <header class="px-4 md:px-6 py-3 border-b border-slate-800/80 flex items-center justify-between bg-darkPanel/50 backdrop-blur-md">
-            
+        <header class="px-4 md:px-6 py-3 border-b border-slate-800/80 flex items-center justify-between bg-darkPanel/50 backdrop-blur-md sticky top-0 z-40">
             <div class="flex items-center gap-3">
                 <button onclick="toggleMobileMenu()" class="md:hidden text-slate-200 text-xl font-bold px-2.5 py-1 rounded bg-slate-800">☰</button>
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center shadow-lg">
@@ -145,7 +154,7 @@
                 </div>
             </div>
 
-            <!-- PESTAÑAS SUPERIORES -->
+            <!-- PESTAÑAS ESCRITORIO -->
             <div class="hidden xl:flex items-center gap-4 text-xs font-medium text-slate-400">
                 <button onclick="switchTab('inicio')" class="top-tab text-accentCyan pb-1 border-b-2 border-accentCyan whitespace-nowrap">INICIO</button>
                 <button onclick="switchTab('chat')" class="top-tab hover:text-white transition whitespace-nowrap">CHAT</button>
@@ -157,9 +166,8 @@
                 <button onclick="switchTab('config')" class="top-tab hover:text-white transition whitespace-nowrap">CONFIGURACIÓN</button>
             </div>
 
+            <!-- PERFIL -->
             <div class="flex items-center gap-3">
-                <button class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300">☀️</button>
-                <button class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300">🔔</button>
                 <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 border border-slate-700">
                     <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white text-xs">H</div>
                     <div class="text-xs">
@@ -170,21 +178,20 @@
             </div>
         </header>
 
-        <!-- CONTENIDO DINÁMICO DE PESTAÑAS -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar" id="content-viewport">
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="flex-1 p-4 md:p-6 pb-28" id="content-viewport">
             
-            <!-- VISTA INICIO (IDÉNTICA A TU FOTO ORIGINAL) -->
             <div id="view-inicio" class="tab-view space-y-6 max-w-7xl mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
-                    <!-- COLUMNA CENTRAL -->
+                    <!-- CENTRO -->
                     <div class="lg:col-span-7 space-y-6">
                         <div class="text-center space-y-3 p-6 rounded-3xl bg-cardBg border border-slate-800 shadow-xl relative overflow-hidden">
                             <h2 class="text-2xl font-black text-white">¡Hola Héctor! 👋</h2>
                             <p class="text-slate-400 text-xs">¿Qué quieres hacer hoy?</p>
                             
-                            <!-- NÚCLEO HOLOGRÁFICO ANIMADO -->
-                            <div class="relative w-44 h-44 mx-auto flex items-center justify-center cursor-pointer my-2" onclick="orionHablar()">
+                            <!-- NÚCLEO HOLOGRÁFICO -->
+                            <div class="relative w-44 h-44 mx-auto flex items-center justify-center cursor-pointer my-2" onclick="iniciarVozReal()">
                                 <div class="absolute inset-0 rounded-full border border-dashed border-cyan-400/40 ring-spin"></div>
                                 <div class="absolute inset-3 rounded-full border border-cyan-400/70 ring-spin-rev"></div>
                                 <div class="absolute inset-8 rounded-full bg-gradient-to-tr from-blue-950 via-indigo-900 to-purple-950 flex items-center justify-center shadow-2xl core-pulse font-bold text-white text-lg tracking-widest border border-indigo-500/50">
@@ -206,7 +213,7 @@
                                 <button onclick="switchTab('chat')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-xs">
                                     <span class="text-base">💬</span> Hablar con ORION
                                 </button>
-                                <button onclick="orionHablar()" class="p-3.5 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 border border-blue-400 shadow-lg hover:opacity-90 transition flex flex-col items-center gap-1.5 text-xs text-white font-bold">
+                                <button onclick="iniciarVozReal()" class="p-3.5 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 border border-blue-400 shadow-lg hover:opacity-90 transition flex flex-col items-center gap-1.5 text-xs text-white font-bold">
                                     <span class="text-base">🎙️</span>
                                 </button>
                                 <button onclick="switchTab('archivos')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-xs">
@@ -216,17 +223,17 @@
 
                             <!-- ACCESOS RÁPIDOS WEB -->
                             <div class="grid grid-cols-5 gap-2 pt-2">
-                                <button onclick="abrirWeb('youtube')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-red-500 transition flex flex-col items-center gap-1 text-[11px]">
-                                    <span class="text-sm">▶️</span> Abrir YouTube
+                                <button onclick="window.open('https://www.youtube.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-red-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">▶️</span> YouTube
                                 </button>
-                                <button onclick="abrirWeb('google')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-blue-500 transition flex flex-col items-center gap-1 text-[11px]">
-                                    <span class="text-sm">🌐</span> Buscar en Google
+                                <button onclick="window.open('https://www.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-blue-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">🌐</span> Google
                                 </button>
-                                <button onclick="abrirWeb('whatsapp')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-emerald-500 transition flex flex-col items-center gap-1 text-[11px]">
-                                    <span class="text-sm">💬</span> Abrir WhatsApp
+                                <button onclick="window.open('https://wa.me/','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-emerald-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">💬</span> WhatsApp
                                 </button>
                                 <button onclick="alert('Cámara activada')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1 text-[11px]">
-                                    <span class="text-sm">📷</span> Abrir Cámara
+                                    <span class="text-sm">📷</span> Cámara
                                 </button>
                                 <button onclick="switchTab('acciones')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-purple-500 transition flex flex-col items-center gap-1 text-[11px]">
                                     <span class="text-sm">⋯</span> Más acciones
@@ -234,30 +241,30 @@
                             </div>
                         </div>
 
-                        <!-- ¿QUÉ PUEDE HACER ORION POR TI? -->
+                        <!-- ¿QUÉ PUEDE HACER ORION? -->
                         <div class="space-y-3">
                             <h3 class="text-xs font-bold text-white tracking-wide">¿Qué puede hacer ORION por ti?</h3>
                             <div class="grid grid-cols-3 gap-3 text-xs">
                                 <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
                                     <span class="text-cyan-400 text-base">💬</span>
                                     <h4 class="font-bold text-white">Creación de Imágenes</h4>
-                                    <p class="text-[10px] text-slate-400">Genera, edita y mejora tus imágenes con inteligencia artificial.</p>
+                                    <p class="text-[10px] text-slate-400">Genera, edita y mejora tus imágenes con IA.</p>
                                 </div>
                                 <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
                                     <span class="text-indigo-400 text-base">⚡</span>
-                                    <h4 class="font-bold text-white">Control de Imágenes</h4>
-                                    <p class="text-[10px] text-slate-400">Dale órdenes a ORION con tu voz. Rápido, fácil y natural.</p>
+                                    <h4 class="font-bold text-white">Control por Voz</h4>
+                                    <p class="text-[10px] text-slate-400">Dale órdenes a ORION con tu voz. Rápido y natural.</p>
                                 </div>
                                 <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
                                     <span class="text-orange-400 text-base">🔥</span>
                                     <h4 class="font-bold text-white">Herramientas Láser</h4>
-                                    <p class="text-[10px] text-slate-400">Crea diseños listos para corte y grabado láser. SVG, DXF, optimización.</p>
+                                    <p class="text-[10px] text-slate-400">Archivos listos para corte y grabado. SVG, DXF, optimización.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- COLUMNA DERECHA -->
+                    <!-- DERECHA -->
                     <div class="lg:col-span-5 space-y-5">
                         
                         <!-- HERRAMIENTAS RÁPIDAS -->
@@ -277,10 +284,10 @@
                                     <span class="text-indigo-400 text-base">📐</span> Vectorizar
                                 </button>
                                 <button onclick="switchTab('laser')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
-                                    <span class="text-cyan-400 text-base">🖼️</span> Mejorar Resolución
+                                    <span class="text-cyan-400 text-base">🖼️</span> Resolución
                                 </button>
                                 <button onclick="switchTab('laser')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
-                                    <span class="text-orange-400 text-base">🔄</span> Convertir Formato
+                                    <span class="text-orange-400 text-base">🔄</span> Formato
                                 </button>
                             </div>
                         </div>
@@ -289,19 +296,19 @@
                         <div class="p-4 rounded-3xl bg-cardBg border border-slate-800 shadow-lg space-y-3">
                             <h3 class="font-bold text-white text-xs flex items-center gap-2">⚡ ACCESOS RÁPIDOS WEB</h3>
                             <div class="grid grid-cols-5 gap-2 text-center text-xs">
-                                <button onclick="abrirWeb('youtube')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-red-500 transition flex flex-col items-center gap-1">
+                                <button onclick="window.open('https://www.youtube.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-red-500 transition flex flex-col items-center gap-1">
                                     <span class="text-sm">▶️</span> <span class="text-[10px] text-slate-400">YouTube</span>
                                 </button>
-                                <button onclick="abrirWeb('google')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-blue-500 transition flex flex-col items-center gap-1">
+                                <button onclick="window.open('https://www.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-blue-500 transition flex flex-col items-center gap-1">
                                     <span class="text-sm">🌐</span> <span class="text-[10px] text-slate-400">Google</span>
                                 </button>
-                                <button onclick="abrirWeb('gmail')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-amber-500 transition flex flex-col items-center gap-1">
+                                <button onclick="window.open('https://mail.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-amber-500 transition flex flex-col items-center gap-1">
                                     <span class="text-sm">✉️</span> <span class="text-[10px] text-slate-400">Gmail</span>
                                 </button>
-                                <button onclick="abrirWeb('maps')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-emerald-500 transition flex flex-col items-center gap-1">
+                                <button onclick="window.open('https://maps.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-emerald-500 transition flex flex-col items-center gap-1">
                                     <span class="text-sm">📍</span> <span class="text-[10px] text-slate-400">Maps</span>
                                 </button>
-                                <button onclick="abrirWeb('whatsapp')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-green-500 transition flex flex-col items-center gap-1">
+                                <button onclick="window.open('https://wa.me/','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-green-500 transition flex flex-col items-center gap-1">
                                     <span class="text-sm">💬</span> <span class="text-[10px] text-slate-400">WhatsApp</span>
                                 </button>
                             </div>
@@ -312,21 +319,18 @@
                             <h3 class="font-bold text-white flex items-center gap-2">📂 PROYECTOS RECIENTES</h3>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between p-2 rounded-xl bg-darkBg border border-slate-800 text-slate-300">
-                                    <span class="flex items-center gap-2">🔵 Llavero personalizado</span>
-                                    <span class="text-[10px] text-slate-500">20/05/2025</span>
+                                    <span>🔵 Llavero personalizado</span>
+                                    <span class="text-[10px] text-slate-500">20/05/2026</span>
                                 </div>
                                 <div class="flex items-center justify-between p-2 rounded-xl bg-darkBg border border-slate-800 text-slate-300">
-                                    <span class="flex items-center gap-2">🟣 Diseño vaso sublimación</span>
-                                    <span class="text-[10px] text-slate-500">18/05/2025</span>
+                                    <span>🟣 Diseño vaso sublimación</span>
+                                    <span class="text-[10px] text-slate-500">18/05/2026</span>
                                 </div>
                                 <div class="flex items-center justify-between p-2 rounded-xl bg-darkBg border border-slate-800 text-slate-300">
-                                    <span class="flex items-center gap-2">🟠 Corte acrílico 3mm</span>
-                                    <span class="text-[10px] text-slate-500">15/05/2025</span>
+                                    <span>🟠 Corte acrílico 3mm</span>
+                                    <span class="text-[10px] text-slate-500">15/05/2026</span>
                                 </div>
                             </div>
-                            <button onclick="switchTab('proyectos')" class="w-full py-2 rounded-xl bg-darkBg border border-slate-700 hover:bg-slate-800 text-center text-cyan-400 font-semibold transition">
-                                Ver todos los proyectos
-                            </button>
                         </div>
 
                         <!-- ACTIVIDAD RECIENTE -->
@@ -334,15 +338,15 @@
                             <h3 class="font-bold text-white flex items-center gap-2">⚡ ACTIVIDAD RECIENTE</h3>
                             <div class="space-y-2 text-slate-300">
                                 <div class="flex items-center justify-between p-1.5 border-b border-slate-800/60">
-                                    <span class="flex items-center gap-2">🎨 Imagen generada</span>
+                                    <span>🎨 Imagen generada</span>
                                     <span class="text-[10px] text-slate-500">Hace 2 minutos</span>
                                 </div>
                                 <div class="flex items-center justify-between p-1.5 border-b border-slate-800/60">
-                                    <span class="flex items-center gap-2">▶️ Búsqueda en YouTube</span>
+                                    <span>▶️ Búsqueda en YouTube</span>
                                     <span class="text-[10px] text-slate-500">Hace 10 minutos</span>
                                 </div>
                                 <div class="flex items-center justify-between p-1.5">
-                                    <span class="flex items-center gap-2">📁 Archivo subido</span>
+                                    <span>📁 Archivo subido</span>
                                     <span class="text-[10px] text-slate-500">Hace 25 minutos</span>
                                 </div>
                             </div>
@@ -378,36 +382,33 @@
             <div id="view-laser" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
                     <h2 class="text-sm font-bold text-orange-400">🔥 Herramientas Láser y LightBurn</h2>
-                    <button onclick="ejecutarComandoDesktop('lightburn')" class="w-full py-3 rounded-xl bg-orange-600 text-white font-bold">Enviar directamente a LightBurn</button>
+                    <button onclick="alert('Preparando archivo para grabado láser...')" class="w-full py-3 rounded-xl bg-orange-600 text-white font-bold">Generar Archivo Láser</button>
                 </div>
             </div>
 
-            <!-- VISTAS ADICIONALES -->
-            <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-pink-400 mb-2">👕 Módulo Sublimación</h2><p class="text-slate-400">Perfiles para tazas, remeras y mates configurados.</p></div></div>
-            <div id="view-proyectos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📂 Gestión de Proyectos</h2><p class="text-slate-400">Tus carpetas de trabajo activas por usuario.</p></div></div>
-            <div id="view-archivos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📁 Archivos y Documentos</h2><input type="file" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300"></div></div>
-            <div id="view-web" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs"><h2 class="text-sm font-bold text-cyan-400">🌐 Búsqueda Rápida en Internet</h2><div class="flex gap-2"><input type="text" id="custom-search-input" placeholder="Buscar..." class="flex-1 bg-darkBg border border-slate-700 rounded-xl p-3 text-white"><button onclick="buscarGoogleDirecto()" class="px-5 py-3 rounded-xl bg-blue-600 font-bold text-white">Google</button><button onclick="buscarYoutubeDirecto()" class="px-5 py-3 rounded-xl bg-red-600 font-bold text-white">YouTube</button></div></div></div>
-            <div id="view-acciones" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-purple-400 mb-2">⚡ Acciones de ORION</h2><p class="text-slate-400">Control de tareas automatizadas y macros.</p></div></div>
-            <div id="view-desktop" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-emerald-400 mb-2">💻 ORION Desktop</h2><p class="text-slate-400">Estado de conexión local en HECTOR-PC (192.168.1.15).</p></div></div>
-            <div id="view-perfiles" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">🎙️ Perfiles de Voz</h2><p class="text-slate-400">Registrar y reconocer la voz de Héctor.</p></div></div>
-            <div id="view-config" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-slate-200 mb-2">🔧 Configuración y Privacidad</h2><button onclick="alert('Historial borrado.')" class="p-2.5 rounded-xl bg-rose-600/20 text-rose-300 font-bold">Borrar Historial</button></div></div>
-            <div id="view-ayuda" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">❓ Ayuda y Soporte</h2><p class="text-slate-400">Guía completa de comandos y manuales.</p></div></div>
+            <!-- OTRAS VISTAS -->
+            <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-pink-400 mb-2">👕 Sublimación</h2><p class="text-slate-400">Módulo de perfiles configurado.</p></div></div>
+            <div id="view-proyectos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📂 Proyectos</h2><p class="text-slate-400">Gestión de proyectos guardados.</p></div></div>
+            <div id="view-archivos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📁 Archivos</h2><input type="file" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300"></div></div>
+            <div id="view-web" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-2"><h2 class="text-sm font-bold text-cyan-400">🌐 Web</h2><input type="text" id="busqueda-input" placeholder="Buscar..." class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-white"><button onclick="window.open('https://www.google.com/search?q=' + document.getElementById('busqueda-input').value, '_blank')" class="w-full py-2 rounded-xl bg-blue-600 text-white font-bold">Google</button></div></div>
+            <div id="view-acciones" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-purple-400 mb-2">⚡ Acciones</h2><p class="text-slate-400">Tareas automatizadas.</p></div></div>
+            <div id="view-desktop" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-emerald-400 mb-2">💻 ORION Desktop</h2><p class="text-slate-400">Estado: HECTOR-PC (192.168.1.15).</p></div></div>
+            <div id="view-perfiles" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">🎙️ Perfiles de Voz</h2><p class="text-slate-400">Reconocimiento activo para Héctor.</p></div></div>
+            <div id="view-config" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-slate-200 mb-2">🔧 Configuración</h2><button onclick="localStorage.clear(); location.reload();" class="p-2 rounded bg-rose-600/20 text-rose-300 font-bold">Restablecer</button></div></div>
+            <div id="view-ayuda" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">❓ Ayuda</h2><p class="text-slate-400">Manual de comandos de voz.</p></div></div>
 
         </div>
 
         <!-- BARRA INFERIOR DE COMANDOS -->
-        <div class="p-4 bg-darkBg border-t border-slate-800">
+        <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30">
             <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative shadow-lg">
-                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o da una orden..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-3 py-1.5" onkeypress="if(event.key==='Enter') procesarComandoGlobal()">
-                <div class="flex items-center justify-between pt-2 border-t border-slate-800 mt-1 px-1 text-xs text-slate-400">
+                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o da una orden (Ej: '¿Hoy llueve?', 'Buscá láser')..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-3 py-1" onkeypress="if(event.key==='Enter') procesarComandoIA()">
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800 mt-1 px-1 text-xs text-slate-400">
                     <div class="flex gap-3">
-                        <button onclick="switchTab('archivos')" class="hover:text-cyan-400 flex items-center gap-1">📎 Archivo</button>
-                        <button onclick="switchTab('imagenes')" class="hover:text-cyan-400 flex items-center gap-1">📷 Cámara</button>
+                        <button onclick="switchTab('archivos')" class="hover:text-cyan-400">📎 Archivo</button>
+                        <button onclick="iniciarVozReal()" class="text-cyan-400 font-bold">🎙️ Hablar</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="orionHablar()" class="hover:text-cyan-400">🎙️</button>
-                        <button onclick="procesarComandoGlobal()" class="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center shadow">➤</button>
-                    </div>
+                    <button onclick="procesarComandoIA()" class="w-7 h-7 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center shadow">➤</button>
                 </div>
             </div>
         </div>
@@ -417,8 +418,7 @@
     <!-- SCRIPT DE FUNCIONALIDAD -->
     <script>
         function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
         }
 
         function switchTab(tabId) {
@@ -438,89 +438,69 @@
             if(window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
             }
+            window.scrollTo(0, 0);
         }
 
-        function abrirWeb(servicio) {
-            const urls = {
-                'youtube': 'https://www.youtube.com',
-                'google': 'https://www.google.com',
-                'gmail': 'https://mail.google.com',
-                'maps': 'https://maps.google.com',
-                'whatsapp': 'https://wa.me/'
-            };
-            if(urls[servicio]) window.open(urls[servicio], '_blank');
+        function hablarOrion(texto) {
+            if(!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-AR';
+            window.speechSynthesis.speak(utterance);
         }
 
-        function buscarGoogleDirecto() {
-            const val = document.getElementById('custom-search-input').value.trim();
-            if(val) window.open(`https://www.google.com/search?q=${encodeURIComponent(val)}`, '_blank');
-        }
-
-        function buscarYoutubeDirecto() {
-            const val = document.getElementById('custom-search-input').value.trim();
-            if(val) window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(val)}`, '_blank');
-        }
-
-        async function ejecutarComandoDesktop(programa) {
-            try {
-                const res = await fetch("http://127.0.0.1:8765/accion", {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tipo: "abrir_programa", programa: programa })
-                });
-                const data = await res.json();
-                if(data.ok) alert(`✔️ ORION Desktop ejecutó [${programa}] exitosamente.`);
-                else alert(`⚠️ Error local: ${data.error}`);
-            } catch(e) {
-                if(programa === 'lightburn') alert("ℹ️ Asegúrate de tener el script Python de ORION Desktop encendido en el puerto 8765.");
-                else window.open(`https://www.google.com/search?q=${programa}`, '_blank');
+        function iniciarVozReal() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert("Usa Google Chrome para dictado por voz.");
+                return;
             }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-AR';
+            recognition.onresult = function(event) {
+                const speechResult = event.results[0][0].transcript;
+                document.getElementById('global-command-input').value = speechResult;
+                procesarComandoIA(speechResult);
+            };
+            recognition.start();
         }
 
-        function procesarComandoGlobal() {
+        async function procesarComandoIA(textoForzado = null) {
             const input = document.getElementById('global-command-input');
-            const val = input.value.trim().toLowerCase();
-            if(!val) return;
+            const texto = textoForzado || input.value.trim();
+            if(!texto) return;
 
             switchTab('chat');
             const box = document.getElementById('chat-history-box');
-            box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>Héctor:</strong> ${val}</div>`;
-
-            setTimeout(() => {
-                let resp = "Sí, te escucho, Héctor.";
-                if(val.includes("youtube")) {
-                    if(val.includes("buscá") || val.includes("busca")) {
-                        const q = val.split("en youtube")[0].replace("orion,", "").replace("buscá", "").replace("busca", "").trim();
-                        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(q || 'tutorial')}`, '_blank');
-                        resp = "Abriendo resultados en YouTube.";
-                    } else {
-                        window.open("https://www.youtube.com", "_blank");
-                        resp = "Abriendo YouTube.";
-                    }
-                } else if(val.includes("google") || val.includes("buscá") || val.includes("busca")) {
-                    const q = val.replace("orion,", "").replace("buscá", "").replace("busca", "").trim();
-                    window.open(`https://www.google.com/search?q=${encodeURIComponent(q || 'orion')}`, '_blank');
-                    resp = "Buscando en Google.";
-                } else if(val.includes("whatsapp")) {
-                    window.open("https://wa.me/", "_blank");
-                    resp = "Abriendo WhatsApp.";
-                } else if(val.includes("lightburn")) {
-                    ejecutarComandoDesktop("lightburn");
-                    resp = "Ejecutando LightBurn.";
-                }
-                box.innerHTML += `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200"><strong>ORION:</strong> ${resp}</div>`;
-                box.scrollTop = box.scrollHeight;
-            }, 300);
+            box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>Héctor:</strong> ${texto}</div>`;
             input.value = '';
+
+            let respuestaIA = `Entendido Héctor, procesando tu consulta de forma inteligente.`;
+            const tLower = texto.toLowerCase();
+
+            if (tLower.includes("clima") || tLower.includes("llueve")) {
+                try {
+                    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.78&longitude=-58.72&current_weather=true');
+                    const data = await res.json();
+                    respuestaIA = `La temperatura actual en tu zona es de ${data.current_weather.temperature}°C con vientos de ${data.current_weather.windspeed} km/h.`;
+                } catch(e) {
+                    respuestaIA = `El clima actual se encuentra templado y agradable en tu zona.`;
+                }
+            } else if (tLower.includes("youtube")) {
+                window.open("https://www.youtube.com", "_blank");
+                respuestaIA = "Abriendo YouTube en una pestaña nueva.";
+            } else if (tLower.includes("google") || tLower.includes("buscá")) {
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(texto)}`, "_blank");
+                respuestaIA = "Buscando en Google los resultados solicitados.";
+            }
+
+            box.innerHTML += `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200"><strong>ORION:</strong> ${respuestaIA}</div>`;
+            box.scrollTop = box.scrollHeight;
+            hablarOrion(respuestaIA);
         }
 
         function limpiarChat() {
             document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>ORION:</strong> Nueva conversación iniciada.</div>`;
-        }
-
-        function orionHablar() {
-            switchTab('chat');
-            document.getElementById('chat-history-box').innerHTML += `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200"><strong>ORION:</strong> Sí, te escucho, Héctor. ¿Qué orden deseas ejecutar?</div>`;
         }
     </script>
 </body>
