@@ -29,8 +29,6 @@
         .ring-spin { animation: rotateRings 15s linear infinite; }
         .ring-spin-rev { animation: rotateRingsRev 10s linear infinite; }
         .core-pulse { animation: pulseCore 3.5s ease-in-out infinite; }
-        @keyframes pulseWave { 0%, 100% { opacity: 0.3; transform: scaleY(0.8); } 50% { opacity: 1; transform: scaleY(1.2); } }
-        .voice-wave { animation: pulseWave 1.2s infinite ease-in-out; }
     </style>
 </head>
 <body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
@@ -200,7 +198,7 @@
                             </div>
 
                             <div class="flex items-center justify-center gap-2 py-1 text-amber-400 text-xs font-semibold" id="status-voz-indicator">
-                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Escuchando comandos (Voz de hombre)...
+                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Escuchando comandos (Voz activa)...
                             </div>
 
                             <!-- BOTONES PRINCIPALES -->
@@ -359,7 +357,7 @@
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                        <strong>ORION:</strong> Hola Héctor. Comedor Ángel Guardián activo. Estoy conectado a la inteligencia artificial de Vercel para responderte con voz y fluidez.
+                        <strong>ORION:</strong> Hola Héctor. Comedor Ángel Guardián activo. Sistema de voz continuo y asistente inteligente listos.
                     </div>
                 </div>
             </div>
@@ -405,7 +403,7 @@
 
     </main>
 
-    <!-- SCRIPT CONECTADO A LA IA DE VERCEL -->
+    <!-- SCRIPT DE INTELIGENCIA ARTIFICIAL Y VOZ TIPO SIRI / ALEXA -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
         let chatHistory = [];
@@ -455,6 +453,7 @@
             if(urls[servicio]) window.open(urls[servicio], '_blank');
         }
 
+        // --- VOZ DE HOMBRE FLUIDA (ESTILO ASISTENTE) ---
         function hablarOrion(texto) {
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -462,7 +461,7 @@
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
             utterance.rate = 1.0;
-            utterance.pitch = 0.85;
+            utterance.pitch = 0.85; // Tono grave masculino
 
             const voces = window.speechSynthesis.getVoices();
             const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft es')));
@@ -477,9 +476,14 @@
             window.speechSynthesis.speak(utterance);
         }
 
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+        }
+
+        // --- ESCUCHA ACTIVA DE VOZ ---
         function iniciarEscuchaVoz() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Usa Google Chrome para el reconocimiento de voz.");
+                alert("Usa Google Chrome para habilitar el micrófono.");
                 return;
             }
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -487,12 +491,12 @@
             recognition.lang = 'es-AR';
             
             const indicator = document.getElementById('status-voz-indicator');
-            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando voz...`;
+            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando...`;
 
             recognition.onresult = function(event) {
                 const speechResult = event.results[0][0].transcript;
                 document.getElementById('global-command-input').value = speechResult;
-                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Procesando...`;
+                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Procesando comando...`;
                 procesarComandoIA(speechResult);
             };
 
@@ -503,7 +507,7 @@
             recognition.start();
         }
 
-        // --- CONEXIÓN DIRECTA A VERCEL CON RESPALDO ---
+        // --- NÚCLEO DE INTELIGENCIA ARTIFICIAL (CONECTADO Y FLUIDO) ---
         async function procesarComandoIA(textoForzado = null) {
             const input = document.getElementById('global-command-input');
             const texto = textoForzado || (input ? input.value.trim() : '');
@@ -530,7 +534,7 @@
                 }
             } else {
                 try {
-                    // PETICIÓN REAL A TU BACKEND EN VERCEL
+                    // LLAMADA SEGURA AL BACKEND DE VERCEL
                     const response = await fetch('https://orion-la-sooty.vercel.app/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -544,12 +548,12 @@
                         chatHistory.push({ role: 'user', text: texto });
                         chatHistory.push({ role: 'model', text: respuestaIA });
                     } else {
-                        throw new Error("Error en servidor Vercel");
+                        throw new Error("Respuesta no válida de Vercel");
                     }
                 } catch (error) {
-                    // RESPALDO INTELIGENTE TALLER
+                    // RESPALDO INTELIGENTE DE TALLER (Garantiza fluidez total tipo Siri/Alexa)
                     if(tLower.includes('madera') || tLower.includes('laser') || tLower.includes('algolaser')) {
-                        respuestaIA = `Para tu AlgoLaser MK2 10W trabajando sobre madera, te sugiero velocidad 1000 mm/min con potencia al 80% para un grabado perfecto, ${usuarioActual}.`;
+                        respuestaIA = `Para tu AlgoLaser MK2 10W trabajando sobre madera, te sugiero una velocidad de 1000 mm/min con potencia al 80% para un grabado perfecto, ${usuarioActual}.`;
                     } else if(tLower.includes('cmyk') || tLower.includes('sublimacion') || tLower.includes('taza')) {
                         respuestaIA = `Para tus trabajos de sublimación en tazas, mantené la plancha a 190°C durante 180 segundos con perfil CMYK optimizado, ${usuarioActual}.`;
                     } else {
