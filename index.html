@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORION - Asistente Inteligente Unificado</title>
+    <title>ORION - Tu Asistente Inteligente Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -35,36 +35,87 @@
 </head>
 <body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 
-    <!-- PANEL LATERAL RESPONSIVE -->
+    <!-- PANEL LATERAL IZQUIERDO: GUÍA Y NAVEGACIÓN -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 border-r border-slate-800/80 bg-darkPanel p-4 flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300">
         <div class="space-y-6">
+            
             <div class="flex items-center justify-between md:hidden pb-2 border-b border-slate-800">
-                <span class="font-bold text-cyan-400">MENÚ ORION</span>
+                <span class="font-bold text-cyan-400">MENÚ Y GUÍA ORION</span>
                 <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
             </div>
 
-            <!-- GUÍA RÁPIDA -->
-            <div class="p-3.5 rounded-2xl bg-cardBg/90 border border-slate-700/80 text-[11px] space-y-2 shadow-inner">
-                <h3 class="font-black text-cyan-400 text-center text-xs pb-1 border-b border-slate-700">SISTEMA UNIFICADO 100%</h3>
-                <p>👤 Usuario: <strong id="lbl-sidebar-user" class="text-white">Héctor</strong></p>
-                <p>🎙️ Voz: <strong class="text-emerald-400">Masculina / Tipo Alexa</strong></p>
-                <p>📱 Móvil / PC: <strong class="text-accentCyan">Completamente Compatible</strong></p>
+            <!-- GUÍA COMPLETA "PARA QUE ORION FUNCIONE AL 100%" -->
+            <div class="p-3.5 rounded-2xl bg-cardBg/90 border border-slate-700/80 text-[11px] space-y-3 shadow-inner">
+                <h3 class="font-black text-cyan-400 tracking-wide text-center text-xs pb-1 border-b border-slate-700">PARA QUE ORION FUNCIONE AL 100%</h3>
+                
+                <div class="space-y-2.5 text-slate-300">
+                    <div>
+                        <p class="font-bold text-white">1. CONFIGURACIÓN INICIAL</p>
+                        <ul class="text-[10px] text-slate-400 space-y-0.5 mt-0.5 pl-2">
+                            <li>✔️ Conexión a Internet estable.</li>
+                            <li>✔️ Permitir acceso al micrófono.</li>
+                            <li>✔️ Permitir acceso a cámara y archivos.</li>
+                            <li>✔️ Iniciar ORION Desktop en tu PC.</li>
+                            <li>✔️ Iniciar sesión en tu cuenta de ORION.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-white">2. RECONOCIMIENTO DE VOZ TIPO ALEXA</p>
+                        <ol class="text-[10px] text-slate-400 space-y-0.5 mt-0.5 pl-3 list-decimal">
+                            <li>Di: <strong class="text-cyan-400">"Orion, soy [Tu Nombre]"</strong>.</li>
+                            <li>El sistema registrará tu voz y perfil.</li>
+                            <li>ORION te responderá en voz alta reconociéndote.</li>
+                        </ol>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-white">3. PERMISOS NECESARIOS</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">🎤 Micrófono, 📷 Cámara, 📁 Archivos, 🔔 Notificaciones.</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-white">4. ORION DESKTOP (CONTROL DE PC)</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Controla programas locales como LightBurn, Chrome, Bloc de notas, etc.</p>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-white">5. COMANDOS POR VOZ</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">"Orion, abrí YouTube", "Orion, ¿cómo está el clima?".</p>
+                    </div>
+                </div>
+
+                <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-bold text-center">
+                    ⭐ Con todo esto, ORION funcionará al 100% como tu asistente personal inteligente.
+                </div>
             </div>
 
             <!-- MENÚ DE NAVEGACIÓN -->
             <div class="space-y-1 text-xs font-medium">
-                <button onclick="switchTab('inicio')" id="btn-inicio" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-darkBg text-white shadow-inner border border-slate-700">🏠 Inicio & Chat</button>
-                <button onclick="switchTab('imagenes')" id="btn-imagenes" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🖼️ Editor de Imágenes</button>
+                <div class="flex items-center gap-2.5 px-2 pb-2">
+                    <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center font-bold text-white shadow text-xs">✨</div>
+                    <h2 class="text-xs font-bold text-white tracking-wide">MENÚ PRINCIPAL</h2>
+                </div>
+                <button onclick="switchTab('inicio')" id="btn-inicio" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-darkBg text-white shadow-inner border border-slate-700">🏠 Inicio</button>
+                <button onclick="switchTab('chat')" id="btn-chat" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">💬 Chat</button>
+                <button onclick="switchTab('imagenes')" id="btn-imagenes" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🖼️ Imágenes</button>
                 <button onclick="switchTab('laser')" id="btn-laser" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🔥 Herramientas Láser</button>
                 <button onclick="switchTab('sublimacion')" id="btn-sublimacion" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">👕 Sublimación</button>
                 <button onclick="switchTab('proyectos')" id="btn-proyectos" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">📂 Proyectos</button>
-                <button onclick="switchTab('config')" id="btn-config" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🎙️ Cambiar Perfil de Voz</button>
+                <button onclick="switchTab('archivos')" id="btn-archivos" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">📁 Archivos</button>
+                <button onclick="switchTab('web')" id="btn-web" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🌐 Web / Búsqueda</button>
+                <button onclick="switchTab('config')" id="btn-config" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🎙️ Perfiles y Voz</button>
             </div>
         </div>
 
-        <div class="mt-4 p-3 rounded-2xl bg-cardBg/90 border border-slate-700 text-xs text-slate-400">
-            <p class="font-bold text-white">ORION CLOUD</p>
-            <p class="text-[10px]">Funcionando en PC y Celular</p>
+        <div class="mt-4 p-3 rounded-2xl bg-cardBg/90 border border-slate-700 text-xs space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="font-bold text-white">VOZ TIPO ALEXA</span>
+                <span class="text-emerald-400 font-semibold text-[10px] flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Activo
+                </span>
+            </div>
+            <p class="text-[10px] text-slate-400">Reconocimiento biométrico por comandos de voz operativo.</p>
         </div>
     </aside>
 
@@ -84,100 +135,141 @@
                 </div>
             </div>
 
+            <!-- PERFIL ACTIVO DINÁMICO -->
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 border border-slate-700">
                     <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white text-xs" id="user-avatar-initial">H</div>
                     <div class="text-xs">
                         <p class="font-semibold text-white leading-none" id="user-name-display">Héctor</p>
-                        <p class="text-emerald-400 font-bold text-[9px] mt-0.5">ACTIVO</p>
+                        <p class="text-emerald-400 font-bold text-[9px] mt-0.5">PERFIL ACTIVO</p>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- CONTENIDO PRINCIPAL -->
+        <!-- CONTENIDO -->
         <div class="flex-1 p-4 md:p-6 pb-28" id="content-viewport">
             
-            <!-- VISTA INICIO & CHAT UNIFICADO -->
             <div id="view-inicio" class="tab-view space-y-6 max-w-7xl mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
-                    <!-- IZQUIERDA: NÚCLEO Y ACCESOS -->
-                    <div class="lg:col-span-5 space-y-6">
+                    <div class="lg:col-span-7 space-y-6">
                         <div class="text-center space-y-3 p-6 rounded-3xl bg-cardBg border border-slate-800 shadow-xl relative overflow-hidden">
-                            <h2 class="text-xl font-black text-white" id="greeting-title">¡Hola Héctor! 👋</h2>
-                            <p class="text-slate-400 text-xs">Habla o escribe abajo para interactuar.</p>
+                            <h2 class="text-2xl font-black text-white" id="greeting-title">¡Hola Héctor! 👋</h2>
+                            <p class="text-slate-400 text-xs">Di "Orion, soy [tu nombre]" o toca el núcleo para hablar.</p>
                             
-                            <!-- NÚCLEO HOLOGRÁFICO -->
-                            <div class="relative w-36 h-36 mx-auto flex items-center justify-center cursor-pointer my-2" onclick="iniciarEscuchaVoz()">
+                            <!-- NÚCLEO HOLOGRÁFICO INTERACTIVO -->
+                            <div class="relative w-44 h-44 mx-auto flex items-center justify-center cursor-pointer my-2" onclick="iniciarEscuchaVoz()">
                                 <div class="absolute inset-0 rounded-full border border-dashed border-cyan-400/40 ring-spin"></div>
                                 <div class="absolute inset-3 rounded-full border border-cyan-400/70 ring-spin-rev"></div>
-                                <div class="absolute inset-8 rounded-full bg-gradient-to-tr from-blue-950 via-indigo-900 to-purple-950 flex items-center justify-center shadow-2xl core-pulse font-bold text-white text-base tracking-widest border border-indigo-500/50">
+                                <div class="absolute inset-8 rounded-full bg-gradient-to-tr from-blue-950 via-indigo-900 to-purple-950 flex items-center justify-center shadow-2xl core-pulse font-bold text-white text-lg tracking-widest border border-indigo-500/50">
                                     ORION
                                 </div>
                             </div>
 
                             <div class="flex items-center justify-center gap-2 py-1 text-accentCyan text-xs font-semibold" id="status-voz-indicator">
-                                <span class="w-2 h-2 rounded-full bg-accentCyan animate-ping"></span> Sistema de voz listo
+                                <span class="w-2 h-2 rounded-full bg-accentCyan animate-ping"></span> Escuchando voz tipo Alexa...
                             </div>
 
-                            <!-- ACCESOS RÁPIDOS WEB -->
+                            <div class="grid grid-cols-3 gap-3 pt-2">
+                                <button onclick="switchTab('chat')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-xs">
+                                    <span class="text-base">💬</span> Chat IA
+                                </button>
+                                <button onclick="iniciarEscuchaVoz()" class="p-3.5 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 border border-blue-400 shadow-lg hover:opacity-90 transition flex flex-col items-center gap-1.5 text-xs text-white font-bold">
+                                    <span class="text-base">🎙️</span> Hablar
+                                </button>
+                                <button onclick="switchTab('archivos')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-xs">
+                                    <span class="text-base">📤</span> Archivo
+                                </button>
+                            </div>
+
+                            <!-- ACCESOS WEB -->
                             <div class="grid grid-cols-5 gap-2 pt-2">
-                                <button onclick="window.open('https://www.youtube.com','_blank')" class="p-2 rounded-xl bg-darkBg border border-slate-800 hover:border-red-500 transition text-[10px] text-slate-300">▶️ YouTube</button>
-                                <button onclick="window.open('https://www.google.com','_blank')" class="p-2 rounded-xl bg-darkBg border border-slate-800 hover:border-blue-500 transition text-[10px] text-slate-300">🌐 Google</button>
-                                <button onclick="window.open('https://wa.me/','_blank')" class="p-2 rounded-xl bg-darkBg border border-slate-800 hover:border-emerald-500 transition text-[10px] text-slate-300">💬 WhatsApp</button>
-                                <button onclick="window.open('https://mail.google.com','_blank')" class="p-2 rounded-xl bg-darkBg border border-slate-800 hover:border-amber-500 transition text-[10px] text-slate-300">✉️ Gmail</button>
-                                <button onclick="window.open('https://maps.google.com','_blank')" class="p-2 rounded-xl bg-darkBg border border-slate-800 hover:border-green-500 transition text-[10px] text-slate-300">📍 Maps</button>
+                                <button onclick="window.open('https://www.youtube.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-red-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">▶️</span> YouTube
+                                </button>
+                                <button onclick="window.open('https://www.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-blue-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">🌐</span> Google
+                                </button>
+                                <button onclick="window.open('https://wa.me/','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-emerald-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">💬</span> WhatsApp
+                                </button>
+                                <button onclick="window.open('https://mail.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-amber-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">✉️</span> Gmail
+                                </button>
+                                <button onclick="window.open('https://maps.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-green-500 transition flex flex-col items-center gap-1 text-[11px]">
+                                    <span class="text-sm">📍</span> Maps
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- DERECHA: HISTORIAL DE CHAT EN VIVO -->
-                    <div class="lg:col-span-7 space-y-4">
+                    <div class="lg:col-span-5 space-y-5">
                         <div class="p-4 rounded-3xl bg-cardBg border border-slate-800 shadow-lg space-y-3">
-                            <div class="flex justify-between items-center text-xs pb-2 border-b border-slate-800">
-                                <h3 class="font-bold text-white flex items-center gap-2">💬 Conversación con ORION</h3>
-                                <button onclick="limpiarChat()" class="text-slate-400 hover:text-white">Nueva Charla</button>
-                            </div>
-                            <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-80 overflow-y-auto space-y-3 text-xs custom-scrollbar">
-                                <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                                    <strong>ORION:</strong> Hola Héctor. Escribe abajo o presiona el micrófono para hablarme. Te responderé con mi voz.
-                                </div>
+                            <h3 class="font-bold text-white text-xs flex items-center gap-2">⚡ HERRAMIENTAS RÁPIDAS</h3>
+                            <div class="grid grid-cols-3 gap-2 text-xs">
+                                <button onclick="switchTab('imagenes')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
+                                    <span class="text-purple-400 text-base">🎨</span> Imágenes
+                                </button>
+                                <button onclick="switchTab('laser')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
+                                    <span class="text-orange-400 text-base">🔥</span> Láser
+                                </button>
+                                <button onclick="switchTab('sublimacion')" class="p-2.5 rounded-2xl bg-darkBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1.5 text-center">
+                                    <span class="text-pink-400 text-base">👕</span> Sublimación
+                                </button>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
-            <!-- OTRAS VISTAS -->
+            <!-- VISTAS DE PESTAÑAS -->
+            <div id="view-chat" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
+                <div class="p-4 rounded-2xl bg-cardBg border border-slate-800 flex justify-between items-center text-xs">
+                    <h2 class="font-bold text-white">💬 Chat Asistente Inteligente</h2>
+                    <button onclick="limpiarChat()" class="px-3 py-1 rounded bg-slate-800 text-slate-300">Nueva Conversación</button>
+                </div>
+                <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs">
+                    <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
+                        <strong>ORION:</strong> Hola. Estoy activo y reconociendo tu voz.
+                    </div>
+                </div>
+            </div>
+
             <div id="view-imagenes" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">🖼️ Imágenes con IA</h2><input type="file" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300"></div></div>
-            <div id="view-laser" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-orange-400 mb-2">🔥 Herramientas Láser</h2><p class="text-slate-400">Optimizador para AlgoLaser MK2 10W y LightBurn.</p></div></div>
-            <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-pink-400 mb-2">👕 Sublimación</h2><p class="text-slate-400">Ajustes de color para impresión.</p></div></div>
+            <div id="view-laser" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-orange-400 mb-2">🔥 Herramientas Láser</h2><p class="text-slate-400">Optimizador para AlgoLaser MK2 10W.</p></div></div>
+            <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-pink-400 mb-2">👕 Sublimación</h2><p class="text-slate-400">Configuración CMYK activa.</p></div></div>
             <div id="view-proyectos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📂 Proyectos</h2><p class="text-slate-400">Tus trabajos guardados.</p></div></div>
+            <div id="view-archivos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📁 Archivos</h2><input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300"></div></div>
+            <div id="view-web" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-2"><h2 class="text-sm font-bold text-cyan-400">🌐 Web</h2><input type="text" id="busqueda-input" placeholder="Buscar..." class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-white"><button onclick="window.open('https://www.google.com/search?q=' + document.getElementById('busqueda-input').value, '_blank')" class="w-full py-2 rounded-xl bg-blue-600 text-white font-bold">Buscar</button></div></div>
             <div id="view-config" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-3 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">🎙️ Cambiar Nombre de Usuario</h2>
-                    <p class="text-slate-400">Ingresa tu nombre para que ORION te reconozca:</p>
+                    <h2 class="text-sm font-bold text-cyan-400">🎙️ Perfiles de Voz Tipo Alexa</h2>
+                    <p class="text-slate-400">Registra tu nombre para que ORION te reconozca al instante con voz:</p>
                     <input type="text" id="input-new-user" placeholder="Ej: Héctor" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2.5 text-white">
-                    <button onclick="guardarPerfilVozManual()" class="px-4 py-2 rounded-xl bg-indigo-600 font-bold text-white">Actualizar Perfil</button>
+                    <button onclick="guardarPerfilVozManual()" class="px-4 py-2 rounded-xl bg-indigo-600 font-bold text-white">Guardar Perfil</button>
                 </div>
             </div>
 
         </div>
 
-        <!-- BARRA INFERIOR DE CHAT Y VOZ UNIFICADA -->
+        <!-- BARRA INFERIOR DE COMANDOS -->
         <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30">
-            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative shadow-lg flex items-center gap-2">
-                <button onclick="iniciarEscuchaVoz()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-sm" title="Hablar por voz">🎙️</button>
-                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o di 'Orion, soy [Tu Nombre]'..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1" onkeypress="if(event.key==='Enter') procesarComandoIA()">
-                <button onclick="procesarComandoIA()" class="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center shadow shrink-0">➤</button>
+            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative shadow-lg">
+                <input type="text" id="global-command-input" placeholder="Escribe tu orden o di 'Orion, soy [Tu Nombre]'..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-3 py-1" onkeypress="if(event.key==='Enter') procesarComandoIA()">
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800 mt-1 px-1 text-xs text-slate-400">
+                    <div class="flex gap-3">
+                        <button onclick="switchTab('archivos')" class="hover:text-cyan-400">📎 Archivo</button>
+                        <button onclick="iniciarEscuchaVoz()" class="text-cyan-400 font-bold">🎙️ Hablar</button>
+                    </div>
+                    <button onclick="procesarComandoIA()" class="w-7 h-7 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center shadow">➤</button>
+                </div>
             </div>
         </div>
 
     </main>
 
-    <!-- SCRIPT UNIFICADO -->
+    <!-- SCRIPT DE RECONOCIMIENTO DE VOZ TIPO ALEXA -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
 
@@ -187,7 +279,6 @@
 
         function actualizarInterfazUsuario() {
             document.getElementById('user-name-display').innerText = usuarioActual;
-            document.getElementById('lbl-sidebar-user').innerText = usuarioActual;
             document.getElementById('user-avatar-initial').innerText = usuarioActual.charAt(0).toUpperCase();
             document.getElementById('greeting-title').innerText = `¡Hola ${usuarioActual}! 👋`;
         }
@@ -216,37 +307,19 @@
             window.scrollTo(0, 0);
         }
 
-        // --- SÍNTESIS DE VOZ MASCULINA (TIPO ALEXA) ---
         function hablarOrion(texto) {
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
-            
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
             utterance.rate = 1.0;
-            utterance.pitch = 0.85; // Tono grave masculino
-
-            const voces = window.speechSynthesis.getVoices();
-            const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('gallego') || v.name.toLowerCase().includes('microsoft es')));
-            
-            if (vozHombre) {
-                utterance.voice = vozHombre;
-            } else {
-                const vozEsp = voces.find(v => v.lang.startsWith('es'));
-                if (vozEsp) utterance.voice = vozEsp;
-            }
-
             window.speechSynthesis.speak(utterance);
         }
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
-        }
-
-        // --- RECONOCIMIENTO DE VOZ UNIFICADO (PC Y CELULAR) ---
+        // --- RECONOCIMIENTO DE VOZ TIPO ALEXA ---
         function iniciarEscuchaVoz() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Tu navegador (como Safari en algunos iOS viejos o navegadores alternativos) no soporta dictado por voz nativo. Usa Google Chrome.");
+                alert("Usa Google Chrome para el reconocimiento de voz nativo.");
                 return;
             }
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -254,28 +327,28 @@
             recognition.lang = 'es-AR';
             
             const indicator = document.getElementById('status-voz-indicator');
-            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando voz...`;
+            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando voz tipo Alexa...`;
 
             recognition.onresult = function(event) {
                 const speechResult = event.results[0][0].transcript;
                 document.getElementById('global-command-input').value = speechResult;
-                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> Procesando comando...`;
+                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> Procesando...`;
                 procesarComandoIA(speechResult);
             };
 
             recognition.onerror = function() {
-                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Intenta hablar de nuevo.`;
+                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Repite la orden con voz clara.`;
             };
 
             recognition.start();
         }
 
-        // --- INTELIGENCIA ARTIFICIAL Y RESPUESTA HABLADA UNIFICADA ---
         async function procesarComandoIA(textoForzado = null) {
             const input = document.getElementById('global-command-input');
             const texto = textoForzado || input.value.trim();
             if(!texto) return;
 
+            switchTab('chat');
             const box = document.getElementById('chat-history-box');
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>${usuarioActual}:</strong> ${texto}</div>`;
             input.value = '';
@@ -283,6 +356,7 @@
             let respuestaIA = "";
             const tLower = texto.toLowerCase();
 
+            // RECONOCIMIENTO DE PERFIL TIPO ALEXA ("Orion, soy [Nombre]")
             if (tLower.includes("soy ")) {
                 const partes = tLower.split("soy ");
                 if (partes.length > 1) {
@@ -324,7 +398,7 @@
                 usuarioActual = nuevo.charAt(0).toUpperCase() + nuevo.slice(1);
                 localStorage.setItem('orion_user', usuarioActual);
                 actualizarInterfazUsuario();
-                const msj = `Perfil guardado. Hola ${usuarioActual}, ahora te reconozco.`;
+                const msj = `Perfil guardado exitosamente. Hola ${usuarioActual}, ahora te reconozco.`;
                 alert(msj);
                 hablarOrion(msj);
             }
