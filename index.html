@@ -1,61 +1,91 @@
-// Variable global para mantener el historial y la memoria de la conversación
-let chatHistory = [];
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORION - Panel de Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto space-y-6">
+        <header class="flex justify-between items-center border-b border-slate-800 pb-4">
+            <h1 class="text-2xl font-bold text-amber-500">ORION - IA Asistente</h1>
+            <span class="text-xs bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full border border-amber-500/30">Conectado a Vercel</span>
+        </header>
 
-async function procesarComandoIA(textoForzado = null) {
-    const input = document.getElementById('global-command-input');
-    const texto = textoForzado || (input ? input.value.trim() : '');
-    if(!texto) return;
+        <!-- Sección del Chat -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-xl">
+            <div id="chat-history-box" class="h-96 overflow-y-auto space-y-3 p-2 bg-slate-950/50 rounded-xl border border-slate-800/80 text-sm">
+                <div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200">
+                    <strong>ORION:</strong> ¡Hola Héctor! Ya estoy en línea y conectado con mi inteligencia artificial. ¿Qué hacemos hoy?
+                </div>
+            </div>
 
-    switchTab('chat');
-    const box = document.getElementById('chat-history-box');
-    
-    // Mostrar mensaje del usuario en pantalla
-    if(box) {
-        box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>${typeof usuarioActual !== 'undefined' ? usuarioActual : 'Usuario'}:</strong> ${texto}</div>`;
-        input.value = '';
-        box.scrollTop = box.scrollHeight;
-    }
+            <div class="flex gap-2">
+                <input type="text" id="global-command-input" placeholder="Escribile algo a ORION..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-slate-200" onkeydown="if(event.key === 'Enter') procesarComandoIA();">
+                <button onclick="procesarComandoIA()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold px-6 py-3 rounded-xl transition text-sm">Enviar</button>
+            </div>
+        </div>
+    </div>
 
-    let respuestaIA = "";
-
-    try {
-        // Petición real al backend seguro en Vercel
-        const response = await fetch('https://orion-la-sooty.vercel.app/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: texto,
-                history: chatHistory
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.reply) {
-            respuestaIA = data.reply;
-            
-            // Guardar en memoria para mantener contexto de la charla
-            chatHistory.push({ role: 'user', text: texto });
-            chatHistory.push({ role: 'model', text: respuestaIA });
-        } else {
-            respuestaIA = "Disculpame Héctor, tuve un problemita técnico. Volvé a intentarlo.";
+    <script>
+        // Sistema de voz de ORION
+        function hablarOrion(texto) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-AR';
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
         }
 
-    } catch (error) {
-        console.error("Error de red:", error);
-        respuestaIA = "Che Héctor, no me pude conectar con el servidor en este momento.";
-    }
+        let chatHistory = [];
 
-    // Mostrar respuesta real de la IA en el chat
-    if(box) {
-        box.innerHTML += `<div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200"><strong>ORION:</strong> ${respuestaIA}</div>`;
-        box.scrollTop = box.scrollHeight;
-    }
+        async function procesarComandoIA(textoForzado = null) {
+            const input = document.getElementById('global-command-input');
+            const texto = textoForzado || (input ? input.value.trim() : '');
+            if(!texto) return;
 
-    // Enviar exactamente esta respuesta al sistema de voz intacto
-    if (typeof hablarOrion === 'function') {
-        hablarOrion(respuestaIA);
-    }
-}
+            const box = document.getElementById('chat-history-box');
+            
+            if(box) {
+                box.innerHTML += `<div class="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200"><strong>Usuario:</strong> ${texto}</div>`;
+                input.value = '';
+                box.scrollTop = box.scrollHeight;
+            }
+
+            let respuestaIA = "";
+
+            try {
+                const response = await fetch('https://orion-la-sooty.vercel.app/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: texto, history: chatHistory })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.reply) {
+                    respuestaIA = data.reply;
+                    chatHistory.push({ role: 'user', text: texto });
+                    chatHistory.push({ role: 'model', text: respuestaIA });
+                } else {
+                    respuestaIA = "Disculpame Héctor, tuve un problemita técnico. Volvé a intentarlo.";
+                }
+
+            } catch (error) {
+                console.error("Error de red:", error);
+                respuestaIA = "Che Héctor, no me pude conectar con el servidor en este momento.";
+            }
+
+            if(box) {
+                box.innerHTML += `<div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200"><strong>ORION:</strong> ${respuestaIA}</div>`;
+                box.scrollTop = box.scrollHeight;
+            }
+
+            hablarOrion(respuestaIA);
+        }
+    </script>
+</body>
+</html>
