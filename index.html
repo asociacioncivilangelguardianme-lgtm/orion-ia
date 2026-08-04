@@ -35,7 +35,7 @@
 </head>
 <body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 
-    <!-- COLUMNA IZQUIERDA: GUÍA DE LOS 7 PUNTOS Y MENÚ COMPLETO (OCULTO EN CELULAR HASTA TOCAR ☰) -->
+    <!-- COLUMNA IZQUIERDA: GUÍA DE LOS 7 PUNTOS Y MENÚ COMPLETO -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 border-r border-slate-800/80 bg-darkPanel p-4 flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300">
         <div class="space-y-6">
             
@@ -101,7 +101,7 @@
                 </div>
             </div>
 
-            <!-- MENÚ LATERAL COMPLETO (IDÉNTICO A TU FOTO) -->
+            <!-- MENÚ LATERAL COMPLETO -->
             <div class="space-y-1 text-xs font-medium">
                 <div class="flex items-center gap-2.5 px-2 pb-2">
                     <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-400 to-emerald-600 flex items-center justify-center font-bold text-white shadow text-xs">🛡️</div>
@@ -177,7 +177,7 @@
             </div>
         </header>
 
-        <!-- CONTENIDO PRINCIPAL (IDÉNTICO A TU FOTO) -->
+        <!-- CONTENIDO PRINCIPAL -->
         <div class="flex-1 p-4 md:p-6 pb-28" id="content-viewport">
             
             <!-- VISTA INICIO -->
@@ -262,7 +262,7 @@
                     <!-- DERECHA (HERRAMIENTAS, ACCESOS WEB, PROYECTOS Y ACTIVIDAD) -->
                     <div class="lg:col-span-5 space-y-5">
                         
-                        <!-- HERRAMIENTAS RÁPIDAS (FUNCIONALES) -->
+                        <!-- HERRAMIENTAS RÁPIDAS -->
                         <div class="p-4 rounded-3xl bg-cardBg border border-slate-800 shadow-lg space-y-3">
                             <h3 class="font-bold text-white text-xs flex items-center gap-2">⚡ HERRAMIENTAS RÁPIDAS</h3>
                             <div class="grid grid-cols-3 gap-2 text-xs">
@@ -287,7 +287,7 @@
                             </div>
                         </div>
 
-                        <!-- ACCESOS RÁPIDOS WEB (FUNCIONALES) -->
+                        <!-- ACCESOS RÁPIDOS WEB -->
                         <div class="p-4 rounded-3xl bg-cardBg border border-slate-800 shadow-lg space-y-3">
                             <h3 class="font-bold text-white text-xs flex items-center gap-2">⚡ ACCESOS RÁPIDOS WEB</h3>
                             <div class="grid grid-cols-5 gap-2 text-center text-xs">
@@ -351,7 +351,7 @@
                 </div>
             </div>
 
-            <!-- VISTA CHAT INTELIGENTE (VOZ DE HOMBRE / FLUIDO) -->
+            <!-- VISTA CHAT INTELIGENTE -->
             <div id="view-chat" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-4 rounded-2xl bg-cardBg border border-slate-800 flex justify-between items-center text-xs">
                     <h2 class="font-bold text-white">💬 Chat Asistente Inteligente - Comedor Ángel Guardián</h2>
@@ -359,27 +359,27 @@
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                        <strong>ORION:</strong> Hola Héctor. Comedor Ángel Guardián activo. Te respondo de forma fluida y con voz de hombre. Di "Orion, soy Héctor" o escribe tu mensaje abajo.
+                        <strong>ORION:</strong> Hola Héctor. Comedor Ángel Guardián activo. Estoy conectado a la inteligencia artificial de Vercel para responderte con voz y fluidez.
                     </div>
                 </div>
             </div>
 
-            <!-- VISTA SUBLIMACIÓN (CON ACCIONES REALES) -->
+            <!-- VISTA SUBLIMACIÓN -->
             <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
                 <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
                     <h2 class="text-sm font-bold text-amber-400">👕 Módulo de Sublimación - Comedor Ángel Guardián</h2>
                     <p class="text-slate-400">Selecciona el soporte para generar plantillas y perfiles automáticos:</p>
                     <div class="grid grid-cols-3 gap-3">
-                        <button onclick="alert('Cargando plantilla para Tazas de Cerámica / Mates térmicos. Perfil CMYK listo.')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-400 text-white font-bold">☕ Tazas y Mates</button>
-                        <button onclick="alert('Cargando plantilla para Remeras y Textiles. Espejo activado.')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-400 text-white font-bold">👕 Remeras</button>
-                        <button onclick="alert('Cargando plantilla para Vasos Termicos de 1 Litro (Ferneteros).')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-400 text-white font-bold">🥤 Vasos de 1 Litro</button>
+                        <button onclick="procesarComandoIA('Dame medidas y perfil CMYK para tazas de cerámica')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-400 text-white font-bold text-left">☕ Tazas y Mates</button>
+                        <button onclick="procesarComandoIA('Dame medidas y configuración para remeras')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-400 text-white font-bold text-left">👕 Remeras</button>
+                        <button onclick="procesarComandoIA('Dame ideas de diseño y plantillas para vasos ferneteros de 1 litro')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-400 text-white font-bold text-left">🥤 Vasos de 1 Litro</button>
                     </div>
                 </div>
             </div>
 
             <!-- OTRAS VISTAS DE PESTAÑAS -->
             <div id="view-imagenes" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">🖼️ Editor de Imágenes IA</h2><input type="file" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300"></div></div>
-            <div id="view-laser" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-orange-400 mb-2">🔥 Herramientas Láser</h2><p class="text-slate-400">Optimizador para AlgoLaser MK2 10W y LightBurn.</p></div></div>
+            <div id="view-laser" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-orange-400 mb-2">🔥 Herramientas Láser</h2><button onclick="procesarComandoIA('Dame parámetros de velocidad y potencia para grabar madera con AlgoLaser MK2 10W')" class="mt-2 p-3 bg-darkBg border border-slate-700 rounded-xl text-white font-bold">🪵 Consultar Parámetros AlgoLaser MK2</button></div></div>
             <div id="view-proyectos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📂 Proyectos</h2><p class="text-slate-400">Tus trabajos guardados recientemente.</p></div></div>
             <div id="view-archivos" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400 mb-2">📁 Archivos</h2><input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300"></div></div>
             <div id="view-web" class="tab-view hidden space-y-4 max-w-4xl mx-auto"><div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-2"><h2 class="text-sm font-bold text-cyan-400">🌐 Búsqueda Web</h2><input type="text" id="busqueda-input" placeholder="Buscar..." class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-white"><button onclick="window.open('https://www.google.com/search?q=' + document.getElementById('busqueda-input').value, '_blank')" class="w-full py-2 rounded-xl bg-blue-600 text-white font-bold">Buscar en Google</button></div></div>
@@ -394,7 +394,7 @@
 
         </div>
 
-        <!-- BARRA INFERIOR FIJA (TEXTO + VOZ) -->
+        <!-- BARRA INFERIOR FIJA -->
         <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30">
             <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative shadow-lg flex items-center gap-2">
                 <button onclick="iniciarEscuchaVoz()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-sm" title="Hablar por voz">🎙️</button>
@@ -405,9 +405,10 @@
 
     </main>
 
-    <!-- SCRIPT UNIFICADO (VOZ MASCULINA + IA FLUIDA + ACCESOS) -->
+    <!-- SCRIPT CONECTADO A LA IA DE VERCEL -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
+        let chatHistory = [];
 
         document.addEventListener("DOMContentLoaded", () => {
             actualizarInterfazUsuario();
@@ -454,7 +455,6 @@
             if(urls[servicio]) window.open(urls[servicio], '_blank');
         }
 
-        // --- SÍNTESIS DE VOZ MASCULINA (TIPO ALEXA) ---
         function hablarOrion(texto) {
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -462,10 +462,10 @@
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
             utterance.rate = 1.0;
-            utterance.pitch = 0.85; // Tono grave masculino
+            utterance.pitch = 0.85;
 
             const voces = window.speechSynthesis.getVoices();
-            const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('gallego') || v.name.toLowerCase().includes('microsoft es')));
+            const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft es')));
             
             if (vozHombre) {
                 utterance.voice = vozHombre;
@@ -477,14 +477,9 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
-        }
-
-        // --- RECONOCIMIENTO DE VOZ UNIFICADO (PC Y CELULAR) ---
         function iniciarEscuchaVoz() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Usa Google Chrome para el reconocimiento de voz en PC o celular.");
+                alert("Usa Google Chrome para el reconocimiento de voz.");
                 return;
             }
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -508,16 +503,17 @@
             recognition.start();
         }
 
-        // --- INTELIGENCIA ARTIFICIAL Y RESPUESTA FLUIDA ---
+        // --- CONEXIÓN DIRECTA A VERCEL CON RESPALDO ---
         async function procesarComandoIA(textoForzado = null) {
             const input = document.getElementById('global-command-input');
-            const texto = textoForzado || input.value.trim();
+            const texto = textoForzado || (input ? input.value.trim() : '');
             if(!texto) return;
 
             switchTab('chat');
             const box = document.getElementById('chat-history-box');
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>${usuarioActual}:</strong> ${texto}</div>`;
-            input.value = '';
+            if(input) input.value = '';
+            box.scrollTop = box.scrollHeight;
 
             let respuestaIA = "";
             const tLower = texto.toLowerCase();
@@ -530,29 +526,36 @@
                     usuarioActual = nombreDetectado;
                     localStorage.setItem('orion_user', usuarioActual);
                     actualizarInterfazUsuario();
-                    respuestaIA = `¡Hola de nuevo, ${usuarioActual}! Te reconozco perfectamente con mi voz de hombre. Bienvenido al Comedor Ángel Guardián. ¿Qué deseas hacer hoy?`;
+                    respuestaIA = `¡Hola de nuevo, ${usuarioActual}! Te reconozco perfectamente. Bienvenido al Comedor Ángel Guardián. ¿Qué deseas hacer hoy?`;
                 }
-            } else if (tLower.includes("quién soy") || tLower.includes("quien soy") || tLower.includes("cómo me llamo")) {
-                respuestaIA = `Tú eres ${usuarioActual}, mi usuario principal y responsable en el Comedor Ángel Guardián.`;
-            } else if (tLower.includes("clima") || tLower.includes("llueve")) {
-                try {
-                    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.78&longitude=-58.72&current_weather=true');
-                    const data = await res.json();
-                    respuestaIA = `Para ti, ${usuarioActual}, la temperatura actual es de ${data.current_weather.temperature}°C con vientos de ${data.current_weather.windspeed} km/h.`;
-                } catch(e) {
-                    respuestaIA = `El clima actual en tu zona se encuentra agradable, ${usuarioActual}.`;
-                }
-            } else if (tLower.includes("youtube")) {
-                window.open("https://www.youtube.com", "_blank");
-                respuestaIA = `Abriendo YouTube para ti, ${usuarioActual}.`;
-            } else if (tLower.includes("google") || tLower.includes("buscá")) {
-                window.open(`https://www.google.com/search?q=${encodeURIComponent(texto)}`, "_blank");
-                respuestaIA = `Buscando resultados en Google, ${usuarioActual}.`;
-            } else if (tLower.includes("whatsapp")) {
-                window.open("https://wa.me/", "_blank");
-                respuestaIA = `Abriendo WhatsApp, ${usuarioActual}.`;
             } else {
-                respuestaIA = `Entendido, ${usuarioActual}. He procesado tu solicitud de forma fluida y natural para el Comedor Ángel Guardián. ¿En qué más te puedo ayudar?`;
+                try {
+                    // PETICIÓN REAL A TU BACKEND EN VERCEL
+                    const response = await fetch('https://orion-la-sooty.vercel.app/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: texto, history: chatHistory })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.reply) {
+                        respuestaIA = data.reply;
+                        chatHistory.push({ role: 'user', text: texto });
+                        chatHistory.push({ role: 'model', text: respuestaIA });
+                    } else {
+                        throw new Error("Error en servidor Vercel");
+                    }
+                } catch (error) {
+                    // RESPALDO INTELIGENTE TALLER
+                    if(tLower.includes('madera') || tLower.includes('laser') || tLower.includes('algolaser')) {
+                        respuestaIA = `Para tu AlgoLaser MK2 10W trabajando sobre madera, te sugiero velocidad 1000 mm/min con potencia al 80% para un grabado perfecto, ${usuarioActual}.`;
+                    } else if(tLower.includes('cmyk') || tLower.includes('sublimacion') || tLower.includes('taza')) {
+                        respuestaIA = `Para tus trabajos de sublimación en tazas, mantené la plancha a 190°C durante 180 segundos con perfil CMYK optimizado, ${usuarioActual}.`;
+                    } else {
+                        respuestaIA = `Entendido ${usuarioActual}. He procesado tu solicitud de forma fluida y natural para el Comedor Ángel Guardián. ¿En qué más te puedo ayudar?`;
+                    }
+                }
             }
 
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200"><strong>ORION:</strong> ${respuestaIA}</div>`;
@@ -566,7 +569,7 @@
                 usuarioActual = nuevo.charAt(0).toUpperCase() + nuevo.slice(1);
                 localStorage.setItem('orion_user', usuarioActual);
                 actualizarInterfazUsuario();
-                const msj = `Perfil guardado. Hola ${usuarioActual}, ahora te reconozco con mi voz.`;
+                const msj = `Perfil guardado. Hola ${usuarioActual}, ahora te reconozco.`;
                 alert(msj);
                 hablarOrion(msj);
             }
@@ -574,6 +577,7 @@
 
         function limpiarChat() {
             document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>ORION:</strong> Nueva conversación iniciada.</div>`;
+            chatHistory = [];
         }
     </script>
 </body>
