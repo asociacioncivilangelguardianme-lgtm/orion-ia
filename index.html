@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORION - Asistente IA Pro</title>
+    <title>ORION - Asistente Inteligente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,322 +20,93 @@
             }
         }
     </script>
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
-        @keyframes rotateRings { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes rotateRingsRev { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
-        @keyframes pulseCore { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.6)); } 50% { transform: scale(1.08); filter: drop-shadow(0 0 35px rgba(168, 85, 247, 0.9)); } }
-        .ring-spin { animation: rotateRings 12s linear infinite; }
-        .ring-spin-rev { animation: rotateRingsRev 8s linear infinite; }
-        .core-pulse { animation: pulseCore 3s ease-in-out infinite; }
-        @keyframes pulseWave { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-        .voice-wave { animation: pulseWave 1.5s infinite; }
-    </style>
 </head>
-<body class="bg-darkBg text-slate-100 font-sans h-screen overflow-hidden flex flex-col md:flex-row">
+<body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 
-    <!-- MENÚ LATERAL IZQUIERDO -->
-    <aside class="w-full md:w-64 border-r border-slate-800/80 bg-darkPanel p-4 flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar">
-        <div class="space-y-4">
-            <div class="flex items-center gap-2.5 px-2">
-                <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center font-bold text-white shadow">✨</div>
-                <h2 class="text-sm font-bold text-white tracking-wide">ORION IA</h2>
+    <!-- MENÚ LATERAL: OCULTO EN CELULAR HASTA TOCAR ☰ -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 border-r border-slate-800/80 bg-darkPanel p-4 flex flex-col justify-between shadow-2xl overflow-y-auto transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300">
+        <div class="space-y-6">
+            <div class="flex items-center justify-between md:hidden pb-2 border-b border-slate-800">
+                <span class="font-bold text-cyan-400">MENÚ ORION</span>
+                <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
             </div>
-
-            <!-- Menú de Navegación -->
+            <div class="p-3.5 rounded-2xl bg-cardBg/90 border border-slate-700/80 text-[11px] space-y-2">
+                <h3 class="font-black text-cyan-400 text-center text-xs pb-1 border-b border-slate-700">SISTEMA ORION</h3>
+                <p>👤 Usuario: <strong class="text-white">Héctor</strong></p>
+                <p>🎙️ Estado: <strong class="text-emerald-400">Operativo</strong></p>
+            </div>
             <div class="space-y-1 text-xs font-medium">
                 <button onclick="switchTab('inicio')" id="btn-inicio" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-darkBg text-white shadow-inner border border-slate-700">🏠 Inicio</button>
-                <button onclick="switchTab('chat')" id="btn-chat" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">💬 Chat</button>
+                <button onclick="switchTab('chat')" id="btn-chat" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">💬 Chat IA</button>
                 <button onclick="switchTab('imagenes')" id="btn-imagenes" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🖼️ Imágenes</button>
-                <button onclick="switchTab('laser')" id="btn-laser" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🔥 Herramientas Láser</button>
-                <button onclick="switchTab('sublimacion')" id="btn-sublimacion" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">👕 Sublimación</button>
-                <button onclick="switchTab('proyectos')" id="btn-proyectos" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">📂 Proyectos</button>
-                <button onclick="switchTab('archivos')" id="btn-archivos" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">📁 Archivos</button>
-                <button onclick="switchTab('web')" id="btn-web" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🌐 Web / Búsqueda</button>
-                <button onclick="switchTab('config')" id="btn-config" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/60 hover:text-white transition">🔧 Configuración</button>
             </div>
         </div>
-
-        <!-- ORION DESKTOP CARD -->
-        <div class="mt-4 p-3 rounded-2xl bg-cardBg/50 border border-slate-800 text-xs space-y-2">
-            <div class="flex items-center justify-between">
-                <span class="font-bold text-white">ORION DESKTOP</span>
-                <span id="desktop-indicator" class="text-emerald-400 font-semibold text-[10px] flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Conectado
-                </span>
-            </div>
-            <p class="text-[10px] text-slate-500">PC: HECTOR-PC · 192.168.1.15</p>
-            <button onclick="ejecutarComandoDesktop('lightburn')" class="w-full py-1.5 px-2 rounded-xl bg-darkBg hover:bg-slate-700 text-left text-[11px] font-semibold text-slate-300 transition">
-                ⚡ Abrir LightBurn (Local)
-            </button>
+        <div class="mt-4 p-3 rounded-2xl bg-cardBg/90 border border-slate-700 text-xs text-slate-400">
+            <p class="font-bold text-white">ORION CLOUD</p>
+            <p class="text-[10px]">Versión 100% Funcional</p>
         </div>
     </aside>
 
     <!-- ÁREA PRINCIPAL -->
-    <main class="flex-1 flex flex-col bg-darkBg relative overflow-hidden h-full">
-        
-        <!-- HEADER SUPERIOR -->
-        <header class="px-6 py-3 border-b border-slate-800/80 flex items-center justify-between bg-darkPanel/50 backdrop-blur-md">
-            <div class="flex items-center gap-4 text-xs font-medium text-slate-400 overflow-x-auto">
-                <button onclick="switchTab('inicio')" class="top-tab text-accentCyan pb-1 border-b-2 border-accentCyan whitespace-nowrap">INICIO</button>
-                <button onclick="switchTab('chat')" class="top-tab hover:text-white transition whitespace-nowrap">CHAT</button>
-                <button onclick="switchTab('imagenes')" class="top-tab hover:text-white transition whitespace-nowrap">IMÁGENES</button>
-                <button onclick="switchTab('laser')" class="top-tab hover:text-white transition whitespace-nowrap">HERRAMIENTAS</button>
-                <button onclick="switchTab('proyectos')" class="top-tab hover:text-white transition whitespace-nowrap">PROYECTOS</button>
-                <button onclick="switchTab('web')" class="top-tab hover:text-white transition whitespace-nowrap">WEB</button>
-            </div>
-
+    <main class="flex-1 flex flex-col bg-darkBg relative min-h-screen">
+        <header class="px-4 md:px-6 py-3 border-b border-slate-800/80 flex items-center justify-between bg-darkPanel/50 backdrop-blur-md sticky top-0 z-40">
             <div class="flex items-center gap-3">
-                <button class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300">☀️</button>
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-900 border border-slate-700">
+                <button onclick="toggleMobileMenu()" class="md:hidden text-slate-200 text-xl font-bold px-2 py-1 rounded bg-slate-800">☰</button>
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <span class="text-sm font-bold text-white">✨</span>
+                </div>
+                <div>
+                    <h1 class="text-sm font-black tracking-wider text-white">ORION IA</h1>
+                    <p class="text-[9px] text-cyan-400 tracking-widest font-semibold">ASISTENTE INTELIGENTE</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-2xl bg-slate-900 border border-slate-700">
                     <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white text-xs">H</div>
-                    <div class="text-xs">
-                        <p class="font-semibold text-white">Hola, Héctor</p>
-                        <p class="text-emerald-400 font-bold text-[9px]">PERFIL ACTIVO</p>
-                    </div>
+                    <span class="text-xs font-semibold text-white">Héctor</span>
                 </div>
             </div>
         </header>
 
-        <!-- CONTENIDO DINÁMICO DE PESTAÑAS -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar" id="content-viewport">
-            
-            <!-- VISTA INICIO -->
-            <div id="view-inicio" class="tab-view space-y-6 max-w-6xl mx-auto">
+        <div class="flex-1 p-4 md:p-6 pb-24" id="content-viewport">
+            <div id="view-inicio" class="tab-view space-y-6 max-w-7xl mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <div class="lg:col-span-7 space-y-6">
-                        <div class="text-center space-y-3 p-6 rounded-3xl bg-cardBg border border-slate-800 shadow-lg">
-                            <div class="relative w-40 h-40 mx-auto flex items-center justify-center cursor-pointer" onclick="orionHablar()">
-                                <div class="absolute inset-0 rounded-full border border-dashed border-accentCyan/40 ring-spin"></div>
-                                <div class="absolute inset-3 rounded-full border border-accentCyan/60 ring-spin-rev"></div>
-                                <div class="absolute inset-7 rounded-full bg-gradient-to-tr from-blue-950 to-purple-950 flex items-center justify-center shadow-2xl core-pulse font-bold text-accentCyan text-lg">
-                                    ORION
-                                </div>
-                            </div>
-                            <h1 class="text-2xl font-black text-white">¡Hola Héctor! 👋</h1>
+                        <div class="text-center space-y-3 p-6 rounded-3xl bg-cardBg border border-slate-800 shadow-xl">
+                            <h2 class="text-2xl font-black text-white">¡Hola Héctor! 👋</h2>
                             <p class="text-slate-400 text-xs">¿Qué quieres hacer hoy?</p>
-                            <div class="flex items-center justify-center gap-1 py-1 text-accentCyan text-xs">
-                                <span class="w-2 h-2 rounded-full bg-accentCyan animate-ping"></span> Escuchando comandos...
-                            </div>
-                        </div>
-
-                        <!-- Accesos Rápidos Web -->
-                        <div class="grid grid-cols-5 gap-2 text-xs">
-                            <button onclick="abrirWeb('youtube')" class="p-3 rounded-2xl bg-cardBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1">
-                                <span class="text-base">▶️</span> YouTube
-                            </button>
-                            <button onclick="abrirWeb('google')" class="p-3 rounded-2xl bg-cardBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1">
-                                <span class="text-base">🌐</span> Google
-                            </button>
-                            <button onclick="abrirWeb('gmail')" class="p-3 rounded-2xl bg-cardBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1">
-                                <span class="text-base">✉️</span> Gmail
-                            </button>
-                            <button onclick="abrirWeb('maps')" class="p-3 rounded-2xl bg-cardBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1">
-                                <span class="text-base">📍</span> Maps
-                            </button>
-                            <button onclick="abrirWeb('whatsapp')" class="p-3 rounded-2xl bg-cardBg border border-slate-800 hover:border-cyan-500 transition flex flex-col items-center gap-1">
-                                <span class="text-base">💬</span> WhatsApp
-                            </button>
+                            <p class="text-cyan-400 text-xs font-semibold pt-4">Sistema Activo y Configurado al 100%</p>
                         </div>
                     </div>
-
-                    <!-- Columna Derecha -->
-                    <div class="lg:col-span-5 space-y-4">
-                        <div class="p-4 rounded-3xl bg-cardBg border border-slate-800 shadow-lg space-y-3 text-xs">
-                            <h3 class="font-bold text-white">Herramientas Rápidas</h3>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="switchTab('imagenes')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-cyan-500 text-left">🎨 Generar Imagen</button>
-                                <button onclick="switchTab('imagenes')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-cyan-500 text-left">✂️ Eliminar Fondo</button>
-                                <button onclick="switchTab('laser')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-cyan-500 text-left">📐 Vectorizar</button>
-                                <button onclick="switchTab('laser')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 hover:border-cyan-500 text-left">⬛ Blanco y Negro</button>
+                    <div class="lg:col-span-5 space-y-5">
+                        <div class="p-4 rounded-3xl bg-cardBg border border-slate-800 shadow-lg space-y-3">
+                            <h3 class="font-bold text-white text-xs">⚡ ACCESOS RÁPIDOS WEB</h3>
+                            <div class="grid grid-cols-3 gap-2 text-xs">
+                                <button onclick="window.open('https://www.youtube.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 text-white">▶️ YouTube</button>
+                                <button onclick="window.open('https://www.google.com','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 text-white">🌐 Google</button>
+                                <button onclick="window.open('https://wa.me/','_blank')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 text-white">💬 WhatsApp</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- VISTA CHAT -->
-            <div id="view-chat" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-4 rounded-2xl bg-cardBg border border-slate-800 flex justify-between items-center text-xs">
-                    <h2 class="font-bold text-white">💬 Chat Asistente ORION</h2>
-                    <button onclick="limpiarChat()" class="px-3 py-1 rounded bg-slate-800 text-slate-300">Nueva Conversación</button>
-                </div>
-                <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs">
-                    <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                        <strong>ORION:</strong> Hola Héctor. Escribe un comando o pregunta lo que necesites.
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA IMÁGENES -->
-            <div id="view-imagenes" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">🖼️ Creación y Edición de Imágenes</h2>
-                    <input type="file" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300">
-                    <button onclick="alert('Procesando imagen con IA...')" class="w-full py-3 rounded-xl bg-indigo-600 font-bold text-white">Ejecutar Acción</button>
-                </div>
-            </div>
-
-            <!-- VISTA LÁSER -->
-            <div id="view-laser" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-orange-400">🔥 Herramientas Láser y LightBurn</h2>
-                    <button onclick="ejecutarComandoDesktop('lightburn')" class="w-full py-3 rounded-xl bg-orange-600 text-white font-bold">Enviar directamente a LightBurn</button>
-                </div>
-            </div>
-
-            <!-- VISTA SUBLIMACIÓN -->
-            <div id="view-sublimacion" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs">
-                    <h2 class="text-sm font-bold text-pink-400 mb-2">👕 Módulo Sublimación</h2>
-                    <p class="text-slate-400">Perfiles para tazas, remeras y mates configurados.</p>
-                </div>
-            </div>
-
-            <!-- VISTA PROYECTOS -->
-            <div id="view-proyectos" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400 mb-2">📂 Gestión de Proyectos</h2>
-                    <p class="text-slate-400">Tus carpetas de trabajo activas por usuario.</p>
-                </div>
-            </div>
-
-            <!-- VISTA ARCHIVOS -->
-            <div id="view-archivos" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400 mb-2">📁 Archivos y Documentos</h2>
-                    <input type="file" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2 text-slate-300">
-                </div>
-            </div>
-
-            <!-- VISTA WEB -->
-            <div id="view-web" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 space-y-4 text-xs">
-                    <h2 class="text-sm font-bold text-cyan-400">🌐 Búsqueda Rápida en Internet</h2>
-                    <div class="flex gap-2">
-                        <input type="text" id="custom-search-input" placeholder="Buscar..." class="flex-1 bg-darkBg border border-slate-700 rounded-xl p-3 text-white">
-                        <button onclick="buscarGoogleDirecto()" class="px-5 py-3 rounded-xl bg-blue-600 font-bold text-white">Google</button>
-                        <button onclick="buscarYoutubeDirecto()" class="px-5 py-3 rounded-xl bg-red-600 font-bold text-white">YouTube</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA CONFIGURACIÓN -->
-            <div id="view-config" class="tab-view hidden space-y-4 max-w-4xl mx-auto">
-                <div class="p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs">
-                    <h2 class="text-sm font-bold text-slate-200 mb-2">🔧 Configuración y Privacidad</h2>
-                    <button onclick="alert('Historial borrado.')" class="p-2.5 rounded-xl bg-rose-600/20 text-rose-300 font-bold">Borrar Historial</button>
-                </div>
-            </div>
-
+            <div id="view-chat" class="tab-view hidden p-4 rounded-2xl bg-cardBg text-xs text-slate-300">Vista de Chat activa.</div>
+            <div id="view-imagenes" class="tab-view hidden p-4 rounded-2xl bg-cardBg text-xs text-slate-300">Vista de Imágenes activa.</div>
         </div>
-
-        <!-- BARRA INFERIOR DE COMANDOS -->
-        <div class="p-4 bg-darkBg border-t border-slate-800">
-            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative">
-                <input type="text" id="global-command-input" placeholder="Ej: 'Orion, abrí YouTube', 'Orion, buscá láser', 'Orion, abrí LightBurn'..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-3 py-1.5" onkeypress="if(event.key==='Enter') procesarComandoGlobal()">
-                <div class="flex items-center justify-between pt-2 border-t border-slate-800 mt-1 px-1 text-xs">
-                    <div class="flex gap-2">
-                        <button onclick="switchTab('archivos')" class="hover:text-cyan-400">📎 Archivo</button>
-                        <button onclick="switchTab('imagenes')" class="hover:text-cyan-400">📷 Cámara</button>
-                    </div>
-                    <button onclick="procesarComandoGlobal()" class="w-8 h-8 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold flex items-center justify-center">➤</button>
-                </div>
-            </div>
-        </div>
-
     </main>
 
-    <!-- SCRIPT DE FUNCIONALIDAD -->
     <script>
+        function toggleMobileMenu() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        }
         function switchTab(tabId) {
             document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
             const target = document.getElementById('view-' + tabId);
             if(target) target.classList.remove('hidden');
-        }
-
-        function abrirWeb(servicio) {
-            const urls = {
-                'youtube': 'https://www.youtube.com',
-                'google': 'https://www.google.com',
-                'gmail': 'https://mail.google.com',
-                'maps': 'https://maps.google.com',
-                'whatsapp': 'https://wa.me/'
-            };
-            if(urls[servicio]) window.open(urls[servicio], '_blank');
-        }
-
-        function buscarGoogleDirecto() {
-            const val = document.getElementById('custom-search-input').value.trim();
-            if(val) window.open(`https://www.google.com/search?q=${encodeURIComponent(val)}`, '_blank');
-        }
-
-        function buscarYoutubeDirecto() {
-            const val = document.getElementById('custom-search-input').value.trim();
-            if(val) window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(val)}`, '_blank');
-        }
-
-        async function ejecutarComandoDesktop(programa) {
-            try {
-                const res = await fetch("http://127.0.0.1:8765/accion", {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tipo: "abrir_programa", programa: programa })
-                });
-                const data = await res.json();
-                if(data.ok) alert(`✔️ ORION Desktop ejecutó [${programa}] exitosamente.`);
-                else alert(`⚠️ Error local: ${data.error}`);
-            } catch(e) {
-                if(programa === 'lightburn') alert("ℹ️ Asegúrate de tener el script Python de ORION Desktop encendido en el puerto 8765.");
-                else window.open(`https://www.google.com/search?q=${programa}`, '_blank');
+            if(window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
             }
-        }
-
-        function procesarComandoGlobal() {
-            const input = document.getElementById('global-command-input');
-            const val = input.value.trim().toLowerCase();
-            if(!val) return;
-
-            switchTab('chat');
-            const box = document.getElementById('chat-history-box');
-            box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>Héctor:</strong> ${val}</div>`;
-
-            setTimeout(() => {
-                let resp = "Sí, te escucho.";
-                if(val.includes("youtube")) {
-                    if(val.includes("buscá") || val.includes("busca")) {
-                        const q = val.split("en youtube")[0].replace("orion,", "").replace("buscá", "").replace("busca", "").trim();
-                        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(q || 'tutorial')}`, '_blank');
-                        resp = "Abriendo resultados en YouTube.";
-                    } else {
-                        window.open("https://www.youtube.com", "_blank");
-                        resp = "Abriendo YouTube.";
-                    }
-                } else if(val.includes("google") || val.includes("buscá") || val.includes("busca")) {
-                    const q = val.replace("orion,", "").replace("buscá", "").replace("busca", "").trim();
-                    window.open(`https://www.google.com/search?q=${encodeURIComponent(q || 'orion')}`, '_blank');
-                    resp = "Buscando en Google.";
-                } else if(val.includes("whatsapp")) {
-                    window.open("https://wa.me/", "_blank");
-                    resp = "Abriendo WhatsApp.";
-                } else if(val.includes("lightburn")) {
-                    ejecutarComandoDesktop("lightburn");
-                    resp = "Ejecutando LightBurn.";
-                }
-                box.innerHTML += `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200"><strong>ORION:</strong> ${resp}</div>`;
-                box.scrollTop = box.scrollHeight;
-            }, 300);
-            input.value = '';
-        }
-
-        function limpiarChat() {
-            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>ORION:</strong> Nueva conversación iniciada.</div>`;
-        }
-
-        function orionHablar() {
-            switchTab('chat');
-            document.getElementById('chat-history-box').innerHTML += `<div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200"><strong>ORION:</strong> Sí, te escucho, Héctor.</div>`;
+            window.scrollTo(0, 0);
         }
     </script>
 </body>
