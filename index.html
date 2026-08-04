@@ -29,6 +29,8 @@
         .ring-spin { animation: rotateRings 15s linear infinite; }
         .ring-spin-rev { animation: rotateRingsRev 10s linear infinite; }
         .core-pulse { animation: pulseCore 3.5s ease-in-out infinite; }
+        @keyframes recordingPulse { 0% { background-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { background-color: rgba(239, 68, 68, 0.6); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); } 100% { background-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .is-recording { animation: recordingPulse 1.5s infinite; background-color: #ef4444 !important; color: white !important; border-color: #f87171 !important; }
     </style>
 </head>
 <body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
@@ -173,7 +175,7 @@
         </header>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <div class="flex-1 p-4 md:p-6 pb-28" id="content-viewport">
+        <div class="flex-1 p-4 md:p-6 pb-32" id="content-viewport">
             
             <div id="view-inicio" class="tab-view space-y-6 max-w-7xl mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -199,7 +201,7 @@
                                 <button onclick="switchTab('chat')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-amber-500 transition flex flex-col items-center gap-1.5 text-xs">
                                     <span class="text-base">💬</span> Hablar con ORION
                                 </button>
-                                <button onclick="iniciarEscuchaVoz()" class="p-3.5 rounded-2xl bg-gradient-to-tr from-amber-600 to-emerald-600 border border-amber-400 shadow-lg hover:opacity-90 transition flex flex-col items-center gap-1.5 text-xs text-white font-bold">
+                                <button onclick="toggleAudioRecording()" class="p-3.5 rounded-2xl bg-gradient-to-tr from-amber-600 to-emerald-600 border border-amber-400 shadow-lg hover:opacity-90 transition flex flex-col items-center gap-1.5 text-xs text-white font-bold">
                                     <span class="text-base">🎙️</span>
                                 </button>
                                 <button onclick="switchTab('archivos')" class="p-3 rounded-2xl bg-darkBg border border-slate-700/80 hover:border-amber-500 transition flex flex-col items-center gap-1.5 text-xs">
@@ -343,7 +345,7 @@
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                        <strong>ORION:</strong> Hola Héctor. Comedor Ángel Guardián activo. Escribe o usa el micrófono abajo. Di "Orion, soy Héctor".
+                        <strong>ORION:</strong> Hola Héctor. Comedor Ángel Guardián activo. Toca el micrófono para hablar tipo WhatsApp o escribe abajo. Di "Orion, soy Héctor".
                     </div>
                 </div>
             </div>
@@ -377,29 +379,32 @@
 
         </div>
 
-        <!-- BARRA INFERIOR FIJA CON CAJA DE TEXTO TOTALMENTE LIBRE Y MICRÓFONO -->
-        <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30">
-            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-2 relative shadow-lg flex items-center gap-3">
-                <button onclick="iniciarEscuchaVoz()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-base shrink-0" title="Hablar por micrófono">🎙️</button>
-                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o di 'Orion, soy [Tu Nombre]'..." class="w-full bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComandoIA()">
-                <button onclick="procesarComandoIA()" class="w-8 h-8 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 text-white font-bold flex items-center justify-center shadow shrink-0">➤</button>
+        <!-- BARRA INFERIOR FIJA CON CAJA DE TEXTO 100% VISIBLE Y MICRÓFONO TIPO WHATSAPP -->
+        <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur-md border-t border-slate-800 z-50">
+            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-600 rounded-2xl p-2.5 shadow-2xl flex items-center gap-3">
+                <button id="whatsapp-mic-btn" onclick="toggleAudioRecording()" class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-lg shrink-0 transition cursor-pointer shadow" title="Toca para hablar o detener">🎙️</button>
+                <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o di 'Orion, soy [Tu Nombre]'..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComandoIA()">
+                <button onclick="procesarComandoIA()" class="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 text-white font-bold flex items-center justify-center shadow-lg shrink-0 hover:opacity-90 transition cursor-pointer">➤</button>
             </div>
         </div>
 
     </main>
 
-    <!-- SCRIPT CORREGIDO Y FUNCIONAL -->
+    <!-- SCRIPT DE VOZ Y FLUIDEZ REAL -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
+        let recognition = null;
+        let isRecording = false;
 
         document.addEventListener("DOMContentLoaded", () => {
             actualizarInterfazUsuario();
+            inicializarReconocimientoVoz();
         });
 
         function actualizarInterfazUsuario() {
             document.getElementById('user-name-display').innerText = usuarioActual;
             document.getElementById('user-avatar-initial').innerText = usuarioActual.charAt(0).toUpperCase();
-            document.getElementById('greeting-title').innerText = `¡Hola ${usuarioActual}! 👋`;
+            document.getElementById('greeting-title', '¡Hola ${usuarioActual}! 👋').innerText = `¡Hola ${usuarioActual}! 👋`;
         }
 
         function toggleMobileMenu() {
@@ -443,8 +448,8 @@
             
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
-            utterance.rate = 1.0;
-            utterance.pitch = 0.85; // Voz grave masculina
+            utterance.rate = 0.95;
+            utterance.pitch = 0.85; // Voz grave masculina tipo Alexa
 
             const voces = window.speechSynthesis.getVoices();
             const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('gallego') || v.name.toLowerCase().includes('microsoft es')));
@@ -463,30 +468,80 @@
             window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
         }
 
-        function iniciarEscuchaVoz() {
+        function inicializarReconocimientoVoz() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Usa Google Chrome para el dictado por voz en PC o celular.");
                 return;
             }
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
+            recognition = new SpeechRecognition();
             recognition.lang = 'es-AR';
-            
-            const indicator = document.getElementById('status-voz-indicator');
-            if(indicator) indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando voz...`;
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = function() {
+                isRecording = true;
+                const micBtn = document.getElementById('whatsapp-mic-btn');
+                if(micBtn) micBtn.classList.add('is-recording');
+                const indicator = document.getElementById('status-voz-indicator');
+                if(indicator) indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando voz... (Hable ahora)`;
+            };
 
             recognition.onresult = function(event) {
-                const speechResult = event.results[0][0].transcript;
-                document.getElementById('global-command-input').value = speechResult;
-                if(indicator) indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Procesando...`;
-                procesarComandoIA(speechResult);
+                let interimTranscript = '';
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                const campo = document.getElementById('global-command-input');
+                if (finalTranscript) {
+                    campo.value = finalTranscript;
+                    detenerAudioRecording();
+                    procesarComandoIA(finalTranscript);
+                } else if (interimTranscript) {
+                    campo.value = interimTranscript;
+                }
             };
 
             recognition.onerror = function() {
-                if(indicator) indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Intenta hablar de nuevo.`;
+                detenerAudioRecording();
             };
 
-            recognition.start();
+            recognition.onend = function() {
+                if (isRecording) {
+                    detenerAudioRecording();
+                }
+            };
+        }
+
+        function toggleAudioRecording() {
+            if (!recognition) {
+                alert("Tu navegador no soporta reconocimiento de voz nativo. Utiliza Google Chrome.");
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+                detenerAudioRecording();
+            } else {
+                try {
+                    document.getElementById('global-command-input').value = '';
+                    recognition.start();
+                } catch(e) {
+                    isRecording = false;
+                    detenerAudioRecording();
+                }
+            }
+        }
+
+        function detenerAudioRecording() {
+            isRecording = false;
+            const micBtn = document.getElementById('whatsapp-mic-btn');
+            if(micBtn) micBtn.classList.remove('is-recording');
+            const indicator = document.getElementById('status-voz-indicator');
+            if(indicator) indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Sistema Activo (Voz de hombre)`;
         }
 
         async function procesarComandoIA(textoForzado = null) {
@@ -510,29 +565,29 @@
                     usuarioActual = nombreDetectado;
                     localStorage.setItem('orion_user', usuarioActual);
                     actualizarInterfazUsuario();
-                    respuestaIA = `¡Hola de nuevo, ${usuarioActual}! Te reconozco perfectamente con mi voz de hombre. Bienvenido al Comedor Ángel Guardián. ¿Qué deseas hacer hoy?`;
+                    respuestaIA = `¡Hola de nuevo, ${usuarioActual}! Ya te reconozco perfectamente con mi voz. Qué bueno tenerte por acá en el Comedor Ángel Guardián. ¿En qué te puedo dar una mano?`;
                 }
             } else if (tLower.includes("quién soy") || tLower.includes("quien soy") || tLower.includes("cómo me llamo")) {
-                respuestaIA = `Tú eres ${usuarioActual}, mi usuario principal y responsable en el Comedor Ángel Guardián.`;
-            } else if (tLower.includes("clima") || tLower.includes("llueve")) {
+                respuestaIA = `Mirá, vos sos ${usuarioActual}, el responsable y usuario principal de este sistema en el Comedor Ángel Guardián.`;
+            } else if (tLower.includes("clima") || tLower.includes("tiempo")) {
                 try {
                     const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.78&longitude=-58.72&current_weather=true');
                     const data = await res.json();
-                    respuestaIA = `Para ti, ${usuarioActual}, la temperatura actual es de ${data.current_weather.temperature}°C con vientos de ${data.current_weather.windspeed} km/h.`;
+                    respuestaIA = `Che, ${usuarioActual}, por tu zona tenemos unos ${data.current_weather.temperature} grados con vientos tranquilos de ${data.current_weather.windspeed} kilómetros por hora.`;
                 } catch(e) {
-                    respuestaIA = `El clima actual en tu zona se encuentra agradable, ${usuarioActual}.`;
+                    respuestaIA = `Por lo que veo, ${usuarioActual}, el clima está bastante agradable por acá.`;
                 }
             } else if (tLower.includes("youtube")) {
                 window.open("https://www.youtube.com", "_blank");
-                respuestaIA = `Abriendo YouTube para ti, ${usuarioActual}.`;
-            } else if (tLower.includes("google") || tLower.includes("buscá")) {
+                respuestaIA = `Dale, ahí te abro YouTube al toque, ${usuarioActual}.`;
+            } else if (tLower.includes("google") || tLower.includes("buscá") || tLower.includes("busca")) {
                 window.open(`https://www.google.com/search?q=${encodeURIComponent(texto)}`, "_blank");
-                respuestaIA = `Buscando resultados en Google, ${usuarioActual}.`;
+                respuestaIA = `Busquemos eso en Google ahora mismo, ${usuarioActual}.`;
             } else if (tLower.includes("whatsapp")) {
                 window.open("https://wa.me/", "_blank");
-                respuestaIA = `Abriendo WhatsApp, ${usuarioActual}.`;
+                respuestaIA = `Abriendo WhatsApp enseguida, ${usuarioActual}.`;
             } else {
-                respuestaIA = `Entendido, ${usuarioActual}. He procesado tu solicitud de forma fluida y natural para el Comedor Ángel Guardián. ¿En qué más te puedo ayudar?`;
+                respuestaIA = `Entendido perfectamente, ${usuarioActual}. Lo estuve procesando y ya quedó listo acá en el sistema del Comedor Ángel Guardián. ¿Necesitás que hagamos alguna otra cosa?`;
             }
 
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200"><strong>ORION:</strong> ${respuestaIA}</div>`;
@@ -546,14 +601,14 @@
                 usuarioActual = nuevo.charAt(0).toUpperCase() + nuevo.slice(1);
                 localStorage.setItem('orion_user', usuarioActual);
                 actualizarInterfazUsuario();
-                const msj = `Perfil guardado. Hola ${usuarioActual}, ahora te reconozco con mi voz.`;
+                const msj = `¡Listo, perfil guardado! Hola ${usuarioActual}, ya te tengo fichado con mi voz.`;
                 alert(msj);
                 hablarOrion(msj);
             }
         }
 
         function limpiarChat() {
-            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>ORION:</strong> Nueva conversación iniciada.</div>`;
+            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>ORION:</strong> Nueva conversación iniciada. ¿Qué se te ofrece?</div>`;
         }
     </script>
 </body>
