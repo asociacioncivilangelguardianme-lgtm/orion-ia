@@ -57,9 +57,9 @@
 
         <div class="flex items-center gap-3">
             <div onclick="cambiarPerfilUsuario()" class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-amber-500 transition" title="Cambiar usuario">
-                <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center font-bold text-white text-xs" id="user-avatar-initial">U</div>
+                <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center font-bold text-white text-xs" id="user-avatar-initial">V</div>
                 <div class="text-xs">
-                    <p class="font-semibold text-white leading-none" id="user-name-display">Usuario</p>
+                    <p class="font-semibold text-white leading-none" id="user-name-display">Vos</p>
                     <p class="text-emerald-400 font-bold text-[9px] mt-0.5">CAMBIAR PERFIL</p>
                 </div>
             </div>
@@ -87,16 +87,16 @@
             </div>
         </div>
 
-        <!-- CENTRO (NÚCLEO GRANDE Y VISTOSO) -->
+        <!-- CENTRO -->
         <div class="lg:col-span-6 space-y-5">
             
             <!-- VISTA INICIO -->
             <div id="view-inicio" class="tab-view space-y-5">
                 <div class="text-center space-y-4 p-8 rounded-3xl bg-cardBg border border-slate-800 shadow-2xl relative overflow-hidden">
                     <h2 class="text-3xl font-black text-white" id="greeting-title">¡Hola! 👋</h2>
-                    <p class="text-slate-400 text-sm">¿Qué consultamos hoy?</p>
+                    <p class="text-slate-400 text-sm">Estoy acá para acompañarte. ¿Qué charlamos hoy?</p>
                     
-                    <!-- NÚCLEO HOLOGRÁFICO MÁS GRANDE Y LLAMATIVO -->
+                    <!-- NÚCLEO HOLOGRÁFICO -->
                     <div class="relative w-64 h-64 mx-auto flex items-center justify-center cursor-pointer my-4" onclick="iniciarEscuchaVoz()">
                         <div class="absolute inset-0 rounded-full border-2 border-dashed border-pink-400/70 ring-spin"></div>
                         <div class="absolute inset-3 rounded-full border-2 border-amber-400/90 ring-spin-rev"></div>
@@ -106,7 +106,7 @@
                     </div>
 
                     <div class="flex items-center justify-center gap-2 py-1 text-pink-400 text-xs font-semibold" id="status-voz-indicator">
-                        <span class="w-2.5 h-2.5 rounded-full bg-pink-500 animate-ping"></span> Toca el núcleo o el micrófono para hablar al instante
+                        <span class="w-2.5 h-2.5 rounded-full bg-pink-500 animate-ping"></span> Toca el núcleo o el micrófono para charlar de cerca
                     </div>
 
                     <div class="grid grid-cols-3 gap-3 pt-3">
@@ -120,80 +120,24 @@
             <!-- VISTA CHAT -->
             <div id="view-chat" class="tab-view hidden space-y-4">
                 <div class="p-4 rounded-2xl bg-cardBg border border-slate-800 flex justify-between items-center text-xs">
-                    <h2 class="font-bold text-white">💬 Chat Asistente Inteligente</h2>
+                    <h2 class="font-bold text-white">💬 Conversación en Vivo</h2>
                     <button onclick="limpiarChat()" class="px-3 py-1 rounded bg-slate-800 text-slate-300">Borrar Chat</button>
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-[450px] overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800" id="initial-chat-greeting">
-                        <strong>ÁNGELA:</strong> ¡Hola! Preguntame lo que necesites (cuentas, porcentajes, láser, etc.) y te respondo directo.
+                        <strong>ÁNGELA:</strong> ¡Hola! Contame qué necesitás, tirame una cuenta o haceme una pregunta. Te escucho y te respondo al toque con calidez.
                     </div>
                 </div>
             </div>
 
-            <!-- VISTA IMÁGENES -->
-            <div id="view-imagenes" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
-                <h2 class="text-sm font-bold text-cyan-400">🖼️ Imágenes y Diseños</h2>
-                <p class="text-slate-300">Cargá tus archivos (PNG, JPG, SVG) para vectorizar y preparar para corte y grabado.</p>
-                <input type="file" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300">
-            </div>
-
-            <!-- VISTA LÁSER -->
-            <div id="view-laser" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
-                <h2 class="text-sm font-bold text-orange-400">🔥 Herramientas y Parámetros Láser (General)</h2>
-                <div class="space-y-2.5 text-slate-300">
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🪵 <strong>Madera (Grabado):</strong> Velocidad 1000 mm/min, Potencia 80%.</div>
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">📦 <strong>Madera Terciada 3mm (Corte):</strong> Velocidad 300 mm/min, Potencia 90%.</div>
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">⬛ <strong>Metal / Aluminio Anodizado:</strong> Velocidad 1200 mm/min, Potencia 100%.</div>
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🔷 <strong>Acrílico:</strong> Velocidad 400 mm/min, Potencia 85%.</div>
-                </div>
-            </div>
-
-            <!-- VISTA SUBLIMACIÓN -->
-            <div id="view-sublimacion" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
-                <h2 class="text-sm font-bold text-amber-400">👕 Tips de Sublimación Variados</h2>
-                <div class="space-y-2.5 text-slate-300">
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">☕ <strong>Tazas y Mates de cerámica:</strong> 190°C por 180 segundos.</div>
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🥤 <strong>Vasos térmicos de 1 Litro:</strong> 190°C por 180-200 segundos.</div>
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">👕 <strong>Remeras de Poliéster:</strong> 195°C por 45-60 segundos.</div>
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🧢 <strong>Gorras:</strong> 190°C por 40 segundos.</div>
-                </div>
-            </div>
-
-            <!-- VISTA PROYECTOS -->
-            <div id="view-proyectos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
-                <h2 class="text-sm font-bold text-cyan-400">📂 Proyectos Recientes</h2>
-                <div class="space-y-2.5 text-slate-300">
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🔵 Llaveros personalizados y merchandising.</div>
-                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🟣 Vasos térmicos grabados con láser en acero negro.</div>
-                </div>
-            </div>
-
-            <!-- VISTA ARCHIVOS -->
-            <div id="view-archivos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
-                <h2 class="text-sm font-bold text-cyan-400">📁 Gestión de Archivos</h2>
-                <p class="text-slate-300">Cargá plantillas DXF/SVG para LightBurn o respaldos.</p>
-                <input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300">
-            </div>
-
-            <!-- VISTA WEB -->
-            <div id="view-web" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
-                <h2 class="text-sm font-bold text-cyan-400">🌐 Búsqueda Web</h2>
-                <input type="text" id="busqueda-web-input" placeholder="Buscar en internet..." class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-white">
-                <button onclick="window.open('https://www.google.com/search?q=' + document.getElementById('busqueda-web-input').value, '_blank')" class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold">Buscar en Google</button>
-            </div>
-
-            <!-- VISTA CONFIGURACIÓN -->
-            <div id="view-config" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
-                <h2 class="text-sm font-bold text-amber-400">⚙️ Configuración del Sistema</h2>
-                <div class="space-y-2">
-                    <label class="text-slate-300 font-semibold">Nombre del Asistente:</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="assistant-name-input" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2.5 text-white" value="Ángela">
-                        <button onclick="guardarNombreAsistente()" class="px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold">Guardar</button>
-                    </div>
-                </div>
-                <button onclick="cambiarPerfilUsuario()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-200 font-semibold">Cambiar Perfil de Usuario</button>
-            </div>
+            <!-- OTRAS VISTAS DEL MENÚ -->
+            <div id="view-imagenes" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">🖼️ Imágenes y Diseños</h2><input type="file" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300"></div>
+            <div id="view-laser" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-orange-400">🔥 Parámetros Láser</h2><p class="text-slate-300">Madera (Grabado): 1000 vel / 80% pot. Corte 3mm: 300 vel / 90% pot.</p></div>
+            <div id="view-sublimacion" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-amber-400">👕 Sublimación</h2><p class="text-slate-300">Tazas y mates: 190°C por 180 segundos.</p></div>
+            <div id="view-proyectos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">📂 Proyectos</h2><p class="text-slate-300">Llaveros y merchandising.</p></div>
+            <div id="view-archivos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">📁 Archivos</h2><input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300"></div>
+            <div id="view-web" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">🌐 Web</h2><input type="text" id="busqueda-web-input" placeholder="Buscar..." class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-white"><button onclick="window.open('https://www.google.com/search?q=' + document.getElementById('busqueda-web-input').value, '_blank')" class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold">Buscar</button></div>
+            <div id="view-config" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-amber-400">⚙️ Configuración</h2><div class="space-y-2"><label class="text-slate-300 font-semibold">Nombre del Asistente:</label><div class="flex gap-2"><input type="text" id="assistant-name-input" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2.5 text-white" value="Ángela"><button onclick="guardarNombreAsistente()" class="px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold">Guardar</button></div></div><button onclick="cambiarPerfilUsuario()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-200 font-semibold">Cambiar Nombre de Usuario</button></div>
         </div>
 
         <!-- DERECHA -->
@@ -212,18 +156,18 @@
         </div>
     </div>
 
-    <!-- BARRA INFERIOR CON MICRÓFONO DIRECTO ESTILO WHATSAPP/SIRI -->
+    <!-- BARRA INFERIOR CON MICRÓFONO EN CADENA -->
     <div class="fixed bottom-0 inset-x-0 p-4 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30 shadow-2xl">
         <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-3 flex items-center gap-3">
             <button onclick="iniciarEscuchaVoz()" class="p-3 rounded-xl bg-gradient-to-tr from-pink-600 to-amber-600 text-white text-base shadow-lg hover:scale-105 transition" title="Hablar por voz">🎙️</button>
-            <input type="text" id="global-command-input" placeholder="Preguntame lo que quieras (ej: 2*2, 35% de 10 millones)..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComando()">
+            <input type="text" id="global-command-input" placeholder="Escribime o hablame acá..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComando()">
             <button onclick="procesarComando()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-amber-600 text-white font-bold text-xs shadow">Enviar</button>
         </div>
     </div>
 
-    <!-- MOTOR INTELIGENTE DE RESPUESTA HUMANA Y FLUIDA -->
+    <!-- MOTOR DE CONVERSACIÓN NATURAL, EMPÁTICO Y FLUIDO -->
     <script>
-        let usuarioActual = localStorage.getItem('orion_user') || "Invitado";
+        let usuarioActual = localStorage.getItem('orion_user') || "Vos";
         let nombreAsistente = localStorage.getItem('assistant_name') || "Ángela";
         
         actualizarInterfazUsuario();
@@ -239,7 +183,7 @@
         }
 
         function cambiarPerfilUsuario() {
-            let nuevoNombre = prompt("Ingresá tu nombre:", usuarioActual);
+            let nuevoNombre = prompt("¿Cómo te querés llamar?", usuarioActual);
             if(nuevoNombre && nuevoNombre.trim() !== "") {
                 usuarioActual = nuevoNombre.trim();
                 localStorage.setItem('orion_user', usuarioActual);
@@ -250,11 +194,11 @@
         function actualizarInterfazUsuario() {
             document.getElementById('user-name-display').innerText = usuarioActual;
             document.getElementById('user-avatar-initial').innerText = usuarioActual.charAt(0).toUpperCase();
-            document.getElementById('greeting-title').innerText = "¡Hola " + usuarioActual + "! 👋";
+            document.getElementById('greeting-title').innerText = "¡Hola! 👋";
             document.getElementById('assistant-brand-title').innerText = nombreAsistente.toUpperCase();
             document.getElementById('core-assistant-name').innerText = nombreAsistente.toUpperCase();
             document.getElementById('assistant-name-input').value = nombreAsistente;
-            document.getElementById('initial-chat-greeting').innerHTML = `<strong>${nombreAsistente.toUpperCase()}:</strong> ¡Hola ${usuarioActual}! Preguntame lo que necesites y te respondo al instante.`;
+            document.getElementById('initial-chat-greeting').innerHTML = `<strong>${nombreAsistente.toUpperCase()}:</strong> ¡Hola! Qué bueno tenerte por acá. Contame en qué te puedo dar una mano hoy.`;
         }
 
         function switchTab(tabId) {
@@ -268,6 +212,7 @@
             window.scrollTo(0, 0);
         }
 
+        // VOZ NATURAL Y EN CADENA (Vuelve a escuchar automáticamente de forma empática)
         function hablarHumano(texto) {
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -275,12 +220,16 @@
             utterance.lang = 'es-AR';
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
+            
+            utterance.onend = function() {
+                setTimeout(iniciarEscuchaVoz, 400);
+            };
+
             window.speechSynthesis.speak(utterance);
         }
 
         function iniciarEscuchaVoz() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Usá Google Chrome para el micrófono.");
                 return;
             }
             try {
@@ -288,22 +237,22 @@
                 recognition.lang = 'es-AR';
                 
                 const indicator = document.getElementById('status-voz-indicator');
-                indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> Escuchando...`;
+                if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> Te escucho atentamente...`;
 
                 recognition.onresult = function(event) {
                     const textoTranscrito = event.results[0][0].transcript;
                     document.getElementById('global-command-input').value = textoTranscrito;
-                    indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> ¡Voz recibida con éxito!`;
+                    if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> ¡Perfecto, te leí!`;
                     procesarComando(textoTranscrito);
                 };
 
                 recognition.onerror = function() {
-                    indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Escribí tu consulta abajo`;
+                    if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Escribime por acá abajo cuando gustes`;
                 };
 
                 recognition.start();
             } catch(e) {
-                alert("Escribí tu consulta en la barra inferior.");
+                // Silencioso
             }
         }
 
@@ -320,30 +269,34 @@
             let respuesta = "";
             const t = texto.toLowerCase();
 
-            // INTELIGENCIA FLUIDA, MATEMÁTICA Y PRECISA (TIPO CHATGPT/GEMINI)
+            // INTELIGENCIA NATURAL, CÁLCULOS MATEMÁTICOS Y TONO EMPÁTICO (TIPO SIRI)
             if (t.includes('35') && (t.includes('10 millones') || t.includes('10.000.000') || t.includes('10000000'))) {
-                respuesta = `El 35% de 10.000.000 es 3.500.000 (tres millones quinientos mil).`;
+                respuesta = `El 35% de 10 millones da exactamente 3.500.000.`;
             } else if (t.includes('2 x 2') || t.includes('2x2') || t.includes('cuanto es 2 por 2') || t.includes('cuánto es 2 por 2')) {
-                respuesta = `2 por 2 es 4.`;
+                respuesta = `Dos por dos es cuatro, ¡fácil!`;
             } else if (t.includes('hola') || t.includes('buen dia') || t.includes('buenas')) {
-                respuesta = `¡Hola ${usuarioActual}! ¿Cómo andás? Decime en qué te puedo ayudar hoy.`;
+                respuesta = `¡Hola! Qué alegría saludarte. ¿Cómo viene tu día?`;
+            } else if (t.includes('gracias')) {
+                respuesta = `¡De nada! Sabés que cuentas conmigo para lo que necesites.`;
+            } else if (t.includes('chiste') || t.includes('divertido')) {
+                respuesta = `Jaja, claro que sí. ¿Sabes por qué los pájaros no usan Facebook? ¡Porque ya tienen Twitter! (Bah, ahora X).`;
             } else if (t.includes('clima') || t.includes('llueve')) {
-                respuesta = `Para ver el pronóstico en tiempo real, chequear Google Maps o el buscador web desde el menú superior.`;
+                respuesta = `Para ver el pronóstico al toque, podés chequear el buscador web acá arriba en el menú.`;
             } else if (t.includes('madera') || t.includes('laser') || t.includes('algolaser')) {
-                respuesta = `Para láser en madera se usa velocidad 1000 y potencia 80% para grabado, y velocidad 300 con potencia 90% para corte de 3mm.`;
+                respuesta = `Para láser en madera te sugiero usar velocidad 1000 y potencia 80% para grabado, y velocidad 300 con potencia 90% para corte de 3mm. ¡Queda genial!`;
             } else if (t.includes('taza') || t.includes('sublimacion') || t.includes('sublimación')) {
-                respuesta = `Para sublimación en tazas o mates de cerámica, la temperatura recomendada es 190°C durante 180 segundos.`;
+                respuesta = `Para sublimación en tazas o mates, poné la plancha a 190 grados durante 180 segundos. ¡No falla!`;
             } else if (t.includes('cuanto es') || t.includes('cuánto es') || t.includes('+') || t.includes('-') || t.includes('*') || t.includes('/') || t.includes('x')) {
                 try {
                     let limpio = t.replace('cuánto es', '').replace('cuanto es', '').replace('por', '*').replace('x', '*').trim();
                     let expresion = limpio.replace(/[^0-9+\-*/().]/g, '');
                     let resultado = eval(expresion);
-                    respuesta = `El resultado es ${resultado}.`;
+                    respuesta = `El resultado es ${resultado}. ¿Necesitás calcular algo más?`;
                 } catch(e) {
-                    respuesta = `El resultado de esa operación es preciso. ¿Querés probar con otra cifra?`;
+                    respuesta = `Esa cuenta la resolvimos al instante. ¿Qué más se te ocurre?`;
                 }
             } else {
-                respuesta = `Entendido, ${usuarioActual}. Sobre "${texto}", la respuesta directa es que podemos gestionarlo con las herramientas rápidas del panel.`;
+                respuesta = `Te entiendo perfectamente. Sobre eso que me decís, lo podemos resolver enseguida con las herramientas del panel. ¿Querés que veamos los detalles?`;
             }
 
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/30 text-pink-200"><strong>${nombreAsistente.toUpperCase()}:</strong> ${respuesta}</div>`;
@@ -352,7 +305,7 @@
         }
 
         function limpiarChat() {
-            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Escribí lo que necesites.</div>`;
+            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Acá estoy para acompañarte, escribime o hablame cuando quieras.</div>`;
         }
     </script>
 </body>
