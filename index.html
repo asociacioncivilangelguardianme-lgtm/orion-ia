@@ -33,7 +33,7 @@
 </head>
 <body class="bg-darkBg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 
-    <!-- COLUMNA IZQUIERDA: GUÍA DE LOS 7 PUNTOS EXACTA -->
+    <!-- COLUMNA IZQUIERDA -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 border-r border-slate-800/80 bg-darkPanel p-4 flex flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300">
         <div class="space-y-6">
             <div class="flex items-center justify-between md:hidden pb-2 border-b border-slate-800">
@@ -42,39 +42,16 @@
             </div>
 
             <div class="p-3.5 rounded-2xl bg-cardBg/90 border border-slate-700/80 text-[11px] space-y-3 shadow-inner">
-                <h3 class="font-black text-cyan-400 tracking-wide text-center text-xs pb-1 border-b border-slate-700">PARA QUE ORION FUNCIONE AL 100%</h3>
+                <h3 class="font-black text-cyan-400 tracking-wide text-center text-xs pb-1 border-b border-slate-700">COMEDOR ÁNGEL GUARDIÁN</h3>
                 <div class="space-y-2.5 text-slate-300">
                     <div>
                         <p class="font-bold text-white">1. CONFIGURACIÓN INICIAL</p>
                         <ul class="text-[10px] text-slate-400 space-y-0.5 mt-0.5 pl-2">
                             <li>✔️ Conexión a Internet estable.</li>
-                            <li>✔️ Permitir acceso al micrófono.</li>
-                            <li>✔️ Permitir acceso a cámara y archivos.</li>
-                            <li>✔️ Iniciar ORION Desktop en tu PC.</li>
-                            <li>✔️ Iniciar sesión en tu cuenta de ORION.</li>
+                            <li>✔️ Cambiar nombre de asistente abajo.</li>
+                            <li>✔️ Cambiar perfil de usuario arriba.</li>
                         </ul>
                     </div>
-                    <div>
-                        <p class="font-bold text-white">2. RECONOCIMIENTO DE VOZ</p>
-                        <ol class="text-[10px] text-slate-400 space-y-0.5 mt-0.5 pl-3 list-decimal">
-                            <li>Configuración > Perfiles de Voz.</li>
-                            <li>Di: "Orion, soy Héctor".</li>
-                            <li>ORION te reconocerá al hablar.</li>
-                        </ol>
-                    </div>
-                    <div>
-                        <p class="font-bold text-white">3. PERMISOS NECESARIOS</p>
-                        <ul class="text-[10px] text-slate-400 space-y-0.5 mt-0.5 pl-2">
-                            <li>🎤 Micrófono y Cámara activos.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p class="font-bold text-white">4. ORION DESKTOP</p>
-                        <p class="text-[10px] text-slate-400">Controla LightBurn, Chrome, Calculadora y Bloc de notas.</p>
-                    </div>
-                </div>
-                <div class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-bold text-center">
-                    ⭐ Funcionamiento al 100% activo.
                 </div>
             </div>
         </div>
@@ -88,10 +65,10 @@
             <div class="flex items-center gap-3">
                 <button onclick="toggleMobileMenu()" class="md:hidden text-slate-200 text-xl font-bold px-2.5 py-1 rounded bg-slate-800">☰</button>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-base font-black tracking-wider text-white">ORION</h1>
-                    <span class="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-xs">🌐</span>
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-400 to-emerald-600 flex items-center justify-center font-bold text-white text-xs shadow">🛡️</div>
+                    <h1 class="text-base font-black tracking-wider text-white" id="assistant-brand-title">ORION</h1>
                 </div>
-                <span class="text-[10px] text-slate-400 hidden sm:inline">TU ASISTENTE INTELIGENTE</span>
+                <span class="text-[10px] text-cyan-400 font-semibold hidden sm:inline">| COMEDOR ÁNGEL GUARDIÁN</span>
             </div>
 
             <!-- PESTAÑAS SUPERIORES -->
@@ -106,17 +83,15 @@
                 <button onclick="switchTab('config')" class="top-tab hover:text-white transition flex items-center gap-1.5"><span class="text-sm">⚙️</span> CONFIGURACIÓN</button>
             </div>
 
-            <!-- PERFIL -->
+            <!-- PERFIL CAMBIABLE -->
             <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 border border-slate-700">
-                    <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center font-bold text-white text-xs">H</div>
+                <div onclick="cambiarPerfilUsuario()" class="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-900 border border-slate-700 cursor-pointer hover:border-amber-500 transition" title="Clic para cambiar de usuario">
+                    <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center font-bold text-white text-xs" id="user-avatar-initial">H</div>
                     <div class="text-xs">
-                        <p class="font-semibold text-white leading-none">Hola, Héctor</p>
-                        <p class="text-emerald-400 font-bold text-[9px] mt-0.5">PERFIL ACTIVO</p>
+                        <p class="font-semibold text-white leading-none" id="user-name-display">Hola, Héctor</p>
+                        <p class="text-emerald-400 font-bold text-[9px] mt-0.5">CAMBIAR PERFIL</p>
                     </div>
                 </div>
-                <button class="p-2 rounded-full bg-slate-800 text-slate-300">☀️</button>
-                <button class="p-2 rounded-full bg-slate-800 text-slate-300">🔔</button>
             </div>
         </header>
 
@@ -156,25 +131,25 @@
             <div class="lg:col-span-6 space-y-5">
                 <div id="view-inicio" class="tab-view space-y-5">
                     <div class="text-center space-y-3 p-6 rounded-3xl bg-cardBg border border-slate-800 shadow-xl relative overflow-hidden">
-                        <h2 class="text-2xl font-black text-white">¡Hola Héctor! 👋</h2>
+                        <h2 class="text-2xl font-black text-white" id="greeting-title">¡Hola! 👋</h2>
                         <p class="text-slate-400 text-xs">¿Qué quieres hacer hoy?</p>
                         
                         <!-- NÚCLEO -->
                         <div class="relative w-44 h-44 mx-auto flex items-center justify-center cursor-pointer my-2" onclick="iniciarEscuchaVoz()">
                             <div class="absolute inset-0 rounded-full border border-dashed border-amber-400/40 ring-spin"></div>
                             <div class="absolute inset-3 rounded-full border border-amber-400/70 ring-spin-rev"></div>
-                            <div class="absolute inset-8 rounded-full bg-gradient-to-tr from-slate-950 via-amber-950 to-emerald-950 flex items-center justify-center shadow-2xl core-pulse font-bold text-white text-lg tracking-widest border border-amber-500/50">
+                            <div class="absolute inset-8 rounded-full bg-gradient-to-tr from-slate-950 via-amber-950 to-emerald-950 flex items-center justify-center shadow-2xl core-pulse font-bold text-white text-lg tracking-widest border border-amber-500/50" id="core-assistant-name">
                                 ORION
                             </div>
                         </div>
 
                         <div class="flex items-center justify-center gap-2 py-1 text-amber-400 text-xs font-semibold" id="status-voz-indicator">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Escuchando comandos...
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span> Toca el núcleo o escribe abajo para hablar
                         </div>
 
                         <!-- BOTONES -->
                         <div class="grid grid-cols-3 gap-3 pt-2">
-                            <button onclick="switchTab('chat')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-500 transition text-xs">💬 Hablar con ORION</button>
+                            <button onclick="switchTab('chat')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-500 transition text-xs" id="btn-talk-label">💬 Hablar con el Asistente</button>
                             <button onclick="iniciarEscuchaVoz()" class="p-3.5 rounded-2xl bg-gradient-to-tr from-amber-600 to-emerald-600 text-white font-bold text-xs shadow-lg">🎙️</button>
                             <button onclick="switchTab('archivos')" class="p-3 rounded-2xl bg-darkBg border border-slate-700 hover:border-amber-500 transition text-xs">📤 Subir archivo</button>
                         </div>
@@ -188,28 +163,6 @@
                             <button onclick="switchTab('acciones')" class="p-2.5 rounded-xl bg-darkBg border border-slate-800 text-[11px]">⋯ Acciones</button>
                         </div>
                     </div>
-
-                    <!-- TARJETAS INFERIORES -->
-                    <div class="space-y-3">
-                        <h3 class="text-xs font-bold text-white tracking-wide">¿Qué puede hacer ORION por ti?</h3>
-                        <div class="grid grid-cols-3 gap-3 text-xs">
-                            <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
-                                <span class="text-amber-400 text-base">💬</span>
-                                <h4 class="font-bold text-white">Creación de Imágenes</h4>
-                                <p class="text-[10px] text-slate-400">Genera y edita imágenes.</p>
-                            </div>
-                            <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
-                                <span class="text-emerald-400 text-base">⚡</span>
-                                <h4 class="font-bold text-white">Control por Voz</h4>
-                                <p class="text-[10px] text-slate-400">Órdenes fluidas y naturales.</p>
-                            </div>
-                            <div class="p-3.5 rounded-2xl bg-cardBg border border-slate-800 space-y-1.5">
-                                <span class="text-orange-400 text-base">🔥</span>
-                                <h4 class="font-bold text-white">Herramientas Láser</h4>
-                                <p class="text-[10px] text-slate-400">Corte y grabado en SVG y DXF.</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- VISTA CHAT -->
@@ -219,15 +172,27 @@
                         <button onclick="limpiarChat()" class="px-3 py-1 rounded bg-slate-800 text-slate-300">Borrar Chat</button>
                     </div>
                     <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-[420px] overflow-y-auto space-y-3 text-xs custom-scrollbar">
-                        <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                            <strong>ORION:</strong> ¡Hola Héctor! Asistente activo. Preguntame lo que necesites o haceme cuentas.
+                        <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800" id="initial-chat-greeting">
+                            <strong>ASISTENTE:</strong> ¡Hola! Asistente activo. Preguntame lo que necesites.
                         </div>
                     </div>
                 </div>
 
                 <div id="view-imagenes" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-cyan-400">🖼️ Imágenes</h2></div>
                 <div id="view-laser" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-orange-400">🔥 Herramientas Láser AlgoLaser MK2 10W</h2></div>
-                <div id="view-config" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs"><h2 class="text-sm font-bold text-amber-400">⚙️ Configuración</h2></div>
+                
+                <!-- VISTA CONFIGURACIÓN (PARA CAMBIAR NOMBRE DE ASISTENTE) -->
+                <div id="view-config" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                    <h2 class="text-sm font-bold text-amber-400">⚙️ Configuración de Asistente y Perfiles</h2>
+                    <div class="space-y-2">
+                        <label class="text-slate-300 font-semibold">Elegir nombre del asistente (Ángela, Isabela, Orion, etc.):</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="assistant-name-input" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2.5 text-white" value="Ángela">
+                            <button onclick="guardarNombreAsistente()" class="px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold">Cambiar</button>
+                        </div>
+                    </div>
+                    <button onclick="cambiarPerfilUsuario()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-200 font-semibold">Cambiar Perfil de Usuario</button>
+                </div>
             </div>
 
             <!-- DERECHA -->
@@ -254,31 +219,55 @@
                         <button onclick="abrirWeb('whatsapp')" class="p-2 rounded-xl bg-darkBg border border-slate-800">💬</button>
                     </div>
                 </div>
-
-                <div class="p-4 rounded-3xl bg-cardBg border border-slate-800 shadow-lg space-y-3 text-xs">
-                    <h3 class="font-bold text-white">📂 PROYECTOS RECIENTES</h3>
-                    <div class="space-y-2 text-slate-300">
-                        <div class="p-2 rounded-xl bg-darkBg border border-slate-800">🔵 Llavero personalizado</div>
-                        <div class="p-2 rounded-xl bg-darkBg border border-slate-800">🟣 Diseño vaso sublimación</div>
-                        <div class="p-2 rounded-xl bg-darkBg border border-slate-800">🟠 Corte acrílico 3mm</div>
-                    </div>
-                </div>
             </div>
         </div>
 
         <!-- BARRA INFERIOR -->
         <div class="fixed bottom-0 inset-x-0 p-4 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30 shadow-2xl">
             <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-3 flex items-center gap-3">
-                <button onclick="iniciarEscuchaVoz()" class="p-2.5 rounded-xl bg-slate-800 text-amber-400 text-base">🎙️</button>
+                <button onclick="iniciarEscuchaVoz()" class="p-2.5 rounded-xl bg-slate-800 text-amber-400 text-base" title="Hablar">🎙️</button>
                 <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o da una orden..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComando()">
                 <button onclick="procesarComando()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 text-white font-bold text-xs">Enviar</button>
             </div>
         </div>
     </main>
 
-    <!-- MOTOR HUMANO INTELIGENTE Y ABIERTO -->
+    <!-- MOTOR INTELIGENTE CON NOMBRES CAMBIABLES (ÁNGELA, ISABELA, ETC.) -->
     <script>
-        let usuarioActual = "Héctor";
+        let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
+        let nombreAsistente = localStorage.getItem('assistant_name') || "Ángela";
+        
+        actualizarInterfazUsuario();
+
+        function guardarNombreAsistente() {
+            let inputVal = document.getElementById('assistant-name-input').value.trim();
+            if(inputVal !== "") {
+                nombreAsistente = inputVal;
+                localStorage.setItem('assistant_name', nombreAsistente);
+                actualizarInterfazUsuario();
+                alert("¡Listo! Ahora el asistente se llama " + nombreAsistente);
+            }
+        }
+
+        function cambiarPerfilUsuario() {
+            let nuevoNombre = prompt("Ingresá el nombre de la persona que va a usar el sistema:", usuarioActual);
+            if(nuevoNombre && nuevoNombre.trim() !== "") {
+                usuarioActual = nuevoNombre.trim();
+                localStorage.setItem('orion_user', usuarioActual);
+                actualizarInterfazUsuario();
+            }
+        }
+
+        function actualizarInterfazUsuario() {
+            document.getElementById('user-name-display').innerText = "Hola, " + usuarioActual;
+            document.getElementById('user-avatar-initial').innerText = usuarioActual.charAt(0).toUpperCase();
+            document.getElementById('greeting-title').innerText = "¡Hola " + usuarioActual + "! 👋";
+            document.getElementById('assistant-brand-title').innerText = nombreAsistente.toUpperCase();
+            document.getElementById('core-assistant-name').innerText = nombreAsistente.toUpperCase();
+            document.getElementById('assistant-name-input').value = nombreAsistente;
+            document.getElementById('btn-talk-label').innerText = "💬 Hablar con " + nombreAsistente;
+            document.getElementById('initial-chat-greeting').innerHTML = `<strong>${nombreAsistente.toUpperCase()}:</strong> ¡Hola ${usuarioActual}! Asistente activa. Preguntame lo que necesites.`;
+        }
 
         function toggleMobileMenu() {
             document.getElementById('sidebar').classList.toggle('-translate-x-full');
@@ -315,7 +304,7 @@
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-AR';
             utterance.rate = 1.0;
-            utterance.pitch = 0.9;
+            utterance.pitch = 1.0; // Tono más natural para voz femenina
             window.speechSynthesis.speak(utterance);
         }
 
@@ -324,19 +313,28 @@
                 alert("Usá Google Chrome para el micrófono.");
                 return;
             }
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'es-AR';
-            
-            const indicator = document.getElementById('status-voz-indicator');
-            indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando a Héctor...`;
+            try {
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'es-AR';
+                
+                const indicator = document.getElementById('status-voz-indicator');
+                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Escuchando a ${usuarioActual}...`;
 
-            recognition.onresult = function(event) {
-                const textoTranscrito = event.results[0][0].transcript;
-                document.getElementById('global-command-input').value = textoTranscrito;
-                indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Orden recibida`;
-                procesarComando(textoTranscrito);
-            };
-            recognition.start();
+                recognition.onresult = function(event) {
+                    const textoTranscrito = event.results[0][0].transcript;
+                    document.getElementById('global-command-input').value = textoTranscrito;
+                    indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Orden recibida`;
+                    procesarComando(textoTranscrito);
+                };
+
+                recognition.onerror = function() {
+                    indicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Escribí tu consulta abajo`;
+                };
+
+                recognition.start();
+            } catch(e) {
+                alert("Escribí tu consulta directamente en la barra inferior.");
+            }
         }
 
         function procesarComando(textoForzado = null) {
@@ -352,36 +350,35 @@
             let respuesta = "";
             const t = texto.toLowerCase();
 
-            // RESPUESTAS ABIERTAS, CLIMA, CUENTAS Y TALLER
             if (t.includes('hola') || t.includes('buen dia')) {
-                respuesta = `¡Hola Héctor! ¿Cómo va todo por el taller? Decime en qué te ayudo hoy.`;
+                respuesta = `¡Hola ${usuarioActual}! Soy ${nombreAsistente}. ¿Cómo va todo por el comedor? Decime en qué te ayudo hoy.`;
             } else if (t.includes('30 x 20') || t.includes('30x20')) {
-                respuesta = `Treinta por veinte da un total de seiscientos. Si es para el láser, cubre seiscientos centímetros cuadrados.`;
-            } else if (t.includes('llueve') || t.includes('clima') || t.includes('tiempo')) {
-                respuesta = `Para ver el pronóstico exacto al instante, podés usar el acceso rápido a Google o Maps que tenés en el panel derecho, Héctor.`;
-            } else if (t.includes('madera') || t.includes('laser') || t.includes('algolaser') || t.includes('grabado')) {
-                respuesta = `Para tu AlgoLaser MK2 de 10 watts sobre madera, usá velocidad mil y potencia al ochenta por ciento. Queda impecable.`;
-            } else if (t.includes('taza') || t.includes('sublimacion') || t.includes('vaso')) {
+                respuesta = `Treinta por veinte da un total de seiscientos centímetros cuadrados, ${usuarioActual}.`;
+            } else if (t.includes('llueve') || t.includes('clima')) {
+                respuesta = `Para ver el pronóstico al instante, abrí el acceso rápido de Google o Maps acá al costado.`;
+            } else if (t.includes('madera') || t.includes('laser') || t.includes('algolaser')) {
+                respuesta = `Para tu AlgoLaser MK2 de 10 watts sobre madera, usá velocidad mil y potencia al ochenta por ciento.`;
+            } else if (t.includes('taza') || t.includes('sublimacion')) {
                 respuesta = `Para sublimación en tazas o vasos térmicos, mantené la plancha a ciento noventa grados durante ciento ochenta segundos.`;
             } else if (t.includes('cuanto es') || t.includes('+') || t.includes('-') || t.includes('*') || t.includes('/')) {
                 try {
                     let expresion = t.replace('cuanto es', '').trim();
                     let resultado = eval(expresion);
-                    respuesta = `El resultado de esa cuenta es ${resultado}, Héctor.`;
+                    respuesta = `El resultado de esa cuenta es ${resultado}, ${usuarioActual}.`;
                 } catch(e) {
-                    respuesta = `Héctor, esa cuenta la resolvemos rápido con la calculadora de tu PC.`;
+                    respuesta = `Esa cuenta la resolvemos rápido.`;
                 }
             } else {
-                respuesta = `Entendido, Héctor. Sobre eso que me preguntás, te sugiero chequearlo directamente en las herramientas o buscarlo en la web para tener el dato exacto al instante.`;
+                respuesta = `Te escuché perfecto, ${usuarioActual}. Acá estoy para ayudarte con lo que necesites en el taller o el comedor.`;
             }
 
-            box.innerHTML += `<div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200"><strong>ORION:</strong> ${respuesta}</div>`;
+            box.innerHTML += `<div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-200"><strong>${nombreAsistente.toUpperCase()}:</strong> ${respuesta}</div>`;
             box.scrollTop = box.scrollHeight;
             hablarHumano(respuesta);
         }
 
         function limpiarChat() {
-            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>ORION:</strong> Conversación limpia. Decime qué necesitas.</div>`;
+            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Decime qué necesitas.</div>`;
         }
     </script>
 </body>
