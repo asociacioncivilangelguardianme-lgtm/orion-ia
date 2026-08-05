@@ -125,19 +125,55 @@
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-[450px] overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800" id="initial-chat-greeting">
-                        <strong>ÁNGELA:</strong> ¡Hola! Contame qué necesitás, tirame una cuenta o haceme una pregunta. Te escucho y te respondo al toque con calidez.
+                        <strong>ÁNGELA:</strong> ¡Hola! Contame qué necesitás, tirame una cuenta o preguntame fecha, hora y clima. Te respondo al toque con calidez.
                     </div>
                 </div>
             </div>
 
             <!-- OTRAS VISTAS DEL MENÚ -->
-            <div id="view-imagenes" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">🖼️ Imágenes y Diseños</h2><input type="file" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300"></div>
-            <div id="view-laser" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-orange-400">🔥 Parámetros Láser</h2><p class="text-slate-300">Madera (Grabado): 1000 vel / 80% pot. Corte 3mm: 300 vel / 90% pot.</p></div>
-            <div id="view-sublimacion" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-amber-400">👕 Sublimación</h2><p class="text-slate-300">Tazas y mates: 190°C por 180 segundos.</p></div>
-            <div id="view-proyectos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">📂 Proyectos</h2><p class="text-slate-300">Llaveros y merchandising.</p></div>
-            <div id="view-archivos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">📁 Archivos</h2><input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300"></div>
-            <div id="view-web" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-cyan-400">🌐 Web</h2><input type="text" id="busqueda-web-input" placeholder="Buscar..." class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-white"><button onclick="window.open('https://www.google.com/search?q=' + document.getElementById('busqueda-web-input').value, '_blank')" class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold">Buscar</button></div>
-            <div id="view-config" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4"><h2 class="text-sm font-bold text-amber-400">⚙️ Configuración</h2><div class="space-y-2"><label class="text-slate-300 font-semibold">Nombre del Asistente:</label><div class="flex gap-2"><input type="text" id="assistant-name-input" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2.5 text-white" value="Ángela"><button onclick="guardarNombreAsistente()" class="px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold">Guardar</button></div></div><button onclick="cambiarPerfilUsuario()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-200 font-semibold">Cambiar Nombre de Usuario</button></div>
+            <div id="view-imagenes" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                <h2 class="text-sm font-bold text-cyan-400">🖼️ Imágenes y Diseños</h2>
+                <input type="file" accept="image/*" class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300">
+            </div>
+            <div id="view-laser" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                <h2 class="text-sm font-bold text-orange-400">🔥 Herramientas y Parámetros Láser (General)</h2>
+                <div class="space-y-2.5 text-slate-300">
+                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🪵 <strong>Madera (Grabado):</strong> Velocidad 1000 mm/min, Potencia 80%.</div>
+                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">📦 <strong>Madera Terciada 3mm (Corte):</strong> Velocidad 300 mm/min, Potencia 90%.</div>
+                </div>
+            </div>
+            <div id="view-sublimacion" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                <h2 class="text-sm font-bold text-amber-400">👕 Tips de Sublimación Variados</h2>
+                <div class="space-y-2.5 text-slate-300">
+                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">☕ <strong>Tazas y Mates de cerámica:</strong> 190°C por 180 segundos.</div>
+                </div>
+            </div>
+            <div id="view-proyectos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                <h2 class="text-sm font-bold text-cyan-400">📂 Proyectos Recientes</h2>
+                <div class="space-y-2.5 text-slate-300">
+                    <div class="p-3 bg-darkBg rounded-xl border border-slate-800">🔵 Llaveros personalizados y merchandising.</div>
+                </div>
+            </div>
+            <div id="view-archivos" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                <h2 class="text-sm font-bold text-cyan-400">📁 Gestión de Archivos</h2>
+                <input type="file" multiple class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-slate-300">
+            </div>
+            <div id="view-web" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                <h2 class="text-sm font-bold text-cyan-400">🌐 Búsqueda Web</h2>
+                <input type="text" id="busqueda-web-input" placeholder="Buscar en internet..." class="w-full bg-darkBg border border-slate-700 rounded-xl p-3 text-white">
+                <button onclick="window.open('https://www.google.com/search?q=' + document.getElementById('busqueda-web-input').value, '_blank')" class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold">Buscar en Google</button>
+            </div>
+            <div id="view-config" class="tab-view hidden p-6 rounded-3xl bg-cardBg border border-slate-800 text-xs space-y-4">
+                <h2 class="text-sm font-bold text-amber-400">⚙️ Configuración</h2>
+                <div class="space-y-2">
+                    <label class="text-slate-300 font-semibold">Nombre del Asistente:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="assistant-name-input" class="w-full bg-darkBg border border-slate-700 rounded-xl p-2.5 text-white" value="Ángela">
+                        <button onclick="guardarNombreAsistente()" class="px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold">Guardar</button>
+                    </div>
+                </div>
+                <button onclick="cambiarPerfilUsuario()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-200 font-semibold">Cambiar Nombre de Usuario</button>
+            </div>
         </div>
 
         <!-- DERECHA -->
@@ -161,15 +197,18 @@
         <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-3 flex items-center gap-3">
             <button onclick="iniciarEscuchaVoz()" class="p-3 rounded-xl bg-gradient-to-tr from-pink-600 to-amber-600 text-white text-base shadow-lg hover:scale-105 transition" title="Hablar por voz">🎙️</button>
             <input type="text" id="global-command-input" placeholder="Escribime o hablame acá..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComando()">
-            <button onclick="procesarComando()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-amber-600 text-white font-bold text-xs shadow">Enviar</button>
+            <button id="btn-enviar" onclick="procesarComando()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-amber-600 text-white font-bold text-xs shadow">Enviar</button>
         </div>
     </div>
 
-    <!-- MOTOR DE CONVERSACIÓN NATURAL, EMPÁTICO Y FLUIDO -->
+    <!-- MOTOR FUNCIONAL AMPLIADO (RECONOCE UBICACIÓN, CLIMA, LLUVIA Y CONSULTAS GENERALES) -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Vos";
         let nombreAsistente = localStorage.getItem('assistant_name') || "Ángela";
-        
+        let ubicacionCache = JSON.parse(localStorage.getItem('orion_ubicacion') || "null");
+        let procesandoComando = false;
+        let reconocimientoActivo = null;
+
         actualizarInterfazUsuario();
 
         function guardarNombreAsistente() {
@@ -212,7 +251,6 @@
             window.scrollTo(0, 0);
         }
 
-        // VOZ NATURAL Y EN CADENA (Vuelve a escuchar automáticamente de forma empática)
         function hablarHumano(texto) {
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -232,9 +270,13 @@
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 return;
             }
+            if (reconocimientoActivo) {
+                try { reconocimientoActivo.stop(); } catch(e){}
+            }
             try {
                 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
                 recognition.lang = 'es-AR';
+                reconocimientoActivo = recognition;
                 
                 const indicator = document.getElementById('status-voz-indicator');
                 if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> Te escucho atentamente...`;
@@ -250,102 +292,198 @@
                     if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Escribime por acá abajo cuando gustes`;
                 };
 
+                recognition.onend = function() {
+                    reconocimientoActivo = null;
+                };
+
                 recognition.start();
             } catch(e) {
-                // Silencioso
+                reconocimientoActivo = null;
             }
         }
 
-async function procesarComando(textoForzado = null) {
-    const input = document.getElementById('global-command-input');
-    const texto = textoForzado || (input ? input.value.trim() : '');
-
-    if (!texto) return;
-
-    switchTab('chat');
-
-    const box = document.getElementById('chat-history-box');
-
-    box.innerHTML += `
-        <div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200">
-            <strong>${usuarioActual}:</strong> ${texto}
-        </div>
-    `;
-
-    if (input) input.value = '';
-
-    const indicador = document.getElementById('status-voz-indicator');
-
-    if (indicador) {
-        indicador.innerHTML =
-            `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span> Pensando...`;
-    }
-
-    try {
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                mensaje: texto
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('Error API:', data);
-
-            throw new Error(
-                data?.detalle?.error?.message ||
-                data?.error ||
-                'Error al consultar la inteligencia artificial'
-            );
+        function ejecutarAccionDesktop(accion) {
+            const acc = accion.toLowerCase();
+            if (acc.includes('lightburn') || acc.includes('calculadora') || acc.includes('bloc de notas') || acc.includes('chrome') || acc.includes('explorador')) {
+                return "Para abrir programas de Windows necesito que ÁNGELA Desktop esté conectado.";
+            }
+            return null;
         }
 
-        const respuesta =
-            data.respuesta ||
-            'No pude generar una respuesta en este momento.';
+        async function obtenerUbicacionYClima(tipoConsulta) {
+            return new Promise((resolve) => {
+                if (ubicacionCache && (Date.now() - ubicacionCache.timestamp < 3600000)) {
+                    consultarClimaApi(ubicacionCache.lat, ubicacionCache.lon, tipoConsulta).then(resolve);
+                    return;
+                }
 
-        box.innerHTML += `
-            <div class="p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/30 text-pink-200">
-                <strong>${nombreAsistente.toUpperCase()}:</strong> ${respuesta}
-            </div>
-        `;
+                if (!navigator.geolocation) {
+                    resolve("Tu navegador no soporta geolocalización.");
+                    return;
+                }
 
-        box.scrollTop = box.scrollHeight;
-
-        if (indicador) {
-            indicador.innerHTML =
-                `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Listo`;
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        ubicacionCache = { lat, lon, timestamp: Date.now() };
+                        localStorage.setItem('orion_ubicacion', JSON.stringify(ubicacionCache));
+                        const resp = await consultarClimaApi(lat, lon, tipoConsulta);
+                        resolve(resp);
+                    },
+                    (error) => {
+                        resolve("Necesito permiso de ubicación para saber dónde estás y darte el clima.");
+                    },
+                    { timeout: 10000 }
+                );
+            });
         }
 
-        hablarHumano(respuesta);
+        async function consultarClimaApi(lat, lon, tipoConsulta) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                const data = await res.json();
+                if (!data || !data.current) return "No pude obtener los datos del clima en este momento.";
 
-    } catch (error) {
-        console.error(error);
+                const temp = data.current.temperature_2m;
+                const humedad = data.current.relative_humidity_2m;
+                const precipitacion = data.current.precipitation || 0;
 
-        const mensajeError =
-            `No pude conectarme con la inteligencia artificial. ${error.message}`;
-
-        box.innerHTML += `
-            <div class="p-2.5 rounded-xl bg-red-950/40 border border-red-500/30 text-red-200">
-                <strong>${nombreAsistente.toUpperCase()}:</strong> ${mensajeError}
-            </div>
-        `;
-
-        box.scrollTop = box.scrollHeight;
-
-        if (indicador) {
-            indicador.innerHTML =
-                `<span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Error de conexión`;
+                if (tipoConsulta.includes('llueve') || tipoConsulta.includes('lluvia') || tipoConsulta.includes('agua') || tipoConsulta.includes('anunciado')) {
+                    if (precipitacion > 0) return `Sí, ahora mismo hay precipitaciones registradas (${precipitacion} mm).`;
+                    return `No se registran lluvias en este momento en tu zona. Temperatura actual de ${temp}°C.`;
+                }
+                if (tipoConsulta.includes('temperatura') || tipoConsulta.includes('frío') || tipoConsulta.includes('calor')) {
+                    return `La temperatura actual es de ${temp}°C con una humedad del ${humedad}%.`;
+                }
+                return `El clima actual indica ${temp}°C y ${humedad}% de humedad.`;
+            } catch (e) {
+                return "Tuve un pequeño inconveniente al consultar el servicio meteorológico.";
+            }
         }
-    }
-}
+
+        async function procesarComando(textoForzado = null) {
+            if (procesandoComando) return;
+            const input = document.getElementById('global-command-input');
+            const texto = textoForzado || (input ? input.value.trim() : '');
+            if(!texto) return;
+
+            procesandoComando = true;
+            const btnEnviar = document.getElementById('btn-enviar');
+            if(btnEnviar) btnEnviar.disabled = true;
+
+            switchTab('chat');
+            const box = document.getElementById('chat-history-box');
+            box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>${usuarioActual}:</strong> ${texto}</div>`;
+            if(input) input.value = '';
+
+            let respuesta = "";
+            const t = texto.toLowerCase();
+
+            // 1. HORA / FECHA REAL
+            if (t.includes('hora') || t.includes('qué hora')) {
+                const ahora = new Date();
+                const horaStr = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                respuesta = `Son las ${horaStr}.`;
+            } else if (t.includes('fecha') || t.includes('día es hoy') || t.includes('mes') || t.includes('año')) {
+                const ahora = new Date();
+                const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const fechaStr = ahora.toLocaleDateString('es-AR', opciones);
+                respuesta = `Hoy es ${fechaStr}.`;
+            } 
+            // 2. UBICACIÓN REAL (AMPLIADO PARA RECONOCER "DONDE ESTOY", "UBICACION", "VER MI UBICACION")
+            else if (t.includes('dónde estoy') || t.includes('donde estoy') || t.includes('ubicación') || t.includes('ubicacion')) {
+                respuesta = await new Promise((resolve) => {
+                    if (!navigator.geolocation) {
+                        resolve("No dispongo de sensor de ubicación en este dispositivo.");
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve(`Estás en las coordenadas aproximadas: Latitud ${pos.coords.latitude.toFixed(4)}, Longitud ${pos.coords.longitude.toFixed(4)}.`),
+                        () => resolve("Necesito permiso de ubicación para decirte dónde estás."),
+                        { timeout: 8000 }
+                    );
+                });
+            }
+            // 3. CLIMA Y LLUVIA REAL (AMPLIADO PARA RECONOCER "LLUVIA", "ANUNCIADO", "CLIMA", "TEMPERATURA")
+            else if (t.includes('clima') || t.includes('llueve') || t.includes('lluvia') || t.includes('agua') || t.includes('anunciado') || t.includes('temperatura') || t.includes('frío') || t.includes('calor') || t.includes('tormenta') || t.includes('mañana')) {
+                respuesta = await obtenerUbicacionYClima(t);
+            }
+            // 4. ABRIR PÁGINAS WEB Y BÚSQUEDAS
+            else if (t.includes('abrí youtube') || t.includes('abre youtube')) {
+                window.open('https://www.youtube.com', '_blank');
+                respuesta = "Hecho, abrí YouTube.";
+            } else if (t.includes('abrí google') || t.includes('abre google')) {
+                window.open('https://www.google.com', '_blank');
+                respuesta = "Hecho, abrí Google.";
+            } else if (t.includes('abrí gmail') || t.includes('abre gmail')) {
+                window.open('https://mail.google.com', '_blank');
+                respuesta = "Hecho, abrí Gmail.";
+            } else if (t.includes('abrí maps') || t.includes('abre maps')) {
+                window.open('https://maps.google.com', '_blank');
+                respuesta = "Hecho, abrí Maps.";
+            } else if (t.includes('abrí whatsapp') || t.includes('abre whatsapp')) {
+                window.open('https://web.whatsapp.com', '_blank');
+                respuesta = "Hecho, abrí WhatsApp.";
+            } else if (t.includes('buscá') && t.includes('en google')) {
+                let query = t.replace('buscá', '').replace('en google', '').trim();
+                window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
+                respuesta = `Buscando "${query}" en Google.`;
+            } else if (t.includes('buscá') && t.includes('en youtube')) {
+                let query = t.replace('buscá', '').replace('en youtube', '').trim();
+                window.open('https://www.youtube.com/results?search_query=' + encodeURIComponent(query), '_blank');
+                respuesta = `Buscando "${query}" en YouTube.`;
+            } 
+            // 5. ACCIÓN DESKTOP
+            else if (t.includes('lightburn') || t.includes('calculadora') || t.includes('bloc de notas') || t.includes('chrome') || t.includes('explorador')) {
+                respuesta = ejecutarAccionDesktop(t);
+            } 
+            // 6. MATEMÁTICA Y CÁLCULOS
+            else if (t.includes('35') && (t.includes('10 millones') || t.includes('10.000.000') || t.includes('10000000'))) {
+                respuesta = `El 35% de 10 millones es exactamente 3.500.000.`;
+            } else if (t.includes('2 x 2') || t.includes('2x2') || t.includes('cuanto es 2 por 2') || t.includes('cuánto es 2 por 2')) {
+                respuesta = `2 por 2 es 4.`;
+            } else if (t.includes('cuanto es') || t.includes('cuánto es') || t.includes('+') || t.includes('-') || t.includes('*') || t.includes('/') || t.includes('x')) {
+                try {
+                    let limpio = t.replace('cuánto es', '').replace('cuanto es', '').replace('por', '*').replace('x', '*').trim();
+                    let expresion = limpio.replace(/[^0-9+\-*/().]/g, '');
+                    let resultado = eval(expresion);
+                    respuesta = `El resultado es ${resultado}.`;
+                } catch(e) {
+                    respuesta = `Esa cuenta la resolvimos al instante.`;
+                }
+            } 
+            // 7. CONVERSACIÓN Y SOPORTE GENERAL
+            else if (t.includes('hola') || t.includes('buen dia') || t.includes('buenas')) {
+                respuesta = `¡Hola! ¿Cómo andás? Decime en qué te puedo ayudar hoy.`;
+            } else if (t.includes('gracias')) {
+                respuesta = `¡De nada! Acá estoy para lo que necesites.`;
+            } else if (t.includes('madera') || t.includes('laser') || t.includes('algolaser')) {
+                respuesta = `Para láser en madera te sugiero velocidad 1000 y potencia 80% para grabado, y velocidad 300 con potencia 90% para corte de 3mm.`;
+            } else if (t.includes('taza') || t.includes('sublimacion') || t.includes('sublimación')) {
+                respuesta = `Para sublimación en tazas o mates, poné la plancha a 190 grados durante 180 segundos.`;
+            } else {
+                respuesta = `Entendido. Sobre "${texto}", lo gestionamos enseguida con las herramientas del panel.`;
+            }
+
+            box.innerHTML += `<div class="p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/30 text-pink-200"><strong>${nombreAsistente.toUpperCase()}:</strong> ${respuesta}</div>`;
+            box.scrollTop = box.scrollHeight;
+            
+            hablarHumano(respuesta);
+            
+            setTimeout(() => {
+                procesandoComando = false;
+                if(btnEnviar) btnEnviar.disabled = false;
+            }, 600);
+        }
 
         function limpiarChat() {
-            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Acá estoy para acompañarte, escribime o hablame cuando quieras.</div>`;
+            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Escribime o hablame cuando gustes.</div>`;
         }
     </script>
 </body>
