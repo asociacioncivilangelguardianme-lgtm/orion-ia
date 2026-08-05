@@ -266,16 +266,16 @@ CENTRO
 <main class="space-y-5">
     <section id="inicio" class="panel rounded-3xl p-6 text-center">
         <h1 class="text-3xl font-bold" id="greeting-title">¡Hola! 👋</h1>
-        <p class="text-slate-300 mt-2">Decime <b>"Ángela"</b> y después hablame normalmente. Manos libres activo para accesibilidad.</p>
+        <p class="text-slate-300 mt-2">Tocá el micrófono o el núcleo para hablar con Ángela.</p>
 
         <div class="flex justify-center my-7">
-            <div class="orb" onclick="alternarEscuchaContinua()" id="core-orb-btn" title="Activar/Pausar escucha manos libres">
+            <div class="orb" onclick="activarMicrofonoManual()" id="core-orb-btn" title="Toca para hablar">
                 ÁNGELA
             </div>
         </div>
 
-        <div id="estadoVoz" class="text-green-400 text-sm font-semibold">
-            ● Escucha manos libres activa (Di "Ángela...")
+        <div id="estadoVoz" class="text-cyan-400 text-sm font-semibold">
+            🎤 Toca el botón para hablar
         </div>
 
         <div class="grid md:grid-cols-3 gap-3 mt-6">
@@ -294,13 +294,13 @@ CENTRO
 
         <div id="mensajes" class="mt-4 max-h-[350px] overflow-y-auto custom-scrollbar space-y-2">
             <div class="chatAngela">
-                <b>ÁNGELA:</b> ¡Hola! Decime "Ángela" y después tu pregunta o comando. Te escucho.
+                <b>ÁNGELA:</b> ¡Hola! Tocá el micrófono o escribime lo que necesites.
             </div>
         </div>
 
         <div class="flex gap-2 mt-4">
             <button onclick="activarMicrofonoManual()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-4 rounded-xl text-lg shadow" title="Hablar">🎤</button>
-            <input id="entradaChat" placeholder="Escribime o hablame diciendo Ángela..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-white" onkeydown="if(event.key==='Enter') enviarChat()">
+            <input id="entradaChat" placeholder="Escribime o hablame acá..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-white" onkeydown="if(event.key==='Enter') enviarChat()">
             <button onclick="enviarChat()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-6 rounded-xl font-bold">Enviar</button>
         </div>
     </section>
@@ -334,18 +334,14 @@ PANEL DERECHO
 </div>
 
 <!-- ===========================
-JAVASCRIPT UNIFICADO
+JAVASCRIPT UNIFICADO Y SEGURO
 =========================== -->
 <script>
     let nombreAsistente = localStorage.getItem('assistant_name') || "Ángela";
     let usuarioActual = localStorage.getItem('orion_user') || "Vos";
     let datosClima = null;
     let ubicacionCache = JSON.parse(localStorage.getItem('orion_ubicacion') || "null");
-    let reconocimiento = null;
-    let activada = false;
     let hablando = false;
-    let temporizadorActivacion;
-    let escuchandoContinuoActivo = true;
 
     function guardarConfigAsistente() {
         let val = document.getElementById("inputNombreAsistente").value.trim();
@@ -656,86 +652,43 @@ JAVASCRIPT UNIFICADO
         }
     }
 
-    // VOZ Y ACCESIBILIDAD MANOS LIBRES
+    // MICRÓFONO MANUAL SEGURO (EVITA ERRORES DE BUCLE)
     function activarMicrofonoManual(){
-        let txt = prompt("¿Qué le querés decir a Ángela?");
-        if(txt) {
-            agregarMensaje("user", txt);
-            responderAngela(txt);
+        if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+            alert("Tu navegador no soporta reconocimiento de voz.");
+            return;
         }
-    }
 
-    function iniciarEscuchaContinuaManosLibres(){
-        if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
         try {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            reconocimiento = new SpeechRecognition();
-            reconocimiento.lang = "es-AR";
-            reconocimiento.continuous = true;
-            reconocimiento.interimResults = false;
+            const reconocimientoManual = new SpeechRecognition();
+            reconocimientoManual.lang = "es-AR";
+            reconocimientoManual.continuous = false;
+            reconocimientoManual.interimResults = false;
 
-            reconocimiento.onresult = function(evento){
-                if(hablando) return;
-                const texto = evento.results[evento.results.length-1][0].transcript.trim();
-                const t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-                const nombreKey = nombreAsistente.toLowerCase();
+            document.getElementById("estadoVoz").textContent = "🟢 Escuchando... Hablá ahora";
 
-                if(t.includes(nombreKey)){
-                    activada = true;
-                    document.getElementById("estadoVoz").textContent = "🟢 ¡Te escucho!";
-                    clearTimeout(temporizadorActivacion);
-                    temporizadorActivacion = setTimeout(() => {
-                        activada = false;
-                        document.getElementById("estadoVoz").textContent = '● Escucha manos libres activa (Di "Ángela...")';
-                    }, 10000);
-
-                    let pregunta = texto.replace(new RegExp(nombreAsistente, 'ig'), "").trim();
-                    if(pregunta.startsWith(',')) pregunta = pregunta.substring(1).trim();
-                    if(pregunta.length > 1){
-                        agregarMensaje("user", pregunta);
-                        responderAngela(pregunta);
-                        activada = false;
-                    }
-                } else if(activada){
-                    agregarMensaje("user", texto);
-                    responderAngela(texto);
-                    activada = false;
-                    clearTimeout(temporizadorActivacion);
-                    document.getElementById("estadoVoz").textContent = '● Escucha manos libres activa (Di "Ángela...")';
+            reconocimientoManual.onresult = function(evento){
+                const textoTranscrito = evento.results[0][0].transcript.trim();
+                document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
+                if(textoTranscrito){
+                    agregarMensaje("user", textoTranscrito);
+                    responderAngela(textoTranscrito);
                 }
             };
 
-            reconocimiento.onerror = function(){
-                setTimeout(reiniciarEscucha, 1000);
+            reconocimientoManual.onerror = function(){
+                document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
             };
 
-            reconocimiento.onend = function(){
-                if(escuchandoContinuoActivo){
-                    setTimeout(reiniciarEscucha, 1000);
-                }
+            reconocimientoManual.onend = function(){
+                document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
             };
 
-            reconocimiento.start();
-        } catch(e){}
-    }
-
-    function reiniciarEscucha(){
-        if(!escuchandoContinuoActivo) return;
-        try { if(reconocimiento) reconocimiento.stop(); } catch(e){}
-        setTimeout(iniciarEscuchaContinuaManosLibres, 500);
-    }
-
-    function alternarEscuchaContinua(){
-        escuchandoContinuoActivo = !escuchandoContinuoActivo;
-        const estado = document.getElementById("estadoVoz");
-        if(escuchandoContinuoActivo){
-            iniciarEscuchaContinuaManosLibres();
-            estado.textContent = '● Escucha manos libres activa (Di "Ángela...")';
-            alert("Escucha manos libres activada.");
-        } else {
-            if(reconocimiento) reconocimiento.stop();
-            estado.textContent = '● Escucha pausada (Toca el núcleo para activar)';
-            alert("Escucha manos libres pausada.");
+            reconocimientoManual.start();
+        } catch(e) {
+            alert("No se pudo iniciar el micrófono. Verificá los permisos del navegador.");
+            document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
         }
     }
 
@@ -754,10 +707,6 @@ JAVASCRIPT UNIFICADO
     function borrarChat(){
         document.getElementById("mensajes").innerHTML = "";
     }
-
-    window.addEventListener("load", () => {
-        setTimeout(iniciarEscuchaContinuaManosLibres, 1200);
-    });
 </script>
 
 </body>
