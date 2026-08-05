@@ -266,16 +266,16 @@ CENTRO
 <main class="space-y-5">
     <section id="inicio" class="panel rounded-3xl p-6 text-center">
         <h1 class="text-3xl font-bold" id="greeting-title">¡Hola! 👋</h1>
-        <p class="text-slate-300 mt-2">Tocá el micrófono o el núcleo para hablar con Ángela.</p>
+        <p class="text-slate-300 mt-2">Asistente con Accesibilidad Manos Libres. Di <b>"Ángela"</b> seguido de tu orden.</p>
 
         <div class="flex justify-center my-7">
-            <div class="orb" onclick="activarMicrofonoManual()" id="core-orb-btn" title="Toca para hablar">
+            <div class="orb" onclick="alternarEscuchaManosLibres()" id="core-orb-btn" title="Activar/Pausar escucha manos libres">
                 ÁNGELA
             </div>
         </div>
 
-        <div id="estadoVoz" class="text-cyan-400 text-sm font-semibold">
-            🎤 Toca el botón para hablar
+        <div id="estadoVoz" class="text-green-400 text-sm font-semibold animate-pulse">
+            ● Escucha manos libres activa (Di "Ángela...")
         </div>
 
         <div class="grid md:grid-cols-3 gap-3 mt-6">
@@ -294,13 +294,13 @@ CENTRO
 
         <div id="mensajes" class="mt-4 max-h-[350px] overflow-y-auto custom-scrollbar space-y-2">
             <div class="chatAngela">
-                <b>ÁNGELA:</b> ¡Hola! Tocá el micrófono o escribime lo que necesites.
+                <b>ÁNGELA:</b> ¡Hola! Decime "Ángela" en voz alta para activarme sin usar las manos.
             </div>
         </div>
 
         <div class="flex gap-2 mt-4">
-            <button onclick="activarMicrofonoManual()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-4 rounded-xl text-lg shadow" title="Hablar">🎤</button>
-            <input id="entradaChat" placeholder="Escribime o hablame acá..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-white" onkeydown="if(event.key==='Enter') enviarChat()">
+            <button onclick="iniciarEscuchaManual()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-4 rounded-xl text-lg shadow" title="Hablar">🎤</button>
+            <input id="entradaChat" placeholder="Escribime o hablame diciendo Ángela..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-white" onkeydown="if(event.key==='Enter') enviarChat()">
             <button onclick="enviarChat()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-6 rounded-xl font-bold">Enviar</button>
         </div>
     </section>
@@ -334,13 +334,15 @@ PANEL DERECHO
 </div>
 
 <!-- ===========================
-JAVASCRIPT UNIFICADO Y SEGURO
+JAVASCRIPT CON ACCESIBILIDAD MANOS LIBRES
 =========================== -->
 <script>
     let nombreAsistente = localStorage.getItem('assistant_name') || "Ángela";
     let usuarioActual = localStorage.getItem('orion_user') || "Vos";
     let datosClima = null;
     let ubicacionCache = JSON.parse(localStorage.getItem('orion_ubicacion') || "null");
+    let reconocimientoContinuo = null;
+    let escuchandoActivo = true;
     let hablando = false;
 
     function guardarConfigAsistente() {
@@ -422,16 +424,11 @@ JAVASCRIPT UNIFICADO Y SEGURO
         const input = document.getElementById("nuevoProyectoInput");
         const texto = input.value.trim();
         if(!texto) return;
-        
         const contenedor = document.getElementById("listaProyectos");
-        if(contenedor.innerHTML.includes("No hay proyectos")) {
-            contenedor.innerHTML = "";
-        }
-        
+        if(contenedor.innerHTML.includes("No hay proyectos")) contenedor.innerHTML = "";
         const item = document.createElement("div");
         item.className = "bg-slate-900 p-2 rounded-lg flex justify-between items-center text-white";
         item.innerHTML = `<span>🔹 ${texto}</span> <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-300 font-bold px-1">✕</button>`;
-        
         contenedor.appendChild(item);
         input.value = "";
     }
@@ -451,53 +448,44 @@ JAVASCRIPT UNIFICADO Y SEGURO
         }
     });
 
-    // DATOS LÁSER
+    // DATOS LÁSER Y SUBLIMACIÓN
     const laserDatosBotones = {
-        madera: `🪵 <b>MADERA – GRABADO</b><br><br>⚡ Potencia inicial: 30–80%<br>🚀 Velocidad: 1000–3000 mm/min<br>🎯 Pasadas: 1<br><br>💡 Para fotografías usá escala de grises y hacé primero una matriz de prueba.`,
-        mdf: `📦 <b>MDF</b><br><br>🔥 Grabado: 30–70% potencia<br>🚀 Velocidad: 1200–3000 mm/min<br><br>✂️ Para cortar MDF necesitás más potencia, menor velocidad y posiblemente varias pasadas.`,
-        terciado: `🪵 <b>TERCIADO 3 MM</b><br><br>🔥 Láser diodo 10W – corte inicial:<br>🚀 200–400 mm/min<br>⚡ Potencia: 90–100%<br>🔁 2 a 5 pasadas aproximadamente.<br><br>💡 Siempre hacer prueba.`,
-        acero: `🔩 <b>ACERO INOXIDABLE</b><br><br>Los láseres de diodo normalmente necesitan un recubrimiento o marcador para obtener contraste.<br><br>💡 Para grabado directo profesional de metal se utiliza normalmente láser de fibra.`,
-        quirurgico: `⚙️ <b>ACERO QUIRÚRGICO</b><br><br>Para marcado permanente se recomienda láser apto para metal o producto marcador compatible.<br><br>💡 Hacé siempre una prueba en una pieza descartable.`,
-        aluminio: `🔘 <b>ALUMINIO ANODIZADO</b><br><br>🚀 Velocidad inicial: media/alta<br>⚡ Potencia: media<br><br>El láser elimina la capa anodizada generando el contraste.`,
-        termo: `🧉 <b>TERMO PINTADO</b><br><br>🎯 Objetivo: retirar la pintura sin dañar el metal.<br>🚀 Velocidad media<br>⚡ Potencia media<br><br>💡 Empezá con poca potencia y aumentá gradualmente.`,
-        mate: `🧉 <b>MATE METÁLICO</b><br><br>🚀 Velocidad inicial orientativa: 1500–3000 mm/min<br>⚡ Potencia: 50–100% según recubrimiento.<br><br>💡 Hacé una pequeña prueba antes del diseño final.`,
-        vaso: `🥤 <b>VASO TÉRMICO</b><br><br>🔄 Recomendado utilizar accesorio rotativo.<br>🎯 Comprobá enfoque y diámetro antes de comenzar.<br>⚡ Potencia media y velocidad moderada como punto inicial.`,
-        cuero: `🟤 <b>CUERO</b><br><br>🚀 Velocidad media/alta<br>⚡ Potencia baja/media<br><br>⚠️ Demasiada potencia quema los bordes.`,
-        acrilico: `◼️ <b>ACRÍLICO</b><br><br>Los acrílicos oscuros suelen funcionar mejor con láser de diodo.<br>El acrílico transparente normalmente requiere otro tipo de láser.`,
-        carton: `📦 <b>CARTÓN</b><br><br>🚀 Velocidad alta<br>⚡ Potencia baja/media<br><br>🔥 Material inflamable: nunca dejar el láser funcionando sin supervisión.`
+        madera: `🪵 <b>MADERA – GRABADO</b><br><br>⚡ Potencia inicial: 30–80%<br>🚀 Velocidad: 1000–3000 mm/min<br>🎯 Pasadas: 1`,
+        mdf: `📦 <b>MDF</b><br><br>🔥 Grabado: 30–70% potencia<br>🚀 Velocidad: 1200–3000 mm/min`,
+        terciado: `🪵 <b>TERCIADO 3 MM</b><br><br>🔥 Láser diodo 10W – corte inicial: 200–400 mm/min, Potencia: 90–100%`,
+        acero: `🔩 <b>ACERO INOXIDABLE</b><br><br>Requiere recubrimiento o marcador para diodo.`,
+        quirurgico: `⚙️ <b>ACERO QUIRÚRGICO</b><br><br>Requiere láser o producto apto para metal.`,
+        aluminio: `🔘 <b>ALUMINIO ANODIZADO</b><br><br>Velocidad media/alta, potencia media.`,
+        termo: `🧉 <b>TERMO PINTADO</b><br><br>Retirar pintura sin dañar metal.`,
+        mate: `🧉 <b>MATE METÁLICO</b><br><br>Velocidad 1500–3000 mm/min.`,
+        vaso: `🥤 <b>VASO TÉRMICO</b><br><br>Usar accesorio rotativo.`,
+        cuero: `🟤 <b>CUERO</b><br><br>Velocidad media/alta, potencia baja.`,
+        acrilico: `◼️ <b>ACRÍLICO</b><br><br>Oscuros funcionan mejor en diodo.`,
+        carton: `📦 <b>CARTÓN</b><br><br>Velocidad alta, potencia baja.`
     };
+    function mostrarLaserBoton(material){ document.getElementById("resultadoLaser").innerHTML = laserDatosBotones[material] || "Elegí material."; }
 
-    function mostrarLaserBoton(material){
-        document.getElementById("resultadoLaser").innerHTML = laserDatosBotones[material] || "Elegí un material.";
-    }
-
-    // DATOS SUBLIMACIÓN
     const subDatosBotones = {
-        taza: `☕ <b>TAZA 11 OZ</b><br><br>🌡️ Temperatura: 180–190 °C<br>⏱️ Tiempo: aproximadamente 180 segundos<br>🗜️ Presión: media<br><br>💡 Esperá unos segundos antes de retirar cuidadosamente el papel.`,
-        mate: `🧉 <b>MATE SUBLIMABLE</b><br><br>🌡️ 180–190 °C<br>⏱️ 60–180 segundos según modelo<br>🗜️ Presión media`,
-        remera: `👕 <b>REMERA DE POLIÉSTER</b><br><br>🌡️ 190–200 °C<br>⏱️ 40–60 segundos<br>🗜️ Presión media<br><br>💡 Usá papel protector para evitar transferencia de tinta.`,
-        gorra: `🧢 <b>GORRA SUBLIMABLE</b><br><br>🌡️ 180–190 °C<br>⏱️ 40–60 segundos<br>🗜️ Presión media`,
-        plato: `🍽️ <b>PLATO SUBLIMABLE</b><br><br>🌡️ Aproximadamente 180–200 °C<br>⏱️ Depende del tipo de resistencia y fabricante.`,
-        llavero: `🔑 <b>LLAVERO MDF SUBLIMABLE</b><br><br>🌡️ 190–200 °C<br>⏱️ 50–70 segundos<br>🗜️ Presión media`,
-        aluminio: `🔳 <b>CHAPA DE ALUMINIO SUBLIMABLE</b><br><br>🌡️ 190–200 °C<br>⏱️ 50–70 segundos<br>🗜️ Presión media`,
-        rompecabezas: `🧩 <b>ROMPECABEZAS SUBLIMABLE</b><br><br>🌡️ 185–195 °C<br>⏱️ 50–70 segundos<br>🗜️ Presión media`,
-        mousepad: `🖱️ <b>MOUSE PAD</b><br><br>🌡️ 190–200 °C<br>⏱️ 40–60 segundos<br>🗜️ Presión media`,
-        almohadon: `🛋️ <b>ALMOHADÓN SUBLIMABLE</b><br><br>🌡️ 190–200 °C<br>⏱️ 40–60 segundos<br>🗜️ Presión media`,
-        azulejo: `⬜ <b>AZULEJO SUBLIMABLE</b><br><br>🌡️ Aproximadamente 190–200 °C<br>⏱️ 180–300 segundos según espesor y prensa.`,
-        jarro: `🥤 <b>JARRO SUBLIMABLE</b><br><br>🌡️ Aproximadamente 180–190 °C<br>⏱️ 150–200 segundos dependiendo del modelo.`
+        taza: `☕ <b>TAZA 11 OZ</b><br><br>180–190 °C por 180 segundos.`,
+        mate: `🧉 <b>MATE SUBLIMABLE</b><br><br>180–190 °C por 60–180 segundos.`,
+        remera: `👕 <b>REMERA POLIÉSTER</b><br><br>190–200 °C por 40–60 segundos.`,
+        gorra: `🧢 <b>GORRA</b><br><br>180–190 °C por 40–60 segundos.`,
+        plato: `🍽️ <b>PLATO</b><br><br>180–200 °C.`,
+        llavero: `🔑 <b>LLAVERO MDF</b><br><br>190–200 °C por 50–70 segundos.`,
+        aluminio: `🔳 <b>CHAPA ALUMINIO</b><br><br>190–200 °C por 50–70 segundos.`,
+        rompecabezas: `🧩 <b>ROMPECABEZAS</b><br><br>185–195 °C por 50–70 segundos.`,
+        mousepad: `🖱️ <b>MOUSE PAD</b><br><br>190–200 °C por 40–60 segundos.`,
+        almohadon: `🛋️ <b>ALMOHADÓN</b><br><br>190–200 °C por 40–60 segundos.`,
+        azulejo: `⬜ <b>AZULEJO</b><br><br>190–200 °C por 180–300 segundos.`,
+        jarro: `🥤 <b>JARRO</b><br><br>180–190 °C por 150–200 segundos.`
     };
-
-    function mostrarSubBoton(producto){
-        document.getElementById("resultadoSub").innerHTML = subDatosBotones[producto] || "Seleccioná un producto.";
-    }
+    function mostrarSubBoton(producto){ document.getElementById("resultadoSub").innerHTML = subDatosBotones[producto] || "Elegí producto."; }
 
     // EDITOR DE IMÁGENES
     const canvas = document.getElementById("canvasImagen");
     const ctx = canvas.getContext("2d");
     let imagenOriginal = null;
-    let rotacion = 0;
-    let espejo = false;
-    let filtroActual = "normal";
+    let rotacion = 0, espejo = false, filtroActual = "normal";
 
     document.getElementById("archivoImagen").addEventListener("change", function(e){
         const archivo = e.target.files[0];
@@ -505,12 +493,7 @@ JAVASCRIPT UNIFICADO Y SEGURO
         const reader = new FileReader();
         reader.onload = function(evento){
             const img = new Image();
-            img.onload = function(){
-                imagenOriginal = img;
-                rotacion = 0;
-                espejo = false;
-                dibujarImagen();
-            };
+            img.onload = function(){ imagenOriginal = img; rotacion = 0; espejo = false; dibujarImagen(); };
             img.src = evento.target.result;
         };
         reader.readAsDataURL(archivo);
@@ -518,73 +501,30 @@ JAVASCRIPT UNIFICADO Y SEGURO
 
     function dibujarImagen(){
         if(!imagenOriginal) return;
-        let ancho = imagenOriginal.width;
-        let alto = imagenOriginal.height;
+        let ancho = imagenOriginal.width, alto = imagenOriginal.height;
         const maximo = 900;
-        if(ancho > maximo || alto > maximo){
-            const escala = Math.min(maximo/ancho, maximo/alto);
-            ancho *= escala;
-            alto *= escala;
-        }
+        if(ancho > maximo || alto > maximo){ const escala = Math.min(maximo/ancho, maximo/alto); ancho *= escala; alto *= escala; }
         const girada = rotacion % 180 !== 0;
-        canvas.width = girada ? alto : ancho;
-        canvas.height = girada ? ancho : alto;
-        ctx.save();
-        ctx.translate(canvas.width/2, canvas.height/2);
-        ctx.rotate(rotacion * Math.PI/180);
+        canvas.width = girada ? alto : ancho; canvas.height = girada ? ancho : alto;
+        ctx.save(); ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(rotacion * Math.PI/180);
         if(espejo) ctx.scale(-1,1);
-        const brillo = document.getElementById("brillo").value;
-        const contraste = document.getElementById("contraste").value;
-        let filtros = `brightness(${brillo}%) contrast(${contraste}%)`;
-        if(filtroActual==="grises") filtros += " grayscale(100%)";
-        if(filtroActual==="sepia") filtros += " sepia(100%)";
-        if(filtroActual==="invertir") filtros += " invert(100%)";
-        if(filtroActual==="contraste") filtros += " grayscale(100%) contrast(220%)";
-        ctx.filter = filtros;
         ctx.drawImage(imagenOriginal, -ancho/2, -alto/2, ancho, alto);
         ctx.restore();
-        ctx.filter="none";
-        if(filtroActual==="bn") convertirBN();
     }
-
-    function convertirBN(){
-        const imagen = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const p = imagen.data;
-        for(let i=0; i<p.length; i+=4){
-            const gris = p[i]*.299 + p[i+1]*.587 + p[i+2]*.114;
-            const valor = gris > 128 ? 255 : 0;
-            p[i]=valor; p[i+1]=valor; p[i+2]=valor;
-        }
-        ctx.putImageData(imagen, 0, 0);
-    }
-
-    function filtroImagen(tipo){ filtroActual=tipo; dibujarImagen(); }
+    function filtroImagen(t){ filtroActual=t; dibujarImagen(); }
     function rotarImagen(){ rotacion = (rotacion+90)%360; dibujarImagen(); }
     function espejoImagen(){ espejo=!espejo; dibujarImagen(); }
-    function restaurarImagen(){
-        rotacion=0; espejo=false; filtroActual="normal";
-        document.getElementById("brillo").value=100;
-        document.getElementById("contraste").value=100;
-        dibujarImagen();
-    }
-    document.getElementById("brillo").addEventListener("input", dibujarImagen);
-    document.getElementById("contraste").addEventListener("input", dibujarImagen);
-
+    function restaurarImagen(){ rotacion=0; espejo=false; dibujarImagen(); }
     function guardarImagen(){
-        if(!imagenOriginal){ alert("Primero cargá una imagen."); return; }
-        const enlace = document.createElement("a");
-        enlace.download = "imagen-angela.png";
-        enlace.href = canvas.toDataURL("image/png");
-        enlace.click();
+        if(!imagenOriginal){ alert("Cargá una imagen primero."); return; }
+        const enlace = document.createElement("a"); enlace.download = "imagen-angela.png"; enlace.href = canvas.toDataURL("image/png"); enlace.click();
     }
-
     function buscarGoogle(){
-        const texto = document.getElementById("buscarWeb").value.trim();
-        if(!texto) return;
-        window.open("https://www.google.com/search?q=" + encodeURIComponent(texto), "_blank");
+        const t = document.getElementById("buscarWeb").value.trim();
+        if(t) window.open("https://www.google.com/search?q=" + encodeURIComponent(t), "_blank");
     }
 
-    // CHAT Y LOGICA INTELIGENTE
+    // CHAT Y COMANDOS DE VOZ MANOS LIBRES (ACCESIBILIDAD)
     function agregarMensaje(tipo, texto){
         const caja = document.getElementById("mensajes");
         const div = document.createElement("div");
@@ -607,88 +547,91 @@ JAVASCRIPT UNIFICADO Y SEGURO
         const pregunta = texto.toLowerCase();
         let respuesta = "";
 
-        if(pregunta.includes("qué hora") || pregunta.includes("que hora") || pregunta==="hora"){
+        if(pregunta.includes("hora")){
             respuesta = "Son las " + new Date().toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
-        } else if(pregunta.includes("qué día") || pregunta.includes("que dia") || pregunta.includes("fecha")){
+        } else if(pregunta.includes("fecha") || pregunta.includes("día")){
             respuesta = "Hoy es " + new Date().toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
-        } else if(pregunta.includes("clima") || pregunta.includes("temperatura") || pregunta.includes("llueve")){
-            if(datosClima){
-                respuesta = `La temperatura actual es de ${datosClima.temperature_2m}°C y la sensación térmica es de ${datosClima.apparent_temperature}°C.`;
-            } else {
-                respuesta = "Todavía no pude obtener el clima. Verificá los permisos de ubicación.";
-            }
-        } else if(pregunta.includes("abrir youtube") || pregunta.includes("abrí youtube")){
-            respuesta = "Abriendo YouTube.";
+        } else if(pregunta.includes("clima") || pregunta.includes("temperatura")){
+            if(datosClima) respuesta = `La temperatura actual es de ${datosClima.temperature_2m}°C.`;
+            else respuesta = "Clima no disponible aún.";
+        } else if(pregunta.includes("youtube")){
             window.open("https://youtube.com", "_blank");
-        } else if(pregunta.includes("abrir google") || pregunta.includes("abrí google")){
-            respuesta = "Abriendo Google.";
+            respuesta = "Abriendo YouTube.";
+        } else if(pregunta.includes("google")){
             window.open("https://google.com", "_blank");
-        } else if(pregunta.includes("abrir whatsapp") || pregunta.includes("abrí whatsapp")){
-            respuesta = "Abriendo WhatsApp.";
+            respuesta = "Abriendo Google.";
+        } else if(pregunta.includes("whatsapp")){
             window.open("https://web.whatsapp.com", "_blank");
-        } else if(pregunta.includes("abrir gmail") || pregunta.includes("abrí gmail")){
-            respuesta = "Abriendo Gmail.";
-            window.open("https://mail.google.com", "_blank");
+            respuesta = "Abriendo WhatsApp.";
         } else {
-            respuesta = await preguntarIA(texto);
+            respuesta = `Entendido sobre "${texto}". Lo podés gestionar desde el panel de la izquierda.`;
         }
 
         agregarMensaje("angela", respuesta);
         hablar(respuesta);
     }
 
-    async function preguntarIA(texto){
-        try{
-            const respuesta = await fetch("/api/chat", {
-                method:"POST",
-                headers:{ "Content-Type": "application/json" },
-                body: JSON.stringify({ message:texto })
-            });
-            if(!respuesta.ok) throw new Error();
-            const datos = await respuesta.json();
-            return (datos.reply || datos.response || datos.text || "Entendido, lo gestionamos desde el panel.");
-        } catch(error){
-            return `Entendido sobre "${texto}". Lo podés gestionar directamente con las herramientas del panel de la izquierda.`;
-        }
-    }
-
-    // MICRÓFONO MANUAL SEGURO (EVITA ERRORES DE BUCLE)
-    function activarMicrofonoManual(){
-        if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
-            alert("Tu navegador no soporta reconocimiento de voz.");
-            return;
-        }
-
+    // MOTOR DE ESCUCHA CONTINUA MANOS LIBRES (ACCESIBILIDAD)
+    function iniciarEscuchaManosLibres(){
+        if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
         try {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const reconocimientoManual = new SpeechRecognition();
-            reconocimientoManual.lang = "es-AR";
-            reconocimientoManual.continuous = false;
-            reconocimientoManual.interimResults = false;
+            reconocimientoContinuo = new SpeechRecognition();
+            reconocimientoContinuo.lang = "es-AR";
+            reconocimientoContinuo.continuous = true;
+            reconocimientoContinuo.interimResults = false;
 
-            document.getElementById("estadoVoz").textContent = "🟢 Escuchando... Hablá ahora";
+            reconocimientoContinuo.onresult = function(evento){
+                if(hablando) return;
+                const texto = evento.results[evento.results.length-1][0].transcript.trim();
+                const t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+                const nombreKey = nombreAsistente.toLowerCase();
 
-            reconocimientoManual.onresult = function(evento){
-                const textoTranscrito = evento.results[0][0].transcript.trim();
-                document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
-                if(textoTranscrito){
-                    agregarMensaje("user", textoTranscrito);
-                    responderAngela(textoTranscrito);
+                if(t.includes(nombreKey)){
+                    document.getElementById("estadoVoz").textContent = "🟢 ¡Ángela activada!";
+                    let orden = texto.replace(new RegExp(nombreAsistente, 'ig'), "").trim();
+                    if(orden.startsWith(',')) orden = orden.substring(1).trim();
+                    if(orden.length > 1){
+                        agregarMensaje("user", orden);
+                        responderAngela(orden);
+                    } else {
+                        responderAngela("Sí, te escucho, ¿qué necesitas?");
+                    }
                 }
             };
 
-            reconocimientoManual.onerror = function(){
-                document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
-            };
+            reconocimientoContinuo.onerror = function(){ setTimeout(reiniciarReconocimiento, 1000); };
+            reconocimientoContinuo.onend = function(){ if(escuchandoActivo) setTimeout(reiniciarReconocimiento, 1000); };
 
-            reconocimientoManual.onend = function(){
-                document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
-            };
+            reconocimientoContinuo.start();
+        } catch(e){}
+    }
 
-            reconocimientoManual.start();
-        } catch(e) {
-            alert("No se pudo iniciar el micrófono. Verificá los permisos del navegador.");
-            document.getElementById("estadoVoz").textContent = "🎤 Toca el botón para hablar";
+    function reiniciarReconocimiento(){
+        if(!escuchandoActivo) return;
+        try{ if(reconocimientoContinuo) reconocimientoContinuo.stop(); }catch(e){}
+        setTimeout(iniciarEscuchaManosLibres, 500);
+    }
+
+    function alternarEscuchaManosLibres(){
+        escuchandoActivo = !escuchandoActivo;
+        const estado = document.getElementById("estadoVoz");
+        if(escuchandoActivo){
+            iniciarEscuchaManosLibres();
+            estado.textContent = '● Escucha manos libres activa (Di "Ángela...")';
+            alert("Escucha manos libres activada.");
+        } else {
+            if(reconocimientoContinuo) reconocimientoContinuo.stop();
+            estado.textContent = '● Escucha pausada';
+            alert("Escucha pausada.");
+        }
+    }
+
+    function iniciarEscuchaManual(){
+        let txt = prompt("Decime qué necesitás:");
+        if(txt){
+            agregarMensaje("user", txt);
+            responderAngela(txt);
         }
     }
 
@@ -704,9 +647,11 @@ JAVASCRIPT UNIFICADO Y SEGURO
         speechSynthesis.speak(voz);
     }
 
-    function borrarChat(){
-        document.getElementById("mensajes").innerHTML = "";
-    }
+    function borrarChat(){ document.getElementById("mensajes").innerHTML = ""; }
+
+    window.addEventListener("load", () => {
+        setTimeout(iniciarEscuchaManosLibres, 1500);
+    });
 </script>
 
 </body>
