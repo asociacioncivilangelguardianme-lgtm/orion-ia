@@ -256,53 +256,93 @@
             }
         }
 
-        function procesarComando(textoForzado = null) {
-            const input = document.getElementById('global-command-input');
-            const texto = textoForzado || (input ? input.value.trim() : '');
-            if(!texto) return;
+async function procesarComando(textoForzado = null) {
+    const input = document.getElementById('global-command-input');
+    const texto = textoForzado || (input ? input.value.trim() : '');
 
-            switchTab('chat');
-            const box = document.getElementById('chat-history-box');
-            box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>${usuarioActual}:</strong> ${texto}</div>`;
-            if(input) input.value = '';
+    if (!texto) return;
 
-            let respuesta = "";
-            const t = texto.toLowerCase();
+    switchTab('chat');
 
-            // INTELIGENCIA NATURAL, CÁLCULOS MATEMÁTICOS Y TONO EMPÁTICO (TIPO SIRI)
-            if (t.includes('35') && (t.includes('10 millones') || t.includes('10.000.000') || t.includes('10000000'))) {
-                respuesta = `El 35% de 10 millones da exactamente 3.500.000.`;
-            } else if (t.includes('2 x 2') || t.includes('2x2') || t.includes('cuanto es 2 por 2') || t.includes('cuánto es 2 por 2')) {
-                respuesta = `Dos por dos es cuatro, ¡fácil!`;
-            } else if (t.includes('hola') || t.includes('buen dia') || t.includes('buenas')) {
-                respuesta = `¡Hola! Qué alegría saludarte. ¿Cómo viene tu día?`;
-            } else if (t.includes('gracias')) {
-                respuesta = `¡De nada! Sabés que cuentas conmigo para lo que necesites.`;
-            } else if (t.includes('chiste') || t.includes('divertido')) {
-                respuesta = `Jaja, claro que sí. ¿Sabes por qué los pájaros no usan Facebook? ¡Porque ya tienen Twitter! (Bah, ahora X).`;
-            } else if (t.includes('clima') || t.includes('llueve')) {
-                respuesta = `Para ver el pronóstico al toque, podés chequear el buscador web acá arriba en el menú.`;
-            } else if (t.includes('madera') || t.includes('laser') || t.includes('algolaser')) {
-                respuesta = `Para láser en madera te sugiero usar velocidad 1000 y potencia 80% para grabado, y velocidad 300 con potencia 90% para corte de 3mm. ¡Queda genial!`;
-            } else if (t.includes('taza') || t.includes('sublimacion') || t.includes('sublimación')) {
-                respuesta = `Para sublimación en tazas o mates, poné la plancha a 190 grados durante 180 segundos. ¡No falla!`;
-            } else if (t.includes('cuanto es') || t.includes('cuánto es') || t.includes('+') || t.includes('-') || t.includes('*') || t.includes('/') || t.includes('x')) {
-                try {
-                    let limpio = t.replace('cuánto es', '').replace('cuanto es', '').replace('por', '*').replace('x', '*').trim();
-                    let expresion = limpio.replace(/[^0-9+\-*/().]/g, '');
-                    let resultado = eval(expresion);
-                    respuesta = `El resultado es ${resultado}. ¿Necesitás calcular algo más?`;
-                } catch(e) {
-                    respuesta = `Esa cuenta la resolvimos al instante. ¿Qué más se te ocurre?`;
-                }
-            } else {
-                respuesta = `Te entiendo perfectamente. Sobre eso que me decís, lo podemos resolver enseguida con las herramientas del panel. ¿Querés que veamos los detalles?`;
-            }
+    const box = document.getElementById('chat-history-box');
 
-            box.innerHTML += `<div class="p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/30 text-pink-200"><strong>${nombreAsistente.toUpperCase()}:</strong> ${respuesta}</div>`;
-            box.scrollTop = box.scrollHeight;
-            hablarHumano(respuesta);
+    box.innerHTML += `
+        <div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200">
+            <strong>${usuarioActual}:</strong> ${texto}
+        </div>
+    `;
+
+    if (input) input.value = '';
+
+    const indicador = document.getElementById('status-voz-indicator');
+
+    if (indicador) {
+        indicador.innerHTML =
+            `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span> Pensando...`;
+    }
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mensaje: texto
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Error API:', data);
+
+            throw new Error(
+                data?.detalle?.error?.message ||
+                data?.error ||
+                'Error al consultar la inteligencia artificial'
+            );
         }
+
+        const respuesta =
+            data.respuesta ||
+            'No pude generar una respuesta en este momento.';
+
+        box.innerHTML += `
+            <div class="p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/30 text-pink-200">
+                <strong>${nombreAsistente.toUpperCase()}:</strong> ${respuesta}
+            </div>
+        `;
+
+        box.scrollTop = box.scrollHeight;
+
+        if (indicador) {
+            indicador.innerHTML =
+                `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Listo`;
+        }
+
+        hablarHumano(respuesta);
+
+    } catch (error) {
+        console.error(error);
+
+        const mensajeError =
+            `No pude conectarme con la inteligencia artificial. ${error.message}`;
+
+        box.innerHTML += `
+            <div class="p-2.5 rounded-xl bg-red-950/40 border border-red-500/30 text-red-200">
+                <strong>${nombreAsistente.toUpperCase()}:</strong> ${mensajeError}
+            </div>
+        `;
+
+        box.scrollTop = box.scrollHeight;
+
+        if (indicador) {
+            indicador.innerHTML =
+                `<span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Error de conexión`;
+        }
+    }
+}
 
         function limpiarChat() {
             document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Acá estoy para acompañarte, escribime o hablame cuando quieras.</div>`;
