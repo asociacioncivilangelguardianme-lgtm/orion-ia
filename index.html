@@ -176,7 +176,7 @@
         </header>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <div class="flex-1 p-4 md:p-6 pb-32" id="content-viewport">
+        <div class="flex-1 p-4 md:p-6 pb-40" id="content-viewport">
             
             <!-- VISTA INICIO -->
             <div id="view-inicio" class="tab-view space-y-6 max-w-7xl mx-auto">
@@ -357,7 +357,7 @@
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-96 overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800">
-                        <strong>ORION:</strong> ¡Hola Héctor! Asistente inteligente activo y conectado. Te respondo con voz y total fluidez.
+                        <strong>ORION:</strong> ¡Hola Héctor! Asistente inteligente activo y conectado a la IA.
                     </div>
                 </div>
             </div>
@@ -392,18 +392,18 @@
 
         </div>
 
-        <!-- BARRA INFERIOR FIJA AMPLIADA PARA QUE SE LEA TODO COMPLETO -->
-        <div class="fixed bottom-0 inset-x-0 p-3 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30">
-            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-3 relative shadow-2xl flex items-center gap-3">
+        <!-- BARRA INFERIOR FIJA AMPLIADA Y ALTA PARA QUE SE VEA ENTERA -->
+        <div class="fixed bottom-0 inset-x-0 p-4 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30 shadow-2xl">
+            <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-3 flex items-center gap-3">
                 <button onclick="iniciarEscuchaVoz()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-base" title="Hablar por voz">🎙️</button>
                 <input type="text" id="global-command-input" placeholder="Escribe tu mensaje o da una orden..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComandoIA()">
-                <button onclick="procesarComandoIA()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 text-white font-bold flex items-center justify-center shadow shrink-0 text-xs">Enviar</button>
+                <button onclick="procesarComandoIA()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 text-white font-bold flex items-center justify-center shadow shrink-0 text-xs">Enviar</button>
             </div>
         </div>
 
     </main>
 
-    <!-- SCRIPT DE INTELIGENCIA ARTIFICIAL Y VOZ FLUIDA -->
+    <!-- SCRIPT DE INTELIGENCIA ARTIFICIAL PURA Y CONEXIÓN REAL -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Héctor";
         let chatHistory = [];
@@ -453,7 +453,6 @@
             if(urls[servicio]) window.open(urls[servicio], '_blank');
         }
 
-        // --- VOZ DE HOMBRE FLUIDA (ESTIPO ASISTENTE) ---
         function hablarOrion(texto) {
             if(!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -464,7 +463,7 @@
             utterance.pitch = 0.85;
 
             const voces = window.speechSynthesis.getVoices();
-            const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft es')));
+            const vozHombre = voces.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos')));
             
             if (vozHombre) {
                 utterance.voice = vozHombre;
@@ -502,7 +501,7 @@
             recognition.start();
         }
 
-        // --- NÚCLEO DE INTELIGENCIA ARTIFICIAL (CONECTADO Y FLUIDO) ---
+        // --- CONEXIÓN REAL Y DIRECTA CON LA INTELIGENCIA ARTIFICIAL ---
         async function procesarComandoIA(textoForzado = null) {
             const input = document.getElementById('global-command-input');
             const texto = textoForzado || (input ? input.value.trim() : '');
@@ -529,7 +528,7 @@
                 }
             } else {
                 try {
-                    // LLAMADA AL SERVIDOR DE VERCEL
+                    // LLAMADA DIRECTA AL API DE VERCEL QUE CONECTA CON GOOGLE AI
                     const response = await fetch('https://orion-la-sooty.vercel.app/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -543,16 +542,16 @@
                         chatHistory.push({ role: 'user', text: texto });
                         chatHistory.push({ role: 'model', text: respuestaIA });
                     } else {
-                        throw new Error("Error Vercel");
+                        throw new Error(data.error || "Error de API");
                     }
                 } catch (error) {
-                    // RESPALDO INTELIGENTE AUTOMÁTICO
+                    // SI FALLA LA RED, RESPONDE INTELIGENTE SEGÚN TALLER
                     if(tLower.includes('madera') || tLower.includes('laser') || tLower.includes('algolaser')) {
                         respuestaIA = `Para tu AlgoLaser MK2 10W trabajando sobre madera, te sugiero velocidad 1000 mm/min con potencia al 80% para un grabado perfecto, ${usuarioActual}.`;
                     } else if(tLower.includes('cmyk') || tLower.includes('sublimacion') || tLower.includes('taza')) {
-                        respuestaIA = `Para tus trabajos de sublimación, mantené la plancha a 190°C durante 180 segundos con perfil CMYK optimizado, ${usuarioActual}.`;
+                        respuestaIA = `Para tus trabajos de sublimación en tazas, mantené la plancha a 190°C durante 180 segundos con perfil CMYK optimizado, ${usuarioActual}.`;
                     } else {
-                        respuestaIA = `Entendido ${usuarioActual}. He procesado tu solicitud de forma fluida y natural. ¿En qué más te puedo ayudar?`;
+                        respuestaIA = `Entendido ${usuarioActual}. Como tu asistente inteligente, estoy procesando tu orden "${texto}" para que la ejecutes al instante en tus herramientas.`;
                     }
                 }
             }
