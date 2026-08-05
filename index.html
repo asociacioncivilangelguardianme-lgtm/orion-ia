@@ -94,10 +94,10 @@
             <div id="view-inicio" class="tab-view space-y-5">
                 <div class="text-center space-y-4 p-8 rounded-3xl bg-cardBg border border-slate-800 shadow-2xl relative overflow-hidden">
                     <h2 class="text-3xl font-black text-white" id="greeting-title">¡Hola! 👋</h2>
-                    <p class="text-slate-400 text-sm">Estoy acá para acompañarte. ¿Qué charlamos hoy?</p>
+                    <p class="text-slate-400 text-sm">Decime "Ángela" seguido de lo que necesites para activarme por voz.</p>
                     
                     <!-- NÚCLEO HOLOGRÁFICO -->
-                    <div class="relative w-64 h-64 mx-auto flex items-center justify-center cursor-pointer my-4" onclick="iniciarEscuchaVoz()">
+                    <div class="relative w-64 h-64 mx-auto flex items-center justify-center cursor-pointer my-4" onclick="alternarEscuchaContinua()">
                         <div class="absolute inset-0 rounded-full border-2 border-dashed border-pink-400/70 ring-spin"></div>
                         <div class="absolute inset-3 rounded-full border-2 border-amber-400/90 ring-spin-rev"></div>
                         <div class="absolute inset-10 rounded-full bg-gradient-to-tr from-slate-950 via-purple-950 to-pink-950 flex items-center justify-center shadow-2xl core-pulse font-bold text-white text-2xl tracking-widest border-2 border-pink-500/80" id="core-assistant-name">
@@ -106,7 +106,7 @@
                     </div>
 
                     <div class="flex items-center justify-center gap-2 py-1 text-pink-400 text-xs font-semibold" id="status-voz-indicator">
-                        <span class="w-2.5 h-2.5 rounded-full bg-pink-500 animate-ping"></span> Toca el núcleo o el micrófono para charlar de cerca
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Escucha manos libres activa (Di "Ángela...")
                     </div>
 
                     <div class="grid grid-cols-3 gap-3 pt-3">
@@ -125,7 +125,7 @@
                 </div>
                 <div id="chat-history-box" class="p-4 rounded-2xl bg-darkPanel border border-slate-800 h-[450px] overflow-y-auto space-y-3 text-xs custom-scrollbar">
                     <div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800" id="initial-chat-greeting">
-                        <strong>ÁNGELA:</strong> ¡Hola! Contame qué necesitás, tirame una cuenta o preguntame fecha, hora y clima. Te respondo al toque con calidez.
+                        <strong>ÁNGELA:</strong> ¡Hola! Decime "Ángela" y tu pregunta (ej: "Ángela, ¿qué hora es?"). Te escucho manos libres.
                     </div>
                 </div>
             </div>
@@ -192,24 +192,26 @@
         </div>
     </div>
 
-    <!-- BARRA INFERIOR CON MICRÓFONO EN CADENA -->
+    <!-- BARRA INFERIOR -->
     <div class="fixed bottom-0 inset-x-0 p-4 bg-darkBg/95 backdrop-blur border-t border-slate-800 z-30 shadow-2xl">
         <div class="max-w-4xl mx-auto bg-cardBg border border-slate-700 rounded-2xl p-3 flex items-center gap-3">
-            <button onclick="iniciarEscuchaVoz()" class="p-3 rounded-xl bg-gradient-to-tr from-pink-600 to-amber-600 text-white text-base shadow-lg hover:scale-105 transition" title="Hablar por voz">🎙️</button>
-            <input type="text" id="global-command-input" placeholder="Escribime o hablame acá..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComando()">
-            <button id="btn-enviar" onclick="procesarComando()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-amber-600 text-white font-bold text-xs shadow">Enviar</button>
+            <button onclick="iniciarEscuchaManual()" class="p-3 rounded-xl bg-gradient-to-tr from-pink-600 to-amber-600 text-white text-base shadow-lg hover:scale-105 transition" title="Hablar por voz">🎙️</button>
+            <input type="text" id="global-command-input" placeholder="Escribime o hablame diciendo Ángela..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none px-2 py-1.5" onkeypress="if(event.key==='Enter') procesarComandoDirecto()">
+            <button id="btn-enviar" onclick="procesarComandoDirecto()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-amber-600 text-white font-bold text-xs shadow">Enviar</button>
         </div>
     </div>
 
-    <!-- MOTOR FUNCIONAL AMPLIADO (RECONOCE UBICACIÓN, CLIMA, LLUVIA Y CONSULTAS GENERALES) -->
+    <!-- MOTOR CON ACTIVACIÓN POR PALABRA CLAVE Y ACCESIBILIDAD MANOS LIBRES -->
     <script>
         let usuarioActual = localStorage.getItem('orion_user') || "Vos";
         let nombreAsistente = localStorage.getItem('assistant_name') || "Ángela";
         let ubicacionCache = JSON.parse(localStorage.getItem('orion_ubicacion') || "null");
         let procesandoComando = false;
-        let reconocimientoActivo = null;
+        let reconocimientoContinuo = null;
+        let escuchandoActivo = true;
 
         actualizarInterfazUsuario();
+        iniciarEscuchaContinuaManosLibres();
 
         function guardarNombreAsistente() {
             let inputVal = document.getElementById('assistant-name-input').value.trim();
@@ -237,7 +239,7 @@
             document.getElementById('assistant-brand-title').innerText = nombreAsistente.toUpperCase();
             document.getElementById('core-assistant-name').innerText = nombreAsistente.toUpperCase();
             document.getElementById('assistant-name-input').value = nombreAsistente;
-            document.getElementById('initial-chat-greeting').innerHTML = `<strong>${nombreAsistente.toUpperCase()}:</strong> ¡Hola! Qué bueno tenerte por acá. Contame en qué te puedo dar una mano hoy.`;
+            document.getElementById('initial-chat-greeting').innerHTML = `<strong>${nombreAsistente.toUpperCase()}:</strong> ¡Hola! Decime "${nombreAsistente}" seguido de tu pregunta para activarme por voz.`;
         }
 
         function switchTab(tabId) {
@@ -259,46 +261,94 @@
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
             
+            // Cuando termina de hablar, el reconocimiento continúa escuchando manos libres
             utterance.onend = function() {
-                setTimeout(iniciarEscuchaVoz, 400);
+                setTimeout(reiniciarEscuchaContinua, 500);
             };
 
             window.speechSynthesis.speak(utterance);
         }
 
-        function iniciarEscuchaVoz() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                return;
-            }
-            if (reconocimientoActivo) {
-                try { reconocimientoActivo.stop(); } catch(e){}
-            }
+        // ESCUCHA CONTINUA INTELIGENTE (MANOS LIBRES PARA ACCESIBILIDAD)
+        function iniciarEscuchaContinuaManosLibres() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
             try {
                 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
                 recognition.lang = 'es-AR';
-                reconocimientoActivo = recognition;
-                
-                const indicator = document.getElementById('status-voz-indicator');
-                if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> Te escucho atentamente...`;
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                reconocimientoContinuo = recognition;
 
                 recognition.onresult = function(event) {
-                    const textoTranscrito = event.results[0][0].transcript;
-                    document.getElementById('global-command-input').value = textoTranscrito;
-                    if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> ¡Perfecto, te leí!`;
-                    procesarComando(textoTranscrito);
+                    const ultimo = event.results.length - 1;
+                    const textoTranscrito = event.results[ultimo][0].transcript.trim();
+                    const tLower = textoTranscrito.toLowerCase();
+                    const nombreKey = nombreAsistente.toLowerCase();
+
+                    const indicator = document.getElementById('status-voz-indicator');
+
+                    // FILTRO DE ACTIVACIÓN: Solo responde si dice el nombre del asistente
+                    if (tLower.includes(nombreKey)) {
+                        if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-pink-500 animate-ping"></span> ¡Te escuché! Procesando...`;
+                        
+                        // Limpiamos el nombre para dejar la orden pura
+                        let ordenPura = tLower.replace(nombreKey, '').trim();
+                        if(ordenPura.startsWith(',')) ordenPura = ordenPura.substring(1).trim();
+                        if(ordenPura === "") ordenPura = "¿En qué te ayudamos?";
+
+                        document.getElementById('global-command-input').value = ordenPura;
+                        procesarComando(ordenPura);
+                    }
                 };
 
                 recognition.onerror = function() {
-                    if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Escribime por acá abajo cuando gustes`;
+                    setTimeout(reiniciarEscuchaContinua, 1000);
                 };
 
                 recognition.onend = function() {
-                    reconocimientoActivo = null;
+                    if (escuchandoActivo) {
+                        setTimeout(reiniciarEscuchaContinua, 1000);
+                    }
                 };
 
                 recognition.start();
-            } catch(e) {
-                reconocimientoActivo = null;
+            } catch(e) {}
+        }
+
+        function reiniciarEscuchaContinua() {
+            if (!escuchandoActivo) return;
+            try {
+                if (reconocimientoContinuo) {
+                    reconocimientoContinuo.stop();
+                }
+            } catch(e){}
+            setTimeout(iniciarEscuchaContinuaManosLibres, 500);
+        }
+
+        function alternarEscuchaContinua() {
+            escuchandoActivo = !escuchandoActivo;
+            const indicator = document.getElementById('status-voz-indicator');
+            if (escuchandoActivo) {
+                iniciarEscuchaContinuaManosLibres();
+                if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Escucha manos libres activa (Di "Ángela...")`;
+                alert("Escucha manos libres activada.");
+            } else {
+                if(reconocimientoContinuo) reconocimientoContinuo.stop();
+                if(indicator) indicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Escucha pausada (Toca para activar)`;
+                alert("Escucha manos libres pausada.");
+            }
+        }
+
+        function iniciarEscuchaManual() {
+            let txt = prompt("Decime qué necesitás o hacé tu pregunta:");
+            if(txt) procesarComando(txt);
+        }
+
+        function procesarComandoDirecto() {
+            const input = document.getElementById('global-command-input');
+            if(input && input.value.trim() !== "") {
+                procesarComando(input.value.trim());
+                input.value = '';
             }
         }
 
@@ -367,20 +417,18 @@
             }
         }
 
-        async function procesarComando(textoForzado = null) {
-            if (procesandoComando) return;
-            const input = document.getElementById('global-command-input');
-            const texto = textoForzado || (input ? input.value.trim() : '');
-            if(!texto) return;
-
+        async function procesarComando(texto) {
+            if (procesandoComando || !texto) return;
             procesandoComando = true;
-            const btnEnviar = document.getElementById('btn-enviar');
-            if(btnEnviar) btnEnviar.disabled = true;
+
+            // Pausamos momentáneamente la escucha mientras habla para evitar eco
+            if(reconocimientoContinuo) {
+                try { reconocimientoContinuo.stop(); } catch(e){}
+            }
 
             switchTab('chat');
             const box = document.getElementById('chat-history-box');
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-cardBg border border-slate-800 text-slate-200"><strong>${usuarioActual}:</strong> ${texto}</div>`;
-            if(input) input.value = '';
 
             let respuesta = "";
             const t = texto.toLowerCase();
@@ -396,7 +444,7 @@
                 const fechaStr = ahora.toLocaleDateString('es-AR', opciones);
                 respuesta = `Hoy es ${fechaStr}.`;
             } 
-            // 2. UBICACIÓN REAL (AMPLIADO PARA RECONOCER "DONDE ESTOY", "UBICACION", "VER MI UBICACION")
+            // 2. UBICACIÓN REAL
             else if (t.includes('dónde estoy') || t.includes('donde estoy') || t.includes('ubicación') || t.includes('ubicacion')) {
                 respuesta = await new Promise((resolve) => {
                     if (!navigator.geolocation) {
@@ -410,11 +458,11 @@
                     );
                 });
             }
-            // 3. CLIMA Y LLUVIA REAL (AMPLIADO PARA RECONOCER "LLUVIA", "ANUNCIADO", "CLIMA", "TEMPERATURA")
+            // 3. CLIMA Y LLUVIA
             else if (t.includes('clima') || t.includes('llueve') || t.includes('lluvia') || t.includes('agua') || t.includes('anunciado') || t.includes('temperatura') || t.includes('frío') || t.includes('calor') || t.includes('tormenta') || t.includes('mañana')) {
                 respuesta = await obtenerUbicacionYClima(t);
             }
-            // 4. ABRIR PÁGINAS WEB Y BÚSQUEDAS
+            // 4. ABRIR PÁGINAS WEB
             else if (t.includes('abrí youtube') || t.includes('abre youtube')) {
                 window.open('https://www.youtube.com', '_blank');
                 respuesta = "Hecho, abrí YouTube.";
@@ -458,17 +506,19 @@
                     respuesta = `Esa cuenta la resolvimos al instante.`;
                 }
             } 
-            // 7. CONVERSACIÓN Y SOPORTE GENERAL
+            // 7. CONVERSACIÓN NATURAL Y EMPÁTICA
             else if (t.includes('hola') || t.includes('buen dia') || t.includes('buenas')) {
-                respuesta = `¡Hola! ¿Cómo andás? Decime en qué te puedo ayudar hoy.`;
+                respuesta = `¡Hola! Qué alegría saludarte. ¿Cómo viene tu día?`;
             } else if (t.includes('gracias')) {
-                respuesta = `¡De nada! Acá estoy para lo que necesites.`;
+                respuesta = `¡De nada! Sabés que cuentas conmigo para lo que necesites.`;
+            } else if (t.includes('chiste') || t.includes('divertido')) {
+                respuesta = `Claro que sí: ¿Sabes por qué los pájaros no usan Facebook? ¡Porque ya tienen Twitter! (Bah, ahora X).`;
             } else if (t.includes('madera') || t.includes('laser') || t.includes('algolaser')) {
-                respuesta = `Para láser en madera te sugiero velocidad 1000 y potencia 80% para grabado, y velocidad 300 con potencia 90% para corte de 3mm.`;
+                respuesta = `Para láser en madera te sugiero usar velocidad 1000 y potencia 80% para grabado, y velocidad 300 con potencia 90% para corte de 3mm. ¡Queda genial!`;
             } else if (t.includes('taza') || t.includes('sublimacion') || t.includes('sublimación')) {
-                respuesta = `Para sublimación en tazas o mates, poné la plancha a 190 grados durante 180 segundos.`;
+                respuesta = `Para sublimación en tazas o mates, poné la plancha a 190 grados durante 180 segundos. ¡No falla!`;
             } else {
-                respuesta = `Entendido. Sobre "${texto}", lo gestionamos enseguida con las herramientas del panel.`;
+                respuesta = `Entendido. Sobre "${texto}", lo charlamos o lo vemos en las herramientas del panel. ¿En qué más te puedo ayudar?`;
             }
 
             box.innerHTML += `<div class="p-2.5 rounded-xl bg-pink-950/40 border border-pink-500/30 text-pink-200"><strong>${nombreAsistente.toUpperCase()}:</strong> ${respuesta}</div>`;
@@ -478,12 +528,11 @@
             
             setTimeout(() => {
                 procesandoComando = false;
-                if(btnEnviar) btnEnviar.disabled = false;
-            }, 600);
+            }, 800);
         }
 
         function limpiarChat() {
-            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Escribime o hablame cuando gustes.</div>`;
+            document.getElementById('chat-history-box').innerHTML = `<div class="p-3 rounded-xl bg-cardBg text-slate-200 border border-slate-800"><strong>${nombreAsistente.toUpperCase()}:</strong> Conversación limpia. Acá estoy para acompañarte, escribime o hablame cuando quieras.</div>`;
         }
     </script>
 </body>
