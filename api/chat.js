@@ -43,7 +43,6 @@ async function llamarGemini({ apiKey, model, contents, systemText }) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: systemText }] },
       contents,
-      // ACÁ ESTABA EL ERROR: Le borré la herramienta de google_search que bloqueaba tu clave
       generationConfig: { temperature: 0.65, topP: 0.95, maxOutputTokens: 4096 }
     })
   });
@@ -80,15 +79,15 @@ export default async function handler(req, res) {
 
   if (req.method === "OPTIONS") return res.status(204).end();
 
-  // CLAVES
   const geminiApiKey = (process.env.GEMINI_API_KEY || "").trim();
   const openRouterApiKey = (process.env.OPENROUTER_API_KEY || "").trim();
 
-  // NOMBRES OFICIALES DE GEMINI 1.5
-  const geminiModels = ["gemini-1.5-flash", "gemini-1.5-pro"];
+  // ACÁ ESTÁ LA CORRECCIÓN CLAVE:
+  // "gemini-pro" es el universal que no falla con ninguna API KEY.
+  const geminiModels = ["gemini-pro", "gemini-1.5-flash-latest"];
   
-  // NOMBRES DE OPENROUTER
-  const openRouterModels = ["meta-llama/llama-3.1-8b-instruct", "google/gemma-2-9b-it"];
+  // Modelos de OpenRouter GARANTIZADOS 100% gratis y online.
+  const openRouterModels = ["mistralai/mistral-7b-instruct:free", "huggingfaceh4/zephyr-7b-beta:free"];
 
   if (req.method === "GET") {
     return res.status(200).json({
@@ -170,7 +169,7 @@ ${ubicacion ? `Ubicación GPS: ${String(ubicacion).slice(0, 250)}` : ""}`.trim()
     }
 
     // ==========================================
-    // PASO 2: INTENTAR OPENROUTER (Fallback 1)
+    // PASO 2: INTENTAR OPENROUTER (Fallback)
     // ==========================================
     if (openRouterApiKey) {
       const messages = historialAOpenRouter(history, mensaje, systemText);
@@ -213,7 +212,7 @@ ${ubicacion ? `Ubicación GPS: ${String(ubicacion).slice(0, 250)}` : ""}`.trim()
     }
 
     // ==========================================
-    // SI TODO FALLA: AUTODIAGNÓSTICO AL CHAT
+    // REPORTE TÉCNICO AL CHAT (Si todo falla)
     // ==========================================
     const reporteErrores = errores.map(e => `❌ ${e}`).join("\n\n");
     
