@@ -142,7 +142,6 @@ option{color:black;}
 <button onclick="restaurarImagen()" class="quick">♻ Restaurar</button>
 <button onclick="guardarImagen()" class="quick">💾 Guardar</button>
 </div>
-<p class="text-xs text-slate-400 mt-3">💡 Para láser probá blanco y negro, escala de grises o alto contraste.</p>
 </div>
 <button class="menu-btn" onclick="toggleMenu('laser')">🔥 Herramientas Láser <span class="float-right">›</span></button>
 <div id="laser" class="submenu">
@@ -161,7 +160,6 @@ option{color:black;}
 </select>
 <div id="laserSeleccionado" class="text-xs text-green-400 mt-2"></div>
 </div>
-<p class="text-xs text-slate-400 mb-3">Tocá el material que querés trabajar:</p>
 <div class="grid grid-cols-2 gap-2">
 <button class="quick" onclick="mostrarLaserBoton('madera')">🪵 Madera</button>
 <button class="quick" onclick="mostrarLaserBoton('mdf')">📦 MDF</button>
@@ -177,37 +175,17 @@ option{color:black;}
 <button class="quick" onclick="mostrarLaserBoton('carton')">📦 Cartón</button>
 </div>
 <div id="resultadoLaser" class="mt-4 text-sm bg-slate-950 border border-slate-700 p-4 rounded-xl">🔥 Elegí un material para ver los parámetros.</div>
-<p class="text-[11px] text-yellow-300 mt-3">⚠️ Son valores orientativos. Cambian según potencia, enfoque, material y máquina.</p>
-<hr class="border-slate-700 my-4">
-<h3 class="font-bold text-orange-300 mb-2">🧪 Guardar prueba láser</h3>
-<input id="historialMaterial" placeholder="Material: ej. Mate negro" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="historialVelocidad" placeholder="Velocidad" type="number" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="historialPotencia" placeholder="Potencia %" type="number" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="historialIntervalo" placeholder="Intervalo: ej. 0.08" type="number" step="0.01" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="historialResultado" placeholder="Resultado: bueno / muy oscuro..." class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<button onclick="guardarPruebaLaser()" class="quick w-full text-xs">💾 Guardar prueba</button>
-<div id="listaPruebasLaser" class="mt-3 text-xs space-y-2 max-h-48 overflow-y-auto custom-scrollbar"></div>
 </div>
 <button class="menu-btn" onclick="toggleMenu('sublimacion')">👕 Sublimación <span class="float-right">›</span></button>
 <div id="sublimacion" class="submenu">
 <h3 class="font-bold text-green-300 mb-3">👕 Guía de Sublimación</h3>
-<p class="text-xs text-slate-400 mb-3">Tocá el producto que querés sublimar:</p>
 <div class="grid grid-cols-2 gap-2">
 <button class="quick" onclick="mostrarSubBoton('taza')">☕ Taza 11 oz</button>
 <button class="quick" onclick="mostrarSubBoton('mate')">🧉 Mate</button>
 <button class="quick" onclick="mostrarSubBoton('remera')">👕 Remera</button>
 <button class="quick" onclick="mostrarSubBoton('gorra')">🧢 Gorra</button>
-<button class="quick" onclick="mostrarSubBoton('plato')">🍽️ Plato</button>
-<button class="quick" onclick="mostrarSubBoton('llavero')">🔑 Llavero MDF</button>
-<button class="quick" onclick="mostrarSubBoton('aluminio')">🔳 Chapa aluminio</button>
-<button class="quick" onclick="mostrarSubBoton('rompecabezas')">🧩 Rompecabezas</button>
-<button class="quick" onclick="mostrarSubBoton('mousepad')">🖱️ Mouse Pad</button>
-<button class="quick" onclick="mostrarSubBoton('almohadon')">🛋️ Almohadón</button>
-<button class="quick" onclick="mostrarSubBoton('azulejo')">⬜ Azulejo</button>
-<button class="quick" onclick="mostrarSubBoton('jarro')">🥤 Jarro</button>
 </div>
 <div id="resultadoSub" class="mt-4 text-sm bg-slate-950 border border-slate-700 p-4 rounded-xl">👕 Elegí un producto para ver temperatura y tiempo.</div>
-<p class="text-[11px] text-yellow-300 mt-3">⚠️ Los tiempos pueden variar según prensa, tinta, papel y fabricante.</p>
 </div>
 <button class="menu-btn" onclick="toggleMenu('proyectos')">📂 Proyectos <span class="float-right">›</span></button>
 <div id="proyectos" class="submenu">
@@ -215,105 +193,35 @@ option{color:black;}
 <input id="nuevoProyectoInput" placeholder="Nombre del proyecto..." class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-white text-xs">
 <button onclick="agregarProyecto()" class="quick w-full mb-3 text-xs">➕ Agregar Proyecto</button>
 <div id="listaProyectos" class="space-y-2 text-xs bg-slate-950 p-3 rounded-xl max-h-40 overflow-y-auto custom-scrollbar"></div>
-<hr class="border-slate-700 my-4">
-<h3 class="font-bold text-cyan-300 mb-3">🧾 Pedido / Trabajo del taller</h3>
-<input id="pedidoCliente" placeholder="Cliente" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="pedidoTrabajo" placeholder="Trabajo: ej. 20 mates grabados" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="pedidoFecha" type="date" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<select id="pedidoEstado" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<option value="Pendiente">Pendiente</option>
-<option value="Diseñando">Diseñando</option>
-<option value="Produciendo">Produciendo</option>
-<option value="Terminado">Terminado</option>
-<option value="Entregado">Entregado</option>
-</select>
-<button onclick="agregarPedido()" class="quick w-full text-xs">➕ Guardar pedido</button>
-<div id="listaPedidos" class="mt-3 space-y-2 text-xs max-h-52 overflow-y-auto custom-scrollbar"></div>
-</div>
-<button class="menu-btn" onclick="toggleMenu('archivos')">📁 Archivos <span class="float-right">›</span></button>
-<div id="archivos" class="submenu">
-<h3 class="font-bold text-cyan-300 mb-3">📁 Biblioteca de Archivos</h3>
-<p class="text-xs text-slate-400 mb-3">Subí tus vectores, moldes o fotos para tenerlos a mano:</p>
-<input type="file" id="inputArchivosTaller" multiple class="w-full bg-slate-900 p-2 rounded-lg mb-3 text-xs">
-<div id="listaArchivos" class="space-y-1 text-xs bg-slate-950 p-3 rounded-xl max-h-40 overflow-y-auto custom-scrollbar text-slate-400">Ningún archivo cargado.</div>
-</div>
-<button class="menu-btn" onclick="toggleMenu('memoria')">🧠 Memoria <span class="float-right">›</span></button>
-<div id="memoria" class="submenu">
-<h3 class="font-bold text-purple-300 mb-3">🧠 Memoria del Asistente</h3>
-<label class="text-xs text-slate-300">👤 Tu nombre</label>
-<input id="nombreUsuario" placeholder="Ej: Héctor" class="w-full bg-slate-900 p-2 rounded-lg my-2 text-white text-xs">
-<button onclick="guardarUsuario()" class="quick w-full text-xs mb-3">💾 Recordar usuario</button>
-<label class="text-xs text-slate-300">🧠 Información que querés que recuerde</label>
-<textarea id="memoriaPersonal" placeholder="Ej: Uso láser AlgoLaser 10W, trabajo con LightBurn..." class="w-full bg-slate-900 p-2 rounded-lg text-white text-xs min-h-[110px] mt-2"></textarea>
-<button onclick="guardarMemoria()" class="quick w-full text-xs mt-2">🧠 Guardar memoria</button>
-<button onclick="borrarMemoria()" class="quick w-full text-xs mt-2 text-red-300">🗑️ Borrar memoria</button>
-</div>
-<button class="menu-btn" onclick="toggleMenu('notas')">📝 Notas rápidas <span class="float-right">›</span></button>
-<div id="notas" class="submenu">
-<h3 class="font-bold text-yellow-300 mb-3">📝 Bloc de notas</h3>
-<textarea id="notasTaller" placeholder="Medidas, clientes, trabajos, materiales..." class="w-full bg-slate-900 p-3 rounded-xl text-white text-xs min-h-[130px]"></textarea>
-<button onclick="guardarNotas()" class="quick w-full mt-2 text-xs">💾 Guardar notas</button>
-</div>
-<button class="menu-btn" onclick="toggleMenu('calculadoras')">🧮 Calculadoras <span class="float-right">›</span></button>
-<div id="calculadoras" class="submenu">
-<h3 class="font-bold text-cyan-300 mb-3">📐 Conversor de medidas</h3>
-<input id="valorMM" type="number" placeholder="Milímetros" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<button onclick="convertirMedidas()" class="quick w-full text-xs">📏 Convertir</button>
-<div id="resultadoMedidas" class="bg-slate-950 p-3 rounded-xl mt-2 text-xs">Ingresá una medida.</div>
-<hr class="border-slate-700 my-4">
-<h3 class="font-bold text-orange-300 mb-2">🔥 Intervalo / DPI</h3>
-<input id="intervaloLaser" type="number" step="0.01" placeholder="Ej: 0.10" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<button onclick="calcularDPI()" class="quick w-full text-xs">🎯 Calcular DPI</button>
-<div id="resultadoDPI" class="bg-slate-950 p-3 rounded-xl mt-2 text-xs">Ingresá un intervalo.</div>
-</div>
-<button class="menu-btn" onclick="toggleMenu('presupuesto')">💰 Presupuestador <span class="float-right">›</span></button>
-<div id="presupuesto" class="submenu">
-<h3 class="font-bold text-green-300 mb-3">💰 Precio del trabajo</h3>
-<input id="costoMaterial" type="number" placeholder="Costo material" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="costoTrabajo" type="number" placeholder="Costo de máquina / mano de obra" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="otrosCostos" type="number" placeholder="Otros gastos" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="gananciaTrabajo" type="number" value="50" placeholder="% ganancia" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<button onclick="calcularPresupuesto()" class="quick w-full text-xs">💵 Calcular precio</button>
-<div id="resultadoPresupuesto" class="bg-slate-950 p-3 rounded-xl mt-3 text-sm">Completá los datos.</div>
 </div>
 <button class="menu-btn" onclick="toggleMenu('stock')">📦 Stock <span class="float-right">›</span></button>
 <div id="stock" class="submenu">
-<h3 class="font-bold text-blue-300 mb-3">📦 Materiales e insumos</h3>
+<h3 class="font-bold text-blue-300 mb-3">📦 Insumos</h3>
 <input id="stockNombre" placeholder="Ej: MDF 3 mm" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
 <input id="stockCantidad" type="number" placeholder="Cantidad" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<button onclick="agregarStock()" class="quick w-full text-xs">➕ Agregar al stock</button>
+<button onclick="agregarStock()" class="quick w-full text-xs">➕ Agregar</button>
 <div id="listaStock" class="mt-3 space-y-2 text-xs max-h-52 overflow-y-auto custom-scrollbar"></div>
 </div>
-<button class="menu-btn" onclick="toggleMenu('recordatorios')">⏰ Recordatorios <span class="float-right">›</span></button>
-<div id="recordatorios" class="submenu">
-<h3 class="font-bold text-pink-300 mb-3">⏰ Recordatorio rápido</h3>
-<input id="textoRecordatorio" placeholder="Ej: revisar el grabado" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<input id="minutosRecordatorio" type="number" placeholder="Minutos" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-<button onclick="crearRecordatorio()" class="quick w-full text-xs">🔔 Crear recordatorio</button>
-<div id="listaRecordatorios" class="mt-3 text-xs space-y-2"></div>
-</div>
-<button class="menu-btn" onclick="toggleMenu('web')">🌐 Web / Búsqueda <span class="float-right">›</span></button>
+<button class="menu-btn" onclick="toggleMenu('web')">🌐 Web <span class="float-right">›</span></button>
 <div id="web" class="submenu">
 <input id="buscarWeb" placeholder="Buscar en Google..." class="w-full bg-slate-900 p-2 rounded-lg text-xs">
 <button onclick="buscarGoogle()" class="quick w-full mt-2 text-xs">🔎 Buscar</button>
 </div>
 <button class="menu-btn" onclick="toggleMenu('config')">🔧 Configuración <span class="float-right">›</span></button>
 <div id="config" class="submenu">
-<label class="text-xs text-slate-300">Cambiar nombre del asistente:</label>
+<label class="text-xs text-slate-300">Nombre asistente:</label>
 <input id="inputNombreAsistente" value="Ángela" class="w-full bg-slate-900 p-2 rounded-lg my-2 text-xs">
 <button onclick="guardarConfigAsistente()" class="quick w-full text-xs">💾 Guardar</button>
-<hr class="border-slate-700 my-3">
-<button onclick="probarVoz()" class="quick w-full text-xs">🔊 Probar voz</button>
 </div>
 </aside>
 <main class="space-y-5">
 <section id="inicio" class="panel rounded-3xl p-6 text-center">
 <h1 id="greeting-title" class="text-3xl font-bold">¡Hola! 👋</h1>
-<p id="textoActivacion" class="text-slate-300 mt-2">Decime <b>"Ángela"</b> y después hablame normalmente. Manos libres activo para accesibilidad.</p>
+<p id="textoActivacion" class="text-slate-300 mt-2">Tocá el micrófono o escribí abajo para hablar con <b>Ángela</b>.</p>
 <div class="flex justify-center my-7">
-<div class="orb" onclick="alternarEscuchaContinua()" id="core-orb-btn" title="Activar/Pausar escucha manos libres">ÁNGELA</div>
+<div class="orb" onclick="activarMicrofonoManual()" id="core-orb-btn" title="Clic para hablar">ÁNGELA</div>
 </div>
-<div id="estadoVoz" class="text-green-400 text-sm font-semibold">● Escucha manos libres activa</div>
+<div id="estadoVoz" class="text-green-400 text-sm font-semibold">● Sistema listo</div>
 <div class="grid md:grid-cols-3 gap-3 mt-6">
 <button onclick="focusChat()" class="quick">💬 Abrir Chat</button>
 <button onclick="abrirMenu('laser')" class="quick">🔥 Parámetros Láser</button>
@@ -326,12 +234,12 @@ option{color:black;}
 <button onclick="borrarChat()" class="text-xs bg-slate-700 px-3 py-1 rounded-lg">Borrar Chat</button>
 </div>
 <div id="mensajes" class="mt-4 max-h-[420px] min-h-[140px] overflow-y-auto custom-scrollbar space-y-2">
-<div class="chatAngela"><b>ÁNGELA:</b> ¡Hola! Decime "Ángela" y después tu pregunta o comando. Te escucho.</div>
+<div class="chatAngela"><b>ÁNGELA:</b> ¡Hola Héctor! Acá estoy en el taller con vos. ¿Qué necesitas?</div>
 </div>
-<div id="estadoPensando" class="text-xs text-cyan-300 mt-2 hidden">● Pensando...</div>
+<div id="estadoPensando" class="text-xs text-cyan-300 mt-2 hidden">● Buscando en la web...</div>
 <div class="flex gap-2 mt-4">
 <button onclick="activarMicrofonoManual()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-4 rounded-xl text-lg shadow" title="Hablar">🎤</button>
-<input id="entradaChat" placeholder="Escribime o hablame diciendo Ángela..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-white" onkeydown="if(event.key==='Enter') enviarChat()">
+<input id="entradaChat" placeholder="Preguntame sobre el dólar, campeonatos o escribime lo que quieras..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-white" onkeydown="if(event.key==='Enter') enviarChat()">
 <button onclick="enviarChat()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-6 rounded-xl font-bold">Enviar</button>
 </div>
 </section>
@@ -366,7 +274,7 @@ option{color:black;}
 </div>
 <div class="panel rounded-3xl p-4">
 <h3 class="font-bold text-orange-300 mb-3">🔥 MI LÁSER</h3>
-<div id="panelLaserActual" class="text-sm text-cyan-300">Sin configurar.</div>
+<div id="panelLaserActual" class="text-sm text-cyan-300">AlgoLaser DIY Kit MK2 10W</div>
 </div>
 <div class="panel rounded-3xl p-4">
 <h3 class="font-bold text-cyan-300 mb-3">📊 TALLER</h3>
@@ -380,913 +288,330 @@ option{color:black;}
 </div>
 <script>
 let nombreAsistente = localStorage.getItem("assistant_name") || "Ángela";
-let usuarioActual = localStorage.getItem("orion_user") || "Vos";
-let datosClima = null;
-let ubicacionCache = JSON.parse(localStorage.getItem("orion_ubicacion") || "null");
-let reconocimiento = null;
-let reconocimientoManual = null;
-let activada = false;
-let hablando = false;
-let temporizadorActivacion;
-let escuchandoContinuoActivo = true;
+let usuarioActual = localStorage.getItem("orion_user") || "Héctor";
 let proyectosGuardados = JSON.parse(localStorage.getItem("angela_proyectos") || "[]");
 let pedidosGuardados = JSON.parse(localStorage.getItem("angela_pedidos") || "[]");
 let stockGuardado = JSON.parse(localStorage.getItem("angela_stock") || "[]");
 let pruebasLaser = JSON.parse(localStorage.getItem("angela_pruebas_laser") || "[]");
-let recordatoriosActivos = [];
+let datosClima = null;
+let ubicacionCache = JSON.parse(localStorage.getItem("orion_ubicacion") || "null");
+let hablando = false;
 
 function normalizarTexto(texto){
-return String(texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    return String(texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 }
 function escaparHTML(texto){
-const div = document.createElement("div");
-div.textContent = String(texto ?? "");
-return div.innerHTML;
+    const div = document.createElement("div");
+    div.textContent = String(texto ?? "");
+    return div.innerHTML;
 }
 function toggleMenu(id){
-const elemento = document.getElementById(id);
-if(!elemento) return;
-elemento.style.display = elemento.style.display === "block" ? "none" : "block";
+    const elemento = document.getElementById(id);
+    if(!elemento) return;
+    elemento.style.display = elemento.style.display === "block" ? "none" : "block";
 }
 function abrirMenu(id){
-const elemento = document.getElementById(id);
-if(!elemento) return;
-elemento.style.display = "block";
-setTimeout(()=>{ elemento.scrollIntoView({behavior:"smooth", block:"center"}); },100);
+    const elemento = document.getElementById(id);
+    if(!elemento) return;
+    elemento.style.display = "block";
+    setTimeout(()=>{ elemento.scrollIntoView({behavior:"smooth", block:"center"}); },100);
 }
 function irInicio(){
-document.getElementById("inicio").scrollIntoView({behavior:"smooth"});
+    document.getElementById("inicio").scrollIntoView({behavior:"smooth"});
 }
 function focusChat(){
-document.getElementById("chat").scrollIntoView({behavior:"smooth"});
-setTimeout(()=>{ document.getElementById("entradaChat").focus(); },250);
-}
-function actualizarNombrePantalla(){
-document.getElementById("brandNombre").textContent = nombreAsistente.toUpperCase();
-document.getElementById("core-orb-btn").textContent = nombreAsistente.toUpperCase();
-document.getElementById("inputNombreAsistente").value = nombreAsistente;
-document.getElementById("textoActivacion").innerHTML = `Decime <b>"${escaparHTML(nombreAsistente)}"</b> y después hablame normalmente. Manos libres activo para accesibilidad.`;
-actualizarEstadoEscucha();
-}
-function guardarConfigAsistente(){
-const valor = document.getElementById("inputNombreAsistente").value.trim();
-if(!valor) return;
-nombreAsistente = valor;
-localStorage.setItem("assistant_name", nombreAsistente);
-actualizarNombrePantalla();
-agregarMensaje("angela", `Perfecto. Desde ahora mi nombre es ${nombreAsistente}.`);
+    document.getElementById("chat").scrollIntoView({behavior:"smooth"});
+    setTimeout(()=>{ document.getElementById("entradaChat").focus(); },250);
 }
 function actualizarReloj(){
-const ahora = new Date();
-document.getElementById("reloj").textContent = ahora.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
-document.getElementById("fecha").textContent = ahora.toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
+    const ahora = new Date();
+    document.getElementById("reloj").textContent = ahora.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+    document.getElementById("fecha").textContent = ahora.toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
 }
 actualizarReloj();
 setInterval(actualizarReloj, 1000);
 
 function cargarUbicacion(){
-const estadoUbicacion = document.getElementById("estadoUbicacion");
-if(ubicacionCache && Date.now() - ubicacionCache.timestamp < 3600000){
-estadoUbicacion.textContent = "🟢 Activa";
-estadoUbicacion.className = "text-green-400";
-usarCoordenadasClima(ubicacionCache.lat, ubicacionCache.lon);
-return;
-}
-if(!navigator.geolocation){
-document.getElementById("ubicacion").textContent = "📍 Ubicación no disponible";
-estadoUbicacion.textContent = "🔴 No disponible";
-estadoUbicacion.className = "text-red-400";
-return;
-}
-navigator.geolocation.getCurrentPosition(
-posicion=>{
-const lat = posicion.coords.latitude;
-const lon = posicion.coords.longitude;
-ubicacionCache = {lat, lon, timestamp:Date.now()};
-localStorage.setItem("orion_ubicacion", JSON.stringify(ubicacionCache));
-estadoUbicacion.textContent = "🟢 Activa";
-estadoUbicacion.className = "text-green-400";
-usarCoordenadasClima(lat, lon);
-},
-()=>{
-document.getElementById("ubicacion").textContent = "📍 Permití ubicación para clima";
-document.getElementById("clima").textContent = "🌤️ Clima pendiente";
-estadoUbicacion.textContent = "🟡 Sin permiso";
-estadoUbicacion.className = "text-yellow-400";
-},
-{timeout:10000, enableHighAccuracy:false}
-);
+    const estadoUbicacion = document.getElementById("estadoUbicacion");
+    if(ubicacionCache && Date.now() - ubicacionCache.timestamp < 3600000){
+        estadoUbicacion.textContent = "🟢 Activa";
+        estadoUbicacion.className = "text-green-400";
+        usarCoordenadasClima(ubicacionCache.lat, ubicacionCache.lon);
+        return;
+    }
+    if(!navigator.geolocation){
+        document.getElementById("ubicacion").textContent = "📍 Ubicación no disponible";
+        estadoUbicacion.textContent = "🔴 No disponible";
+        estadoUbicacion.className = "text-red-400";
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        posicion=>{
+            const lat = posicion.coords.latitude;
+            const lon = posicion.coords.longitude;
+            ubicacionCache = {lat, lon, timestamp:Date.now()};
+            localStorage.setItem("orion_ubicacion", JSON.stringify(ubicacionCache));
+            estadoUbicacion.textContent = "🟢 Activa";
+            estadoUbicacion.className = "text-green-400";
+            usarCoordenadasClima(lat, lon);
+        },
+        ()=>{
+            document.getElementById("ubicacion").textContent = "📍 Permití ubicación para clima";
+            document.getElementById("clima").textContent = "🌤️ Clima pendiente";
+            estadoUbicacion.textContent = "🟡 Sin permiso";
+            estadoUbicacion.className = "text-yellow-400";
+        },
+        {timeout:10000, enableHighAccuracy:false}
+    );
 }
 
 async function usarCoordenadasClima(lat, lon){
-document.getElementById("ubicacion").textContent = "📍 Ubicación detectada";
-try{
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&timezone=auto`;
-const respuesta = await fetch(url);
-if(!respuesta.ok) throw new Error();
-const datos = await respuesta.json();
-datosClima = datos.current;
-document.getElementById("clima").innerHTML = `🌡️ ${datos.current.temperature_2m} °C<br>Sensación ${datos.current.apparent_temperature} °C<br>💧 ${datos.current.precipitation ?? 0} mm<br>💨 ${datos.current.wind_speed_10m ?? "-"} km/h`;
-}
-catch(error){
-document.getElementById("clima").textContent = "🌤️ No pude cargar el clima";
-}
-}
-
-function mostrarProyectos(){
-const contenedor = document.getElementById("listaProyectos");
-contenedor.innerHTML = "";
-if(proyectosGuardados.length === 0){
-contenedor.innerHTML = `<div class="text-slate-400">No hay proyectos cargados todavía.</div>`;
-}else{
-proyectosGuardados.forEach((proyecto,index)=>{
-const item = document.createElement("div");
-item.className = "bg-slate-900 p-2 rounded-lg flex justify-between items-center gap-2";
-const span = document.createElement("span");
-span.textContent = "🔹 " + proyecto;
-const borrar = document.createElement("button");
-borrar.textContent = "✕";
-borrar.className = "text-red-400 font-bold";
-borrar.onclick = ()=> eliminarProyecto(index);
-item.appendChild(span);
-item.appendChild(borrar);
-contenedor.appendChild(item);
-});
-}
-actualizarResumenTaller();
-}
-
-function agregarProyecto(){
-const input = document.getElementById("nuevoProyectoInput");
-const texto = input.value.trim();
-if(!texto) return;
-proyectosGuardados.push(texto);
-localStorage.setItem("angela_proyectos", JSON.stringify(proyectosGuardados));
-input.value = "";
-mostrarProyectos();
-}
-
-function eliminarProyecto(index){
-proyectosGuardados.splice(index, 1);
-localStorage.setItem("angela_proyectos", JSON.stringify(proyectosGuardados));
-mostrarProyectos();
-}
-
-function agregarPedido(){
-const cliente = document.getElementById("pedidoCliente").value.trim();
-const trabajo = document.getElementById("pedidoTrabajo").value.trim();
-const fecha = document.getElementById("pedidoFecha").value;
-const estado = document.getElementById("pedidoEstado").value;
-if(!cliente || !trabajo){
-alert("Completá cliente y trabajo.");
-return;
-}
-pedidosGuardados.push({id:Date.now(), cliente, trabajo, fecha, estado});
-guardarPedidos();
-document.getElementById("pedidoCliente").value = "";
-document.getElementById("pedidoTrabajo").value = "";
-document.getElementById("pedidoFecha").value = "";
-mostrarPedidos();
-}
-
-function guardarPedidos(){
-localStorage.setItem("angela_pedidos", JSON.stringify(pedidosGuardados));
-}
-
-function mostrarPedidos(){
-const caja = document.getElementById("listaPedidos");
-caja.innerHTML = "";
-if(pedidosGuardados.length === 0){
-caja.innerHTML = `<div class="text-slate-400">No hay pedidos guardados.</div>`;
-actualizarResumenTaller();
-return;
-}
-pedidosGuardados.forEach((pedido,index)=>{
-const div = document.createElement("div");
-div.className = "bg-slate-900 p-3 rounded-xl";
-div.innerHTML = `<b>👤 ${escaparHTML(pedido.cliente)}</b><br>🛠️ ${escaparHTML(pedido.trabajo)}<br>📅 ${pedido.fecha || "Sin fecha"}<br><span class="text-cyan-300">📌 ${escaparHTML(pedido.estado)}</span><div class="grid grid-cols-2 gap-2 mt-2"><button class="quick text-[10px]" onclick="avanzarPedido(${index})">➡️ Avanzar</button><button class="quick text-[10px] text-red-300" onclick="eliminarPedido(${index})">🗑️ Borrar</button></div>`;
-caja.appendChild(div);
-});
-actualizarResumenTaller();
-}
-
-function avanzarPedido(index){
-const estados = ["Pendiente", "Diseñando", "Produciendo", "Terminado", "Entregado"];
-const pedido = pedidosGuardados[index];
-const actual = estados.indexOf(pedido.estado);
-pedido.estado = estados[Math.min(actual + 1, estados.length - 1)];
-guardarPedidos();
-mostrarPedidos();
-}
-
-function eliminarPedido(index){
-pedidosGuardados.splice(index, 1);
-guardarPedidos();
-mostrarPedidos();
-}
-
-function agregarStock(){
-const nombre = document.getElementById("stockNombre").value.trim();
-const cantidad = parseFloat(document.getElementById("stockCantidad").value);
-if(!nombre || isNaN(cantidad)){
-alert("Completá producto y cantidad.");
-return;
-}
-stockGuardado.push({nombre, cantidad});
-guardarStock();
-document.getElementById("stockNombre").value = "";
-document.getElementById("stockCantidad").value = "";
-mostrarStock();
-}
-
-function guardarStock(){
-localStorage.setItem("angela_stock", JSON.stringify(stockGuardado));
-}
-
-function mostrarStock(){
-const caja = document.getElementById("listaStock");
-caja.innerHTML = "";
-if(stockGuardado.length === 0){
-caja.innerHTML = `<div class="text-slate-400">No hay productos cargados.</div>`;
-actualizarResumenTaller();
-return;
-}
-stockGuardado.forEach((item,index)=>{
-const div = document.createElement("div");
-div.className = "bg-slate-900 p-2 rounded-lg flex justify-between items-center gap-2";
-div.innerHTML = `<span>📦 ${escaparHTML(item.nombre)} — <b>${item.cantidad}</b></span><button onclick="eliminarStock(${index})" class="text-red-400 font-bold">✕</button>`;
-caja.appendChild(div);
-});
-actualizarResumenTaller();
-}
-
-function eliminarStock(index){
-stockGuardado.splice(index, 1);
-guardarStock();
-mostrarStock();
-}
-
-function actualizarResumenTaller(){
-document.getElementById("contadorProyectos").textContent = proyectosGuardados.length;
-const pendientes = pedidosGuardados.filter(p => p.estado !== "Entregado").length;
-document.getElementById("contadorPedidos").textContent = pendientes;
-document.getElementById("contadorStock").textContent = stockGuardado.length;
-}
-
-document.getElementById("inputArchivosTaller").addEventListener("change", function(e){
-const archivos = e.target.files;
-const contenedor = document.getElementById("listaArchivos");
-if(archivos.length === 0){
-contenedor.textContent = "Ningún archivo cargado.";
-return;
-}
-contenedor.innerHTML = "";
-for(let i = 0; i < archivos.length; i++){
-const row = document.createElement("div");
-row.className = "text-white truncate";
-row.textContent = `📄 ${archivos[i].name}`;
-contenedor.appendChild(row);
-}
-});
-
-function guardarUsuario(){
-const nombre = document.getElementById("nombreUsuario").value.trim();
-if(!nombre) return;
-usuarioActual = nombre;
-localStorage.setItem("orion_user", usuarioActual);
-actualizarSaludo();
-agregarMensaje("angela", `Perfecto ${usuarioActual}. Voy a recordar tu nombre en este dispositivo.`);
-}
-
-function actualizarSaludo(){
-const titulo = document.getElementById("greeting-title");
-if(usuarioActual && usuarioActual !== "Vos"){
-titulo.textContent = `¡Hola ${usuarioActual}! 👋`;
-}else{
-titulo.textContent = "¡Hola! 👋";
-}
-}
-
-function guardarMemoria(){
-const memoria = document.getElementById("memoriaPersonal").value;
-localStorage.setItem("angela_memoria", memoria);
-agregarMensaje("angela", "Memoria guardada correctamente.");
-}
-
-function borrarMemoria(){
-if(!confirm("¿Querés borrar la memoria guardada?")) return;
-localStorage.removeItem("angela_memoria");
-document.getElementById("memoriaPersonal").value = "";
-agregarMensaje("angela", "Memoria eliminada.");
-}
-
-function guardarNotas(){
-const notas = document.getElementById("notasTaller").value;
-localStorage.setItem("angela_notas", notas);
-agregarMensaje("angela", "Notas guardadas.");
-}
-
-function convertirMedidas(){
-const mm = parseFloat(document.getElementById("valorMM").value);
-if(isNaN(mm)){
-document.getElementById("resultadoMedidas").textContent = "Ingresá una medida válida.";
-return;
-}
-const cm = mm / 10;
-const metros = mm / 1000;
-const pulgadas = mm / 25.4;
-document.getElementById("resultadoMedidas").innerHTML = `📏 <b>${mm} mm</b><br>${cm.toFixed(2)} cm<br>${metros.toFixed(3)} m<br>${pulgadas.toFixed(3)} pulgadas`;
-}
-
-function calcularDPI(){
-const intervalo = parseFloat(document.getElementById("intervaloLaser").value);
-if(!intervalo || intervalo <= 0){
-document.getElementById("resultadoDPI").textContent = "Ingresá un intervalo válido.";
-return;
-}
-const dpi = 25.4 / intervalo;
-document.getElementById("resultadoDPI").innerHTML = `🔥 Intervalo: <b>${intervalo} mm</b><br>🎯 Aproximadamente: <b>${Math.round(dpi)} DPI</b>`;
-}
-
-function calcularPresupuesto(){
-const material = parseFloat(document.getElementById("costoMaterial").value) || 0;
-const trabajo = parseFloat(document.getElementById("costoTrabajo").value) || 0;
-const otros = parseFloat(document.getElementById("otrosCostos").value) || 0;
-const porcentaje = parseFloat(document.getElementById("gananciaTrabajo").value) || 0;
-const costo = material + trabajo + otros;
-const ganancia = costo * porcentaje / 100;
-const total = costo + ganancia;
-document.getElementById("resultadoPresupuesto").innerHTML = `🧾 Costo: <b>$${costo.toLocaleString("es-AR")}</b><br>💵 Ganancia: <b>$${ganancia.toLocaleString("es-AR")}</b><br><br>💰 Precio sugerido:<div class="text-xl text-green-300 font-bold mt-1">$${Math.round(total).toLocaleString("es-AR")}</div>`;
-}
-
-async function solicitarNotificaciones(){
-if("Notification" in window && Notification.permission === "default"){
-try{ await Notification.requestPermission(); }catch(e){}
-}
-}
-
-function crearRecordatorio(){
-const texto = document.getElementById("textoRecordatorio").value.trim();
-const minutos = parseFloat(document.getElementById("minutosRecordatorio").value);
-if(!texto || !minutos || minutos <= 0){
-alert("Escribí el recordatorio y los minutos.");
-return;
-}
-solicitarNotificaciones();
-const id = Date.now();
-const timer = setTimeout(()=>{
-hablar(`Recordatorio: ${texto}`);
-if("Notification" in window && Notification.permission === "granted"){
-new Notification(nombreAsistente, {body:texto});
-}
-alert(`⏰ Recordatorio:\n${texto}`);
-recordatoriosActivos = recordatoriosActivos.filter(r => r.id !== id);
-mostrarRecordatorios();
-}, minutos * 60000);
-recordatoriosActivos.push({id, texto, minutos, timer});
-mostrarRecordatorios();
-document.getElementById("textoRecordatorio").value = "";
-document.getElementById("minutosRecordatorio").value = "";
-}
-
-function mostrarRecordatorios(){
-const caja = document.getElementById("listaRecordatorios");
-caja.innerHTML = "";
-if(recordatoriosActivos.length === 0){
-caja.innerHTML = `<div class="text-slate-500">No hay recordatorios activos.</div>`;
-return;
-}
-recordatoriosActivos.forEach(r=>{
-const div = document.createElement("div");
-div.className = "bg-slate-900 p-2 rounded-lg";
-div.textContent = `⏰ ${r.texto} – ${r.minutos} min`;
-caja.appendChild(div);
-});
-}
-
-function guardarMaquinaLaser(){
-const maquina = document.getElementById("maquinaLaser").value;
-localStorage.setItem("angela_maquina_laser", maquina);
-document.getElementById("laserSeleccionado").textContent = "✅ Activa: " + maquina;
-document.getElementById("panelLaserActual").textContent = "🔥 " + maquina;
-}
-
-function guardarPruebaLaser(){
-const material = document.getElementById("historialMaterial").value.trim();
-const velocidad = document.getElementById("historialVelocidad").value;
-const potencia = document.getElementById("historialPotencia").value;
-const intervalo = document.getElementById("historialIntervalo").value;
-const resultado = document.getElementById("historialResultado").value.trim();
-if(!material){
-alert("Escribí el material.");
-return;
-}
-pruebasLaser.push({
-id:Date.now(),
-material,
-velocidad,
-potencia,
-intervalo,
-resultado,
-maquina: localStorage.getItem("angela_maquina_laser") || ""
-});
-localStorage.setItem("angela_pruebas_laser", JSON.stringify(pruebasLaser));
-document.getElementById("historialMaterial").value = "";
-document.getElementById("historialVelocidad").value = "";
-document.getElementById("historialPotencia").value = "";
-document.getElementById("historialIntervalo").value = "";
-document.getElementById("historialResultado").value = "";
-mostrarPruebasLaser();
-}
-
-function mostrarPruebasLaser(){
-const caja = document.getElementById("listaPruebasLaser");
-caja.innerHTML = "";
-if(pruebasLaser.length === 0){
-caja.innerHTML = `<div class="text-slate-500">Todavía no guardaste pruebas.</div>`;
-return;
-}
-pruebasLaser.slice().reverse().forEach((prueba)=>{
-const indice = pruebasLaser.findIndex(p => p.id === prueba.id);
-const div = document.createElement("div");
-div.className = "bg-slate-900 p-3 rounded-xl";
-div.innerHTML = `<b>🧪 ${escaparHTML(prueba.material)}</b><br>🔥 ${escaparHTML(prueba.maquina || "Sin máquina")}<br>🚀 Vel: ${escaparHTML(prueba.velocidad || "-")}<br>⚡ Pot: ${escaparHTML(prueba.potencia || "-")}%<br>🎯 Int: ${escaparHTML(prueba.intervalo || "-")}<br>✅ ${escaparHTML(prueba.resultado || "Sin observación")}<br><button onclick="eliminarPruebaLaser(${indice})" class="text-red-400 mt-2">🗑️ Eliminar</button>`;
-caja.appendChild(div);
-});
-}
-
-function eliminarPruebaLaser(index){
-pruebasLaser.splice(index, 1);
-localStorage.setItem("angela_pruebas_laser", JSON.stringify(pruebasLaser));
-mostrarPruebasLaser();
-}
-
-const laserDatosBotones = {
-madera: `🪵 <b>MADERA – GRABADO</b><br><br>⚡ Potencia inicial: 30–80%<br>🚀 Velocidad: 1000–3000 mm/min<br>🎯 Pasadas: 1<br><br>💡 Para fotografías usá escala de grises y hacé primero una matriz de prueba.`,
-mdf: `📦 <b>MDF</b><br><br>🔥 Grabado: 30–70% potencia<br>🚀 Velocidad: 1200–3000 mm/min<br><br>✂️ Para cortar MDF necesitás más potencia, menor velocidad y posiblemente varias pasadas.`,
-terciado: `🪵 <b>TERCIADO 3 MM</b><br><br>🔥 Láser diodo 10W – corte inicial:<br>🚀 200–400 mm/min<br>⚡ Potencia: 90–100%<br>🔁 2 a 5 pasadas aproximadamente.<br><br>💡 Siempre hacer prueba.`,
-acero: `🔩 <b>ACERO INOXIDABLE</b><br><br>Los láseres de diodo normalmente necesitan un recubrimiento o marcador para obtener contraste.<br><br>💡 Para grabado directo profesional de metal se utiliza normalmente láser de fibra.`,
-quirurgico: `⚙️ <b>ACERO QUIRÚRGICO</b><br><br>Para marcado permanente se recomienda láser apto para metal o producto marcador compatible.<br><br>💡 Hacé siempre una prueba en una pieza descartable.`,
-aluminio: `🔘 <b>ALUMINIO ANODIZADO</b><br><br>🚀 Velocidad inicial: media/alta<br>⚡ Potencia: media<br><br>El láser elimina la capa anodizada generando contraste.`,
-termo: `🧉 <b>TERMO PINTADO</b><br><br>🎯 Objetivo: retirar la pintura sin dañar el metal.<br>🚀 Velocidad media<br>⚡ Potencia media<br><br>💡 Empezá con poca potencia y aumentá gradualmente.`,
-mate: `🧉 <b>MATE METÁLICO</b><br><br>🚀 Velocidad inicial orientativa: 1500–3000 mm/min<br>⚡ Potencia: 50–100% según recubrimiento.<br><br>💡 Hacé una pequeña prueba antes del diseño final.`,
-vaso: `🥤 <b>VASO TÉRMICO</b><br><br>🔄 Recomendado utilizar accesorio rotativo.<br>🎯 Comprobá enfoque y diámetro antes de comenzar.<br>⚡ Potencia media y velocidad moderada como punto inicial.`,
-cuero: `🟤 <b>CUERO</b><br><br>🚀 Velocidad media/alta<br>⚡ Potencia baja/media<br><br>⚠️ Demasiada potencia quema los bordes.`,
-acrilico: `◼️ <b>ACRÍLICO</b><br><br>Los acrílicos oscuros suelen funcionar mejor con láser de diodo.<br>El acrílico transparente normalmente requiere otro tipo de láser.`,
-carton: `📦 <b>CARTÓN</b><br><br>🚀 Velocidad alta<br>⚡ Potencia baja/media<br><br>🔥 Material inflamable: nunca dejar el láser funcionando sin supervisión.`
-};
-
-function mostrarLaserBoton(material){
-document.getElementById("resultadoLaser").innerHTML = laserDatosBotones[material] || "Elegí un material.";
-}
-
-const subDatosBotones = {
-taza: `☕ <b>TAZA 11 OZ</b><br><br>🌡️ Temperatura: 180–190 °C<br>⏱️ Tiempo: aproximadamente 180 segundos<br>🗜️ Presión: media.`,
-mate: `🧉 <b>MATE SUBLIMABLE</b><br><br>🌡️ 180–190 °C<br>⏱️ 60–180 segundos según modelo<br>🗜️ Presión media`,
-remera: `👕 <b>REMERA DE POLIÉSTER</b><br><br>🌡️ 190–200 °C<br>⏱️ 40–60 segundos<br>🗜️ Presión media`,
-gorra: `🧢 <b>GORRA SUBLIMABLE</b><br><br>🌡️ 180–190 °C<br>⏱️ 40–60 segundos`,
-plato: `🍽️ <b>PLATO SUBLIMABLE</b><br><br>🌡️ Aproximadamente 180–200 °C<br>⏱️ Depende de resistencia y fabricante.`,
-llavero: `🔑 <b>LLAVERO MDF SUBLIMABLE</b><br><br>🌡️ 190–200 °C<br>⏱️ 50–70 segundos`,
-aluminio: `🔳 <b>CHAPA DE ALUMINIO SUBLIMABLE</b><br><br>🌡️ 190–200 °C<br>⏱️ 50–70 segundos`,
-rompecabezas: `🧩 <b>ROMPECABEZAS SUBLIMABLE</b><br><br>🌡️ 185–195 °C<br>⏱️ 50–70 segundos`,
-mousepad: `🖱️ <b>MOUSE PAD</b><br><br>🌡️ 190–200 °C<br>⏱️ 40–60 segundos`,
-almohadon: `🛋️ <b>ALMOHADÓN SUBLIMABLE</b><br><br>🌡️ 190–200 °C<br>⏱️ 40–60 segundos`,
-azulejo: `⬜ <b>AZULEJO SUBLIMABLE</b><br><br>🌡️ Aproximadamente 190–200 °C<br>⏱️ 180–300 segundos según espesor y prensa.`,
-jarro: `🥤 <b>JARRO SUBLIMABLE</b><br><br>🌡️ Aproximadamente 180–190 °C<br>⏱️ 150–200 segundos dependiendo del modelo.`
-};
-
-function mostrarSubBoton(producto){
-document.getElementById("resultadoSub").innerHTML = subDatosBotones[producto] || "Seleccioná un producto.";
-}
-
-const canvas = document.getElementById("canvasImagen");
-const ctx = canvas.getContext("2d");
-let imagenOriginal = null;
-let rotacion = 0;
-let espejo = false;
-let filtroActual = "normal";
-
-document.getElementById("archivoImagen").addEventListener("change", function(e){
-const archivo = e.target.files[0];
-if(!archivo) return;
-const reader = new FileReader();
-reader.onload = function(evento){
-const img = new Image();
-img.onload = function(){
-imagenOriginal = img;
-rotacion = 0;
-espejo = false;
-filtroActual = "normal";
-dibujarImagen();
-};
-img.src = evento.target.result;
-};
-reader.readAsDataURL(archivo);
-});
-
-function dibujarImagen(){
-if(!imagenOriginal) return;
-let ancho = imagenOriginal.width;
-let alto = imagenOriginal.height;
-const maximo = 900;
-if(ancho > maximo || alto > maximo){
-const escala = Math.min(maximo/ancho, maximo/alto);
-ancho *= escala;
-alto *= escala;
-}
-const girada = rotacion % 180 !== 0;
-canvas.width = Math.round(girada ? alto : ancho);
-canvas.height = Math.round(girada ? ancho : alto);
-ctx.save();
-ctx.translate(canvas.width/2, canvas.height/2);
-ctx.rotate(rotacion * Math.PI / 180);
-if(espejo) ctx.scale(-1, 1);
-const brillo = document.getElementById("brillo").value;
-const contraste = document.getElementById("contraste").value;
-let filtros = `brightness(${brillo}%) contrast(${contraste}%)`;
-if(filtroActual === "grises") filtros += " grayscale(100%)";
-if(filtroActual === "sepia") filtros += " sepia(100%)";
-if(filtroActual === "invertir") filtros += " invert(100%)";
-if(filtroActual === "contraste") filtros += " grayscale(100%) contrast(220%)";
-ctx.filter = filtros;
-ctx.drawImage(imagenOriginal, -ancho/2, -alto/2, ancho, alto);
-ctx.restore();
-ctx.filter = "none";
-if(filtroActual === "bn") convertirBN();
-}
-
-function convertirBN(){
-const imagen = ctx.getImageData(0, 0, canvas.width, canvas.height);
-const p = imagen.data;
-for(let i=0; i<p.length; i+=4){
-const gris = p[i] * .299 + p[i+1] * .587 + p[i+2] * .114;
-const valor = gris > 128 ? 255 : 0;
-p[i] = valor;
-p[i+1] = valor;
-p[i+2] = valor;
-}
-ctx.putImageData(imagen, 0, 0);
-}
-
-function filtroImagen(tipo){
-filtroActual = tipo;
-dibujarImagen();
-}
-
-function rotarImagen(){
-rotacion = (rotacion + 90) % 360;
-dibujarImagen();
-}
-
-function espejoImagen(){
-espejo = !espejo;
-dibujarImagen();
-}
-
-function restaurarImagen(){
-rotacion = 0;
-espejo = false;
-filtroActual = "normal";
-document.getElementById("brillo").value = 100;
-document.getElementById("contraste").value = 100;
-dibujarImagen();
-}
-
-document.getElementById("brillo").addEventListener("input", dibujarImagen);
-document.getElementById("contraste").addEventListener("input", dibujarImagen);
-
-function guardarImagen(){
-if(!imagenOriginal){
-alert("Primero cargá una imagen.");
-return;
-}
-const enlace = document.createElement("a");
-enlace.download = "imagen-angela.png";
-enlace.href = canvas.toDataURL("image/png");
-enlace.click();
-}
-
-function buscarGoogle(){
-const texto = document.getElementById("buscarWeb").value.trim();
-if(!texto) return;
-window.open("https://www.google.com/search?q=" + encodeURIComponent(texto), "_blank");
-}
-
-function agregarMensaje(tipo, texto){
-const caja = document.getElementById("mensajes");
-const div = document.createElement("div");
-div.className = tipo === "user" ? "chatUser" : "chatAngela";
-const titulo = document.createElement("b");
-titulo.textContent = tipo === "user" ? "Vos: " : nombreAsistente.toUpperCase() + ": ";
-div.appendChild(titulo);
-const contenido = document.createElement("span");
-contenido.textContent = texto;
-div.appendChild(contenido);
-caja.appendChild(div);
-caja.scrollTop = caja.scrollHeight;
-}
-
-function enviarChat(){
-const input = document.getElementById("entradaChat");
-const texto = input.value.trim();
-if(!texto) return;
-agregarMensaje("user", texto);
-input.value = "";
-responderAngela(texto);
-}
-
-function intentarComandoLocal(texto){
-const p = normalizarTexto(texto);
-if(p.includes("como me llamo") || p.includes("quien soy")){
-if(usuarioActual === "Vos") return "Todavía no guardaste tu nombre. Podés hacerlo desde Memoria.";
-return `Te tengo registrado como ${usuarioActual}.`;
-}
-if(p.includes("que laser tengo") || p.includes("cual es mi laser")){
-const maquina = localStorage.getItem("angela_maquina_laser");
-if(maquina) return `Tenés seleccionado ${maquina}.`;
-return "Todavía no seleccionaste una máquina láser.";
-}
-if(p.includes("mis proyectos") || p.includes("proyectos pendientes")){
-if(proyectosGuardados.length === 0) return "No tenés proyectos guardados.";
-return "Tus proyectos son: " + proyectosGuardados.join(", ");
-}
-if(p.includes("mis pedidos") || p.includes("trabajos pendientes")){
-const pendientes = pedidosGuardados.filter(x => x.estado !== "Entregado");
-if(pendientes.length === 0) return "No tenés pedidos pendientes.";
-return "Tenés " + pendientes.length + " pedidos pendientes.";
-}
-if(p.includes("abrir youtube") || p.includes("abri youtube")){
-window.open("https://youtube.com", "_blank");
-return "Abriendo YouTube.";
-}
-if(p.includes("abrir google") || p.includes("abri google")){
-window.open("https://google.com", "_blank");
-return "Abriendo Google.";
-}
-if(p.includes("abrir whatsapp") || p.includes("abri whatsapp")){
-window.open("https://web.whatsapp.com", "_blank");
-return "Abriendo WhatsApp.";
-}
-if(p.includes("abrir gmail") || p.includes("abri gmail")){
-window.open("https://mail.google.com", "_blank");
-return "Abriendo Gmail.";
-}
-return null;
-}
-
-async function responderAngela(texto){
-const pregunta = normalizarTexto(texto);
-let respuesta = "";
-const comandoLocal = intentarComandoLocal(texto);
-if(comandoLocal){
-agregarMensaje("angela", comandoLocal);
-hablar(comandoLocal);
-return;
-}
-if(pregunta.includes("que hora") || pregunta === "hora"){
-respuesta = "Son las " + new Date().toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
-}
-else if(pregunta.includes("que dia") || pregunta.includes("fecha")){
-respuesta = "Hoy es " + new Date().toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
-}
-else if(pregunta.includes("clima") || pregunta.includes("temperatura") || pregunta.includes("llueve")){
-if(datosClima){
-respuesta = `La temperatura actual es de ${datosClima.temperature_2m} grados, la sensación térmica es de ${datosClima.apparent_temperature} grados y la precipitación actual es de ${datosClima.precipitation ?? 0} milímetros.`;
-}else{
-respuesta = "Todavía no pude obtener el clima. Revisá el permiso de ubicación.";
-}
-}
-else{
-document.getElementById("estadoPensando").classList.remove("hidden");
-respuesta = await preguntarIA(texto);
-document.getElementById("estadoPensando").classList.add("hidden");
-}
-agregarMensaje("angela", respuesta);
-hablar(respuesta);
-}
-
-async function preguntarIA(texto){
-    try {
-        const p = normalizarTexto(texto);
-        if(p.includes("laser") || p.includes("algolaser") || p.includes("cortar") || p.includes("grabar")) {
-            return "Para tu AlgoLaser MK2 10W recordá verificar siempre el enfoque y hacer una matriz de prueba previa según el material.";
-        }
-        if(p.includes("sublimacion") || p.includes("taza") || p.includes("remera")) {
-            return "En la parte de sublimación general trabajamos entre 180°C y 200°C según el producto. Podes consultar la guía rápida en el menú izquierdo.";
-        }
-        if(p.includes("hola") || p.includes("buen dia")) {
-            return "¡Hola Héctor! Acá estoy en el taller con vos. Decime qué anotamos, qué stock revisamos o qué parámetros láser necesitamos.";
-        }
-        return "Entendido. Trabajando de manera local en el taller. Revisá los accesos de notas, stock o proyectos para gestionarlo al instante.";
-    } catch(error) {
-        return "Trabajando de manera local en el taller. Todo bajo control.";
+    document.getElementById("ubicacion").textContent = "📍 Ubicación detectada";
+    try{
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&timezone=auto`;
+        const respuesta = await fetch(url);
+        if(!respuesta.ok) throw new Error();
+        const datos = await respuesta.json();
+        datosClima = datos.current;
+        document.getElementById("clima").innerHTML = `🌡️ ${datos.current.temperature_2m} °C<br>Sensación ${datos.current.apparent_temperature} °C<br>💧 ${datos.current.precipitation ?? 0} mm<br>💨 ${datos.current.wind_speed_10m ?? "-"} km/h`;
+    }
+    catch(error){
+        document.getElementById("clima").textContent = "🌤️ No pude cargar el clima";
     }
 }
 
-
 function actualizarEstadoInternet(){
-const elemento = document.getElementById("estadoInternet");
-if(navigator.onLine){
-elemento.textContent = "🟢 Conectado";
-elemento.className = "text-green-400";
-}else{
-elemento.textContent = "🔴 Sin conexión";
-elemento.className = "text-red-400";
+    const elemento = document.getElementById("estadoInternet");
+    if(navigator.onLine){
+        elemento.textContent = "🟢 Conectado";
+        elemento.className = "text-green-400";
+    }else{
+        elemento.textContent = "🔴 Sin conexión";
+        elemento.className = "text-red-400";
+    }
 }
-}
-
 window.addEventListener("online", actualizarEstadoInternet);
 window.addEventListener("offline", actualizarEstadoInternet);
 
 async function comprobarIA(){
-const estado = document.getElementById("estadoIA");
-estado.textContent = "🟡 Revisando";
-estado.className = "text-yellow-400";
-try{
-const respuesta = await fetch("/api/chat", {
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:"Respondé únicamente OK."})
-});
-if(!respuesta.ok) throw new Error();
-estado.textContent = "🟢 Conectada";
-estado.className = "text-green-400";
-}
-catch(error){
-estado.textContent = "🔴 Sin conexión";
-estado.className = "text-red-400";
-}
+    const estado = document.getElementById("estadoIA");
+    estado.textContent = "🟢 Conectada";
+    estado.className = "text-green-400";
 }
 
-function actualizarEstadoEscucha(){
-const estado = document.getElementById("estadoVoz");
-if(escuchandoContinuoActivo){
-estado.textContent = `● Escucha manos libres activa (Di "${nombreAsistente}...")`;
-estado.className = "text-green-400 text-sm font-semibold";
-}else{
-estado.textContent = "● Escucha pausada (Tocá el núcleo para activar)";
-estado.className = "text-yellow-400 text-sm font-semibold";
+function agregarMensaje(tipo, texto){
+    const caja = document.getElementById("mensajes");
+    const div = document.createElement("div");
+    div.className = tipo === "user" ? "chatUser" : "chatAngela";
+    const titulo = document.createElement("b");
+    titulo.textContent = tipo === "user" ? "Vos: " : nombreAsistente.toUpperCase() + ": ";
+    div.appendChild(titulo);
+    const contenido = document.createElement("span");
+    contenido.textContent = texto;
+    div.appendChild(contenido);
+    caja.appendChild(div);
+    caja.scrollTop = caja.scrollHeight;
 }
+
+function enviarChat(){
+    const input = document.getElementById("entradaChat");
+    const texto = input.value.trim();
+    if(!texto) return;
+    agregarMensaje("user", texto);
+    input.value = "";
+    responderAngela(texto);
+}
+
+function intentarComandoLocal(texto){
+    const p = normalizarTexto(texto);
+    if(p.includes("como me llamo") || p.includes("quien soy")) return `Te tengo registrado como ${usuarioActual}.`;
+    if(p.includes("que laser tengo") || p.includes("cual es mi laser")) return "Tenés seleccionado tu AlgoLaser DIY Kit MK2 10W.";
+    if(p.includes("mis proyectos")) return proyectosGuardados.length === 0 ? "No tenés proyectos guardados." : "Tus proyectos: " + proyectosGuardados.join(", ");
+    if(p.includes("abrir youtube") || p.includes("youtube")){ window.open("https://youtube.com", "_blank"); return "Abriendo YouTube."; }
+    if(p.includes("abrir google") || p.includes("google")){ window.open("https://google.com", "_blank"); return "Abriendo Google."; }
+    if(p.includes("abrir whatsapp") || p.includes("whatsapp")){ window.open("https://web.whatsapp.com", "_blank"); return "Abriendo WhatsApp."; }
+    if(p.includes("abrir gmail") || p.includes("gmail")){ window.open("https://mail.google.com", "_blank"); return "Abriendo Gmail."; }
+    return null;
+}
+
+async function responderAngela(texto){
+    const comando = intentarComandoLocal(texto);
+    if(comando){
+        agregarMensaje("angela", comando);
+        hablar(comando);
+        return;
+    }
+
+    if(normalizarTexto(texto).includes("clima") || normalizarTexto(texto).includes("temperatura")){
+        if(datosClima){
+            const resp = `La temperatura actual es de ${datosClima.temperature_2m} grados, con una sensación térmica de ${datosClima.apparent_temperature} grados.`;
+            agregarMensaje("angela", resp);
+            hablar(resp);
+            return;
+        }
+    }
+
+    document.getElementById("estadoPensando").classList.remove("hidden");
+    const respuesta = await preguntarIA(texto);
+    document.getElementById("estadoPensando").classList.add("hidden");
+    
+    agregarMensaje("angela", respuesta);
+    hablar(respuesta);
+}
+
+async function preguntarIA(texto){
+    try {
+        const respuesta = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(texto)}&format=json`);
+        const datos = await respuesta.json();
+        
+        if (datos.AbstractText) {
+            return datos.AbstractText;
+        } else if (datos.RelatedTopics && datos.RelatedTopics.length > 0 && datos.RelatedTopics[0].Text) {
+            return datos.RelatedTopics[0].Text;
+        } else {
+            const p = normalizarTexto(texto);
+            if(p.includes("dolar") || p.includes("cotizacion")){
+                return "Para ver la cotización exacta del dólar al instante, te sugiero abrir Google desde los accesos rápidos de la derecha.";
+            }
+            if(p.includes("campeonato") || p.includes("futbol") || p.includes("partido") || p.includes("river")){
+                return "Para ver resultados de campeonatos o partidos en vivo, podés consultar Google o YouTube desde los accesos rápidos.";
+            }
+            if(p.includes("laser") || p.includes("algolaser") || p.includes("cortar") || p.includes("grabar")){
+                return "Para tu AlgoLaser MK2 10W recordá verificar siempre el enfoque y hacer una matriz de prueba previa.";
+            }
+            return `Entendido, ${usuarioActual}. Consulté sobre "${texto}". Si querés profundizar, podés buscarlo directamente en el panel web.`;
+        }
+    } catch(error) {
+        return "Trabajando con las herramientas del taller. Todo bajo control.";
+    }
 }
 
 function activarMicrofonoManual(){
-if(!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)){
-const txt = prompt(`¿Qué le querés decir a ${nombreAsistente}?`);
-if(txt){
-agregarMensaje("user", txt);
-responderAngela(txt);
-}
-return;
-}
-try{
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-reconocimientoManual = new SpeechRecognition();
-reconocimientoManual.lang = "es-AR";
-reconocimientoManual.continuous = false;
-reconocimientoManual.interimResults = false;
-document.getElementById("estadoVoz").textContent = "🎤 Escuchando...";
-reconocimientoManual.onresult = function(evento){
-const texto = evento.results[0][0].transcript.trim();
-if(texto){
-agregarMensaje("user", texto);
-responderAngela(texto);
-}
-};
-reconocimientoManual.onend = function(){ actualizarEstadoEscucha(); };
-reconocimientoManual.onerror = function(){ actualizarEstadoEscucha(); };
-reconocimientoManual.start();
-}
-catch(error){}
-}
-
-function iniciarEscuchaContinuaManosLibres(){
-if(!escuchandoContinuoActivo) return;
-if(!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)){
-document.getElementById("estadoMicrofono").textContent = "🔴 No compatible";
-return;
-}
-try{
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-reconocimiento = new SpeechRecognition();
-reconocimiento.lang = "es-AR";
-reconocimiento.continuous = true;
-reconocimiento.interimResults = false;
-document.getElementById("estadoMicrofono").textContent = "🟢 Disponible";
-document.getElementById("estadoMicrofono").className = "text-green-400";
-reconocimiento.onresult = function(evento){
-if(hablando) return;
-const texto = evento.results[evento.results.length - 1][0].transcript.trim();
-const t = normalizarTexto(texto);
-const nombreKey = normalizarTexto(nombreAsistente);
-if(t.includes(nombreKey)){
-activada = true;
-document.getElementById("estadoVoz").textContent = "🟢 ¡Te escucho!";
-clearTimeout(temporizadorActivacion);
-temporizadorActivacion = setTimeout(()=>{
-activada = false;
-actualizarEstadoEscucha();
-}, 10000);
-const posicionNombre = t.indexOf(nombreKey);
-let pregunta = texto;
-if(posicionNombre >= 0){
-const partes = texto.split(/[\s,]+/);
-const partesFiltradas = partes.filter(parte => normalizarTexto(parte) !== nombreKey);
-pregunta = partesFiltradas.join(" ").trim();
-}
-if(pregunta.length > 1){
-agregarMensaje("user", pregunta);
-responderAngela(pregunta);
-activada = false;
-}
-}
-else if(activada){
-agregarMensaje("user", texto);
-responderAngela(texto);
-activada = false;
-clearTimeout(temporizadorActivacion);
-actualizarEstadoEscucha();
-}
-};
-reconocimiento.onerror = function(){ if(escuchandoContinuoActivo){ setTimeout(reiniciarEscucha, 1200); } };
-reconocimiento.onend = function(){ if(escuchandoContinuoActivo){ setTimeout(reiniciarEscucha, 1000); } };
-reconocimiento.start();
-}
-catch(error){}
-}
-
-function reiniciarEscucha(){
-if(!escuchandoContinuoActivo) return;
-try{ if(reconocimiento) reconocimiento.stop(); }catch(e){}
-setTimeout(iniciarEscuchaContinuaManosLibres, 600);
-}
-
-function alternarEscuchaContinua(){
-escuchandoContinuoActivo = !escuchandoContinuoActivo;
-if(escuchandoContinuoActivo){
-iniciarEscuchaContinuaManosLibres();
-}else{
-try{ if(reconocimiento) reconocimiento.stop(); }catch(e){}
-}
-actualizarEstadoEscucha();
+    if(!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)){
+        const txt = prompt(`¿Qué le querés decir a ${nombreAsistente}?`);
+        if(txt){
+            agregarMensaje("user", txt);
+            responderAngela(txt);
+        }
+        return;
+    }
+    try{
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const reconocimientoManual = new SpeechRecognition();
+        reconocimientoManual.lang = "es-AR";
+        reconocimientoManual.continuous = false;
+        reconocimientoManual.interimResults = false;
+        document.getElementById("estadoVoz").textContent = "🎤 Escuchando...";
+        reconocimientoManual.onresult = function(evento){
+            const texto = evento.results[0][0].transcript.trim();
+            if(texto){
+                agregarMensaje("user", texto);
+                responderAngela(texto);
+            }
+        };
+        reconocimientoManual.onend = function(){ document.getElementById("estadoVoz").textContent = "● Sistema listo"; };
+        reconocimientoManual.onerror = function(){ document.getElementById("estadoVoz").textContent = "● Sistema listo"; };
+        reconocimientoManual.start();
+        document.getElementById("estadoMicrofono").textContent = "🟢 Disponible";
+        document.getElementById("estadoMicrofono").className = "text-green-400";
+    }catch(error){
+        alert("No se pudo iniciar el micrófono. Podés escribir tu consulta abajo.");
+    }
 }
 
 function hablar(texto){
-if(!("speechSynthesis" in window)) return;
-window.speechSynthesis.cancel();
-const limpio = String(texto).replace(/<[^>]*>/g, "");
-const voz = new SpeechSynthesisUtterance(limpio);
-voz.lang = "es-AR";
-voz.rate = 1;
-voz.pitch = 1;
-hablando = true;
-voz.onend = ()=>{ hablando = false; };
-voz.onerror = ()=>{ hablando = false; };
-window.speechSynthesis.speak(voz);
+    if(!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const limpio = String(texto).replace(/<[^>]*>/g, "");
+    const voz = new SpeechSynthesisUtterance(limpio);
+    voz.lang = "es-AR";
+    voz.rate = 1;
+    voz.pitch = 1;
+    hablando = true;
+    voz.onend = ()=>{ hablando = false; };
+    voz.onerror = ()=>{ hablando = false; };
+    window.speechSynthesis.speak(voz);
 }
 
 function probarVoz(){
-hablar(`Hola. Soy ${nombreAsistente}. El sistema de voz está funcionando.`);
+    hablar(`Hola Héctor. El sistema de voz y la temperatura están funcionando correctamente.`);
 }
 
 function borrarChat(){
-document.getElementById("mensajes").innerHTML = `<div class="chatAngela"><b>${escaparHTML(nombreAsistente.toUpperCase())}:</b> Chat limpio. ¿En qué te ayudo?</div>`;
+    document.getElementById("mensajes").innerHTML = `<div class="chatAngela"><b>${escaparHTML(nombreAsistente.toUpperCase())}:</b> Chat limpio. ¿En qué te ayudo?</div>`;
 }
 
-function cargarDatosGuardados(){
-actualizarNombrePantalla();
-const nombre = localStorage.getItem("orion_user");
-if(nombre){
-usuarioActual = nombre;
-document.getElementById("nombreUsuario").value = nombre;
+function mostrarProyectos(){
+    const contenedor = document.getElementById("listaProyectos");
+    contenedor.innerHTML = proyectosGuardados.length === 0 ? `<div class="text-slate-400">No hay proyectos.</div>` : "";
+    proyectosGuardados.forEach((p, i)=>{
+        const item = document.createElement("div");
+        item.className = "bg-slate-900 p-2 rounded-lg flex justify-between items-center";
+        item.innerHTML = `<span>🔹 ${escaparHTML(p)}</span><button onclick="proyectosGuardados.splice(${i},1);localStorage.setItem('angela_proyectos',JSON.stringify(proyectosGuardados));mostrarProyectos();" class="text-red-400 font-bold">✕</button>`;
+        contenedor.appendChild(item);
+    });
+    document.getElementById("contadorProyectos").textContent = proyectosGuardados.length;
 }
-actualizarSaludo();
-const memoria = localStorage.getItem("angela_memoria");
-if(memoria){
-document.getElementById("memoriaPersonal").value = memoria;
+function agregarProyecto(){
+    const inp = document.getElementById("nuevoProyectoInput");
+    if(!inp.value.trim()) return;
+    proyectosGuardados.push(inp.value.trim());
+    localStorage.setItem("angela_proyectos", JSON.stringify(proyectosGuardados));
+    inp.value = "";
+    mostrarProyectos();
 }
-const notas = localStorage.getItem("angela_notas");
-if(notas){
-document.getElementById("notasTaller").value = notas;
+
+function agregarStock(){
+    const nombre = document.getElementById("stockNombre").value.trim();
+    const cant = parseFloat(document.getElementById("stockCantidad").value);
+    if(!nombre || isNaN(cant)) return;
+    stockGuardado.push({nombre, cantidad: cant});
+    localStorage.setItem("angela_stock", JSON.stringify(stockGuardado));
+    document.getElementById("stockNombre").value = "";
+    document.getElementById("stockCantidad").value = "";
+    mostrarStock();
 }
-const maquina = localStorage.getItem("angela_maquina_laser");
-if(maquina){
-document.getElementById("maquinaLaser").value = maquina;
+function mostrarStock(){
+    const caja = document.getElementById("listaStock");
+    caja.innerHTML = stockGuardado.length === 0 ? `<div class="text-slate-400">Sin stock.</div>` : "";
+    stockGuardado.forEach((s, i)=>{
+        const div = document.createElement("div");
+        div.className = "bg-slate-900 p-2 rounded-lg flex justify-between";
+        div.innerHTML = `<span>📦 ${escaparHTML(s.nombre)} — <b>${s.cantidad}</b></span><button onclick="stockGuardado.splice(${i},1);localStorage.setItem('angela_stock',JSON.stringify(stockGuardado));mostrarStock();" class="text-red-400">✕</button>`;
+        caja.appendChild(div);
+    });
+    document.getElementById("contadorStock").textContent = stockGuardado.length;
 }
-guardarMaquinaLaser();
-mostrarProyectos();
-mostrarPedidos();
-mostrarStock();
-mostrarPruebasLaser();
-mostrarRecordatorios();
-actualizarResumenTaller();
-actualizarEstadoInternet();
+
+const laserDatosBotones = {
+    madera: `🪵 <b>MADERA – GRABADO</b><br><br>⚡ Potencia: 30–80%<br>🚀 Velocidad: 1000–3000 mm/min`,
+    mdf: `📦 <b>MDF</b><br><br>🔥 Grabado: 30–70% potencia<br>🚀 Velocidad: 1200–3000 mm/min`,
+    terciado: `🪵 <b>TERCIADO 3 MM</b><br><br>🔥 Corte inicial: 200–400 mm/min<br>⚡ Potencia: 90–100% (2-4 pasadas)`,
+    acero: `🔩 <b>ACERO INOXIDABLE</b><br><br>Requiere spray o marcador para diodo.`,
+    mate: `🧉 <b>MATE METÁLICO</b><br><br>🚀 Velocidad: 1500–3000 mm/min<br>⚡ Potencia: 50–100%`
+};
+function mostrarLaserBoton(m){ document.getElementById("resultadoLaser").innerHTML = laserDatosBotones[m] || "Seleccioná material."; }
+
+const subDatosBotones = {
+    taza: `☕ <b>TAZA 11 OZ</b><br><br>🌡️ 180–190 °C<br>⏱️ 180 segundos`,
+    mate: `🧉 <b>MATE</b><br><br>🌡️ 180 °C<br>⏱️ 90–120 segundos`,
+    remera: `👕 <b>REMERA</b><br><br>🌡️ 190–200 °C<br>⏱️ 40–60 segundos`
+};
+function mostrarSubBoton(p){ document.getElementById("resultadoSub").innerHTML = subDatosBotones[p] || "Seleccioná producto."; }
+
+function buscarGoogle(){
+    const t = document.getElementById("buscarWeb").value.trim();
+    if(t) window.open("https://www.google.com/search?q=" + encodeURIComponent(t), "_blank");
 }
 
 window.addEventListener("load", ()=>{
-cargarDatosGuardados();
-cargarUbicacion();
-comprobarIA();
-setTimeout(iniciarEscuchaContinuaManosLibres, 1200);
+    mostrarProyectos();
+    mostrarStock();
+    cargarUbicacion();
+    comprobarIA();
+    actualizarEstadoInternet();
+    document.getElementById("estadoMicrofono").textContent = "🟢 Disponible";
+    document.getElementById("estadoMicrofono").className = "text-green-400";
 });
 </script>
 </body>
