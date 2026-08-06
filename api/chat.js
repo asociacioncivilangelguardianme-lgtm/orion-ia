@@ -82,12 +82,9 @@ export default async function handler(req, res) {
   const geminiApiKey = (process.env.GEMINI_API_KEY || "").trim();
   const openRouterApiKey = (process.env.OPENROUTER_API_KEY || "").trim();
 
-  // ACÁ ESTÁ LA CORRECCIÓN CLAVE:
-  // "gemini-pro" es el universal que no falla con ninguna API KEY.
-  const geminiModels = ["gemini-pro", "gemini-1.5-flash-latest"];
-  
-  // Modelos de OpenRouter GARANTIZADOS 100% gratis y online.
-  const openRouterModels = ["mistralai/mistral-7b-instruct:free", "huggingfaceh4/zephyr-7b-beta:free"];
+  // NOMBRES EXACTOS ULTRA ESTABLES
+  const geminiModels = ["gemini-1.5-flash", "gemini-1.0-pro"];
+  const openRouterModels = ["microsoft/phi-3-mini-128k-instruct:free", "google/gemma-2-9b-it:free"];
 
   if (req.method === "GET") {
     return res.status(200).json({
@@ -96,7 +93,7 @@ export default async function handler(req, res) {
       geminiConfigured: Boolean(geminiApiKey),
       openRouterConfigured: Boolean(openRouterApiKey),
       configured: Boolean(geminiApiKey || openRouterApiKey),
-      mensaje: "Servidor de ÁNGELA funcionando con enrutador en cascada (Gemini → OpenRouter)."
+      mensaje: "Servidor de ÁNGELA funcionando con enrutador en cascada."
     });
   }
 
@@ -140,9 +137,6 @@ ${ubicacion ? `Ubicación GPS: ${String(ubicacion).slice(0, 250)}` : ""}`.trim()
 
     const errores = [];
 
-    // ==========================================
-    // PASO 1: INTENTAR GEMINI
-    // ==========================================
     if (geminiApiKey) {
       const contents = historialAGemini(history, mensaje);
       for (const model of geminiModels) {
@@ -168,9 +162,6 @@ ${ubicacion ? `Ubicación GPS: ${String(ubicacion).slice(0, 250)}` : ""}`.trim()
       errores.push("GEMINI_API_KEY no configurada o vacía.");
     }
 
-    // ==========================================
-    // PASO 2: INTENTAR OPENROUTER (Fallback)
-    // ==========================================
     if (openRouterApiKey) {
       const messages = historialAOpenRouter(history, mensaje, systemText);
       for (const model of openRouterModels) {
@@ -211,9 +202,6 @@ ${ubicacion ? `Ubicación GPS: ${String(ubicacion).slice(0, 250)}` : ""}`.trim()
       errores.push("OPENROUTER_API_KEY no configurada o vacía.");
     }
 
-    // ==========================================
-    // REPORTE TÉCNICO AL CHAT (Si todo falla)
-    // ==========================================
     const reporteErrores = errores.map(e => `❌ ${e}`).join("\n\n");
     
     return res.status(200).json({
