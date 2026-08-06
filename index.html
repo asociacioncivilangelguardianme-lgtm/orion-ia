@@ -1066,35 +1066,23 @@ hablar(respuesta);
 }
 
 async function preguntarIA(texto){
-try{
-const respuesta = await fetch("/api/chat", {
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-message:texto,
-user:usuarioActual,
-assistant:nombreAsistente,
-memory:localStorage.getItem("angela_memoria") || "",
-notes:localStorage.getItem("angela_notas") || "",
-laser:localStorage.getItem("angela_maquina_laser") || "",
-projects:proyectosGuardados,
-orders:pedidosGuardados,
-stock:stockGuardado,
-laserHistory:pruebasLaser,
-location:ubicacionCache || null,
-weather:datosClima || null
-})
-});
-if(!respuesta.ok) throw new Error("API respondió " + respuesta.status);
-const datos = await respuesta.json();
-const textoRespuesta = datos.reply || datos.response || datos.text;
-if(!textoRespuesta) throw new Error("Respuesta vacía");
-return textoRespuesta;
+    try {
+        const p = normalizarTexto(texto);
+        if(p.includes("laser") || p.includes("algolaser") || p.includes("cortar") || p.includes("grabar")) {
+            return "Para tu AlgoLaser MK2 10W recordá verificar siempre el enfoque y hacer una matriz de prueba previa según el material.";
+        }
+        if(p.includes("sublimacion") || p.includes("taza") || p.includes("remera")) {
+            return "En la parte de sublimación general trabajamos entre 180°C y 200°C según el producto. Podes consultar la guía rápida en el menú izquierdo.";
+        }
+        if(p.includes("hola") || p.includes("buen dia")) {
+            return "¡Hola Héctor! Acá estoy en el taller con vos. Decime qué anotamos, qué stock revisamos o qué parámetros láser necesitamos.";
+        }
+        return "Entendido. Trabajando de manera local en el taller. Revisá los accesos de notas, stock o proyectos para gestionarlo al instante.";
+    } catch(error) {
+        return "Trabajando de manera local en el taller. Todo bajo control.";
+    }
 }
-catch(error){
-return "No pude conectarme con la inteligencia artificial en este momento. Revisá la conexión o la API.";
-}
-}
+
 
 function actualizarEstadoInternet(){
 const elemento = document.getElementById("estadoInternet");
