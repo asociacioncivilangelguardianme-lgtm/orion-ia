@@ -80,17 +80,18 @@ export default async function handler(req, res) {
 
   if (req.method === "OPTIONS") return res.status(204).end();
 
-  // CLAVES (Con un ".trim()" mágico para borrar espacios accidentales al copiar y pegar)
+  // CLAVES
   const geminiApiKey = (process.env.GEMINI_API_KEY || "").trim();
   const openRouterApiKey = (process.env.OPENROUTER_API_KEY || "").trim();
 
-  const geminiModels = ["gemini-1.5-flash", "gemini-1.5-flash-8b"];
+  // SOLUCIÓN 1: Nombres universales para Gemini que no tiran el error "not found"
+  const geminiModels = ["gemini-1.5-flash-latest", "gemini-pro"];
   
-  // Agregué 3 opciones gratuitas distintas por si una sola falla
+  // SOLUCIÓN 2: Nombres corregidos para OpenRouter (sin la etiqueta free rota)
   const openRouterModels = [
-    "meta-llama/llama-3.1-8b-instruct:free", 
-    "google/gemma-2-9b-it:free",
-    "mistralai/mistral-7b-instruct:free"
+    "meta-llama/llama-3.1-8b-instruct", 
+    "google/gemma-2-9b-it",
+    "openchat/openchat-7b:free" // Este sigue siendo 100% gratis por si falla el saldo
   ];
 
   if (req.method === "GET") {
@@ -100,7 +101,7 @@ export default async function handler(req, res) {
       geminiConfigured: Boolean(geminiApiKey),
       openRouterConfigured: Boolean(openRouterApiKey),
       configured: Boolean(geminiApiKey || openRouterApiKey),
-      mensaje: "Servidor de ÁNGELA funcionando con enrutador en cascada (Gemini → OpenRouter)."
+      mensaje: "Servidor de ÁNGELA funcionando con enrutador en cascada."
     });
   }
 
@@ -218,9 +219,6 @@ ${ubicacion ? `Ubicación GPS: ${String(ubicacion).slice(0, 250)}` : ""}`.trim()
     // ==========================================
     // SI TODO FALLA: AUTODIAGNÓSTICO AL CHAT
     // ==========================================
-    
-    // Le decimos que todo fue "ok: true" para que la web no oculte el error, 
-    // sino que lo muestre como si fuera un mensaje normal de Ángela.
     const reporteErrores = errores.map(e => `❌ ${e}`).join("\n\n");
     
     return res.status(200).json({
