@@ -1,94 +1,74 @@
 export default async function handler(req, res) {
 
-  // =====================================================
-  // CORS - PERMITE CONECTAR ÁNGELA DESDE GITHUB PAGES
-  // =====================================================
+  // ==========================================
+  // CORS - PERMITE CONECTAR GITHUB CON VERCEL
+  // ==========================================
 
   res.setHeader("Access-Control-Allow-Origin", "*");
-
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS"
   );
-
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Accept"
+    "Content-Type, Accept"
   );
 
-  res.setHeader("Access-Control-Max-Age", "86400");
-
-  // El navegador hace esta consulta ANTES del POST.
-  // Si no respondemos esto aparece "Failed to fetch".
+  // El navegador pregunta primero si puede conectarse
   if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
 
-
-  // =====================================================
-  // CONFIGURACIÓN
-  // =====================================================
-
   const apiKey = process.env.GEMINI_API_KEY;
 
-
-  // =====================================================
-  // GET - PRUEBA DE ESTADO DEL BACKEND
-  // =====================================================
+  // ==========================================
+  // PRUEBA DEL SERVIDOR
+  // ==========================================
 
   if (req.method === "GET") {
-
     return res.status(200).json({
       ok: true,
       backend: true,
-      geminiConfigured: Boolean(apiKey),
-      configured: Boolean(apiKey),
+      geminiConfigured: !!apiKey,
+      configured: !!apiKey,
       model: "gemini-3.5-flash",
-      mensaje: "Backend de ÁNGELA funcionando"
+      mensaje: "Servidor de ÁNGELA funcionando correctamente"
     });
-
   }
 
-
-  // =====================================================
-  // SOLO POST PARA HABLAR CON LA IA
-  // =====================================================
+  // ==========================================
+  // SOLO POST PARA HABLAR CON ÁNGELA
+  // ==========================================
 
   if (req.method !== "POST") {
-
     return res.status(405).json({
       error: "Método no permitido"
     });
-
   }
-
 
   try {
 
-    // =====================================================
-    // DIAGNÓSTICO DESDE EL HTML
-    // =====================================================
-
     const body = req.body || {};
 
-    if (body.mode === "diagnostic") {
+    // ==========================================
+    // DIAGNÓSTICO
+    // ==========================================
 
+    if (body.mode === "diagnostic") {
       return res.status(200).json({
         ok: true,
         backend: true,
-        geminiConfigured: Boolean(apiKey),
-        configured: Boolean(apiKey),
-        geminiOk: Boolean(apiKey),
-        verified: Boolean(apiKey),
+        geminiConfigured: !!apiKey,
+        configured: !!apiKey,
+        geminiOk: !!apiKey,
+        verified: !!apiKey,
         model: "gemini-3.5-flash"
       });
-
     }
 
-
-    // =====================================================
-    // COMPATIBILIDAD HTML VIEJO + HTML NUEVO
-    // =====================================================
+    // ==========================================
+    // ACEPTA HTML NUEVO Y VIEJO
+    // ==========================================
 
     const mensaje =
       body.mensaje ||
@@ -97,85 +77,61 @@ export default async function handler(req, res) {
       body.prompt ||
       "";
 
-
     if (!mensaje || !String(mensaje).trim()) {
-
       return res.status(400).json({
         error: "Falta el mensaje"
       });
-
     }
 
-
-    // =====================================================
+    // ==========================================
     // VERIFICAR CLAVE GEMINI
-    // =====================================================
+    // ==========================================
 
     if (!apiKey) {
-
-      console.error("GEMINI_API_KEY no configurada");
-
       return res.status(500).json({
         error: "GEMINI_API_KEY no está configurada en Vercel"
       });
-
     }
-
-
-    // =====================================================
-    // CONTEXTO OPCIONAL QUE MANDA ÁNGELA
-    // =====================================================
 
     const usuario =
       body.usuario ||
       body.user ||
       "Usuario";
 
-    const asistente =
-      body.asistente ||
-      body.assistant ||
-      "Ángela";
-
     const ubicacion =
       body.ubicacion ||
       body.location ||
       "";
 
-    const contexto =
-      body.contexto ||
-      body.context ||
-      null;
+    // ==========================================
+    // INSTRUCCIONES DE ÁNGELA
+    // ==========================================
 
-
-    // =====================================================
-    // PROMPT DE ÁNGELA
-    // =====================================================
-
-    let promptSistema = `
+    let instrucciones = `
 Sos ÁNGELA, una asistente de inteligencia artificial general.
 
-Tu nombre es ÁNGELA.
+Respondé principalmente en español.
 
-Respondé siempre en español salvo que el usuario solicite otro idioma.
-
-Respondé de forma:
-- natural
+Tu forma de responder debe ser:
 - clara
+- natural
 - útil
 - directa
 - amable
 - precisa
 
-Podés ayudar con:
-- preguntas generales
-- informática
-- programación
+Podés ayudar con temas generales y especialmente con:
+
 - grabado láser
 - LightBurn
+- AlgoLaser
 - sublimación
 - impresión 3D
 - CNC
-- imágenes y diseño
+- diseño
+- imágenes
+- computación
+- programación
 - proyectos
 - cálculos
 - explicaciones
@@ -183,50 +139,26 @@ Podés ayudar con:
 - aprendizaje
 - tareas cotidianas
 
-No inventes que realizaste acciones que no realizaste.
+No inventes acciones.
 
 No digas que abriste páginas, enviaste mensajes,
 modificaste archivos o ejecutaste herramientas
 si realmente no ocurrió.
 
-Si no sabés algo, decilo claramente.
+Si no conocés una respuesta, explicalo claramente.
 
-Nombre del usuario: ${usuario}
-Nombre del asistente: ${asistente}
+Usuario actual: ${usuario}
 `;
 
     if (ubicacion) {
-      promptSistema += `\nUbicación aproximada del usuario: ${ubicacion}\n`;
+      instrucciones += `\nUbicación aproximada: ${ubicacion}`;
     }
 
-    if (contexto) {
+    // ==========================================
+    // LLAMADA A GEMINI
+    // ==========================================
 
-      try {
-
-        const contextoTexto =
-          typeof contexto === "string"
-            ? contexto
-            : JSON.stringify(contexto);
-
-        // Evitamos mandar un contexto gigantesco
-        promptSistema +=
-          "\nContexto disponible de la conversación:\n" +
-          contextoTexto.slice(0, 12000);
-
-      } catch (e) {
-
-        console.warn("No se pudo procesar contexto:", e);
-
-      }
-
-    }
-
-
-    // =====================================================
-    // CONSULTAR GEMINI
-    // =====================================================
-
-    const respuesta = await fetch(
+    const respuestaGemini = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
       {
         method: "POST",
@@ -237,11 +169,10 @@ Nombre del asistente: ${asistente}
         },
 
         body: JSON.stringify({
-
-          systemInstruction: {
+          system_instruction: {
             parts: [
               {
-                text: promptSistema
+                text: instrucciones
               }
             ]
           },
@@ -255,76 +186,33 @@ Nombre del asistente: ${asistente}
                 }
               ]
             }
-          ],
-
-          generationConfig: {
-            temperature: 0.7,
-            topP: 0.95,
-            maxOutputTokens: 4096
-          }
-
+          ]
         })
       }
     );
 
+    // ==========================================
+    // LEER RESPUESTA GEMINI
+    // ==========================================
 
-    // =====================================================
-    // LEER RESPUESTA DE GEMINI
-    // =====================================================
+    const data = await respuestaGemini.json();
 
-    let data;
+    if (!respuestaGemini.ok) {
 
-    try {
+      console.error("ERROR GEMINI:", data);
 
-      data = await respuesta.json();
-
-    } catch (error) {
-
-      console.error(
-        "Gemini devolvió una respuesta no JSON",
-        error
-      );
-
-      return res.status(502).json({
-        error: "Respuesta inválida del servidor de Gemini"
-      });
-
-    }
-
-
-    // =====================================================
-    // ERROR DE GEMINI
-    // =====================================================
-
-    if (!respuesta.ok) {
-
-      console.error(
-        "Error Gemini:",
-        respuesta.status,
-        JSON.stringify(data)
-      );
-
-      return res.status(respuesta.status).json({
-
+      return res.status(respuestaGemini.status).json({
         error: "Gemini rechazó la solicitud",
-
         detalle:
           data?.error?.message ||
-          data?.message ||
-          "Error desconocido de Gemini",
-
-        codigo:
-          data?.error?.code ||
-          respuesta.status
-
+          "Error desconocido de Gemini"
       });
 
     }
 
-
-    // =====================================================
-    // EXTRAER TEXTO
-    // =====================================================
+    // ==========================================
+    // SACAR EL TEXTO DE LA RESPUESTA
+    // ==========================================
 
     const partes =
       data?.candidates?.[0]?.content?.parts || [];
@@ -334,80 +222,41 @@ Nombre del asistente: ${asistente}
       .join("")
       .trim();
 
-
     if (!texto) {
-
-      console.error(
-        "Respuesta Gemini sin texto:",
-        JSON.stringify(data)
-      );
-
       return res.status(500).json({
-
-        error:
-          "Gemini respondió pero no devolvió texto",
-
-        detalle:
-          data?.promptFeedback || null
-
+        error: "Gemini respondió pero no devolvió texto"
       });
-
     }
 
-
-    // =====================================================
-    // RESPUESTA COMPATIBLE CON TODAS LAS VERSIONES
-    // DE ÁNGELA
-    // =====================================================
+    // ==========================================
+    // RESPUESTA PARA ÁNGELA
+    // ==========================================
 
     return res.status(200).json({
-
       ok: true,
 
       respuesta: texto,
-
       reply: texto,
-
       response: texto,
-
       text: texto,
 
       model: "gemini-3.5-flash",
-
       modelo: "gemini-3.5-flash",
 
       geminiConfigured: true,
-
       geminiOk: true,
-
       configured: true,
-
       verified: true
-
     });
-
 
   } catch (error) {
 
-    // =====================================================
-    // ERROR GENERAL
-    // =====================================================
-
-    console.error(
-      "ERROR ÁNGELA / API:",
-      error
-    );
+    console.error("ERROR SERVIDOR ÁNGELA:", error);
 
     return res.status(500).json({
-
       error: "Error interno del servidor",
-
-      detalle:
-        error?.message ||
-        "Error desconocido"
-
+      detalle: error?.message || "Error desconocido"
     });
 
   }
-
 }
