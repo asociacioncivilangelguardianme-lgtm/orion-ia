@@ -43,7 +43,7 @@ async function llamarGemini({ apiKey, model, contents, systemText }) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: systemText }] },
       contents,
-      tools: [{ google_search: {} }],
+      // ACÁ ESTABA EL ERROR: Le borré la herramienta de google_search que bloqueaba tu clave
       generationConfig: { temperature: 0.65, topP: 0.95, maxOutputTokens: 4096 }
     })
   });
@@ -84,15 +84,11 @@ export default async function handler(req, res) {
   const geminiApiKey = (process.env.GEMINI_API_KEY || "").trim();
   const openRouterApiKey = (process.env.OPENROUTER_API_KEY || "").trim();
 
-  // SOLUCIÓN 1: Nombres universales para Gemini que no tiran el error "not found"
-  const geminiModels = ["gemini-1.5-flash-latest", "gemini-pro"];
+  // NOMBRES OFICIALES DE GEMINI 1.5
+  const geminiModels = ["gemini-1.5-flash", "gemini-1.5-pro"];
   
-  // SOLUCIÓN 2: Nombres corregidos para OpenRouter (sin la etiqueta free rota)
-  const openRouterModels = [
-    "meta-llama/llama-3.1-8b-instruct", 
-    "google/gemma-2-9b-it",
-    "openchat/openchat-7b:free" // Este sigue siendo 100% gratis por si falla el saldo
-  ];
+  // NOMBRES DE OPENROUTER
+  const openRouterModels = ["meta-llama/llama-3.1-8b-instruct", "google/gemma-2-9b-it"];
 
   if (req.method === "GET") {
     return res.status(200).json({
@@ -101,7 +97,7 @@ export default async function handler(req, res) {
       geminiConfigured: Boolean(geminiApiKey),
       openRouterConfigured: Boolean(openRouterApiKey),
       configured: Boolean(geminiApiKey || openRouterApiKey),
-      mensaje: "Servidor de ÁNGELA funcionando con enrutador en cascada."
+      mensaje: "Servidor de ÁNGELA funcionando con enrutador en cascada (Gemini → OpenRouter)."
     });
   }
 
