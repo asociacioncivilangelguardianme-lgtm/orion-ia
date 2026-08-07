@@ -9,6 +9,9 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png" sizes="192x192">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 body{
     background:radial-gradient(circle at 50% 20%,#18264a 0%,#070d18 38%,#02050a 100%);
@@ -126,6 +129,18 @@ button:disabled{opacity:.55;cursor:not-allowed;}
     #entradaChat{min-width:0}
     #chat .chat-controls{flex-wrap:wrap}
 }
+
+/* ÁNGELA V6 · adjuntos / multimedia */
+.attach-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:90;display:flex;align-items:flex-end;justify-content:center;padding:14px;}
+.attach-sheet{width:min(560px,100%);background:#121821;border:1px solid #394a63;border-radius:28px 28px 18px 18px;padding:18px;box-shadow:0 -18px 60px rgba(0,0,0,.55);}
+.attach-action{display:flex;align-items:center;gap:14px;width:100%;padding:15px 14px;border-radius:18px;text-align:left;font-weight:700;font-size:1rem;}
+.attach-action:hover{background:#263248;}
+.attach-icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#303743;font-size:1.35rem;flex:0 0 auto;}
+.attachment-chip{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#0b2034;border:1px solid #27567a;border-radius:12px;padding:8px 10px;font-size:.75rem;}
+.video-lab video{width:100%;max-height:260px;background:#000;border-radius:12px;}
+.file-work-preview{white-space:pre-wrap;max-height:240px;overflow:auto;background:#050b14;border:1px solid #263b59;border-radius:12px;padding:10px;color:#cbd5e1;font-size:.72rem;}
+@media(max-width:768px){.attach-sheet{border-radius:24px 24px 16px 16px}.attach-action{min-height:62px}.chat-input-row{flex-wrap:wrap}.chat-input-row #entradaChat{order:2;flex-basis:calc(100% - 76px)} }
+
 </style>
 </head>
 <body>
@@ -185,6 +200,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button onclick="prepararSublimacionImagen()" class="quick">👕 Sublimación</button>
 <button onclick="restaurarImagen()" class="quick">♻ Restaurar</button>
 <button onclick="guardarImagen()" class="quick">💾 Guardar PNG</button>
+<button onclick="usarImagenConAngela()" class="quick col-span-2">🧠 Usar imagen con ÁNGELA</button>
 </div>
 <div class="mt-4 pt-3 border-t border-slate-700">
 <div class="text-xs font-bold text-cyan-300 mb-2">📐 Medidas reales</div>
@@ -274,12 +290,42 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button onclick="agregarStock()" class="quick w-full text-xs">➕ Agregar</button>
 <div id="listaStock" class="mt-3 space-y-2 text-xs max-h-52 overflow-y-auto custom-scrollbar"></div>
 </div>
-<button class="menu-btn" onclick="toggleMenu('archivos')">📁 Archivos <span class="float-right">›</span></button>
+<button class="menu-btn" onclick="toggleMenu('archivos')">📁 Archivos y Multimedia <span class="float-right">›</span></button>
 <div id="archivos" class="submenu custom-scrollbar">
-<h3 class="font-bold text-cyan-300 mb-3">📁 Archivos seguros</h3>
-<input id="archivoGeneral" type="file" accept=".jpg,.jpeg,.png,.webp,.svg,.pdf,.dxf,.txt" class="w-full bg-slate-900 p-2 rounded-lg text-xs" aria-label="Seleccionar archivo">
-<p class="text-[10px] text-slate-500 mt-2">Admite JPG, JPEG, PNG, WEBP, SVG, PDF, DXF y TXT hasta 15 MB. El contenido no se ejecuta.</p>
+<h3 class="font-bold text-cyan-300 mb-3">📎 Trabajar con archivos</h3>
+<div class="grid grid-cols-2 gap-2 mb-3">
+<button onclick="elegirCamara()" class="quick text-xs">📷 Cámara</button>
+<button onclick="elegirFotos()" class="quick text-xs">🖼️ Fotos</button>
+<button onclick="elegirVideo()" class="quick text-xs">🎬 Video</button>
+<button onclick="elegirArchivo()" class="quick text-xs">📎 Archivo</button>
+<button onclick="elegirDesdeDrive()" class="quick text-xs">☁️ Drive</button>
+<button onclick="abrirCanva()" class="quick text-xs">🎨 Canva</button>
+</div>
+<input id="archivoGeneral" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.json,.dxf,.mp4,.webm,.mov,.m4v" class="w-full bg-slate-900 p-2 rounded-lg text-xs" aria-label="Seleccionar archivo">
+<p class="text-[10px] text-slate-500 mt-2">ÁNGELA puede leer texto de PDF, DOCX, TXT, CSV y Excel. También puede analizar imágenes y fotogramas de video. Los archivos se procesan primero en tu navegador.</p>
+<div id="contextoArchivoPanel" class="mt-3"></div>
 <div id="archivoInfo" class="mt-3 text-xs"></div>
+<div id="archivoPreviewTexto" class="file-work-preview hidden mt-3"></div>
+<div id="videoLab" class="video-lab hidden mt-4 border-t border-slate-700 pt-3">
+<div class="font-bold text-purple-300 text-xs mb-2">🎬 Edición básica de video</div>
+<video id="videoEditor" controls playsinline></video>
+<div class="grid grid-cols-2 gap-2 mt-2">
+<label class="text-[10px]">Inicio (seg)<input id="videoInicio" type="number" min="0" step="0.1" value="0" class="w-full bg-slate-900 p-2 rounded-lg mt-1"></label>
+<label class="text-[10px]">Fin (seg)<input id="videoFin" type="number" min="0" step="0.1" value="0" class="w-full bg-slate-900 p-2 rounded-lg mt-1"></label>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-2">
+<label class="text-[10px]">Velocidad<select id="videoVelocidad" onchange="aplicarVideoControles()" class="w-full bg-slate-900 p-2 rounded-lg mt-1"><option value="0.5">0,5x</option><option value="1" selected>1x</option><option value="1.25">1,25x</option><option value="1.5">1,5x</option><option value="2">2x</option></select></label>
+<label class="flex items-center gap-2 text-xs pt-5"><input id="videoMute" type="checkbox" onchange="aplicarVideoControles()"> 🔇 Sin sonido</label>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-3">
+<button onclick="reproducirTramoVideo()" class="quick text-xs">▶️ Ver tramo</button>
+<button onclick="capturarFotogramaVideo(true)" class="quick text-xs">🖼️ Fotograma → editor</button>
+<button onclick="prepararVideoParaAngela()" class="quick text-xs">🧠 Analizar video</button>
+<button onclick="exportarTramoVideo()" class="quick text-xs">✂️ Exportar tramo</button>
+</div>
+<p class="text-[10px] text-slate-500 mt-2">La exportación de tramo depende del navegador. En móviles que no la soporten, igualmente podés analizar el video y extraer fotogramas.</p>
+</div>
+<button onclick="limpiarContextoArchivo()" class="quick w-full text-xs mt-3">🧹 Quitar archivo del chat</button>
 </div>
 <button class="menu-btn" onclick="toggleMenu('web')">🌐 Web <span class="float-right">›</span></button>
 <div id="web" class="submenu custom-scrollbar">
@@ -317,7 +363,8 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <label class="text-xs text-slate-300">Tema</label><select id="temaSelect" class="w-full bg-slate-900 p-2 rounded-lg my-2 text-xs"><option value="futurista">Futurista actual</option><option value="alto-contraste">Alto contraste</option></select>
 <label class="flex items-center gap-2 text-xs my-2"><input id="memoriaToggle" type="checkbox" checked> 🧠 Memoria activada</label>
 <button onclick="guardarConfigAsistente()" class="quick w-full text-xs mb-2">💾 Guardar configuración</button>
-<details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🔊 Voz</summary><button id="btnToggleVoz" onclick="toggleVoice()" class="quick w-full text-xs mt-2">🔊 Voz activada</button><select id="vozSelect" class="w-full bg-slate-900 p-2 rounded-lg mt-2 text-xs"></select><label class="text-[10px]">Velocidad<input id="vozVelocidad" type="range" min="0.6" max="1.6" step="0.05" value="1" class="w-full"></label><label class="text-[10px]">Volumen<input id="vozVolumen" type="range" min="0" max="1" step="0.05" value="1" class="w-full"></label><button onclick="probarVoz()" class="quick w-full text-xs mt-2">▶ Probar voz</button></details>
+<details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🔊 Voz y accesibilidad</summary><button id="btnToggleVoz" onclick="toggleVoice()" class="quick w-full text-xs mt-2">🔊 Voz activada</button><label class="flex items-center gap-2 text-xs my-2"><input id="manosLibresToggle" type="checkbox" onchange="toggleHandsFree(this.checked)" checked> 🎙️ Manos libres: activar al decir “Ángela”</label><label class="text-[10px]">Silencio para enviar la frase<input id="manosLibresSilencio" type="range" min="1000" max="3000" step="100" value="1600" class="w-full" oninput="actualizarSilencioManosLibres(this.value)"></label><div id="manosLibresSilencioTexto" class="text-[10px] text-slate-500 mb-2">1,6 segundos</div><select id="vozSelect" class="w-full bg-slate-900 p-2 rounded-lg mt-2 text-xs"></select><label class="text-[10px]">Velocidad<input id="vozVelocidad" type="range" min="0.6" max="1.6" step="0.05" value="1" class="w-full"></label><label class="text-[10px]">Volumen<input id="vozVolumen" type="range" min="0" max="1" step="0.05" value="1" class="w-full"></label><button onclick="probarVoz()" class="quick w-full text-xs mt-2">▶ Probar voz</button></details>
+<details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🧩 Complementos PRO</summary><div id="estadoComplementosPro" class="space-y-2 mt-2 text-[10px]"><div>Comprobando complementos…</div></div><p class="text-[10px] text-slate-500 mt-2">Los complementos externos se activan desde <b>angela.config.js</b>. Las claves privadas de IA van únicamente en Vercel, nunca dentro del HTML.</p></details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🧠 Ver / editar memoria</summary><div id="listaMemoria" class="space-y-2 mt-2 max-h-48 overflow-auto"></div><button onclick="clearProfileMemory()" class="quick w-full text-xs text-red-300 mt-2">🗑 Eliminar memoria del perfil</button></details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">📜 Historial</summary><div id="listaHistorial" class="space-y-2 mt-2 max-h-56 overflow-auto"></div></details>
 <button onclick="ejecutarDiagnostico()" class="quick w-full text-xs text-cyan-300 mb-2">🩺 Diagnóstico de Ángela</button>
@@ -355,7 +402,9 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <div class="chatAngela" id="mensajeBienvenida"><b>ÁNGELA:</b> ¡Hola! ¿Cómo estás? ¿Qué necesitás?</div>
 </div>
 <div id="estadoPensando" class="text-xs text-cyan-300 mt-2 hidden" role="status" aria-live="polite">● <span class="thinking-dots">ÁNGELA está pensando</span></div>
-<div class="flex gap-2 mt-4">
+<div id="contextoArchivoChat" class="hidden mt-3"></div>
+<div class="flex gap-2 mt-4 chat-input-row">
+<button onclick="abrirAdjuntos()" class="bg-slate-700 px-4 rounded-xl text-xl shadow" title="Adjuntar">＋</button>
 <button onclick="activarMicrofonoManual()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-4 rounded-xl text-lg shadow" title="Hablar">🎤</button>
 <input id="entradaChat" placeholder="Preguntame lo que quieras o pedime algo..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-3 text-white" aria-label="Mensaje para ÁNGELA">
 <button id="btnCancelar" onclick="cancelarRespuesta()" class="hidden bg-slate-700 px-4 rounded-xl font-bold" title="Cancelar respuesta">⏹</button>
@@ -375,6 +424,8 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button onclick="TOOLS.maps.open()" class="quick">📍 Maps</button>
 <button onclick="abrirMenu('imagenes')" class="quick">🖼 Imágenes</button>
 <button onclick="abrirMenu('proyectos')" class="quick">📁 Proyectos</button>
+<button onclick="elegirDesdeDrive()" class="quick">☁️ Drive</button>
+<button onclick="abrirCanva()" class="quick">🎨 Canva</button>
 </div>
 </div>
 <div class="panel rounded-3xl p-4 text-center">
@@ -412,26 +463,54 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 </div>
 </aside>
 </div>
+
+<!-- Selector móvil de adjuntos estilo app -->
+<input id="inputCamara" type="file" accept="image/*" capture="environment" class="hidden">
+<input id="inputFotos" type="file" accept="image/*" class="hidden">
+<input id="inputVideo" type="file" accept="video/*" class="hidden">
+<input id="inputArchivoUniversal" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.json,.dxf,.mp4,.webm,.mov,.m4v" class="hidden">
+<div id="adjuntosBackdrop" class="attach-sheet-backdrop hidden" onclick="if(event.target===this)cerrarAdjuntos()">
+  <div class="attach-sheet" role="dialog" aria-modal="true" aria-label="Adjuntar a ÁNGELA">
+    <div class="flex justify-between items-center mb-2"><div class="font-bold text-lg">Agregar a ÁNGELA</div><button onclick="cerrarAdjuntos()" class="quick px-4">✕</button></div>
+    <button onclick="elegirCamara()" class="attach-action"><span class="attach-icon">📷</span><span>Cámara</span></button>
+    <button onclick="elegirFotos()" class="attach-action"><span class="attach-icon">🖼️</span><span>Fotos</span></button>
+    <button onclick="elegirVideo()" class="attach-action"><span class="attach-icon">🎬</span><span>Video</span></button>
+    <button onclick="elegirArchivo()" class="attach-action"><span class="attach-icon">📎</span><span>Archivos · PDF · Word · Excel</span></button>
+    <button onclick="elegirDesdeDrive()" class="attach-action"><span class="attach-icon">☁️</span><span>Google Drive</span></button>
+    <button onclick="abrirCanva()" class="attach-action"><span class="attach-icon">🎨</span><span>Canva</span></button>
+    <button onclick="cerrarAdjuntos();abrirMenu('web')" class="attach-action"><span class="attach-icon">🧩</span><span>Complementos y herramientas</span></button>
+  </div>
+</div>
 <div id="toastAngela" class="hidden" role="status" aria-live="polite"></div>
+<script src="./angela.config.js"></script>
 <script>
 /* ==========================================
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "2.3.2-github-web-radio-gps",
+    version: "6.1.0-multimedia-drive-canva-mobile",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
     maxChatChars: 12000,
     maxHistoryMessages: 30,
     maxConversations: 15,
-    maxFileBytes: 15 * 1024 * 1024,
+    maxFileBytes: 35 * 1024 * 1024,
+    maxMediaBytes: 180 * 1024 * 1024,
     allowedFiles: {
-        jpg: ["image/jpeg"], jpeg: ["image/jpeg"], png: ["image/png"], webp: ["image/webp"],
-        svg: ["image/svg+xml", "text/plain", "application/octet-stream"],
-        pdf: ["application/pdf", "application/octet-stream"],
-        dxf: ["application/dxf", "image/vnd.dxf", "application/octet-stream", "text/plain"],
-        txt: ["text/plain", "application/octet-stream"]
+        jpg:["image/jpeg"], jpeg:["image/jpeg"], png:["image/png"], webp:["image/webp"], gif:["image/gif"],
+        svg:["image/svg+xml","text/plain","application/octet-stream"],
+        pdf:["application/pdf","application/octet-stream"],
+        docx:["application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/octet-stream"],
+        doc:["application/msword","application/octet-stream"],
+        xlsx:["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/octet-stream"],
+        xls:["application/vnd.ms-excel","application/octet-stream"],
+        csv:["text/csv","application/vnd.ms-excel","text/plain","application/octet-stream"],
+        txt:["text/plain","application/octet-stream"], md:["text/markdown","text/plain","application/octet-stream"],
+        json:["application/json","text/plain","application/octet-stream"],
+        dxf:["application/dxf","image/vnd.dxf","application/octet-stream","text/plain"],
+        mp4:["video/mp4","application/octet-stream"], webm:["video/webm","application/octet-stream"],
+        mov:["video/quicktime","application/octet-stream"], m4v:["video/x-m4v","video/mp4","application/octet-stream"]
     },
     storagePrefix: "angela_",
     dbName: "angela_db",
@@ -502,6 +581,8 @@ const DEFAULT_SETTINGS = {
     voiceRate: 1,
     voiceVolume: 1,
     voiceName: "",
+    handsFreeEnabled: true,
+    handsFreeSilenceMs: 1600,
     theme: "futurista",
     defaultMachineId: "algolaser-diy-mk2-10w",
     radioStreamUrl: "",
@@ -527,13 +608,22 @@ const STATE = {
     hourlyWeather: null,
     location: STORAGE.get("angela_location_v2", null),
     ai: {backend:false, configured:false, verified:false, model:""},
-    voice: {recognition:null, listening:false, speaking:false, voices:[]},
+    voice: {
+        recognition:null, listening:false, speaking:false, voices:[],
+        wakeRecognition:null, wakeListening:false, commandActive:false, commandText:"",
+        silenceTimer:null, commandTimeout:null, restartTimer:null, manualMode:false, permissionBlocked:false, recognitionBroken:false
+    },
     pendingController: null,
     installPrompt: null,
     logs: STORAGE.get("angela_activity_log", []) || [],
     db: null,
     safeMode: false,
-    image: {sourceCanvas:null, mode:"normal", brightness:100, contrast:100, rotation:0, mirror:false, widthMm:0, heightMm:0, lockRatio:true, ratio:1}
+    image: {sourceCanvas:null, mode:"normal", brightness:100, contrast:100, rotation:0, mirror:false, widthMm:0, heightMm:0, lockRatio:true, ratio:1},
+    fileContext:null,
+    pdfPageImages:[],
+    videoFrames:[],
+    video:{file:null,url:"",name:"",duration:0,previewStopHandler:null},
+    audioFallback:{stream:null,recorder:null,chunks:[],recording:false,stopTimer:null}
 };
 
 // Completa campos institucionales antiguos sin borrar personalizaciones del usuario.
@@ -763,9 +853,11 @@ function agregarMensajeDOM(tipo, texto, sources=null, persist=false){
     const content=document.createElement("span"); content.textContent=textoVisible;
     div.append(title,content);
     if(Array.isArray(sources) && sources.length){
-        const src=document.createElement("div"); src.className="mt-2 flex flex-wrap gap-2 text-xs";
+        const details=document.createElement("details"); details.className="mt-2 text-xs text-slate-400";
+        const summary=document.createElement("summary"); summary.className="cursor-pointer text-cyan-300 select-none"; summary.textContent=`🌐 Fuentes verificadas (${Math.min(sources.length,5)})`;
+        const src=document.createElement("div"); src.className="mt-2 flex flex-wrap gap-2";
         sources.slice(0,5).forEach((s,i)=>{ const href=sanitizeUrl(s.url||s.uri||""); if(!href)return; const a=document.createElement("a");a.href=href;a.target="_blank";a.rel="noopener noreferrer";a.className="text-cyan-300 underline";a.textContent=s.title||`Fuente ${i+1}`;src.appendChild(a); });
-        if(src.childNodes.length) div.appendChild(src);
+        if(src.childNodes.length){ details.append(summary,src); div.appendChild(details); }
     }
     box.appendChild(div); box.scrollTop=box.scrollHeight;
     if(persist) persistChatMessage(tipo==="user"?"user":"assistant", tipo==="user"?texto:textoVisible);
@@ -940,7 +1032,7 @@ function abrirGmail(){ TOOLS.gmail.open(); }
 
 const TOOLS = {
     web:{search:({query})=>TOOLS.google.search({query})},
-    apps:{open:({app})=>{const a=normalizarTexto(app);if(a.includes("youtube"))return TOOLS.youtube.open();if(a.includes("whatsapp"))return TOOLS.whatsapp.open();if(a.includes("gmail"))return TOOLS.gmail.open();if(a.includes("maps"))return TOOLS.maps.open();if(a.includes("lightburn"))return{ok:false,message:"LightBurn requiere una futura conexión con ÁNGELA Desktop; el navegador no puede controlarlo directamente."};return{ok:false,message:"Esa aplicación no tiene una integración web configurada."};}},
+    apps:{open:({app})=>{const a=normalizarTexto(app);if(a.includes("youtube"))return TOOLS.youtube.open();if(a.includes("whatsapp"))return TOOLS.whatsapp.open();if(a.includes("gmail"))return TOOLS.gmail.open();if(a.includes("maps"))return TOOLS.maps.open();if(a.includes("canva"))return TOOLS.canva.open();if(a.includes("drive"))return TOOLS.drive.open();if(/lightburn|calculadora|explorador|chrome|bloc de notas|notepad/.test(a))return abrirAppDesktop(a);return{ok:false,message:"Esa aplicación no tiene una integración configurada."};}},
     google:{
         open:()=>({ok:safeOpen("https://www.google.com","Abrir Google"), message:"Abrí Google."}),
         search:({query})=>{const q=String(query||"").trim(); if(!q)return{ok:false,message:"Falta el texto de búsqueda."}; const url=`https://www.google.com/search?q=${encodeURIComponent(q)}`; const ok=safeOpen(url,"Abrir búsqueda en Google"); return{ok,message:`Busqué “${q}” en Google.`};}
@@ -962,6 +1054,8 @@ const TOOLS = {
     radio:{open:()=>{abrirRadio();return{ok:true,message:"Abrí la página oficial de Radio Ángel Guardián."};}},
     whatsapp:{open:()=>({ok:safeOpen("https://web.whatsapp.com","Abrir WhatsApp"),message:"Abrí WhatsApp Web. No envié ningún mensaje."})},
     gmail:{open:()=>({ok:safeOpen("https://mail.google.com","Abrir Gmail"),message:"Abrí Gmail. No tengo acceso a tus correos sin una integración OAuth/API."})},
+    canva:{open:()=>({ok:abrirCanva(),message:"Abrí Canva. Después podés descargar el diseño y adjuntarlo a ÁNGELA."})},
+    drive:{open:()=>{elegirDesdeDrive();return{ok:true,message:"Abrí el selector para elegir un archivo, incluso desde Google Drive si tu celular lo ofrece."};}},
     laser:{show:({material="mdf",process="engrave"}={})=>{abrirMenu("laser");const mat=normalizarTexto(material).replace(/\s+/g,"");const aliases={"acero inoxidable":"acero","aceroquirurgico":"quirurgico","vasotermico":"vaso","terciado3mm":"terciado"};const materialKey=aliases[normalizarTexto(material)]||aliases[mat]||mat;const p=normalizarTexto(process);const processKey=p.includes("cort")?"cut":p.includes("marc")?"mark":"engrave";return mostrarLaser(materialKey,processKey);}},
     images:{open:()=>{abrirMenu("imagenes");return{ok:true,message:"Abrí las herramientas de imagen."};}},
     projects:{open:()=>{abrirMenu("proyectos");return{ok:true,message:"Abrí tus proyectos."};}},
@@ -970,6 +1064,34 @@ const TOOLS = {
     memory:{remember:({text})=>remember(text)}
 };
 window.TOOLS=TOOLS;
+
+/* ==========================================
+   COMPLEMENTOS PRO / ÁNGELA DESKTOP
+   ========================================== */
+function abrirAppDesktop(app){
+    const name=normalizarTexto(app||"");
+    if(window.angelaDesktop?.openApp){
+        return Promise.resolve(window.angelaDesktop.openApp(name)).then(result=>{
+            const msg=result?.message || (result?.ok?`Abrí ${app}.`:`No pude abrir ${app}.`);
+            return {ok:!!result?.ok,message:msg};
+        }).catch(error=>({ok:false,message:`No pude comunicarme con ÁNGELA Desktop: ${error?.message||"error"}`}));
+    }
+    return Promise.resolve({ok:false,message:`Para abrir ${app} en Windows necesitás ejecutar ÁNGELA Desktop. La versión web no puede abrir programas del sistema por seguridad.`});
+}
+
+function renderProIntegrations(){
+    const box=$("estadoComplementosPro");if(!box)return;
+    const cfg=window.ANGELA_PRO_CONFIG||{};
+    const rows=[
+        ["🤖 Backend multi-IA","Siempre disponible si subís /api a Vercel; usa Gemini y puede pasar a OpenRouter."],
+        ["🎙️ Porcupine",cfg.porcupine?.enabled?"Configurado; requiere AccessKey y modelos .ppn/.pv.":"Opcional / desactivado"],
+        ["☁️ Supabase",cfg.supabase?.enabled?"Configurado":"Opcional / desactivado"],
+        ["⚙️ n8n",cfg.n8n?.enabled?"Configurado":"Opcional / desactivado"],
+        ["🖥️ ÁNGELA Desktop",window.angelaDesktop?"Conectado":"No conectado (normal en navegador)"],
+        ["🩺 Sentry",cfg.sentry?.enabled?"Configurado":"Opcional / desactivado"]
+    ];
+    box.replaceChildren();rows.forEach(([a,b])=>{const d=document.createElement("div");d.className="card-mini";d.textContent=`${a}: ${b}`;box.appendChild(d);});
+}
 
 /* ==========================================
    CALCULATOR - NO EVAL / NO FUNCTION()
@@ -1011,6 +1133,8 @@ function localCommand(text){
     if(/^(abri|abrir|abrime)\s+google$/.test(p))return{tool:"google_open",args:{}};
     if(/^(abri|abrir|abrime)\s+(el\s+)?whatsapp/.test(p))return{tool:"whatsapp",args:{}};
     if(/^(abri|abrir|abrime)\s+gmail/.test(p))return{tool:"gmail",args:{}};
+    let appMatch=p.match(/^(?:abri|abrir|abrime|inicia|iniciar)\s+(lightburn|calculadora|explorador|explorador de archivos|chrome|google chrome|bloc de notas|notepad)$/);
+    if(appMatch)return{tool:"desktop_app",args:{app:appMatch[1]}};
     let m=p.match(/(?:busca|buscá|buscame|buscáme)(?:\s+en)?\s+youtube\s+(.+)/); if(m)return{tool:"youtube_search",args:{query:m[1]}};
     m=p.match(/(?:busca|buscá|buscame|buscáme)\s+(?:en\s+google\s+)?(.+)/); if(m && !/cerca|maps|mapa/.test(p))return{tool:"google_search",args:{query:m[1]}};
     if(/donde estoy|dónde estoy|ubicame|ubicáme/.test(p))return{tool:"locate",args:{}};
@@ -1022,7 +1146,8 @@ async function executeLocalCommand(cmd){
     const map={
         calculator:()=>TOOLS.calculator.calculate(cmd.args), remember:()=>TOOLS.memory.remember(cmd.args), radio:()=>TOOLS.radio.open(),
         youtube_open:()=>TOOLS.youtube.open(), google_open:()=>TOOLS.google.open(), whatsapp:()=>TOOLS.whatsapp.open(), gmail:()=>TOOLS.gmail.open(),
-        youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current()
+        youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(),
+        desktop_app:()=>abrirAppDesktop(cmd.args?.app)
     };
     return map[cmd.tool]?await map[cmd.tool]():null;
 }
@@ -1083,6 +1208,61 @@ function buildAiContext(currentMessage=""){
     return {history, memories, profile:STATE.settings.activeProfile, assistant:STATE.settings.assistantName, machine, location:hasFreshLocation()?{available:true}:null, tools:["google_search","youtube","google","maps","weather","laser","images","calculator","files","projects","radio","whatsapp","gmail"]};
 }
 
+
+/* ==========================================
+   ADJUNTOS PARA IA
+   ========================================== */
+function dataUrlToAttachment(dataUrl,name="imagen.jpg"){
+    const m=String(dataUrl||"").match(/^data:([^;]+);base64,(.+)$/);
+    if(!m)return null;
+    return {name,type:m[1],data:m[2]};
+}
+function canvasParaIA(canvas,maxSide=1280,quality=.78){
+    if(!canvas||canvas.width<2||canvas.height<2)return null;
+    const scale=Math.min(1,maxSide/Math.max(canvas.width,canvas.height));
+    const c=document.createElement("canvas");c.width=Math.max(1,Math.round(canvas.width*scale));c.height=Math.max(1,Math.round(canvas.height*scale));
+    const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(canvas,0,0,c.width,c.height);
+    return c.toDataURL("image/jpeg",quality);
+}
+function obtenerAdjuntosParaIA(){
+    const out=[];
+    if(STATE.fileContext?.kind==="image" && $("canvasImagen")?.width>1){
+        const a=dataUrlToAttachment(canvasParaIA($("canvasImagen"),1280,.78),STATE.fileContext.name||"imagen.jpg");if(a)out.push(a);
+    }
+    if(Array.isArray(STATE.pdfPageImages)) for(const [i,url] of STATE.pdfPageImages.slice(0,3).entries()){const a=dataUrlToAttachment(url,`pagina-${i+1}.jpg`);if(a)out.push(a);}
+    if(Array.isArray(STATE.videoFrames)) for(const [i,url] of STATE.videoFrames.slice(0,3).entries()){const a=dataUrlToAttachment(url,`video-fotograma-${i+1}.jpg`);if(a)out.push(a);}
+    return out.slice(0,4);
+}
+function textoContextoArchivo(){
+    if(!STATE.fileContext)return "";
+    const text=String(STATE.fileContext.text||"").slice(0,42000);
+    const meta=`Archivo activo: ${STATE.fileContext.name||"archivo"}${STATE.fileContext.kind?` · tipo ${STATE.fileContext.kind}`:""}`;
+    return text?`${meta}\n\nContenido extraído:\n${text}`:meta;
+}
+function renderContextoArchivo(){
+    const targets=[$("contextoArchivoChat"),$("contextoArchivoPanel")].filter(Boolean);
+    for(const box of targets){
+        box.replaceChildren();
+        if(!STATE.fileContext){box.classList.add("hidden");continue;}
+        box.classList.remove("hidden");
+        const row=document.createElement("div");row.className="attachment-chip";
+        const span=document.createElement("span");span.textContent=`📎 ${STATE.fileContext.name||"Archivo listo"} · ÁNGELA lo tendrá en cuenta`;
+        const b=document.createElement("button");b.textContent="✕";b.className="text-red-300 px-2";b.onclick=limpiarContextoArchivo;
+        row.append(span,b);box.appendChild(row);
+    }
+}
+function limpiarContextoArchivo(){
+    STATE.fileContext=null;STATE.pdfPageImages=[];STATE.videoFrames=[];
+    renderContextoArchivo();
+    const p=$("archivoPreviewTexto");if(p){p.textContent="";p.classList.add("hidden");}
+    showToast("Archivo quitado del contexto del chat.");
+}
+function usarImagenConAngela(){
+    if(!$("canvasImagen")||$("canvasImagen").width<2){showToast("Primero cargá una imagen.");return;}
+    STATE.fileContext={kind:"image",name:STATE.fileContext?.name||"imagen-editada.jpg",text:"Imagen cargada en el editor de ÁNGELA."};
+    STATE.pdfPageImages=[];STATE.videoFrames=[];renderContextoArchivo();focusChat();showToast("Imagen lista. Escribí qué querés hacer o saber.");
+}
+
 /* ==========================================
    COMPATIBILIDAD API VIEJA + NUEVA + GITHUB
    ========================================== */
@@ -1103,45 +1283,52 @@ function getAiEndpoints(){
     return [...new Set(list.filter(Boolean))];
 }
 
-function buildCompatiblePayload(message){
+function clasificarConsultaAI(message){
+    const p=normalizarTexto(message);
+    const fresh=/^quien\s+es\b/.test(p) || /\b(hoy|ahora|actual|actualmente|ultimo|ultima|ultimos|ultimas|reciente|recientes|noticia|noticias|esta semana|este mes|presidente actual|gobierno actual|ministro actual|gobernador actual|intendente actual|cotizacion|cotización|dolar|dólar|precio|resultado|partido de hoy|en vivo|clima|pronostico|pronóstico|elecciones|quien gobierna|quién gobierna)\b/.test(p);
+    const wantsSources=/\b(fuente|fuentes|de donde|de dónde|link|enlace|verifica|verificá|comproba|comprobá)\b/.test(p);
+    const detailed=/\b(detallado|detalle|amplia|ampliá|explica bien|explicame bien|profundiza|profundizá|paso a paso)\b/.test(p);
+    return {fresh,wantsSources,detailed,intent:fresh?"current":"general"};
+}
+
+function buildCompatiblePayload(message, extra={}){
     const context=buildAiContext(message);
+    const aiClass=clasificarConsultaAI(message);
     const locationText=STATE.location?.zone || STATE.location?.zona || (context.location?.available ? "Ubicación GPS disponible" : "");
-
-    // El backend actual es deliberadamente simple. Para que no pierda el hilo,
-    // incluimos una copia breve de la conversación dentro de "mensaje".
-    const historialTexto=(context.history||[]).slice(-10).map(item=>{
+    const historialTexto=(context.history||[]).slice(-12).map(item=>{
         const quien=item.role==="assistant"?(STATE.settings.assistantName||"Ángela"):"Usuario";
-        return `${quien}: ${String(item.content||"").slice(0,1400)}`;
+        return `${quien}: ${String(item.content||"").slice(0,1600)}`;
     }).join("\n");
-
     const comedor={...DEFAULT_SETTINGS.comedor,...(STATE.settings.comedor||{})};
-    
-    // MEJORA: Prompt del sistema para que Ángela sea directa, natural y vaya al grano.
-    const systemPrompt=`Sos ÁNGELA, una asistente virtual avanzada y muy ágil (al estilo Siri o Alexa). Tu personalidad es natural, directa, amigable y coloquial (usá voseo argentino: "vos", "acá tenés", "fijate", etc.).
-    
-REGLAS CLAVE PARA RESPONDER:
-1. Andá directo al grano. NUNCA uses frases robóticas como "Analizando el globo terráqueo", "Según mi base de datos", ni des introducciones formales o largas.
-2. Si el usuario pide información, links o redes sociales, respondelo directo y natural. Ejemplo: "¡Sí, obvio! Acá te dejo las redes: ..." y pasá los links de forma clara.
-3. Podés responder sobre CUALQUIER tema (fútbol, historia, salud, famosos, curiosidades, etc.), pero de forma conversacional y rápida. No sos Wikipedia, sos una asistente práctica.
 
-Información del Comedor Ángel Guardián (usala SOLO si te preguntan por esto):
-- Dirección: ${comedor.location || DEFAULT_SETTINGS.comedor.location}.
-- Contacto: ${comedor.contact || DEFAULT_SETTINGS.comedor.contact}.
-- Redes: ${comedor.social || DEFAULT_SETTINGS.comedor.social}.
-- Alias Banco Provincia: ${comedor.alias || "NIEBLA.REMO.TAMBOR"}.
-- Web: https://www.comedorangelguardian.com.ar/`;
+    const systemPrompt=`Sos ÁNGELA, una asistente virtual de uso general. Respondé como una conversación real, en español rioplatense claro y natural.
 
-    const mensajeConContexto=`${systemPrompt}\n\n${historialTexto?`Conversación reciente:\n${historialTexto}\n\n`:""}Pregunta actual del usuario:\n${message}`;
+REGLAS DE RESPUESTA:
+1. Contestá PRIMERO la pregunta concreta. No empieces hablando de servidores, proveedores, Gemini, OpenRouter, Wikipedia, búsquedas ni mecanismos internos.
+2. Por defecto respondé en 2 a 5 frases o párrafos cortos. Ampliá solamente si el usuario pide detalle.
+3. Conservá el contexto: resolvé “él”, “ella”, “eso”, “el prócer”, “el anterior”, “y cuándo nació”, etc. usando la conversación reciente.
+4. Si la consulta depende de información actual, verificála con herramientas web disponibles y sintetizá la respuesta. No le digas al usuario que vaya a buscarla a otro sitio.
+4.b Si preguntan “quién es” una persona viva y tiene un cargo, función o actividad pública actual relevante, verificá la actualidad y mencioná ese rol en la primera frase. Después agregá contexto breve.
+5. Si usás fuentes, la respuesta debe ser completa por sí sola. Las fuentes son respaldo, no sustituto de la respuesta.
+6. No devuelvas páginas de desambiguación, listas de posibles significados ni frases como “hace referencia a varios artículos” cuando el contexto permite identificar la intención.
+7. Si hay un error ortográfico o de reconocimiento de voz evidente, inferí la intención por contexto sin burlarte ni detener la conversación.
+8. No inventes. Si realmente no se puede verificar un dato, decilo brevemente y explicá qué parte es incierta.
+9. Nunca escribas “Modo de rescate”, “mis servidores están saturados”, “buscá en Wikipedia”, “leer más en Wikipedia” ni mensajes técnicos similares dentro de la respuesta normal.
+
+Información institucional SOLO cuando corresponda:
+Comedor Ángel Guardián / Asociación Civil para la Niñez de Merlo. Dirección: ${comedor.location || DEFAULT_SETTINGS.comedor.location}. Tel/Email: ${comedor.contact || DEFAULT_SETTINGS.comedor.contact}. Redes: ${comedor.social || DEFAULT_SETTINGS.comedor.social}. Alias Banco Provincia: ${comedor.alias || "NIEBLA.REMO.TAMBOR"}. Web: https://www.comedorangelguardian.com.ar/`;
+
+    const archivoTexto=textoContextoArchivo();
+    const mensajeConContexto=`${systemPrompt}\n\n${historialTexto?`Conversación reciente:\n${historialTexto}\n\n`:""}${archivoTexto?`Contexto de archivo adjunto:\n${archivoTexto}\n\n`:""}Pregunta actual del usuario:\n${message}`;
+    const autoAttachments=obtenerAdjuntosParaIA();
+    const extraAttachments=Array.isArray(extra?.attachments)?extra.attachments:[];
+    const mergedAttachments=[...autoAttachments,...extraAttachments].slice(0,4);
 
     return {
-        // Formato nuevo: conserva la pregunta original para backends que sí usan contexto estructurado.
         message,
         context,
-
-        // Formato compatible: contiene contexto para el backend Vercel actual.
         mensaje:mensajeConContexto,
         contexto:context,
-
         history:context.history || [],
         historial:context.history || [],
         user:STATE.settings.activeProfile || "General",
@@ -1149,10 +1336,21 @@ Información del Comedor Ángel Guardián (usala SOLO si te preguntan por esto):
         assistant:STATE.settings.assistantName || "Ángela",
         asistente:STATE.settings.assistantName || "Ángela",
         location:locationText,
-        ubicacion:locationText
+        ubicacion:locationText,
+        fresh:aiClass.fresh,
+        actualidad:aiClass.fresh,
+        intent:aiClass.intent,
+        wantsSources:aiClass.wantsSources,
+        detailed:aiClass.detailed,
+        answerStyle:aiClass.detailed?"detailed":"concise",
+        useWeb:aiClass.fresh,
+        qualityGuard:true,
+        noRedirectAnswers:true,
+        ...extra,
+        attachmentText:archivoTexto,
+        attachments:mergedAttachments
     };
 }
-
 function extractAiReply(data){
     if(data == null) return "";
     if(typeof data === "string") return data.trim();
@@ -1190,8 +1388,9 @@ async function requestAiWithFallback(payload, signal){
 
     const errors=[];
     for(const endpoint of endpoints){
-        // MEJORA: Se aumentó el número de intentos a 4 para mitigar el HTTP 503
-        for(let intento=1;intento<=4;intento++){
+        // Primero prueba la IA principal. Si sigue ocupada, ÁNGELA pasa rápido a su respaldo general.
+        const MAX_INTENTOS_IA=2;
+        for(let intento=1;intento<=MAX_INTENTOS_IA;intento++){
             try{
                 const response=await fetch(endpoint,{
                     method:"POST",
@@ -1210,17 +1409,17 @@ async function requestAiWithFallback(payload, signal){
                 const temporal=[429,502,503,504].includes(response.status);
                 
                 // MEJORA: Backoff progresivo ante saturación (1.5s, 3s, 4.5s)
-                if(temporal && intento<4){
+                if(temporal && intento<MAX_INTENTOS_IA){
                     logActivity("IA",`Servidor ocupado HTTP ${response.status} · reintento ${intento}`);
-                    await esperar(intento * 1500, signal);
+                    await esperar(intento * 900, signal);
                     continue;
                 }
                 errors.push(`${endpoint} → HTTP ${response.status}: ${String(detail).slice(0,220)}`);
                 break;
             }catch(error){
                 if(error?.name === "AbortError") throw error;
-                if(intento<4){
-                    await esperar(intento * 1500, signal);
+                if(intento<MAX_INTENTOS_IA){
+                    await esperar(intento * 900, signal);
                     continue;
                 }
                 errors.push(`${endpoint} → ${error?.message || "Error de red"}`);
@@ -1231,7 +1430,258 @@ async function requestAiWithFallback(payload, signal){
     throw new Error(errors.join(" | ") || "No fue posible contactar al backend de IA.");
 }
 
-async function askAI(message){
+/* ==========================================
+   COMPATIBILIDAD DE CONTEXTO / RESPALDO ENCICLOPÉDICO LEGADO (NO ES RESPUESTA PRIMARIA)
+   - Usa el tema anterior para comprender “él”, “el prócer”, “y cuándo nació”, etc.
+   - Corrige errores frecuentes del reconocimiento de voz.
+   - Busca varios candidatos de Wikipedia y descarta desambiguaciones.
+   - Conserva el último tema resuelto para mantener continuidad.
+   ========================================== */
+function pareceConsultaMuyActual(texto){
+    const p=normalizarTexto(texto);
+    return /\b(hoy|ahora|actual|actualmente|ultimo|ultima|ultimas|ultimos|noticia|noticias|esta semana|este mes|cotizacion|precio hoy|resultado de hoy|en vivo)\b/.test(p);
+}
+
+function corregirConsultaGeneral(texto){
+    let p=String(texto||"").trim();
+    const reglas=[
+        [/\bproser\b/gi,"prócer"], [/\bprocer\b/gi,"prócer"],
+        [/\bsan martin\b/gi,"San Martín"], [/\bbelgrano\b/gi,"Belgrano"],
+        [/\balgolacer\b/gi,"AlgoLaser"], [/\balgo laser\b/gi,"AlgoLaser"],
+        [/\blaitburn\b/gi,"LightBurn"], [/\blight burn\b/gi,"LightBurn"],
+        [/\bsublimacion\b/gi,"sublimación"]
+    ];
+    for(const [re,val] of reglas)p=p.replace(re,val);
+    return p.replace(/\s+/g," ").trim();
+}
+
+function limpiarTemaParaWikipedia(texto){
+    let p=normalizarTexto(corregirConsultaGeneral(texto))
+        .replace(/[¿?¡!.,;:()\[\]{}]/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+    const prefijos=[
+        /^(quien fue|quien es|quien era)\s+/,
+        /^(que es|que fue|que significa|que quiere decir)\s+/,
+        /^(contame|cuentame|decime|dime)\s+(sobre|acerca de)\s+/,
+        /^(hablame|habla)\s+(de|sobre)\s+/,
+        /^(explicame|explica)\s+(que es|quien fue|quien es|sobre)?\s*/,
+        /^(historia de|biografia de|biografia sobre)\s+/,
+        /^(donde queda|donde esta|donde se encuentra)\s+/
+    ];
+    for(const re of prefijos)p=p.replace(re,"").trim();
+    return p.slice(0,180);
+}
+
+function recortarRespuestaNatural(texto,max=1050){
+    const clean=String(texto||"").replace(/\s+/g," ").trim();
+    if(clean.length<=max)return clean;
+    const tramo=clean.slice(0,max);
+    const ultimo=Math.max(tramo.lastIndexOf(". "),tramo.lastIndexOf("; "));
+    return (ultimo>500?tramo.slice(0,ultimo+1):tramo.trim()+"…");
+}
+
+function getFallbackTopic(){
+    return STATE.fallbackTopic || STORAGE.get("angela_fallback_topic",null) || null;
+}
+function setFallbackTopic(topic){
+    STATE.fallbackTopic=topic;
+    STORAGE.set("angela_fallback_topic",topic);
+}
+
+function getConversationBeforeCurrent(currentMessage=""){
+    const c=getActiveConversation();
+    const items=(c?.messages||[]).slice(-12);
+    if(items.length && currentMessage && items[items.length-1].role==="user" && items[items.length-1].text===currentMessage)items.pop();
+    return items;
+}
+
+function pareceSeguimientoConversacional(message){
+    const p=normalizarTexto(corregirConsultaGeneral(message));
+    const words=p.split(/\s+/).filter(Boolean);
+    return words.length<=8 && (/^(el|la|ese|esa|este|esta|aquel|aquella|y|pero|tambien|también|cuando|donde|dónde|como|cómo|por que|por qué|tuvo|tenia|tenía|murio|murió|nacio|nació)\b/.test(p) || /\b(el|la) procer\b/.test(p));
+}
+
+function construirConsultaWikipedia(message){
+    const corregido=corregirConsultaGeneral(message);
+    const originalN=normalizarTexto(corregido);
+    const topic=getFallbackTopic();
+
+    if(topic?.title && pareceSeguimientoConversacional(corregido)){
+        return {query:`${topic.title} ${corregido}`, preferredTitle:topic.title, followUp:true};
+    }
+
+    const history=getConversationBeforeCurrent(message);
+    const prevUser=[...history].reverse().find(m=>m.role==="user" && String(m.text||"").trim());
+    const prevN=normalizarTexto(prevUser?.text||"");
+    let tema=limpiarTemaParaWikipedia(corregido);
+
+    if(pareceSeguimientoConversacional(corregido) && prevUser){
+        const anterior=limpiarTemaParaWikipedia(prevUser.text);
+        if(anterior)tema=`${anterior} ${tema}`.trim();
+    }
+
+    // Resolver personas históricas cuyo apellido/nombre también es un lugar o una desambiguación.
+    // Solo se fuerza cuando la intención es claramente preguntar por una persona o cuando el hilo anterior ya la identificó.
+    const n=normalizarTexto(tema);
+    const preguntaPersona=/^(quien fue|quien es|quien era)\b/.test(originalN) || /\b(procer|prócer|libertador|general)\b/.test(originalN);
+    const seguimientoSanMartin=pareceSeguimientoConversacional(corregido) && /\bsan martin\b/.test(prevN);
+    const seguimientoBelgrano=pareceSeguimientoConversacional(corregido) && /\bbelgrano\b/.test(prevN);
+
+    if((preguntaPersona && /\bsan martin\b/.test(originalN)) || seguimientoSanMartin || /^san martin procer$/.test(n)){
+        return {query:`José de San Martín ${pareceSeguimientoConversacional(corregido)?corregido:""}`.trim(), preferredTitle:"José de San Martín", followUp:pareceSeguimientoConversacional(corregido)};
+    }
+    if((preguntaPersona && /\bbelgrano\b/.test(originalN)) || seguimientoBelgrano || /^belgrano procer$/.test(n)){
+        return {query:`Manuel Belgrano ${pareceSeguimientoConversacional(corregido)?corregido:""}`.trim(), preferredTitle:"Manuel Belgrano", followUp:pareceSeguimientoConversacional(corregido)};
+    }
+
+    return {query:tema.slice(0,220), preferredTitle:topic?.title||"", followUp:false};
+}
+
+function tokenizarRelevancia(texto){
+    const stop=new Set(["quien","que","fue","es","era","el","la","los","las","un","una","de","del","y","en","por","para","con","sobre","como","cuando","donde","me","decime","contame","procer"]);
+    return normalizarTexto(texto).split(/[^a-z0-9áéíóúñü]+/i).filter(t=>t.length>2&&!stop.has(t));
+}
+
+function puntuarPaginaWikipedia(page,query,preferredTitle=""){
+    const title=normalizarTexto(page?.title||"");
+    const extract=normalizarTexto(page?.extract||"");
+    const combined=`${title} ${extract}`;
+    let score=0;
+    for(const tok of tokenizarRelevancia(query)){
+        if(title.includes(tok))score+=5;
+        else if(combined.includes(tok))score+=1.5;
+    }
+    if(preferredTitle && title===normalizarTexto(preferredTitle))score+=30;
+    if(/hace referencia a varios|puede referirse a|desambiguacion|desambiguación/.test(extract))score-=35;
+    if(/^(anexo|lista de|categoria)/.test(title))score-=12;
+    if(/\b(quien fue|quien es|biografia|procer|prócer)\b/.test(normalizarTexto(query)) && /\b(nacio|nació|fue un|fue una|militar|politico|político|escritor|cientifico|científico|artista|presidente|general|libertador)\b/.test(extract))score+=8;
+    return score;
+}
+
+async function buscarPaginasWikipedia(query,signal){
+    const url="https://es.wikipedia.org/w/api.php?"+new URLSearchParams({
+        action:"query", generator:"search", gsrsearch:query, gsrlimit:"7",
+        prop:"extracts|info", exintro:"1", explaintext:"1", inprop:"url",
+        redirects:"1", format:"json", origin:"*"
+    }).toString();
+    const r=await fetch(url,{signal,headers:{Accept:"application/json"},cache:"no-store"});
+    if(!r.ok)throw new Error(`Wikipedia HTTP ${r.status}`);
+    const data=await r.json();
+    return Object.values(data?.query?.pages||{}).sort((a,b)=>(a.index??999)-(b.index??999));
+}
+
+async function consultarWikipediaGeneral(message,signal){
+    if(!navigator.onLine || pareceConsultaMuyActual(message))return null;
+    const plan=construirConsultaWikipedia(message);
+    if(!plan.query || plan.query.length<2)return null;
+
+    try{
+        const pages=await buscarPaginasWikipedia(plan.query,signal);
+        if(!pages.length)return null;
+        const ranked=pages.map(p=>({p,score:puntuarPaginaWikipedia(p,plan.query,plan.preferredTitle)})).sort((a,b)=>b.score-a.score);
+        const page=ranked[0]?.p;
+        if(!page)return null;
+        const extract=recortarRespuestaNatural(page?.extract||"");
+        if(extract.length<45)return null;
+
+        const normalizedExtract=normalizarTexto(extract);
+        if(/hace referencia a varios|puede referirse a|desambiguacion|desambiguación/.test(normalizedExtract))return null;
+
+        setFallbackTopic({title:page.title||plan.query,url:page.fullurl||"",at:Date.now()});
+        let reply=extract;
+        if(plan.followUp && page?.title)reply=`Sobre ${page.title}: ${reply}`;
+        if(!/[.!?]$/.test(reply))reply+=".";
+        return {
+            reply,
+            sources: page?.fullurl ? [{title:`Wikipedia · ${page.title||plan.query}`,url:page.fullurl}] : [],
+            source:"Wikipedia"
+        };
+    }catch(error){
+        if(error?.name==="AbortError")throw error;
+        logActivity("Respaldo general",`Wikipedia · ${error?.message||"sin respuesta"}`);
+        return null;
+    }
+}
+
+function respuestaGeneralLocalBasica(message){
+    const p=normalizarTexto(message);
+    if(/^(hola|buen dia|buenas tardes|buenas noches|buenas)\b/.test(p))
+        return `¡Hola! Soy ${STATE.settings.assistantName}. Podés preguntarme de historia, ciencia, cultura, tecnología, taller, láser, sublimación y mucho más.`;
+    if(/\b(quien sos|quien eres|que sos)\b/.test(p))
+        return `Soy ${STATE.settings.assistantName}, tu asistente virtual. Puedo conversar sobre temas generales y además manejar las herramientas de esta página.`;
+    return null;
+}
+
+async function obtenerRespuestaGeneralDeRespaldo(message,signal){
+    // V4: no usamos Wikipedia como respuesta automática. Las respuestas generales deben venir de la IA.
+    const local=respuestaGeneralLocalBasica(message);
+    if(local)return {reply:local,sources:[],source:"local"};
+    return null;
+}
+
+function limpiarRespuestaTecnicaAI(reply){
+    let t=String(reply||"").trim();
+    t=t.replace(/^\s*\(?\s*modo de rescate[^\n\)]*\)?\s*/i,"");
+    t=t.replace(/^\s*(?:⚠️|ℹ️)?\s*(?:mis )?(?:servidores|modelos|sistemas)[^\n]*(?:saturad|ocupad|caid)[^\n]*\n?/i,"");
+    t=t.replace(/^\s*(?:gemini|openrouter|wikipedia)\s*[:\-–—][^\n]*\n?/i,"");
+    t=t.replace(/\n?\s*(?:🔗\s*)?\[?leer m[aá]s en wikipedia\]?\s*\([^\)]*\)\s*$/i,"");
+    t=t.replace(/\n?\s*(?:🔗\s*)?leer m[aá]s en wikipedia\s*:?\s*https?:\/\/\S+\s*$/i,"");
+    t=t.replace(/\n{3,}/g,"\n\n").trim();
+    return t;
+}
+
+function respuestaNecesitaReparacion(reply,message,data={}){
+    const clean=limpiarRespuestaTecnicaAI(reply);
+    const r=normalizarTexto(clean);
+    const q=normalizarTexto(corregirConsultaGeneral(message));
+    if(!r || r.length<18)return true;
+    if(/hace referencia a varios|puede referirse a|puede hacer referencia a|desambiguacion|varios articulos/.test(r))return true;
+    if(/busca(?:lo)? en wikipedia|busca(?:lo)? en google|consulta wikipedia|te recomiendo buscar|no puedo responder pero/.test(r))return true;
+    if(/^(quien fue|quien es|quien era)\b/.test(q) && /\bsan martin\b/.test(q) && !/jose de san martin|josé de san martín|libertador|general argentino/.test(r))return true;
+    if(/^(quien fue|quien es|quien era)\b/.test(q) && /\bbelgrano\b/.test(q) && !/manuel belgrano|procer argentino|prócer argentino/.test(r))return true;
+    if(/\b(actual|actualmente|hoy|ahora)\b/.test(q) && r.length<45)return true;
+    return false;
+}
+
+async function pedirReparacionAI(message,badReply,signal){
+    const repairPrompt=`La respuesta anterior no fue suficientemente útil o directa. Volvé a responder la pregunta original usando el contexto de la conversación. Entregá la RESPUESTA FINAL, no expliques el proceso. Si es un dato actual, verificá en la web. No menciones servidores, proveedores, Wikipedia ni modos de rescate.\n\nPregunta original: ${message}\n\nRespuesta anterior a corregir: ${String(badReply||"").slice(0,2500)}`;
+    const payload=buildCompatiblePayload(message,{
+        repair:true,
+        revision:true,
+        badReply:String(badReply||"").slice(0,3000),
+        repairInstruction:repairPrompt,
+        forceAlternate:true,
+        useWeb:clasificarConsultaAI(message).fresh
+    });
+    payload.mensaje=`${payload.mensaje}\n\nINSTRUCCIÓN DE REVISIÓN:\n${repairPrompt}`;
+    return requestAiWithFallback(payload,signal);
+}
+
+function respuestaBackendEsAmbigua(reply,message,data={}){
+    if(respuestaNecesitaReparacion(reply,message,data))return true;
+    const r=normalizarTexto(limpiarRespuestaTecnicaAI(reply));
+    const q=normalizarTexto(corregirConsultaGeneral(message));
+    if(!r || r.length<18)return true;
+
+    // Respuestas típicas de una página de desambiguación o de un buscador sin contexto.
+    if(/hace referencia a varios|puede referirse a|puede hacer referencia a|desambiguacion|desambiguación|varios articulos|varios artículos/.test(r))return true;
+
+    // Si preguntan claramente por el prócer San Martín, una respuesta que ni siquiera identifica a José de San Martín no sirve.
+    if(/^(quien fue|quien es|quien era)\b/.test(q) && /\bsan martin\b/.test(q)){
+        if(!/jose de san martin|josé de san martín|libertador|general argentino/.test(r))return true;
+    }
+    if(/^(quien fue|quien es|quien era)\b/.test(q) && /\bbelgrano\b/.test(q)){
+        if(!/manuel belgrano|procer argentino|prócer argentino/.test(r))return true;
+    }
+
+    // Algunos backends devuelven una fuente enciclopédica genérica como si fuera respuesta final.
+    const sourceText=JSON.stringify(data?.sources||data?.fuentes||[]).toLowerCase();
+    if(sourceText.includes('wikipedia') && /hace referencia|puede referirse/.test(r))return true;
+    return false;
+}
+
+async function askAI(message, extraPayload={}){
     cancelarRespuesta(false);
     const controller=new AbortController();
     STATE.pendingController=controller;
@@ -1239,8 +1689,10 @@ async function askAI(message){
     logActivity("IA","Consulta enviada");
 
     try{
-        const payload=buildCompatiblePayload(message);
-        const {data,endpoint}=await requestAiWithFallback(payload, controller.signal);
+        const payload=buildCompatiblePayload(message, extraPayload);
+        let packet=await requestAiWithFallback(payload, controller.signal);
+        let data=packet.data;
+        let endpoint=packet.endpoint;
 
         STATE.ai.backend=true;
         STATE.ai.configured=true;
@@ -1248,18 +1700,40 @@ async function askAI(message){
         STATE.ai.model=data?.model || data?.modelo || STATE.ai.model;
         updateStatusPanel();
 
-        let reply=limpiarFormatoIA(extractAiReply(data));
+        let reply=limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(data)));
+        let replySources=data?.sources || data?.fuentes || [];
 
         if(data?.action?.tool){
             const toolResult=await executeAIAction(data.action);
             if(!reply && toolResult?.message) reply=toolResult.message;
         }
 
-        if(!reply) reply="La IA respondió, pero no encontré texto en la respuesta del servidor.";
+        // Si la respuesta llegó pero es vaga, una desambiguación o un mensaje técnico,
+        // ÁNGELA pide automáticamente una segunda redacción al backend multi-IA.
+        if(respuestaNecesitaReparacion(reply,message,data)){
+            try{
+                const repaired=await pedirReparacionAI(message,reply,controller.signal);
+                const repairedReply=limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(repaired.data)));
+                if(repairedReply && !respuestaNecesitaReparacion(repairedReply,message,repaired.data)){
+                    reply=repairedReply;
+                    replySources=repaired.data?.sources || repaired.data?.fuentes || [];
+                    data=repaired.data;
+                    endpoint=repaired.endpoint;
+                    STATE.ai.model=data?.model || data?.modelo || STATE.ai.model;
+                    logActivity("IA calidad","Respuesta revisada automáticamente");
+                }
+            }catch(repairError){
+                if(repairError?.name==="AbortError")throw repairError;
+                logActivity("IA calidad",`No se pudo revisar: ${repairError?.message||"error"}`);
+            }
+        }
 
-        agregarMensaje("angela",reply,data?.sources || data?.fuentes || []);
+        if(!reply) throw new Error("La IA no devolvió una respuesta útil.");
+
+        // Las fuentes quedan plegadas debajo de la respuesta. Nunca reemplazan el texto principal.
+        agregarMensaje("angela",reply,replySources);
         hablar(reply);
-        logActivity("IA",`Respuesta recibida · ${endpoint}`);
+        logActivity("IA",`Respuesta recibida · ${endpoint}${data?.provider?` · ${data.provider}`:""}`);
     }catch(error){
         if(error.name==="AbortError"){
             agregarMensaje("angela","Respuesta cancelada.");
@@ -1269,19 +1743,11 @@ async function askAI(message){
             STATE.ai.verified=false;
             updateStatusPanel();
             const detail=String(error?.message || "Error desconocido");
-            let msg;
-            
-            // MEJORA: Mensaje mucho más amigable y realista para el error 503
-            if(/HTTP 503|high demand|alta demanda/i.test(detail)){
-                msg="¡Ups! Mi red neuronal (Gemini) está experimentando muchísima demanda en este mismo momento. Hice varios intentos por reconectar automáticamente, pero sigue saturado. Por favor, dame unos segundos y volvé a preguntarme, ¡ya se libera!";
-            }else if(/HTTP 429|quota|rate limit/i.test(detail)){
-                msg="Recibí demasiadas consultas seguidas. Esperá unos segundos y volvé a intentar.";
-            }else if(/Failed to fetch|NetworkError|Load failed|CORS/i.test(detail)){
-                msg="No pude comunicarme con mi servidor. Revisá la conexión a Internet e intentá nuevamente.";
-            }else{
-                msg=`No pude conectar con la IA. ${detail.slice(0,260)}`;
-            }
+            const local=respuestaGeneralLocalBasica(message);
+            let msg=local || "Ahora mismo no pude obtener una respuesta confiable de mis modelos de IA. Volvé a intentar en unos segundos.";
+            if(/Failed to fetch|NetworkError|Load failed|CORS/i.test(detail)) msg="No pude comunicarme con el servidor de IA. Revisá la conexión y volvé a intentar.";
             agregarMensaje("angela",msg);
+            hablar(msg);
             logActivity("IA",`Error API · ${detail.slice(0,180)}`);
         }
     }finally{
@@ -1289,7 +1755,6 @@ async function askAI(message){
         setThinking(false);
     }
 }
-
 async function executeAIAction(action){
     const tool=String(action.tool||"none"); const args=action.args||{};
     switch(tool){
@@ -1317,66 +1782,147 @@ function cancelarRespuesta(showMessage=true){
 }
 
 /* ==========================================
-   VOICE
+   VOICE + ACCESIBILIDAD MANOS LIBRES
    ========================================== */
 function getRecognitionCtor(){ return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+function esDispositivoMovil(){return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||"");}
+
+function normalizarWake(text){return normalizarTexto(text).replace(/[¿?¡!.,;:]/g," ").replace(/\s+/g," ").trim();}
+function wakeNames(){return [STATE.settings.assistantName,"Ángela","Angela"].filter(Boolean).map(normalizarWake).filter((v,i,a)=>a.indexOf(v)===i);}
+function extractWakeCommand(text){
+    const original=String(text||"").trim(),norm=normalizarWake(original);
+    for(const name of wakeNames()){
+        if(norm===name)return{hit:true,command:""};
+        if(norm.startsWith(name+" ")){const words=original.split(/\s+/);return{hit:true,command:words.slice(1).join(" ").replace(/^[,.:;!?¿¡\s]+/,"").trim()};}
+    }
+    return{hit:false,command:""};
+}
+function clearVoiceTimers(){clearTimeout(STATE.voice.silenceTimer);clearTimeout(STATE.voice.commandTimeout);clearTimeout(STATE.voice.restartTimer);STATE.voice.silenceTimer=null;STATE.voice.commandTimeout=null;STATE.voice.restartTimer=null;}
+function setHandsFreeStatus(text,css="text-green-300"){setVoiceStatus(text,css);setClassStatus("estadoMicrofono",text.includes("🟢")?"🟢 Manos libres":"Disponible",text.includes("🟢")?"text-green-400":"text-green-400");}
+function resetWakeCommand(){STATE.voice.commandActive=false;STATE.voice.commandText="";clearTimeout(STATE.voice.silenceTimer);clearTimeout(STATE.voice.commandTimeout);}
+function scheduleVoiceCommandFinish(){clearTimeout(STATE.voice.silenceTimer);STATE.voice.silenceTimer=setTimeout(()=>finishWakeCommand(),STATE.settings.handsFreeSilenceMs||1600);}
+function addVoiceCommandPart(text){const clean=String(text||"").trim();if(!clean)return;STATE.voice.commandText=(STATE.voice.commandText+" "+clean).trim();setHandsFreeStatus(`🟣 Te escucho: ${STATE.voice.commandText.slice(-100)}`,"text-fuchsia-300");}
+async function finishWakeCommand(){
+    const text=STATE.voice.commandText.trim();resetWakeCommand();if(!text)return;
+    stopWakeRecognition(false);agregarMensaje("user",text);await procesarEntrada(text);
+}
+function beginWakeCommand(initial=""){
+    STATE.voice.commandActive=true;STATE.voice.commandText="";setHandsFreeStatus("🟣 Ángela activada · te escucho…","text-fuchsia-300");clearTimeout(STATE.voice.commandTimeout);
+    STATE.voice.commandTimeout=setTimeout(()=>{if(STATE.voice.commandActive&&!STATE.voice.commandText.trim())resetWakeCommand();},12000);
+    if(initial){addVoiceCommandPart(initial);scheduleVoiceCommandFinish();}
+}
+function stopWakeRecognition(restart=false){
+    clearTimeout(STATE.voice.restartTimer);const rec=STATE.voice.wakeRecognition;STATE.voice.wakeRecognition=null;STATE.voice.wakeListening=false;
+    if(rec){try{rec.onend=null;rec.stop();}catch{}}
+    if(restart&&STATE.settings.handsFreeEnabled&&!STATE.voice.speaking&&!STATE.pendingController)scheduleWakeRestart(600);
+}
+function scheduleWakeRestart(delay=700){clearTimeout(STATE.voice.restartTimer);STATE.voice.restartTimer=setTimeout(()=>startHandsFreeRecognition(),delay);}
+
+async function solicitarPermisoMicrofono(){
+    if(location.protocol!=="https:"&&location.hostname!=="localhost"){
+        setClassStatus("estadoMicrofono","🔴 Requiere HTTPS","text-red-400");showToast("En el celular abrí la página publicada por Internet (HTTPS), no un archivo descargado.");return false;
+    }
+    if(!navigator.mediaDevices?.getUserMedia)return true;
+    try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(t=>t.stop());STATE.voice.permissionBlocked=false;
+        try{localStorage.setItem("angela_mic_permission","granted");}catch{}
+        setClassStatus("estadoMicrofono","🟢 Micrófono autorizado","text-green-400");return true;
+    }catch(error){
+        console.error("Permiso micrófono",error);STATE.voice.permissionBlocked=true;try{localStorage.removeItem("angela_mic_permission");}catch{}
+        setClassStatus("estadoMicrofono","🟡 Sin permiso","text-yellow-400");setVoiceStatus("🟡 Permití el micrófono para este sitio","text-yellow-300");showToast("Permití el micrófono desde los permisos del navegador.");return false;
+    }
+}
+async function iniciarManosLibresSeguro(){
+    if(STATE.settings.handsFreeEnabled===false)return;
+    if(!getRecognitionCtor()){setVoiceStatus("🟡 Manos libres no disponible; el botón 🎤 usa grabación compatible","text-yellow-300");return;}
+    try{
+        if(navigator.permissions?.query){
+            const p=await navigator.permissions.query({name:"microphone"});
+            if(p.state==="granted"){STATE.voice.permissionBlocked=false;startHandsFreeRecognition();return;}
+            if(p.state==="denied"){STATE.voice.permissionBlocked=true;setVoiceStatus("🟡 Micrófono bloqueado en el navegador","text-yellow-300");return;}
+        }
+    }catch{}
+    let remembered=false;try{remembered=localStorage.getItem("angela_mic_permission")==="granted";}catch{}
+    if(remembered){STATE.voice.permissionBlocked=false;startHandsFreeRecognition();return;}
+    STATE.voice.permissionBlocked=true;setVoiceStatus("🟡 Tocá el micrófono una vez y elegí Permitir. Después queda manos libres.","text-yellow-300");
+}
+function startHandsFreeRecognition(){
+    if(!STATE.settings.handsFreeEnabled||STATE.voice.permissionBlocked||STATE.voice.speaking||STATE.voice.manualMode||STATE.pendingController||STATE.voice.wakeListening)return;
+    const Ctor=getRecognitionCtor();if(!Ctor)return;
+    try{
+        const rec=new Ctor();rec.lang="es-AR";rec.continuous=!esDispositivoMovil();rec.interimResults=true;rec.maxAlternatives=1;STATE.voice.wakeRecognition=rec;STATE.voice.wakeListening=true;
+        rec.onstart=()=>{STATE.voice.permissionBlocked=false;try{localStorage.setItem("angela_mic_permission","granted");}catch{}setHandsFreeStatus(`🟢 Esperando “${STATE.settings.assistantName}…”`,"text-green-300");setClassStatus("estadoMicrofono","🟢 Manos libres","text-green-400");};
+        rec.onresult=e=>{
+            if(STATE.voice.speaking||STATE.voice.manualMode)return;
+            for(let i=e.resultIndex;i<e.results.length;i++){
+                const result=e.results[i],text=result?.[0]?.transcript?.trim();if(!text)continue;
+                if(!result.isFinal){if(STATE.voice.commandActive&&STATE.voice.commandText.trim())scheduleVoiceCommandFinish();continue;}
+                if(!STATE.voice.commandActive){const wake=extractWakeCommand(text);if(wake.hit)beginWakeCommand(wake.command);continue;}
+                const wakeAgain=extractWakeCommand(text),part=wakeAgain.hit?wakeAgain.command:text;if(part){addVoiceCommandPart(part);scheduleVoiceCommandFinish();}
+            }
+        };
+        rec.onerror=e=>{
+            STATE.voice.wakeListening=false;const denied=e.error==="not-allowed"||e.error==="service-not-allowed";
+            if(denied){STATE.voice.permissionBlocked=true;try{localStorage.removeItem("angela_mic_permission");}catch{}setVoiceStatus("🟡 Tocá el micrófono para volver a dar permiso","text-yellow-300");setClassStatus("estadoMicrofono","🟡 Falta permiso","text-yellow-400");}
+            else if(STATE.settings.handsFreeEnabled&&!STATE.voice.speaking)scheduleWakeRestart(esDispositivoMovil()?1100:850);
+            logActivity("Manos libres",`Error: ${e.error}`);
+        };
+        rec.onend=()=>{STATE.voice.wakeListening=false;if(STATE.settings.handsFreeEnabled&&!STATE.voice.speaking&&!STATE.voice.manualMode&&!STATE.pendingController&&!STATE.voice.permissionBlocked)scheduleWakeRestart(esDispositivoMovil()?1000:700);};
+        rec.start();
+    }catch(error){STATE.voice.wakeListening=false;if(!STATE.voice.permissionBlocked)scheduleWakeRestart(1200);}
+}
 function initRecognition(){
-    const Ctor=getRecognitionCtor(); if(!Ctor)return null;
-    const rec=new Ctor(); rec.lang="es-AR"; rec.continuous=false; rec.interimResults=false; rec.maxAlternatives=1;
-    rec.onstart=()=>{STATE.voice.listening=true;setVoiceStatus("🟢 Escuchando","text-green-300");setClassStatus("estadoMicrofono","🟢 Escuchando","text-green-400");logActivity("Micrófono","Iniciado");};
+    const Ctor=getRecognitionCtor();if(!Ctor)return null;const rec=new Ctor();rec.lang="es-AR";rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=1;
+    rec.onstart=()=>{STATE.voice.permissionBlocked=false;try{localStorage.setItem("angela_mic_permission","granted");}catch{}STATE.voice.listening=true;STATE.voice.manualMode=true;setVoiceStatus("🟢 Escuchando","text-green-300");setClassStatus("estadoMicrofono","🟢 Escuchando","text-green-400");};
     rec.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript?.trim();if(text){agregarMensaje("user",text);procesarEntrada(text);}};
-    rec.onerror=e=>{STATE.voice.listening=false;const denied=e.error==="not-allowed"||e.error==="service-not-allowed";setVoiceStatus(denied?"🟡 Micrófono sin permiso":"⚫ Micrófono apagado",denied?"text-yellow-300":"text-slate-400");setClassStatus("estadoMicrofono",denied?"🟡 Sin permiso":"Disponible",denied?"text-yellow-400":"text-green-400");logActivity("Micrófono",`Error: ${e.error}`);};
-    rec.onend=()=>{STATE.voice.listening=false;if(!STATE.voice.speaking){setVoiceStatus("⚫ Micrófono apagado","text-slate-400");setClassStatus("estadoMicrofono","Disponible","text-green-400");}logActivity("Micrófono","Detenido");};
-    return rec;
+    rec.onerror=e=>{STATE.voice.listening=false;STATE.voice.manualMode=false;const denied=e.error==="not-allowed"||e.error==="service-not-allowed";if(denied){STATE.voice.permissionBlocked=true;try{localStorage.removeItem("angela_mic_permission");}catch{}}if(["network","audio-capture","language-not-supported"].includes(e.error))STATE.voice.recognitionBroken=true;setVoiceStatus(denied?"🟡 Micrófono sin permiso":"⚫ Reconocimiento no disponible · tocá 🎤 otra vez",denied?"text-yellow-300":"text-slate-400");if(STATE.settings.handsFreeEnabled&&!denied&&!STATE.voice.recognitionBroken)scheduleWakeRestart(700);};
+    rec.onend=()=>{STATE.voice.listening=false;STATE.voice.manualMode=false;if(!STATE.voice.speaking&&STATE.settings.handsFreeEnabled&&!STATE.voice.permissionBlocked)scheduleWakeRestart(800);};return rec;
 }
-function activarMicrofonoManual(){
+function blobADataURL(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||""));r.onerror=reject;r.readAsDataURL(blob);});}
+async function toggleGrabacionAudioFallback(){
+    const a=STATE.audioFallback;
+    if(a.recording){try{a.recorder?.stop();}catch{}return;}
+    if(!navigator.mediaDevices?.getUserMedia||!("MediaRecorder" in window)){showToast("Este navegador no permite grabar voz. Probá Chrome/Edge actualizado o habilitá el dictado del teclado.");return;}
+    try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});a.stream=stream;a.chunks=[];
+        const candidates=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"];const mime=candidates.find(x=>MediaRecorder.isTypeSupported?.(x))||"";
+        const rec=new MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:64000}:{audioBitsPerSecond:64000});a.recorder=rec;a.recording=true;
+        rec.ondataavailable=e=>{if(e.data?.size)a.chunks.push(e.data);};
+        rec.onstop=async()=>{
+            clearTimeout(a.stopTimer);a.recording=false;stream.getTracks().forEach(t=>t.stop());setVoiceStatus("⚫ Procesando mensaje de voz…","text-cyan-300");
+            try{const type=rec.mimeType||a.chunks?.[0]?.type||"audio/webm";const blob=new Blob(a.chunks,{type});if(blob.size>3_200_000)throw new Error("Audio demasiado largo");const url=await blobADataURL(blob);const att=dataUrlToAttachment(url,"mensaje-voz");agregarMensaje("user","🎙️ Mensaje de voz");await askAI("Escuchá el audio adjunto y respondé directamente a lo que te pregunté por voz.",{attachments:att?[att]:[],audioInput:true});}catch(error){console.error(error);showToast("No pude procesar ese audio. Probá un mensaje más corto.");}
+        };
+        rec.start(500);setVoiceStatus("🔴 Grabando voz · tocá 🎤 para terminar","text-red-300");setClassStatus("estadoMicrofono","🔴 Grabando","text-red-400");a.stopTimer=setTimeout(()=>{if(a.recording)try{rec.stop();}catch{}},25000);
+    }catch(error){console.error(error);showToast("No pude acceder al micrófono. Revisá el permiso del sitio.");}
+}
+async function activarMicrofonoManual(){
     if(STATE.voice.speaking){window.speechSynthesis?.cancel();return;}
-    if(!getRecognitionCtor()){setClassStatus("estadoMicrofono","No compatible","text-yellow-400");showToast("Este navegador no soporta SpeechRecognition. Podés usar el teclado.");return;}
-    if(!STATE.voice.recognition)STATE.voice.recognition=initRecognition();
-    try{if(STATE.voice.listening){STATE.voice.recognition.stop();return;}STATE.voice.recognition.start();}
-    catch(error){console.error(error);showToast("No pude iniciar el micrófono. Revisá el permiso del navegador.");}
+    if(STATE.audioFallback.recording){await toggleGrabacionAudioFallback();return;}
+    const permiso=await solicitarPermisoMicrofono();if(!permiso)return;
+    const Ctor=getRecognitionCtor();if(!Ctor||STATE.voice.recognitionBroken){await toggleGrabacionAudioFallback();return;}
+    STATE.voice.permissionBlocked=false;stopWakeRecognition(false);if(!STATE.voice.recognition)STATE.voice.recognition=initRecognition();
+    try{if(STATE.voice.listening){STATE.voice.recognition.stop();return;}STATE.voice.recognition.start();}catch(error){console.error(error);showToast("El reconocimiento de voz no arrancó. Tocá otra vez para usar grabación compatible.");await toggleGrabacionAudioFallback();}
 }
-function getSelectedVoice(){
-    const desired=STATE.settings.voiceName; return STATE.voice.voices.find(v=>v.name===desired) || STATE.voice.voices.find(v=>v.lang?.toLowerCase().startsWith("es-ar")) || STATE.voice.voices.find(v=>v.lang?.toLowerCase().startsWith("es")) || null;
-}
-
-// NUEVA FUNCION HABLAR SIN EMOJIS
+function toggleHandsFree(enabled){STATE.settings.handsFreeEnabled=!!enabled;saveSettings();if(enabled){STATE.voice.permissionBlocked=false;iniciarManosLibresSeguro();showToast(`Manos libres activado. Decí “${STATE.settings.assistantName}”.`);}else{resetWakeCommand();stopWakeRecognition(false);setVoiceStatus("⚫ Manos libres desactivado","text-slate-400");}renderVoiceSettings();}
+function actualizarSilencioManosLibres(value){STATE.settings.handsFreeSilenceMs=Math.max(1000,Math.min(3000,Number(value)||1600));saveSettings();const label=$("manosLibresSilencioTexto");if(label)label.textContent=`${(STATE.settings.handsFreeSilenceMs/1000).toFixed(1).replace(".",",")} segundos`;}
+function getSelectedVoice(){const desired=STATE.settings.voiceName;return STATE.voice.voices.find(v=>v.name===desired)||STATE.voice.voices.find(v=>v.lang?.toLowerCase().startsWith("es-ar"))||STATE.voice.voices.find(v=>v.lang?.toLowerCase().startsWith("es"))||null;}
+function numeroMenor100(n){const e={0:"cero",1:"uno",2:"dos",3:"tres",4:"cuatro",5:"cinco",6:"seis",7:"siete",8:"ocho",9:"nueve",10:"diez",11:"once",12:"doce",13:"trece",14:"catorce",15:"quince",16:"dieciséis",17:"diecisiete",18:"dieciocho",19:"diecinueve",20:"veinte",21:"veintiuno",22:"veintidós",23:"veintitrés",24:"veinticuatro",25:"veinticinco",26:"veintiséis",27:"veintisiete",28:"veintiocho",29:"veintinueve"};if(e[n]!==undefined)return e[n];const d={30:"treinta",40:"cuarenta",50:"cincuenta",60:"sesenta",70:"setenta",80:"ochenta",90:"noventa"},base=Math.floor(n/10)*10,u=n%10;return u?`${d[base]} y ${e[u]}`:d[base];}
+function numeroMenor1000(n){if(n<100)return numeroMenor100(n);if(n===100)return"cien";const c={1:"ciento",2:"doscientos",3:"trescientos",4:"cuatrocientos",5:"quinientos",6:"seiscientos",7:"setecientos",8:"ochocientos",9:"novecientos"},h=Math.floor(n/100),r=n%100;return r?`${c[h]} ${numeroMenor100(r)}`:c[h];}
+function numeroATexto(n){n=Math.floor(Number(n));if(!Number.isFinite(n))return String(n);if(n<100)return numeroMenor100(n);if(n<1000)return numeroMenor1000(n);if(n<10000){const m=Math.floor(n/1000),r=n%1000,inicio=m===1?"mil":`${numeroMenor100(m)} mil`;return r?`${inicio} ${numeroMenor1000(r)}`:inicio;}return String(n);}
+function prepararTextoParaVoz(texto){let t=String(texto||"");t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,"$1").replace(/https?:\/\/\S+/g,"").replace(/\*\*|__|`|###|##|#/g,"");t=t.replace(/\b(1\d{3}|20\d{2})\b/g,a=>numeroATexto(Number(a)));return t.replace(/\s+/g," ").trim();}
 function hablar(texto){
-    if(!STATE.settings.voiceEnabled || !("speechSynthesis" in window))return;
-    if(STATE.voice.listening && STATE.voice.recognition){try{STATE.voice.recognition.stop();}catch{}}
-    window.speechSynthesis.cancel(); 
-    
-    // FILTRO NUEVO: Le quita los emojis y símbolos al texto antes de hablarlo para que suene natural
-    const textoParaHablar = String(texto||"").replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{E000}-\u{F8FF}\u{2000}-\u{2BFF}]/gu, '');
-
-    const utter=new SpeechSynthesisUtterance(textoParaHablar); 
-    utter.lang="es-AR"; 
-    utter.rate=clamp(Number(STATE.settings.voiceRate)||1,.6,1.6); 
-    utter.volume=clamp(Number(STATE.settings.voiceVolume)||1,0,1); 
-    const selected=getSelectedVoice();
-    if(selected)utter.voice=selected;
-    
-    const orb=$("core-orb-btn"),label=$("orbTextLabel");
-    utter.onstart=()=>{STATE.voice.speaking=true;orb?.classList.add("hablando");if(label)label.textContent="🔊";setVoiceStatus(`🔵 ${STATE.settings.assistantName} hablando`,`text-cyan-300`);};
-    const done=()=>{STATE.voice.speaking=false;orb?.classList.remove("hablando");if(label)label.textContent=STATE.settings.assistantName.toUpperCase();setVoiceStatus("⚫ Micrófono apagado","text-slate-400");}; 
-    utter.onend=done;
-    utter.onerror=done;
-    window.speechSynthesis.speak(utter);
+    if(!STATE.settings.voiceEnabled||!("speechSynthesis" in window)){if(STATE.settings.handsFreeEnabled)scheduleWakeRestart(500);return;}
+    stopWakeRecognition(false);if(STATE.voice.listening&&STATE.voice.recognition){try{STATE.voice.recognition.stop();}catch{}}window.speechSynthesis.cancel();
+    const utter=new SpeechSynthesisUtterance(prepararTextoParaVoz(texto));utter.lang="es-AR";utter.rate=clamp(Number(STATE.settings.voiceRate)||1,.6,1.6);utter.volume=clamp(Number(STATE.settings.voiceVolume)||1,0,1);const selected=getSelectedVoice();if(selected)utter.voice=selected;
+    const orb=$("core-orb-btn"),label=$("orbTextLabel");utter.onstart=()=>{STATE.voice.speaking=true;orb?.classList.add("hablando");if(label)label.textContent="🔊";setVoiceStatus(`🔵 ${STATE.settings.assistantName} hablando`,"text-cyan-300");};
+    const done=()=>{STATE.voice.speaking=false;orb?.classList.remove("hablando");if(label)label.textContent=STATE.settings.assistantName.toUpperCase();if(STATE.settings.handsFreeEnabled&&!STATE.voice.permissionBlocked&&getRecognitionCtor()){setHandsFreeStatus(`🟢 Esperando “${STATE.settings.assistantName}…”`,"text-green-300");scheduleWakeRestart(esDispositivoMovil()?950:700);}else setVoiceStatus("⚫ Micrófono listo","text-slate-400");};utter.onend=done;utter.onerror=done;window.speechSynthesis.speak(utter);
 }
-
-function toggleVoice(){ STATE.settings.voiceEnabled=!STATE.settings.voiceEnabled;saveSettings();renderVoiceSettings();if(!STATE.settings.voiceEnabled)window.speechSynthesis?.cancel(); }
-function loadVoices(){
-    if(!("speechSynthesis" in window))return; STATE.voice.voices=window.speechSynthesis.getVoices(); const sel=$("vozSelect"); if(!sel)return; sel.replaceChildren();
-    STATE.voice.voices.filter(v=>v.lang?.toLowerCase().startsWith("es")).forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=`${v.name} (${v.lang})`;if(v.name===STATE.settings.voiceName)o.selected=true;sel.appendChild(o);});
-    if(!sel.options.length){const o=document.createElement("option");o.textContent="Voz predeterminada del navegador";o.value="";sel.appendChild(o);}
-}
-function renderVoiceSettings(){
-    const btn=$("btnToggleVoz");if(btn)btn.textContent=STATE.settings.voiceEnabled?"🔊 Voz activada":"🔇 Voz desactivada";
-    const rate=$("vozVelocidad"),vol=$("vozVolumen");if(rate)rate.value=STATE.settings.voiceRate;if(vol)vol.value=STATE.settings.voiceVolume;
-    setClassStatus("estadoVozSistema",("speechSynthesis" in window)?(STATE.settings.voiceEnabled?"🟢 Activa":"⚫ Desactivada"):"🔴 No compatible",("speechSynthesis" in window)?"text-green-400":"text-red-400");
-}
-function saveVoiceSettings(){ STATE.settings.voiceName=$("vozSelect")?.value||"";STATE.settings.voiceRate=Number($("vozVelocidad")?.value||1);STATE.settings.voiceVolume=Number($("vozVolumen")?.value||1);saveSettings();renderVoiceSettings();showToast("Configuración de voz guardada."); }
-function probarVoz(){ hablar(`Hola. La voz de ${STATE.settings.assistantName} está funcionando.`); }
+function toggleVoice(){STATE.settings.voiceEnabled=!STATE.settings.voiceEnabled;saveSettings();renderVoiceSettings();if(!STATE.settings.voiceEnabled)window.speechSynthesis?.cancel();}
+function loadVoices(){if(!("speechSynthesis" in window))return;STATE.voice.voices=window.speechSynthesis.getVoices();const sel=$("vozSelect");if(!sel)return;sel.replaceChildren();STATE.voice.voices.filter(v=>v.lang?.toLowerCase().startsWith("es")).forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=`${v.name} (${v.lang})`;if(v.name===STATE.settings.voiceName)o.selected=true;sel.appendChild(o);});if(!sel.options.length){const o=document.createElement("option");o.textContent="Voz predeterminada del navegador";o.value="";sel.appendChild(o);}}
+function renderVoiceSettings(){const btn=$("btnToggleVoz");if(btn)btn.textContent=STATE.settings.voiceEnabled?"🔊 Voz activada":"🔇 Voz desactivada";const rate=$("vozVelocidad"),vol=$("vozVolumen"),hands=$("manosLibresToggle"),silence=$("manosLibresSilencio");if(rate)rate.value=STATE.settings.voiceRate;if(vol)vol.value=STATE.settings.voiceVolume;if(hands)hands.checked=STATE.settings.handsFreeEnabled!==false;if(silence)silence.value=STATE.settings.handsFreeSilenceMs||1600;actualizarSilencioManosLibres(STATE.settings.handsFreeSilenceMs||1600);setClassStatus("estadoVozSistema",("speechSynthesis" in window)?(STATE.settings.voiceEnabled?"🟢 Activa":"⚫ Desactivada"):"🔴 No compatible",("speechSynthesis" in window)?"text-green-400":"text-red-400");}
+function saveVoiceSettings(){STATE.settings.voiceName=$("vozSelect")?.value||"";STATE.settings.voiceRate=Number($("vozVelocidad")?.value||1);STATE.settings.voiceVolume=Number($("vozVolumen")?.value||1);saveSettings();renderVoiceSettings();showToast("Configuración de voz guardada.");}
+function probarVoz(){hablar(`Hola. La voz de ${STATE.settings.assistantName} está funcionando. Año de prueba: 1817.`);}
+window.onAngelaWakeWordDetected=()=>{stopWakeRecognition(false);beginWakeCommand("");scheduleWakeRestart(250);};
 
 /* ==========================================
    LASER
@@ -1415,14 +1961,17 @@ function mostrarSubBoton(key){const data=SUB_REFERENCE[key];const box=$("resulta
 /* ==========================================
    IMAGE EDITOR
    ========================================== */
-function validateFile(file, imageOnly=false){
-    if(!file)return{ok:false,message:"No seleccionaste un archivo."}; if(file.size>CONFIG.maxFileBytes)return{ok:false,message:"El archivo supera el límite de 15 MB."};
-    const ext=(file.name.split(".").pop()||"").toLowerCase();if(imageOnly && !["jpg","jpeg","png","webp"].includes(ext))return{ok:false,message:"Para el editor usá JPG, JPEG, PNG o WEBP."};
-    const allowed=CONFIG.allowedFiles[ext];if(!allowed)return{ok:false,message:"Extensión no permitida."};if(file.type && !allowed.includes(file.type))return{ok:false,message:`Tipo MIME no permitido (${file.type}).`};return{ok:true,ext};
-}
 async function cargarImagenArchivo(file){
     const valid=validateFile(file,true);if(!valid.ok){showToast(valid.message);return;}
-    try{const bitmap=await createImageBitmap(file);const max=1600;const scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(bitmap.width*scale));c.height=Math.max(1,Math.round(bitmap.height*scale));c.getContext("2d").drawImage(bitmap,0,0,c.width,c.height);bitmap.close?.();STATE.image.sourceCanvas=c;STATE.image.ratio=c.width/c.height;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;const widthMm=100;STATE.image.widthMm=widthMm;STATE.image.heightMm=Number((widthMm/STATE.image.ratio).toFixed(1));syncImageControls();renderImage();logActivity("Imagen",`Cargada ${file.name}`);}catch(error){console.error(error);showToast("No pude abrir esa imagen.");}
+    try{
+        let source=null,cleanup=()=>{};
+        if("createImageBitmap" in window){source=await createImageBitmap(file);cleanup=()=>source?.close?.();}
+        else{
+            const url=URL.createObjectURL(file);source=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("Formato de imagen no compatible"));img.src=url;});cleanup=()=>URL.revokeObjectURL(url);
+        }
+        const sw=source.width||source.naturalWidth,sh=source.height||source.naturalHeight,max=1600,scale=Math.min(1,max/Math.max(sw,sh));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));c.getContext("2d").drawImage(source,0,0,c.width,c.height);cleanup();
+        STATE.image.sourceCanvas=c;STATE.image.ratio=c.width/c.height;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.widthMm=100;STATE.image.heightMm=Number((100/STATE.image.ratio).toFixed(1));syncImageControls();renderImage();STATE.fileContext={kind:"image",name:file.name,text:"Imagen cargada en el editor de ÁNGELA."};STATE.pdfPageImages=[];STATE.videoFrames=[];renderContextoArchivo();logActivity("Imagen",`Cargada ${file.name}`);
+    }catch(error){console.error(error);showToast("No pude abrir esa imagen en este navegador.");}
 }
 function syncImageControls(){if($("brillo"))$("brillo").value=STATE.image.brightness;if($("contraste"))$("contraste").value=STATE.image.contrast;if($("anchoMm"))$("anchoMm").value=STATE.image.widthMm||"";if($("altoMm"))$("altoMm").value=STATE.image.heightMm||"";if($("bloquearProporcion"))$("bloquearProporcion").checked=STATE.image.lockRatio;}
 function imageTransformCanvas(){
@@ -1493,12 +2042,88 @@ function agregarStock(){const name=$("stockNombre")?.value.trim();const qty=pars
 function mostrarStock(){const box=$("listaStock");if(!box)return;box.replaceChildren();if(!STATE.stock.length){const d=document.createElement("div");d.className="text-slate-400";d.textContent="Sin stock.";box.appendChild(d);}STATE.stock.forEach(s=>{const row=document.createElement("div");row.className="bg-slate-900 p-2 rounded-lg flex justify-between";const span=document.createElement("span");span.textContent=`📦 ${s.nombre} — ${s.cantidad}`;const del=document.createElement("button");del.className="text-red-400";del.textContent="✕";del.onclick=()=>{STATE.stock=STATE.stock.filter(x=>x!==s);saveStock();mostrarStock();};row.append(span,del);box.appendChild(row);});setText("contadorStock",String(STATE.stock.length));}
 
 /* ==========================================
-   FILES
+   ARCHIVOS + CÁMARA + FOTOS + VIDEO
    ========================================== */
-function handleGeneralFile(file){
-    const valid=validateFile(file,false);const box=$("archivoInfo");if(!box)return;box.replaceChildren();const line=document.createElement("div");line.className=valid.ok?"text-green-300":"text-red-300";line.textContent=valid.ok?`✅ ${file.name} · ${(file.size/1024).toFixed(1)} KB · ${file.type||"MIME no informado"}`:`❌ ${valid.message}`;box.appendChild(line);if(!valid.ok)return;
-    const ext=valid.ext;if(["jpg","jpeg","png","webp"].includes(ext)){const btn=document.createElement("button");btn.className="quick mt-2 w-full";btn.textContent="🖼️ Abrir en editor";btn.onclick=()=>{abrirMenu("imagenes");cargarImagenArchivo(file);};box.appendChild(btn);}else if(ext==="txt"){const reader=new FileReader();reader.onload=()=>{const pre=document.createElement("pre");pre.className="mt-2 whitespace-pre-wrap max-h-40 overflow-auto text-slate-300";pre.textContent=String(reader.result||"").slice(0,3000);box.appendChild(pre);};reader.readAsText(file.slice(0,100000));}else{const note=document.createElement("div");note.className="text-slate-400 mt-2";note.textContent="Archivo validado. ÁNGELA no ejecuta código ni incrusta el contenido de este tipo de archivo.";box.appendChild(note);}
-    logActivity("Archivo",`Validado: ${file.name}`);
+function abrirAdjuntos(){const el=$("adjuntosBackdrop");if(el)el.classList.remove("hidden");}
+function cerrarAdjuntos(){const el=$("adjuntosBackdrop");if(el)el.classList.add("hidden");}
+function elegirCamara(){cerrarAdjuntos();$("inputCamara")?.click();}
+function elegirFotos(){cerrarAdjuntos();$("inputFotos")?.click();}
+function elegirVideo(){cerrarAdjuntos();$("inputVideo")?.click();}
+function elegirArchivo(){cerrarAdjuntos();$("inputArchivoUniversal")?.click();}
+function elegirDesdeDrive(){
+    cerrarAdjuntos();
+    showToast("Se abrirá el selector de archivos. En Android/iPhone elegí Google Drive o Drive si aparece como ubicación.");
+    setTimeout(()=>$("inputArchivoUniversal")?.click(),120);
+}
+function abrirCanva(){
+    cerrarAdjuntos();
+    const ok=safeOpen("https://www.canva.com/","Abrir Canva");
+    showToast(ok?"Abrí Canva. Cuando termines, descargá tu diseño y adjuntalo con ＋ para seguir trabajándolo en ÁNGELA.":"El navegador bloqueó Canva. Permití ventanas emergentes para este sitio.");
+    return ok;
+}
+function extensionArchivo(file){return (String(file?.name||"").split(".").pop()||"").toLowerCase();}
+function esVideoFile(file){return String(file?.type||"").startsWith("video/")||["mp4","webm","mov","m4v"].includes(extensionArchivo(file));}
+function validateFile(file,imageOnly=false){
+    if(!file)return{ok:false,message:"No seleccionaste un archivo."};
+    const limit=esVideoFile(file)?CONFIG.maxMediaBytes:CONFIG.maxFileBytes;if(file.size>limit)return{ok:false,message:`El archivo supera el límite de ${Math.round(limit/1024/1024)} MB.`};
+    const ext=extensionArchivo(file);if(imageOnly&&! ["jpg","jpeg","png","webp","gif"].includes(ext))return{ok:false,message:"Para el editor usá JPG, JPEG, PNG, WEBP o GIF."};
+    const allowed=CONFIG.allowedFiles[ext];if(!allowed)return{ok:false,message:"Extensión no permitida."};if(file.type&&file.type!=="application/octet-stream"&&!allowed.includes(file.type))return{ok:false,message:`Tipo MIME no permitido (${file.type}).`};return{ok:true,ext};
+}
+function mostrarPreviewTexto(text){const p=$("archivoPreviewTexto");if(!p)return;p.textContent=String(text||"").slice(0,9000);p.classList.toggle("hidden",!p.textContent);}
+async function extraerTextoPDF(file){
+    if(!window.pdfjsLib)throw new Error("No cargó el lector PDF");pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const data=new Uint8Array(await file.arrayBuffer()),pdf=await pdfjsLib.getDocument({data}).promise;let text="";STATE.pdfPageImages=[];
+    const maxPages=Math.min(pdf.numPages,30);
+    for(let i=1;i<=maxPages&&text.length<42000;i++){const page=await pdf.getPage(i);const content=await page.getTextContent();const line=content.items.map(x=>x.str||"").join(" ");text+=`\n\n--- Página ${i} ---\n${line}`;}
+    if(text.replace(/\s/g,"").length<120){
+        for(let i=1;i<=Math.min(pdf.numPages,3);i++){const page=await pdf.getPage(i),viewport=page.getViewport({scale:1.25}),c=document.createElement("canvas");c.width=Math.round(viewport.width);c.height=Math.round(viewport.height);await page.render({canvasContext:c.getContext("2d"),viewport}).promise;STATE.pdfPageImages.push(canvasParaIA(c,1200,.76));}
+        text+="\n\nEl PDF parece escaneado o con poco texto extraíble. Se adjuntan imágenes de hasta las primeras 3 páginas para análisis visual.";
+    }
+    return text.trim().slice(0,42000);
+}
+async function extraerTextoDOCX(file){if(!window.mammoth)throw new Error("No cargó el lector Word");const r=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return String(r.value||"").trim().slice(0,42000);}
+async function extraerTextoExcel(file){if(!window.XLSX)throw new Error("No cargó el lector Excel");const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});let out="";for(const name of wb.SheetNames.slice(0,6)){out+=`\n\n--- Hoja: ${name} ---\n`+XLSX.utils.sheet_to_csv(wb.Sheets[name]);if(out.length>42000)break;}return out.slice(0,42000);}
+async function procesarDocumento(file,ext){
+    let text="";STATE.pdfPageImages=[];STATE.videoFrames=[];
+    if(ext==="pdf")text=await extraerTextoPDF(file);
+    else if(ext==="docx")text=await extraerTextoDOCX(file);
+    else if(["xlsx","xls"].includes(ext))text=await extraerTextoExcel(file);
+    else if(["txt","csv","md","json","svg","dxf"].includes(ext))text=(await file.text()).slice(0,42000);
+    else if(ext==="doc")text="Documento Word .DOC antiguo. El navegador puede adjuntarlo, pero para leer todo el texto conviene guardarlo como .DOCX.";
+    else text=`Archivo ${file.name} cargado. No hay extractor local de texto para este formato.`;
+    STATE.fileContext={kind:ext,name:file.name,text};renderContextoArchivo();mostrarPreviewTexto(text);return text;
+}
+async function handleGeneralFile(file){
+    const valid=validateFile(file,false),box=$("archivoInfo");if(box)box.replaceChildren();
+    const line=document.createElement("div");line.className=valid.ok?"text-green-300":"text-red-300";line.textContent=valid.ok?`✅ ${file.name} · ${(file.size/1024/1024).toFixed(2)} MB`:`❌ ${valid.message}`;box?.appendChild(line);if(!valid.ok)return;
+    const ext=valid.ext;
+    try{
+        if(["jpg","jpeg","png","webp","gif"].includes(ext)){abrirMenu("imagenes");await cargarImagenArchivo(file);showToast("Imagen lista para editar o preguntarle a ÁNGELA.");}
+        else if(esVideoFile(file)){await cargarVideoArchivo(file);}
+        else{await procesarDocumento(file,ext);showToast("Archivo leído. Ya podés preguntarle a ÁNGELA sobre su contenido.");focusChat();}
+    }catch(error){console.error(error);const d=document.createElement("div");d.className="text-red-300 mt-2";d.textContent=`No pude leer el archivo: ${error.message||"error"}`;box?.appendChild(d);}
+    logActivity("Archivo",`Procesado: ${file.name}`);
+}
+async function cargarVideoArchivo(file){
+    const valid=validateFile(file,false);if(!valid.ok){showToast(valid.message);return;}
+    if(STATE.video.url)URL.revokeObjectURL(STATE.video.url);STATE.video.file=file;STATE.video.name=file.name;STATE.video.url=URL.createObjectURL(file);STATE.videoFrames=[];STATE.pdfPageImages=[];STATE.fileContext={kind:"video",name:file.name,text:"Video cargado. Usá ‘Analizar video’ para enviar fotogramas representativos a ÁNGELA."};renderContextoArchivo();
+    const v=$("videoEditor"),lab=$("videoLab");if(!v||!lab)return;lab.classList.remove("hidden");v.src=STATE.video.url;v.load();
+    await new Promise((resolve,reject)=>{const ok=()=>{cleanup();resolve();},bad=()=>{cleanup();reject(new Error("No pude abrir el video"));},cleanup=()=>{v.removeEventListener("loadedmetadata",ok);v.removeEventListener("error",bad);};v.addEventListener("loadedmetadata",ok);v.addEventListener("error",bad);});
+    STATE.video.duration=Number(v.duration)||0;$("videoInicio").value="0";$("videoFin").value=STATE.video.duration.toFixed(1);abrirMenu("archivos");showToast("Video cargado. Podés elegir un tramo, sacar un fotograma o analizarlo.");
+}
+function aplicarVideoControles(){const v=$("videoEditor");if(!v)return;v.playbackRate=Number($("videoVelocidad")?.value||1);v.muted=!!$("videoMute")?.checked;}
+function limitesVideo(){const d=STATE.video.duration||$("videoEditor")?.duration||0;let a=Math.max(0,Number($("videoInicio")?.value||0)),b=Math.min(d||Infinity,Number($("videoFin")?.value||d));if(!Number.isFinite(b)||b<=a)b=Math.min(d,a+5);return[a,b];}
+function reproducirTramoVideo(){const v=$("videoEditor");if(!v?.src)return;const[a,b]=limitesVideo();aplicarVideoControles();v.currentTime=a;const handler=()=>{if(v.currentTime>=b){v.pause();v.removeEventListener("timeupdate",handler);}};v.addEventListener("timeupdate",handler);v.play().catch(()=>showToast("Tocá play en el video para iniciar."));}
+async function capturarVideoEnTiempo(t){const v=$("videoEditor");if(!v?.src)throw new Error("No hay video");if(Math.abs((v.currentTime||0)-t)>.08){await new Promise((resolve,reject)=>{const done=()=>{cleanup();resolve();},err=()=>{cleanup();reject(new Error("No pude mover el video"));},cleanup=()=>{v.removeEventListener("seeked",done);v.removeEventListener("error",err);};v.addEventListener("seeked",done);v.addEventListener("error",err);v.currentTime=t;});}const max=1280,scale=Math.min(1,max/Math.max(v.videoWidth||1,v.videoHeight||1)),c=document.createElement("canvas");c.width=Math.max(1,Math.round((v.videoWidth||640)*scale));c.height=Math.max(1,Math.round((v.videoHeight||360)*scale));c.getContext("2d").drawImage(v,0,0,c.width,c.height);return c;}
+async function capturarFotogramaVideo(abrirEditor=false){try{const v=$("videoEditor"),c=await capturarVideoEnTiempo(v.currentTime||0);if(abrirEditor){STATE.image.sourceCanvas=c;STATE.image.ratio=c.width/c.height;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.widthMm=100;STATE.image.heightMm=Number((100/STATE.image.ratio).toFixed(1));STATE.fileContext={kind:"image",name:`fotograma-${STATE.video.name||"video"}.jpg`,text:"Fotograma extraído de un video."};STATE.videoFrames=[];syncImageControls();renderImage();renderContextoArchivo();abrirMenu("imagenes");}return c;}catch(error){console.error(error);showToast("No pude capturar el fotograma.");return null;}}
+async function prepararVideoParaAngela(){
+    const v=$("videoEditor");if(!v?.src){showToast("Primero cargá un video.");return;}const[a,b]=limitesVideo(),len=Math.max(.1,b-a),times=[a+len*.15,a+len*.5,a+len*.85].map(x=>Math.min(b-.02,Math.max(a,x)));const frames=[];
+    try{for(const t of times){const c=await capturarVideoEnTiempo(t);frames.push(canvasParaIA(c,1100,.72));}STATE.videoFrames=frames.filter(Boolean);STATE.pdfPageImages=[];STATE.fileContext={kind:"video",name:STATE.video.name||"video",text:`Video de ${Number(STATE.video.duration||0).toFixed(1)} segundos. Tramo seleccionado: ${a.toFixed(1)} a ${b.toFixed(1)} segundos. Se adjuntan ${STATE.videoFrames.length} fotogramas representativos; el análisis visual no incluye todo el audio ni cada cuadro.`};renderContextoArchivo();focusChat();showToast("Video preparado. Escribí qué querés analizar.");}catch(error){console.error(error);showToast("No pude preparar el video para analizar.");}
+}
+async function exportarTramoVideo(){
+    const v=$("videoEditor");if(!v?.src)return;const capture=v.captureStream||v.mozCaptureStream;if(!capture||!("MediaRecorder" in window)){showToast("Este navegador no permite exportar el recorte. Sí podés previsualizarlo y analizarlo.");return;}
+    const[a,b]=limitesVideo();if(b-a>90&&!confirm("El tramo dura más de 90 segundos y se exporta en tiempo real. ¿Continuar?"))return;
+    try{v.pause();v.currentTime=a;await new Promise(r=>v.addEventListener("seeked",r,{once:true}));aplicarVideoControles();const stream=capture.call(v);const candidates=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"],mime=candidates.find(x=>MediaRecorder.isTypeSupported?.(x))||"";const chunks=[],rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);rec.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};const done=new Promise(resolve=>rec.onstop=resolve);const guard=()=>{if(v.currentTime>=b||v.ended){v.pause();v.removeEventListener("timeupdate",guard);if(rec.state!=="inactive")rec.stop();}};v.addEventListener("timeupdate",guard);rec.start(500);await v.play();await done;stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:rec.mimeType||"video/webm"}),url=URL.createObjectURL(blob),aEl=document.createElement("a");aEl.href=url;aEl.download=`recorte-${(STATE.video.name||"video").replace(/\.[^.]+$/,"")}.webm`;aEl.click();setTimeout(()=>URL.revokeObjectURL(url),4000);showToast("Recorte exportado.");}catch(error){console.error(error);showToast("No pude exportar el recorte en este navegador.");}
 }
 
 /* ==========================================
@@ -1536,9 +2161,16 @@ function restaurarConfig(){
    ========================================== */
 function updateStatusPanel(){
     setClassStatus("estadoInternet",navigator.onLine?"🟢 Conectado":"🔴 Sin conexión",navigator.onLine?"text-green-400":"text-red-400");
-    const aiText=STATE.ai.verified?`🟢 IA conectada${STATE.ai.model?` (${STATE.ai.model})`:""}`:STATE.ai.backend&&STATE.ai.configured?"🟡 Backend listo; IA sin probar":"🔴 IA no verificada";
-    setClassStatus("estadoIA",aiText,STATE.ai.verified?"text-green-400":STATE.ai.backend?"text-yellow-400":"text-red-400");
-    setClassStatus("estadoMicrofono",getRecognitionCtor()?"Disponible":"No compatible",getRecognitionCtor()?"text-green-400":"text-yellow-400");
+    let aiText="🔴 IA no disponible", aiCss="text-red-400";
+    if(STATE.ai.verified){
+        aiText=`🟢 IA conectada${STATE.ai.model?` (${STATE.ai.model})`:""}`; aiCss="text-green-400";
+    }else if(STATE.ai.backend&&STATE.ai.configured){
+        aiText=`🟢 Backend conectado · IA configurada${STATE.ai.model?` (${STATE.ai.model})`:""}`; aiCss="text-green-400";
+    }else if(STATE.ai.backend){
+        aiText="🟡 Backend conectado · revisar claves de IA"; aiCss="text-yellow-400";
+    }
+    setClassStatus("estadoIA",aiText,aiCss);
+    const micNative=!!getRecognitionCtor(), micFallback=!!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);setClassStatus("estadoMicrofono",micNative?"🟢 Voz disponible":micFallback?"🟢 Grabación compatible":"No compatible",(micNative||micFallback)?"text-green-400":"text-yellow-400");
     setClassStatus("estadoMemoria",STATE.settings.memoryEnabled?"🟢 Activada":"⚫ Desactivada",STATE.settings.memoryEnabled?"text-green-400":"text-slate-400");
     setClassStatus("estadoRadio","🟢 Enlace disponible","text-green-400");
     setText("contadorPedidos",String(STATE.pedidos.length));
@@ -1564,9 +2196,10 @@ async function checkBackendLight(){
             // Incluso un 400/422 confirma que el endpoint existe; 404 no.
             if(r.status !== 404){
                 STATE.ai.backend=true;
-                STATE.ai.configured = d.geminiConfigured ?? d.configured ?? d.ok ?? r.ok;
-                STATE.ai.verified = d.geminiOk ?? d.verified ?? false;
-                STATE.ai.model=d.model || d.modelo || STATE.ai.model;
+                const anyProviderConfigured = d.configured ?? ((d.geminiConfigured===true || d.openrouterConfigured===true) ? true : undefined);
+                STATE.ai.configured = anyProviderConfigured ?? d.ok ?? r.ok;
+                STATE.ai.verified = d.geminiOk===true || d.verified===true;
+                STATE.ai.model=d.model || d.modelo || d.geminiModel || (Array.isArray(d.geminiModels)?d.geminiModels[0]:"") || (Array.isArray(d.openrouterModels)?d.openrouterModels[0]:"") || STATE.ai.model;
                 logActivity("Backend",`${endpoint} · HTTP ${r.status}`);
                 updateStatusPanel();
                 return;
@@ -1657,7 +2290,11 @@ function bindEvents(){
     $("archivoImagen")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)cargarImagenArchivo(f);});
     $("brillo")?.addEventListener("input",onImageAdjust);$("contraste")?.addEventListener("input",onImageAdjust);
     $("anchoMm")?.addEventListener("input",()=>ajustarMedidas("w"));$("altoMm")?.addEventListener("input",()=>ajustarMedidas("h"));$("bloquearProporcion")?.addEventListener("change",()=>{STATE.image.lockRatio=!!$("bloquearProporcion").checked;});
-    $("archivoGeneral")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)handleGeneralFile(f);});
+    $("archivoGeneral")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)handleGeneralFile(f);e.target.value="";});
+    $("inputCamara")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)handleGeneralFile(f);e.target.value="";});
+    $("inputFotos")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)handleGeneralFile(f);e.target.value="";});
+    $("inputVideo")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)cargarVideoArchivo(f);e.target.value="";});
+    $("inputArchivoUniversal")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)handleGeneralFile(f);e.target.value="";});
     $("inputImportConfig")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)procesarImportConfig(f);e.target.value="";});
     $("vozSelect")?.addEventListener("change",saveVoiceSettings);$("vozVelocidad")?.addEventListener("change",saveVoiceSettings);$("vozVolumen")?.addEventListener("change",saveVoiceSettings);
     window.addEventListener("online",updateStatusPanel);window.addEventListener("offline",updateStatusPanel);
@@ -1677,6 +2314,12 @@ async function init(){
 }
 window.addEventListener("DOMContentLoaded",init,{once:true});
 
+
+window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.handsFreeEnabled!==false)setTimeout(iniciarManosLibresSeguro,900);setTimeout(()=>window.AngelaWakeWord?.init?.().catch?.(()=>{}),1200);setTimeout(()=>window.AngelaCloud?.init?.().catch?.(()=>{}),1400);setTimeout(()=>window.AngelaMonitoring?.init?.(),300);});
 </script>
+
+<script type="module" src="./pro/monitoring.js"></script>
+<script type="module" src="./pro/cloud.js"></script>
+<script type="module" src="./pro/wakeword.js"></script>
 </body>
 </html>
