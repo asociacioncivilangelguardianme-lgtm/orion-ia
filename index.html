@@ -382,7 +382,37 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <label class="text-xs text-slate-300">Tema</label><select id="temaSelect" class="w-full bg-slate-900 p-2 rounded-lg my-2 text-xs"><option value="futurista">Futurista actual</option><option value="alto-contraste">Alto contraste</option></select>
 <label class="flex items-center gap-2 text-xs my-2"><input id="memoriaToggle" type="checkbox" checked> 🧠 Memoria activada</label>
 <button onclick="guardarConfigAsistente()" class="quick w-full text-xs mb-2">💾 Guardar configuración</button>
-<details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🔊 Voz y accesibilidad</summary><button id="btnToggleVoz" onclick="toggleVoice()" class="quick w-full text-xs mt-2">🔊 Voz activada</button><label class="flex items-center gap-2 text-xs my-2"><input id="manosLibresToggle" type="checkbox" onchange="toggleHandsFree(this.checked)" checked> 🎙️ Manos libres: activar al decir “Ángela”</label><label class="text-[10px]">Silencio para enviar la frase<input id="manosLibresSilencio" type="range" min="1000" max="3000" step="100" value="1600" class="w-full" oninput="actualizarSilencioManosLibres(this.value)"></label><div id="manosLibresSilencioTexto" class="text-[10px] text-slate-500 mb-2">1,6 segundos</div><select id="vozSelect" class="w-full bg-slate-900 p-2 rounded-lg mt-2 text-xs"></select><label class="text-[10px]">Velocidad<input id="vozVelocidad" type="range" min="0.6" max="1.6" step="0.05" value="1" class="w-full"></label><label class="text-[10px]">Volumen<input id="vozVolumen" type="range" min="0" max="1" step="0.05" value="1" class="w-full"></label><button onclick="probarVoz()" class="quick w-full text-xs mt-2">▶ Probar voz</button></details>
+<details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🔊 Voz, idiomas y accesibilidad</summary>
+<button id="btnToggleVoz" onclick="toggleVoice()" class="quick w-full text-xs mt-2">🔊 Voz activada</button>
+<label class="flex items-center gap-2 text-xs my-2"><input id="manosLibresToggle" type="checkbox" onchange="toggleHandsFree(this.checked)" checked> 🎙️ Manos libres: activar al decir “Ángela”</label>
+<label class="text-[10px]">Silencio para enviar la frase<input id="manosLibresSilencio" type="range" min="1000" max="3000" step="100" value="1600" class="w-full" oninput="actualizarSilencioManosLibres(this.value)"></label>
+<div id="manosLibresSilencioTexto" class="text-[10px] text-slate-500 mb-2">1,6 segundos</div>
+<label class="text-[10px] text-cyan-300">🌍 Idioma de lectura</label>
+<select id="vozIdiomaModo" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
+<option value="auto">🌐 Automático · cambia según el idioma</option>
+<option value="es-AR">🇦🇷 Español (Argentina)</option>
+<option value="en-US">🇺🇸 Inglés</option>
+<option value="pt-BR">🇧🇷 Portugués</option>
+<option value="fr-FR">🇫🇷 Francés</option>
+<option value="it-IT">🇮🇹 Italiano</option>
+<option value="de-DE">🇩🇪 Alemán</option>
+</select>
+<label class="text-[10px] text-cyan-300 mt-2 block">🗣️ Idioma del micrófono</label>
+<select id="idiomaReconocimiento" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
+<option value="es-AR">🇦🇷 Español (Argentina)</option>
+<option value="en-US">🇺🇸 Inglés</option>
+<option value="pt-BR">🇧🇷 Portugués</option>
+<option value="fr-FR">🇫🇷 Francés</option>
+<option value="it-IT">🇮🇹 Italiano</option>
+<option value="de-DE">🇩🇪 Alemán</option>
+</select>
+<label class="text-[10px] text-slate-400 mt-2 block">Voz principal</label>
+<select id="vozSelect" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs"></select>
+<label class="text-[10px]">Velocidad<input id="vozVelocidad" type="range" min="0.6" max="1.6" step="0.05" value="1" class="w-full"></label>
+<label class="text-[10px]">Volumen<input id="vozVolumen" type="range" min="0" max="1" step="0.05" value="1" class="w-full"></label>
+<div class="grid grid-cols-2 gap-2 mt-2"><button onclick="probarVoz()" class="quick w-full text-xs">▶ Probar voz</button><button onclick="probarVozMultilingue()" class="quick w-full text-xs">🌍 Probar idiomas</button></div>
+<p class="text-[10px] text-slate-500 mt-2">En Automático, ÁNGELA usa una voz del idioma correspondiente para traducciones, nombres y títulos extranjeros cuando el navegador dispone de esa voz.</p>
+</details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🧩 Complementos PRO</summary><div id="estadoComplementosPro" class="space-y-2 mt-2 text-[10px]"><div>Comprobando complementos…</div></div><p class="text-[10px] text-slate-500 mt-2">Los complementos externos se activan desde <b>angela.config.js</b>. Las claves privadas de IA van únicamente en Vercel, nunca dentro del HTML.</p></details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🧠 Ver / editar memoria</summary><div id="listaMemoria" class="space-y-2 mt-2 max-h-48 overflow-auto"></div><button onclick="clearProfileMemory()" class="quick w-full text-xs text-red-300 mt-2">🗑 Eliminar memoria del perfil</button></details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">📜 Historial</summary><div id="listaHistorial" class="space-y-2 mt-2 max-h-56 overflow-auto"></div></details>
@@ -507,7 +537,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "6.2.0-image-chat-actions",
+    version: "6.3.0-multilingual-voice-image",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -600,6 +630,8 @@ const DEFAULT_SETTINGS = {
     voiceRate: 1,
     voiceVolume: 1,
     voiceName: "",
+    voiceLanguageMode: "auto",
+    recognitionLanguage: "es-AR",
     handsFreeEnabled: true,
     handsFreeSilenceMs: 1600,
     theme: "futurista",
@@ -1150,6 +1182,8 @@ function localCommand(text){
     const imageCmd=detectarComandoImagen(p);
     if(imageCmd)return imageCmd;
 
+    if(/\b(podes|puedes|sabes|podrias|podria)\b.*\b(traducir|traducirme|traducime)\b/.test(p) || /\b(podes|puedes|sabes|podrias|podria)\b.*\b(hablar|leer)\b.*\b(idioma|idiomas|ingles|espanol|portugues|frances|italiano|aleman|texto)\b/.test(p) || /\b(que|cuales)\b.*\b(idiomas)\b.*\b(podes|puedes|hablas|lees|traducis|traducir)\b/.test(p))return{tool:"language_help",args:{}};
+
     const math=p.replace(/^cuanto es\s+/i,"").replace(/^calcul[aá]\s+/i,"");
     if(/^[0-9.,+\-*/()%x×÷\s]+$/.test(math) && /[+\-*/%x×÷]/.test(math)) return {tool:"calculator",args:{expression:math}};
     const rememberMatch=p.match(/^(?:acordate|recorda|recordá|guarda|guardá)(?:\s+que)?\s+(.+)/i); if(rememberMatch)return{tool:"remember",args:{text:rememberMatch[1]}};
@@ -1173,7 +1207,8 @@ async function executeLocalCommand(cmd){
         youtube_open:()=>TOOLS.youtube.open(), google_open:()=>TOOLS.google.open(), whatsapp:()=>TOOLS.whatsapp.open(), gmail:()=>TOOLS.gmail.open(),
         youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(),
         desktop_app:()=>abrirAppDesktop(cmd.args?.app),
-        image_edit:()=>ejecutarComandoImagen(cmd.args||{})
+        image_edit:()=>ejecutarComandoImagen(cmd.args||{}),
+        language_help:()=>({ok:true,message:"Sí. Puedo traducir y leer en español, inglés, portugués, francés, italiano y alemán. Decime, por ejemplo: ‘traducí al inglés: buen día’ o ‘¿cómo se dice gracias en francés?’. En modo de lectura Automático intento usar la voz correcta para cada idioma."})
     };
     return map[cmd.tool]?await map[cmd.tool]():null;
 }
@@ -1340,7 +1375,9 @@ REGLAS DE RESPUESTA:
 7. Si hay un error ortográfico o de reconocimiento de voz evidente, inferí la intención por contexto sin burlarte ni detener la conversación.
 8. No inventes. Si realmente no se puede verificar un dato, decilo brevemente y explicá qué parte es incierta.
 9. Nunca escribas “Modo de rescate”, “mis servidores están saturados”, “buscá en Wikipedia”, “leer más en Wikipedia” ni mensajes técnicos similares dentro de la respuesta normal.
-10. Si hay una imagen activa y el usuario pide mejorarla, prepararla para láser/sublimación, quitar fondo, cambiar contraste, nitidez, tamaño, Jarvis, Stucki o blanco y negro, priorizá las herramientas locales de edición de ÁNGELA. No recomiendes Remini, Upscale.media, Let's Enhance ni otra web cuando la acción pedida puede hacerse dentro de ÁNGELA. Si una mejora requiere un modelo generativo que esta versión local no tiene, explicá la limitación en una sola frase y ofrecé la mejor edición local disponible.
+10. ÁNGELA SÍ puede editar fotos localmente dentro de esta página. Si el usuario pregunta si podés editar, mejorar o preparar una foto, respondé que sí y explicá brevemente las funciones disponibles. Si hay una imagen activa y pide mejorarla, prepararla para láser/sublimación, quitar fondo, cambiar contraste, nitidez, tamaño, Jarvis, Stucki o blanco y negro, priorizá las herramientas locales de edición de ÁNGELA. No recomiendes Remini, Upscale.media, Let's Enhance ni otra web cuando la acción pedida puede hacerse dentro de ÁNGELA. Si una mejora requiere un modelo generativo que esta versión local no tiene, explicá la limitación en una sola frase y ofrecé la mejor edición local disponible.
+11. Podés traducir entre español, inglés, portugués, francés, italiano y alemán. Si el usuario pide “traducí”, “traducime”, “cómo se dice”, “decilo en...” o “leelo en...”, hacé la traducción directamente, sin mandarlo a otra herramienta. Si pide solo la traducción, mostrala primero y evitá explicaciones innecesarias.
+12. Para ayudar a la voz del navegador: cuando una respuesta en español incluya un nombre, título, canción o frase que deba pronunciarse claramente en otro idioma, envolvé SOLO ese fragmento con una marca de idioma. Ejemplos: [[lang:en-US]]Guns N’ Roses[[/lang]], [[lang:en-US]]Sweet Child o’ Mine[[/lang]], [[lang:fr-FR]]Édith Piaf[[/lang]]. Estas marcas son internas: no las expliques. Si toda la respuesta está en un idioma distinto del español, podés envolver todo el texto con la marca correspondiente.
 
 Información institucional SOLO cuando corresponda:
 Comedor Ángel Guardián / Asociación Civil para la Niñez de Merlo. Dirección: ${comedor.location || DEFAULT_SETTINGS.comedor.location}. Tel/Email: ${comedor.contact || DEFAULT_SETTINGS.comedor.contact}. Redes: ${comedor.social || DEFAULT_SETTINGS.comedor.social}. Alias Banco Provincia: ${comedor.alias || "NIEBLA.REMO.TAMBOR"}. Web: https://www.comedorangelguardian.com.ar/`;
@@ -1727,12 +1764,14 @@ async function askAI(message, extraPayload={}){
         STATE.ai.model=data?.model || data?.modelo || STATE.ai.model;
         updateStatusPanel();
 
-        let reply=limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(data)));
+        let rawReply=limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(data)));
+        let reply=limpiarMarcadoresIdioma(rawReply);
+        let speechReply=rawReply;
         let replySources=data?.sources || data?.fuentes || [];
 
         if(data?.action?.tool){
             const toolResult=await executeAIAction(data.action);
-            if(!reply && toolResult?.message) reply=toolResult.message;
+            if(!reply && toolResult?.message){reply=toolResult.message;speechReply=toolResult.message;}
         }
 
         // Si la respuesta llegó pero es vaga, una desambiguación o un mensaje técnico,
@@ -1740,9 +1779,10 @@ async function askAI(message, extraPayload={}){
         if(respuestaNecesitaReparacion(reply,message,data)){
             try{
                 const repaired=await pedirReparacionAI(message,reply,controller.signal);
-                const repairedReply=limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(repaired.data)));
+                const repairedRaw=limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(repaired.data)));
+                const repairedReply=limpiarMarcadoresIdioma(repairedRaw);
                 if(repairedReply && !respuestaNecesitaReparacion(repairedReply,message,repaired.data)){
-                    reply=repairedReply;
+                    rawReply=repairedRaw;speechReply=repairedRaw;reply=repairedReply;
                     replySources=repaired.data?.sources || repaired.data?.fuentes || [];
                     data=repaired.data;
                     endpoint=repaired.endpoint;
@@ -1759,7 +1799,7 @@ async function askAI(message, extraPayload={}){
 
         // Las fuentes quedan plegadas debajo de la respuesta. Nunca reemplazan el texto principal.
         agregarMensaje("angela",reply,replySources);
-        hablar(reply);
+        hablar(speechReply||reply);
         logActivity("IA",`Respuesta recibida · ${endpoint}${data?.provider?` · ${data.provider}`:""}`);
     }catch(error){
         if(error.name==="AbortError"){
@@ -1873,11 +1913,12 @@ async function iniciarManosLibresSeguro(){
     if(remembered){STATE.voice.permissionBlocked=false;startHandsFreeRecognition();return;}
     STATE.voice.permissionBlocked=true;setVoiceStatus("🟡 Tocá el micrófono una vez y elegí Permitir. Después queda manos libres.","text-yellow-300");
 }
+function getRecognitionLanguage(){return STATE.settings.recognitionLanguage||"es-AR";}
 function startHandsFreeRecognition(){
     if(!STATE.settings.handsFreeEnabled||STATE.voice.permissionBlocked||STATE.voice.speaking||STATE.voice.manualMode||STATE.pendingController||STATE.voice.wakeListening)return;
     const Ctor=getRecognitionCtor();if(!Ctor)return;
     try{
-        const rec=new Ctor();rec.lang="es-AR";rec.continuous=!esDispositivoMovil();rec.interimResults=true;rec.maxAlternatives=1;STATE.voice.wakeRecognition=rec;STATE.voice.wakeListening=true;
+        const rec=new Ctor();rec.lang=getRecognitionLanguage();rec.continuous=!esDispositivoMovil();rec.interimResults=true;rec.maxAlternatives=1;STATE.voice.wakeRecognition=rec;STATE.voice.wakeListening=true;
         rec.onstart=()=>{STATE.voice.permissionBlocked=false;try{localStorage.setItem("angela_mic_permission","granted");}catch{}setHandsFreeStatus(`🟢 Esperando “${STATE.settings.assistantName}…”`,"text-green-300");setClassStatus("estadoMicrofono","🟢 Manos libres","text-green-400");};
         rec.onresult=e=>{
             if(STATE.voice.speaking||STATE.voice.manualMode)return;
@@ -1899,7 +1940,7 @@ function startHandsFreeRecognition(){
     }catch(error){STATE.voice.wakeListening=false;if(!STATE.voice.permissionBlocked)scheduleWakeRestart(1200);}
 }
 function initRecognition(){
-    const Ctor=getRecognitionCtor();if(!Ctor)return null;const rec=new Ctor();rec.lang="es-AR";rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=1;
+    const Ctor=getRecognitionCtor();if(!Ctor)return null;const rec=new Ctor();rec.lang=getRecognitionLanguage();rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=1;
     rec.onstart=()=>{STATE.voice.permissionBlocked=false;try{localStorage.setItem("angela_mic_permission","granted");}catch{}STATE.voice.listening=true;STATE.voice.manualMode=true;setVoiceStatus("🟢 Escuchando","text-green-300");setClassStatus("estadoMicrofono","🟢 Escuchando","text-green-400");};
     rec.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript?.trim();if(text){agregarMensaje("user",text);procesarEntrada(text);}};
     rec.onerror=e=>{STATE.voice.listening=false;STATE.voice.manualMode=false;const denied=e.error==="not-allowed"||e.error==="service-not-allowed";if(denied){STATE.voice.permissionBlocked=true;try{localStorage.removeItem("angela_mic_permission");}catch{}}if(["network","audio-capture","language-not-supported"].includes(e.error))STATE.voice.recognitionBroken=true;setVoiceStatus(denied?"🟡 Micrófono sin permiso":"⚫ Reconocimiento no disponible · tocá 🎤 otra vez",denied?"text-yellow-300":"text-slate-400");if(STATE.settings.handsFreeEnabled&&!denied&&!STATE.voice.recognitionBroken)scheduleWakeRestart(700);};
@@ -1923,7 +1964,7 @@ async function toggleGrabacionAudioFallback(){
     }catch(error){console.error(error);showToast("No pude acceder al micrófono. Revisá el permiso del sitio.");}
 }
 async function activarMicrofonoManual(){
-    if(STATE.voice.speaking){window.speechSynthesis?.cancel();return;}
+    if(STATE.voice.speaking){STATE.voice.speechToken=null;window.speechSynthesis?.cancel();STATE.voice.speaking=false;return;}
     if(STATE.audioFallback.recording){await toggleGrabacionAudioFallback();return;}
     const permiso=await solicitarPermisoMicrofono();if(!permiso)return;
     const Ctor=getRecognitionCtor();if(!Ctor||STATE.voice.recognitionBroken){await toggleGrabacionAudioFallback();return;}
@@ -1932,23 +1973,72 @@ async function activarMicrofonoManual(){
 }
 function toggleHandsFree(enabled){STATE.settings.handsFreeEnabled=!!enabled;saveSettings();if(enabled){STATE.voice.permissionBlocked=false;iniciarManosLibresSeguro();showToast(`Manos libres activado. Decí “${STATE.settings.assistantName}”.`);}else{resetWakeCommand();stopWakeRecognition(false);setVoiceStatus("⚫ Manos libres desactivado","text-slate-400");}renderVoiceSettings();}
 function actualizarSilencioManosLibres(value){STATE.settings.handsFreeSilenceMs=Math.max(1000,Math.min(3000,Number(value)||1600));saveSettings();const label=$("manosLibresSilencioTexto");if(label)label.textContent=`${(STATE.settings.handsFreeSilenceMs/1000).toFixed(1).replace(".",",")} segundos`;}
+const VOICE_LANGS={"es":"es-AR","es-ar":"es-AR","en":"en-US","en-us":"en-US","pt":"pt-BR","pt-br":"pt-BR","fr":"fr-FR","fr-fr":"fr-FR","it":"it-IT","it-it":"it-IT","de":"de-DE","de-de":"de-DE"};
+function normalizarCodigoIdioma(lang="es-AR"){const k=String(lang||"es-AR").toLowerCase();return VOICE_LANGS[k]||(/^[a-z]{2}-[a-z]{2}$/i.test(lang)?lang:"es-AR");}
 function getSelectedVoice(){const desired=STATE.settings.voiceName;return STATE.voice.voices.find(v=>v.name===desired)||STATE.voice.voices.find(v=>v.lang?.toLowerCase().startsWith("es-ar"))||STATE.voice.voices.find(v=>v.lang?.toLowerCase().startsWith("es"))||null;}
+function getVoiceForLang(lang){
+    const wanted=normalizarCodigoIdioma(lang),base=wanted.slice(0,2).toLowerCase(),desired=STATE.settings.voiceName;
+    const selected=STATE.voice.voices.find(v=>v.name===desired);
+    if(selected&&selected.lang?.toLowerCase().startsWith(base))return selected;
+    return STATE.voice.voices.find(v=>v.lang?.toLowerCase()===wanted.toLowerCase())||STATE.voice.voices.find(v=>v.lang?.toLowerCase().startsWith(base))||selected||null;
+}
 function numeroMenor100(n){const e={0:"cero",1:"uno",2:"dos",3:"tres",4:"cuatro",5:"cinco",6:"seis",7:"siete",8:"ocho",9:"nueve",10:"diez",11:"once",12:"doce",13:"trece",14:"catorce",15:"quince",16:"dieciséis",17:"diecisiete",18:"dieciocho",19:"diecinueve",20:"veinte",21:"veintiuno",22:"veintidós",23:"veintitrés",24:"veinticuatro",25:"veinticinco",26:"veintiséis",27:"veintisiete",28:"veintiocho",29:"veintinueve"};if(e[n]!==undefined)return e[n];const d={30:"treinta",40:"cuarenta",50:"cincuenta",60:"sesenta",70:"setenta",80:"ochenta",90:"noventa"},base=Math.floor(n/10)*10,u=n%10;return u?`${d[base]} y ${e[u]}`:d[base];}
 function numeroMenor1000(n){if(n<100)return numeroMenor100(n);if(n===100)return"cien";const c={1:"ciento",2:"doscientos",3:"trescientos",4:"cuatrocientos",5:"quinientos",6:"seiscientos",7:"setecientos",8:"ochocientos",9:"novecientos"},h=Math.floor(n/100),r=n%100;return r?`${c[h]} ${numeroMenor100(r)}`:c[h];}
 function numeroATexto(n){n=Math.floor(Number(n));if(!Number.isFinite(n))return String(n);if(n<100)return numeroMenor100(n);if(n<1000)return numeroMenor1000(n);if(n<10000){const m=Math.floor(n/1000),r=n%1000,inicio=m===1?"mil":`${numeroMenor100(m)} mil`;return r?`${inicio} ${numeroMenor1000(r)}`:inicio;}return String(n);}
-function prepararTextoParaVoz(texto){let t=String(texto||"");t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,"$1").replace(/https?:\/\/\S+/g,"").replace(/\*\*|__|`|###|##|#/g,"");t=t.replace(/\b(1\d{3}|20\d{2})\b/g,a=>numeroATexto(Number(a)));return t.replace(/\s+/g," ").trim();}
+function limpiarMarcadoresIdioma(texto){return String(texto||"").replace(/\[\[lang:[a-z]{2}(?:-[a-z]{2})?\]\]/gi,"").replace(/\[\[\/lang\]\]/gi,"");}
+function detectarIdiomaTextoVoz(texto){
+    const t=normalizarTexto(limpiarMarcadoresIdioma(texto));
+    const scores={"es-AR":0,"en-US":0,"pt-BR":0,"fr-FR":0,"it-IT":0,"de-DE":0};
+    const sets={
+      "es-AR":[" el "," la "," los "," las "," que "," para "," con "," una "," como "," pero "," tambien "," puede "," podes "," es "],
+      "en-US":[" the "," and "," with "," for "," you "," is "," are "," this "," that "," from "," welcome "," child "," mine "," city "],
+      "pt-BR":[" não "," uma "," você "," para "," com "," que "," também "," como "," obrigado "," olá "],
+      "fr-FR":[" le "," la "," les "," des "," une "," avec "," pour "," est "," bonjour "," merci "],
+      "it-IT":[" il "," lo "," gli "," una "," con "," per "," che "," grazie "," ciao "," sono "],
+      "de-DE":[" der "," die "," das "," und "," mit "," für "," ist "," danke "," guten "," ich "]
+    };
+    const padded=` ${t} `;for(const [lang,words] of Object.entries(sets))for(const w of words)if(padded.includes(w))scores[lang]++;
+    let best="es-AR",max=0;for(const [lang,score] of Object.entries(scores))if(score>max){max=score;best=lang;}
+    return max>=2?best:"es-AR";
+}
+function prepararTextoParaVoz(texto,lang="es-AR"){
+    let t=limpiarMarcadoresIdioma(String(texto||""));
+    t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,"$1").replace(/https?:\/\/\S+/g,"").replace(/\*\*|__|`|###|##|#/g,"");
+    if(normalizarCodigoIdioma(lang).toLowerCase().startsWith("es"))t=t.replace(/\b(1\d{3}|20\d{2})\b/g,a=>numeroATexto(Number(a)));
+    return t.replace(/\s+/g," ").trim();
+}
+function segmentarTextoParaVoz(texto){
+    const mode=STATE.settings.voiceLanguageMode||"auto";
+    if(mode!=="auto")return[{lang:normalizarCodigoIdioma(mode),text:prepararTextoParaVoz(texto,mode)}];
+    const raw=String(texto||"");const re=/\[\[lang:([a-z]{2}(?:-[a-z]{2})?)\]\]([\s\S]*?)\[\[\/lang\]\]/gi;let last=0,m,parts=[];
+    while((m=re.exec(raw))){
+        const before=raw.slice(last,m.index);if(before.trim()){const lang=detectarIdiomaTextoVoz(before);parts.push({lang,text:prepararTextoParaVoz(before,lang)});}
+        const lang=normalizarCodigoIdioma(m[1]),body=m[2];if(body.trim())parts.push({lang,text:prepararTextoParaVoz(body,lang)});last=re.lastIndex;
+    }
+    const rest=raw.slice(last);if(rest.trim()){const lang=detectarIdiomaTextoVoz(rest);parts.push({lang,text:prepararTextoParaVoz(rest,lang)});}
+    if(!parts.length){const lang=detectarIdiomaTextoVoz(raw);parts=[{lang,text:prepararTextoParaVoz(raw,lang)}];}
+    return parts.filter(x=>x.text);
+}
 function hablar(texto){
     if(!STATE.settings.voiceEnabled||!("speechSynthesis" in window)){if(STATE.settings.handsFreeEnabled)scheduleWakeRestart(500);return;}
     stopWakeRecognition(false);if(STATE.voice.listening&&STATE.voice.recognition){try{STATE.voice.recognition.stop();}catch{}}window.speechSynthesis.cancel();
-    const utter=new SpeechSynthesisUtterance(prepararTextoParaVoz(texto));utter.lang="es-AR";utter.rate=clamp(Number(STATE.settings.voiceRate)||1,.6,1.6);utter.volume=clamp(Number(STATE.settings.voiceVolume)||1,0,1);const selected=getSelectedVoice();if(selected)utter.voice=selected;
-    const orb=$("core-orb-btn"),label=$("orbTextLabel");utter.onstart=()=>{STATE.voice.speaking=true;orb?.classList.add("hablando");if(label)label.textContent="🔊";setVoiceStatus(`🔵 ${STATE.settings.assistantName} hablando`,"text-cyan-300");};
-    const done=()=>{STATE.voice.speaking=false;orb?.classList.remove("hablando");if(label)label.textContent=STATE.settings.assistantName.toUpperCase();if(STATE.settings.handsFreeEnabled&&!STATE.voice.permissionBlocked&&getRecognitionCtor()){setHandsFreeStatus(`🟢 Esperando “${STATE.settings.assistantName}…”`,"text-green-300");scheduleWakeRestart(esDispositivoMovil()?950:700);}else setVoiceStatus("⚫ Micrófono listo","text-slate-400");};utter.onend=done;utter.onerror=done;window.speechSynthesis.speak(utter);
+    const segmentos=segmentarTextoParaVoz(texto);if(!segmentos.length)return;const token=`sp-${Date.now()}-${Math.random()}`;STATE.voice.speechToken=token;
+    const orb=$("core-orb-btn"),label=$("orbTextLabel");let idx=0,started=false;
+    const finish=()=>{if(STATE.voice.speechToken!==token)return;STATE.voice.speechToken=null;STATE.voice.speaking=false;orb?.classList.remove("hablando");if(label)label.textContent=STATE.settings.assistantName.toUpperCase();if(STATE.settings.handsFreeEnabled&&!STATE.voice.permissionBlocked&&getRecognitionCtor()){setHandsFreeStatus(`🟢 Esperando “${STATE.settings.assistantName}…”`,"text-green-300");scheduleWakeRestart(esDispositivoMovil()?950:700);}else setVoiceStatus("⚫ Micrófono listo","text-slate-400");};
+    const next=()=>{if(STATE.voice.speechToken!==token)return;if(idx>=segmentos.length){finish();return;}const seg=segmentos[idx++],utter=new SpeechSynthesisUtterance(seg.text);utter.lang=normalizarCodigoIdioma(seg.lang);utter.rate=clamp(Number(STATE.settings.voiceRate)||1,.6,1.6);utter.volume=clamp(Number(STATE.settings.voiceVolume)||1,0,1);const voice=getVoiceForLang(seg.lang);if(voice)utter.voice=voice;utter.onstart=()=>{if(!started){started=true;STATE.voice.speaking=true;orb?.classList.add("hablando");if(label)label.textContent="🔊";}setVoiceStatus(`🔵 ${STATE.settings.assistantName} hablando · ${utter.lang}`,"text-cyan-300");};utter.onend=next;utter.onerror=next;window.speechSynthesis.speak(utter);};next();
 }
-function toggleVoice(){STATE.settings.voiceEnabled=!STATE.settings.voiceEnabled;saveSettings();renderVoiceSettings();if(!STATE.settings.voiceEnabled)window.speechSynthesis?.cancel();}
-function loadVoices(){if(!("speechSynthesis" in window))return;STATE.voice.voices=window.speechSynthesis.getVoices();const sel=$("vozSelect");if(!sel)return;sel.replaceChildren();STATE.voice.voices.filter(v=>v.lang?.toLowerCase().startsWith("es")).forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=`${v.name} (${v.lang})`;if(v.name===STATE.settings.voiceName)o.selected=true;sel.appendChild(o);});if(!sel.options.length){const o=document.createElement("option");o.textContent="Voz predeterminada del navegador";o.value="";sel.appendChild(o);}}
-function renderVoiceSettings(){const btn=$("btnToggleVoz");if(btn)btn.textContent=STATE.settings.voiceEnabled?"🔊 Voz activada":"🔇 Voz desactivada";const rate=$("vozVelocidad"),vol=$("vozVolumen"),hands=$("manosLibresToggle"),silence=$("manosLibresSilencio");if(rate)rate.value=STATE.settings.voiceRate;if(vol)vol.value=STATE.settings.voiceVolume;if(hands)hands.checked=STATE.settings.handsFreeEnabled!==false;if(silence)silence.value=STATE.settings.handsFreeSilenceMs||1600;actualizarSilencioManosLibres(STATE.settings.handsFreeSilenceMs||1600);setClassStatus("estadoVozSistema",("speechSynthesis" in window)?(STATE.settings.voiceEnabled?"🟢 Activa":"⚫ Desactivada"):"🔴 No compatible",("speechSynthesis" in window)?"text-green-400":"text-red-400");}
-function saveVoiceSettings(){STATE.settings.voiceName=$("vozSelect")?.value||"";STATE.settings.voiceRate=Number($("vozVelocidad")?.value||1);STATE.settings.voiceVolume=Number($("vozVolumen")?.value||1);saveSettings();renderVoiceSettings();showToast("Configuración de voz guardada.");}
+function toggleVoice(){STATE.settings.voiceEnabled=!STATE.settings.voiceEnabled;saveSettings();renderVoiceSettings();if(!STATE.settings.voiceEnabled){STATE.voice.speechToken=null;window.speechSynthesis?.cancel();}}
+function loadVoices(){
+    if(!("speechSynthesis" in window))return;STATE.voice.voices=window.speechSynthesis.getVoices();const sel=$("vozSelect");if(!sel)return;const current=STATE.settings.voiceName||"";sel.replaceChildren();
+    const def=document.createElement("option");def.value="";def.textContent="Voz automática del navegador";sel.appendChild(def);
+    [...STATE.voice.voices].sort((a,b)=>(a.lang||"").localeCompare(b.lang||"")||(a.name||"").localeCompare(b.name||"")).forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=`${v.name} (${v.lang||"?"})`;if(v.name===current)o.selected=true;sel.appendChild(o);});
+}
+function renderVoiceSettings(){
+    const btn=$("btnToggleVoz");if(btn)btn.textContent=STATE.settings.voiceEnabled?"🔊 Voz activada":"🔇 Voz desactivada";const rate=$("vozVelocidad"),vol=$("vozVolumen"),hands=$("manosLibresToggle"),silence=$("manosLibresSilencio"),lang=$("vozIdiomaModo"),recLang=$("idiomaReconocimiento");if(rate)rate.value=STATE.settings.voiceRate;if(vol)vol.value=STATE.settings.voiceVolume;if(hands)hands.checked=STATE.settings.handsFreeEnabled!==false;if(silence)silence.value=STATE.settings.handsFreeSilenceMs||1600;if(lang)lang.value=STATE.settings.voiceLanguageMode||"auto";if(recLang)recLang.value=STATE.settings.recognitionLanguage||"es-AR";actualizarSilencioManosLibres(STATE.settings.handsFreeSilenceMs||1600);setClassStatus("estadoVozSistema",("speechSynthesis" in window)?(STATE.settings.voiceEnabled?"🟢 Activa":"⚫ Desactivada"):"🔴 No compatible",("speechSynthesis" in window)?"text-green-400":"text-red-400");
+}
+function saveVoiceSettings(){STATE.settings.voiceName=$("vozSelect")?.value||"";STATE.settings.voiceRate=Number($("vozVelocidad")?.value||1);STATE.settings.voiceVolume=Number($("vozVolumen")?.value||1);STATE.settings.voiceLanguageMode=$("vozIdiomaModo")?.value||"auto";STATE.settings.recognitionLanguage=$("idiomaReconocimiento")?.value||"es-AR";saveSettings();if(STATE.voice.recognition){try{STATE.voice.recognition.stop();}catch{}STATE.voice.recognition=null;}stopWakeRecognition(false);renderVoiceSettings();if(STATE.settings.handsFreeEnabled)scheduleWakeRestart(500);showToast("Configuración de voz e idiomas guardada.");}
 function probarVoz(){hablar(`Hola. La voz de ${STATE.settings.assistantName} está funcionando. Año de prueba: 1817.`);}
+function probarVozMultilingue(){hablar('Hola, esta es mi voz en español. [[lang:en-US]]Guns N’ Roses. Sweet Child o’ Mine. Welcome to the Jungle.[[/lang]] [[lang:pt-BR]]Olá, eu também posso ler em português.[[/lang]] [[lang:fr-FR]]Bonjour, je peux aussi lire en français.[[/lang]]');}
 window.onAngelaWakeWordDetected=()=>{stopWakeRecognition(false);beginWakeCommand("");scheduleWakeRestart(250);};
 
 /* ==========================================
@@ -2119,7 +2209,18 @@ function generarVersionesLaserSublimacion(){
 }
 function imagenActiva(){return !!(STATE.image.sourceCanvas&&STATE.image.sourceCanvas.width>1);}
 function detectarComandoImagen(p){
-    const q=normalizarTexto(p);const mencionaImagen=/\b(foto|imagen|retrato|medalla|fondo|nitidez|resolucion|contraste|jarvis|stucki|dither|blanco y negro|laser|sublimacion)\b/.test(q);if(!mencionaImagen&&!imagenActiva())return null;
+    const q=normalizarTexto(p);const mencionaImagen=/\b(foto|fotos|imagen|imagenes|retrato|medalla|fondo|nitidez|resolucion|contraste|jarvis|stucki|dither|blanco y negro|laser|sublimacion)\b/.test(q);if(!mencionaImagen&&!imagenActiva())return null;
+    if(/\b(editas|editar|edicion|mejoras|mejorar|retocas|retocar)\b.*\b(foto|fotos|imagen|imagenes)\b/.test(q)&&/\b(podes|puedes|vos|sabes|haces|hacer)\b/.test(q))return{tool:"image_edit",args:{action:"help"}};
+
+    // V6.2.1 · preguntas sobre capacidad: responder desde ÁNGELA, no mandarlas al backend.
+    // Ej.: “Ángela, ¿vos podés editar una foto?” / “¿Qué podés hacer con una imagen?”
+    const preguntaCapacidadImagen=(
+        /\b(podes|puedes|sabes|tenes|tienes|podrias|podria)\b.*\b(editar|mejorar|arreglar|retocar|procesar|preparar)\b.*\b(foto|fotos|imagen|imagenes|retrato)\b/.test(q) ||
+        /\b(que|cuales)\b.*\b(podes|puedes)\b.*\b(hacer|editar|mejorar)\b.*\b(foto|fotos|imagen|imagenes)\b/.test(q) ||
+        /\b(podes|puedes)\b.*\b(editar|mejorar)\b.*\b(foto|fotos|imagen|imagenes)\b/.test(q)
+    );
+    if(preguntaCapacidadImagen)return{tool:"image_edit",args:{action:"help"}};
+
     const mmMatch=q.match(/(\d+(?:[.,]\d+)?)\s*(?:mm|milimetros?)/);const mm=mmMatch?Number(mmMatch[1].replace(",",".")):50;
     if(/\b(medalla|grabar.*medalla|medalla.*grabar)\b/.test(q)&&/(prepara|preparar|mejora|mejorar|hace|hacer|quiero|para|grabar)/.test(q))return{tool:"image_edit",args:{action:"medal",mm}};
     if(/\b(version|versiones).*\blaser\b.*\b(sublimacion|sublimar)\b|\blaser\b.*\b(y|otra).*\bsublimacion\b/.test(q))return{tool:"image_edit",args:{action:"dual"}};
@@ -2140,11 +2241,16 @@ function detectarComandoImagen(p){
     if(/\b(prepara|preparar|optimiza|optimizar).*\b(sublimacion|sublimar)\b/.test(q))return{tool:"image_edit",args:{action:"sublimation"}};
     if(/\b(aumenta|aumentar|subi|subir|mas).*\bcontraste\b/.test(q))return{tool:"image_edit",args:{action:"contrast"}};
     if(/\b(guarda|guardar|descarga|descargar).*\b(foto|imagen|png)\b/.test(q))return{tool:"image_edit",args:{action:"save"}};
-    if(/\b(mejora|mejorar|mejorame|mejorala|arregla|arreglar|optimiza|optimizar|limpia|limpiar)\b/.test(q)&&/\b(foto|imagen|retrato)\b/.test(q))return{tool:"image_edit",args:{action:"auto"}};
+    if(/\b(mejora|mejorar|mejorame|mejorala|arregla|arreglar|arreglame|arreglala|edita|editar|editame|editala|retoca|retocar|retocame|retocala|optimiza|optimizar|limpia|limpiar)\b/.test(q)&&/\b(foto|fotos|imagen|imagenes|retrato)\b/.test(q))return{tool:"image_edit",args:{action:"auto"}};
+    if(imagenActiva()&&/\b(mejorala|mejorame|arreglala|arreglame|editala|editame|retocala|retocame|optimizala|limpiala)\b/.test(q))return{tool:"image_edit",args:{action:"auto"}};
     return null;
 }
 async function ejecutarComandoImagen(args={}){
     const action=args.action||"";
+    if(action==="help"){
+        abrirMenu("imagenes");
+        return{ok:true,message:"Sí. Puedo editar fotos directamente dentro de ÁNGELA. Puedo mejorar brillo, contraste y nitidez; quitar fondos casi blancos; pasar a blanco y negro, Jarvis, Stucki o dither; centrar el rostro; aumentar resolución; preparar para láser, medallas o sublimación; y guardar el resultado en PNG. Cargá una foto con ＋ → Fotos y decime qué querés que le haga."};
+    }
     if(!imagenActiva()){abrirMenu("imagenes");return{ok:false,message:"Primero cargá una foto con ＋ → Fotos o desde Imágenes. Después pedime la edición y la hago acá mismo."};}
     switch(action){
         case "auto":mejorarImagenAutomatico();return{ok:true,message:"Listo. Mejoré brillo, contraste y nitidez de la foto. Revisá la vista previa y, si te gusta, guardala como PNG."};
@@ -2445,7 +2551,7 @@ function renderActivityLog(){const box=$("registroActividad");if(!box)return;box
    PWA
    ========================================== */
 function initPWA(){
-    if("serviceWorker" in navigator && location.protocol==="https:"){navigator.serviceWorker.register("./service-worker.js").then(()=>logActivity("PWA","Service worker registrado")).catch(e=>logActivity("PWA",`No registrado: ${e.message}`));}
+    if("serviceWorker" in navigator && location.protocol==="https:"){navigator.serviceWorker.register("./service-worker.js").then(reg=>{reg.update().catch(()=>{});logActivity("PWA","Service worker registrado y actualizado")}).catch(e=>logActivity("PWA",`No registrado: ${e.message}`));}
     window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();STATE.installPrompt=e;const b=$("btnInstalar");if(b)b.classList.remove("hidden");});
 }
 async function instalarAngela(){if(!STATE.installPrompt){showToast("La instalación no está disponible en este navegador o ÁNGELA ya está instalada.");return;}STATE.installPrompt.prompt();await STATE.installPrompt.userChoice;STATE.installPrompt=null;$("btnInstalar")?.classList.add("hidden");}
@@ -2464,7 +2570,7 @@ function bindEvents(){
     $("inputVideo")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)cargarVideoArchivo(f);e.target.value="";});
     $("inputArchivoUniversal")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)handleGeneralFile(f);e.target.value="";});
     $("inputImportConfig")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)procesarImportConfig(f);e.target.value="";});
-    $("vozSelect")?.addEventListener("change",saveVoiceSettings);$("vozVelocidad")?.addEventListener("change",saveVoiceSettings);$("vozVolumen")?.addEventListener("change",saveVoiceSettings);
+    $("vozSelect")?.addEventListener("change",saveVoiceSettings);$("vozIdiomaModo")?.addEventListener("change",saveVoiceSettings);$("idiomaReconocimiento")?.addEventListener("change",saveVoiceSettings);$("vozVelocidad")?.addEventListener("change",saveVoiceSettings);$("vozVolumen")?.addEventListener("change",saveVoiceSettings);
     window.addEventListener("online",updateStatusPanel);window.addEventListener("offline",updateStatusPanel);
 }
 
