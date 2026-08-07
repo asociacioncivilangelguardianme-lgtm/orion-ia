@@ -415,6 +415,12 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 </details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🧩 Complementos PRO</summary><div id="estadoComplementosPro" class="space-y-2 mt-2 text-[10px]"><div>Comprobando complementos…</div></div><p class="text-[10px] text-slate-500 mt-2">Los complementos externos se activan desde <b>angela.config.js</b>. Las claves privadas de IA van únicamente en Vercel, nunca dentro del HTML.</p></details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">🧠 Ver / editar memoria</summary><div id="listaMemoria" class="space-y-2 mt-2 max-h-48 overflow-auto"></div><button onclick="clearProfileMemory()" class="quick w-full text-xs text-red-300 mt-2">🗑 Eliminar memoria del perfil</button></details>
+<details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">📚 Bóveda local · habilidades · rutina</summary>
+<div id="estadoBovedaResumen" class="text-[10px] text-cyan-200 mt-2">Bóveda: 0 notas · Agenda: 0 pendientes</div>
+<div class="grid grid-cols-2 gap-2 mt-2"><button onclick="uiResumenMatutino()" class="quick text-xs">🌅 Resumen</button><button onclick="uiPlanHoy()" class="quick text-xs">🎯 Plan de hoy</button><button onclick="uiMetricas()" class="quick text-xs">📊 Métricas</button><button onclick="exportarBovedaMarkdown()" class="quick text-xs">📝 Exportar bóveda</button></div>
+<button id="btnRutinaDiaria" onclick="toggleRutinaDiaria()" class="quick w-full text-xs mt-2">▶ Activar rutina diaria</button>
+<p class="text-[10px] text-slate-500 mt-2">La bóveda y agenda se guardan en este navegador. La rutina automática funciona mientras la página esté abierta/activa. Gmail y Google Calendar requieren una integración con permisos; este HTML no lee esas cuentas por sí solo.</p>
+</details>
 <details class="card-mini mb-2"><summary class="cursor-pointer text-xs font-bold">📜 Historial</summary><div id="listaHistorial" class="space-y-2 mt-2 max-h-56 overflow-auto"></div></details>
 <button onclick="ejecutarDiagnostico()" class="quick w-full text-xs text-cyan-300 mb-2">🩺 Diagnóstico de Ángela</button>
 <div id="resultadoDiagnostico" class="hidden card-mini text-[10px] mb-2"></div>
@@ -537,7 +543,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "6.3.0-multilingual-voice-image",
+    version: "6.4.0-skills-vault-routines",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -634,6 +640,9 @@ const DEFAULT_SETTINGS = {
     recognitionLanguage: "es-AR",
     handsFreeEnabled: true,
     handsFreeSilenceMs: 1600,
+    dailyRoutineEnabled: false,
+    dailyRoutineTimes: {morning:"07:00",plan:"09:00",metrics:"14:00",close:"19:00"},
+    localNotifications: true,
     theme: "futurista",
     defaultMachineId: "algolaser-diy-mk2-10w",
     radioStreamUrl: "",
@@ -655,6 +664,9 @@ const STATE = {
     activeConversationId: STORAGE.getText("angela_active_conversation", ""),
     stock: STORAGE.get("angela_stock", []) || [],
     pedidos: STORAGE.get("angela_pedidos", []) || [],
+    vault: STORAGE.get("angela_vault_v1", []) || [],
+    tasks: STORAGE.get("angela_tasks_v1", []) || [],
+    routineState: STORAGE.get("angela_routine_state_v1", {}) || {},
     weather: null,
     hourlyWeather: null,
     location: STORAGE.get("angela_location_v2", null),
@@ -679,6 +691,7 @@ const STATE = {
 
 // Completa campos institucionales antiguos sin borrar personalizaciones del usuario.
 STATE.settings.comedor={...DEFAULT_SETTINGS.comedor,...(STATE.settings.comedor||{})};
+STATE.settings.dailyRoutineTimes={...DEFAULT_SETTINGS.dailyRoutineTimes,...(STATE.settings.dailyRoutineTimes||{})};
 if(!STATE.settings.comedor.alias || STATE.settings.comedor.alias==="comedor.angel") STATE.settings.comedor.alias="NIEBLA.REMO.TAMBOR";
 
 function saveSettings(){
@@ -693,6 +706,9 @@ function saveConversations(){
     STORAGE.setText("angela_active_conversation", STATE.activeConversationId || "");
 }
 function saveStock(){ STORAGE.set("angela_stock", STATE.stock); }
+function saveVault(){ STORAGE.set("angela_vault_v1", STATE.vault.slice(-600)); }
+function saveTasks(){ STORAGE.set("angela_tasks_v1", STATE.tasks.slice(-300)); }
+function saveRoutineState(){ STORAGE.set("angela_routine_state_v1", STATE.routineState || {}); }
 
 /* ==========================================
    ACTIVITY LOG / ERROR HANDLING
@@ -828,6 +844,138 @@ function renderMemory(){
         actions.append(edit,btn); row.append(span,actions); box.appendChild(row);
     });
 }
+
+/* ==========================================
+   V6.4 · BÓVEDA LOCAL + HABILIDADES + AGENDA
+   Inspirado en una arquitectura modular: cada habilidad hace una sola tarea.
+   Todo esto vive en este HTML y usa almacenamiento local del navegador.
+   ========================================== */
+const ANGELA_SKILLS = Object.freeze({
+    memoria:{label:"🧠 Memoria",detail:"Recuerda datos del perfil y el contexto reciente."},
+    boveda:{label:"📚 Bóveda",detail:"Guarda notas locales, las busca y las exporta a Markdown."},
+    agenda:{label:"🗓️ Agenda local",detail:"Crea tareas y recordatorios mientras la página está disponible."},
+    dia:{label:"☀️ Día real",detail:"Resumen matutino, plan de 3 prioridades, métricas y cierre del día."},
+    imagen:{label:"🖼️ Imagen",detail:"Edita y prepara fotos para láser, medallas y sublimación."},
+    voz:{label:"🎙️ Voz",detail:"Comandos por voz, lectura multilingüe y traducción."},
+    taller:{label:"🔥 Taller",detail:"Parámetros de láser, proyectos, stock y pedidos."},
+    web:{label:"🌐 Actualidad",detail:"Usa la IA y búsqueda web cuando la consulta necesita datos actuales."}
+});
+
+function textoSinNombreAsistente(texto){
+    let raw=String(texto||"").trim();
+    const names=[STATE.settings.assistantName,"Ángela","Angela"].filter(Boolean);
+    for(const n of names){raw=raw.replace(new RegExp(`^${escapeRegex(n)}[,:;\\s-]*`,`i`),"").trim();}
+    return raw;
+}
+function palabrasBusqueda(texto){return [...new Set(normalizarTexto(texto).split(/[^a-z0-9ñ]+/).filter(x=>x.length>=3))].slice(0,20);}
+function etiquetasBoveda(texto){
+    const tags=(String(texto||"").match(/#[\p{L}\p{N}_-]+/gu)||[]).map(x=>normalizarTexto(x.slice(1))).filter(Boolean);
+    return [...new Set(tags)].slice(0,10);
+}
+function agregarBoveda(texto,tipo="raw",source="usuario"){
+    const clean=String(texto||"").trim().slice(0,5000);if(!clean)return{ok:false,message:"No encontré qué guardar en la bóveda."};
+    const item={id:uid("vault"),profile:STATE.settings.activeProfile,type:["raw","wiki","output"].includes(tipo)?tipo:"raw",text:clean,tags:etiquetasBoveda(clean),source,createdAt:Date.now(),updatedAt:Date.now()};
+    STATE.vault.push(item);STATE.vault=STATE.vault.slice(-600);saveVault();renderBovedaResumen();logActivity("Bóveda",`${item.type} guardado`);
+    return{ok:true,message:`Listo. Lo guardé en la bóveda local (${item.type}).`};
+}
+function buscarBoveda(query,limit=6){
+    const terms=palabrasBusqueda(query);const profile=STATE.settings.activeProfile;
+    const scored=STATE.vault.filter(x=>x.profile===profile).map(item=>{
+        const hay=normalizarTexto(`${item.text} ${(item.tags||[]).join(" ")} ${item.type}`);let score=0;for(const t of terms){if(hay.includes(t))score+=hay.startsWith(t)?3:1;}return{item,score};
+    }).filter(x=>terms.length?x.score>0:true).sort((a,b)=>b.score-a.score||b.item.updatedAt-a.item.updatedAt).slice(0,limit).map(x=>x.item);
+    return scored;
+}
+function listarBoveda(limit=8){return STATE.vault.filter(x=>x.profile===STATE.settings.activeProfile).slice().sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,limit);}
+function formatearItemsBoveda(items){
+    if(!items.length)return"No encontré notas en la bóveda para este perfil.";
+    return items.map((x,i)=>`${i+1}. [${x.type}] ${x.text.slice(0,260)}${x.text.length>260?"…":""}`).join("\n");
+}
+function conocimientoLocal(query){
+    const terms=palabrasBusqueda(query),profile=STATE.settings.activeProfile;
+    const mem=STATE.memory.filter(m=>m.profile===profile&&terms.some(t=>normalizarTexto(m.text).includes(t))).slice(-6);
+    const vault=buscarBoveda(query,6);
+    const parts=[];if(mem.length)parts.push("Memoria:\n"+mem.map((m,i)=>`${i+1}. ${m.text}`).join("\n"));if(vault.length)parts.push("Bóveda:\n"+formatearItemsBoveda(vault));
+    return parts.join("\n\n")||"No encontré información local guardada sobre eso.";
+}
+function exportarBovedaMarkdown(){
+    const items=STATE.vault.filter(x=>x.profile===STATE.settings.activeProfile).slice().sort((a,b)=>a.createdAt-b.createdAt);
+    const groups={raw:[],wiki:[],output:[]};for(const x of items)(groups[x.type]||groups.raw).push(x);
+    const section=(title,arr)=>`## ${title}\n\n${arr.length?arr.map(x=>`### ${new Date(x.createdAt).toLocaleString("es-AR")}\n\n${x.text}\n${x.tags?.length?`\nEtiquetas: ${x.tags.map(t=>`#${t}`).join(" ")}\n`:""}`).join("\n"):"_Sin entradas._\n"}`;
+    const md=`# Bóveda de ÁNGELA · ${STATE.settings.activeProfile}\n\nExportado: ${new Date().toLocaleString("es-AR")}\n\n${section("raw · capturado",groups.raw)}\n\n${section("wiki · conocimiento",groups.wiki)}\n\n${section("outputs · entregas",groups.output)}\n`;
+    const blob=new Blob([md],{type:"text/markdown;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`angela_boveda_${new Date().toISOString().slice(0,10)}.md`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1800);logActivity("Bóveda","Markdown exportado");
+    return{ok:true,message:"Listo. Exporté la bóveda local a un archivo Markdown."};
+}
+
+function parseHoraLocal(h,m="0"){const hh=Number(h),mm=Number(m||0);if(!Number.isInteger(hh)||!Number.isInteger(mm)||hh<0||hh>23||mm<0||mm>59)return null;return{hh,mm};}
+function crearTareaLocal(texto,dueAt=null){
+    const clean=String(texto||"").trim().slice(0,500);if(!clean)return{ok:false,message:"No encontré la tarea."};
+    const task={id:uid("task"),profile:STATE.settings.activeProfile,text:clean,createdAt:Date.now(),dueAt:Number.isFinite(dueAt)?dueAt:null,done:false,doneAt:null,notified:false};STATE.tasks.push(task);saveTasks();renderBovedaResumen();logActivity("Agenda","Tarea creada");
+    return{ok:true,message:`Listo. Agendé: “${clean}”${task.dueAt?` para ${new Date(task.dueAt).toLocaleString("es-AR",{dateStyle:"short",timeStyle:"short"})}`:""}.`};
+}
+function tareasPendientes(){return STATE.tasks.filter(t=>t.profile===STATE.settings.activeProfile&&!t.done).sort((a,b)=>(a.dueAt||9e15)-(b.dueAt||9e15)||a.createdAt-b.createdAt);}
+function textoTareasPendientes(limit=10){const arr=tareasPendientes().slice(0,limit);if(!arr.length)return"No tenés tareas pendientes en la agenda local.";return arr.map((t,i)=>`${i+1}. ${t.text}${t.dueAt?` · ${new Date(t.dueAt).toLocaleString("es-AR",{dateStyle:"short",timeStyle:"short"})}`:""}`).join("\n");}
+function completarTareaLocal(numero){const arr=tareasPendientes();const idx=Number(numero)-1;if(idx<0||idx>=arr.length)return{ok:false,message:"No encontré esa tarea pendiente."};arr[idx].done=true;arr[idx].doneAt=Date.now();saveTasks();renderBovedaResumen();return{ok:true,message:`Listo. Marqué como hecha: “${arr[idx].text}”.`};}
+function crearRecordatorioDesdeTexto(raw){
+    const q=String(raw||"").trim();const manana=/\bmañana\b/i.test(q);const hm=q.match(/(?:a\s+las\s+|a\s+la\s+|\b)(\d{1,2})(?::(\d{2}))?\s*(?:hs?|horas?)?\b/i);if(!hm)return null;const parsed=parseHoraLocal(hm[1],hm[2]||"0");if(!parsed)return null;
+    let taskText=q.replace(/^(?:recordame|recordá|recuerdame|recuérdame)\s*/i,"").replace(/\bmañana\b/i,"").replace(hm[0],"").replace(/^[,;:\s-]+/,"").trim();if(!taskText)taskText="Recordatorio";
+    const d=new Date();if(manana)d.setDate(d.getDate()+1);d.setHours(parsed.hh,parsed.mm,0,0);if(!manana&&d.getTime()<=Date.now()+30000)d.setDate(d.getDate()+1);return crearTareaLocal(taskText,d.getTime());
+}
+
+function contextoDiaLocal(){
+    const pending=tareasPendientes().slice(0,8),mem=STATE.memory.filter(m=>m.profile===STATE.settings.activeProfile).slice(-5),vault=listarBoveda(5),weather=STATE.weather?JSON.stringify(STATE.weather).slice(0,700):"Sin clima cargado";
+    return `Fecha: ${new Date().toLocaleString("es-AR")}\nTareas pendientes:\n${pending.length?pending.map(t=>`- ${t.text}${t.dueAt?` (${new Date(t.dueAt).toLocaleString("es-AR")})`:""}`).join("\n"):"- ninguna"}\nMemoria reciente:\n${mem.length?mem.map(m=>`- ${m.text}`).join("\n"):"- sin datos"}\nBóveda reciente:\n${vault.length?vault.map(v=>`- ${v.text.slice(0,180)}`).join("\n"):"- sin notas"}\nTaller: proyectos ${document.getElementById("contadorProyectos")?.textContent||"0"}, pedidos ${STATE.pedidos.length}, stock ${STATE.stock.length}.\nClima local: ${weather}`;
+}
+async function skillResumenMatutino(){
+    await askAI(`Prepará mi resumen matutino. Usá estos datos locales y, si la web está disponible, agregá un resumen MUY breve de noticias actuales relevantes. Priorizá agenda, pendientes y lo importante para hoy. No inventes datos de Gmail ni Google Calendar porque no están conectados directamente.\n\nDATOS LOCALES:\n${contextoDiaLocal()}`,{fresh:true,actualidad:true,useWeb:true,detailed:false});
+    return{ok:true};
+}
+async function skillPlanHoy(){
+    await askAI(`Armá mi plan de hoy en SOLO 3 prioridades concretas, usando estos datos locales. Si faltan datos, proponé prioridades razonables pero marcá que son sugerencias.\n\nDATOS LOCALES:\n${contextoDiaLocal()}`,{detailed:false});return{ok:true};
+}
+function skillMetricas(){
+    const pending=tareasPendientes(),doneToday=STATE.tasks.filter(t=>t.profile===STATE.settings.activeProfile&&t.done&&t.doneAt&&new Date(t.doneAt).toDateString()===new Date().toDateString());
+    return{ok:true,message:`📊 Métricas locales de hoy:\n• Tareas pendientes: ${pending.length}\n• Tareas completadas hoy: ${doneToday.length}\n• Notas en bóveda: ${STATE.vault.filter(v=>v.profile===STATE.settings.activeProfile).length}\n• Memorias: ${STATE.memory.filter(m=>m.profile===STATE.settings.activeProfile).length}\n• Proyectos: ${document.getElementById("contadorProyectos")?.textContent||"0"}\n• Pedidos: ${STATE.pedidos.length}\n• Stock: ${STATE.stock.length}`};
+}
+function skillCierreDia(reflexion=""){
+    const metrics=skillMetricas().message;const clean=String(reflexion||"").trim();if(clean)agregarBoveda(`Cierre del día ${new Date().toLocaleDateString("es-AR")}: ${clean}`,"output","cierre-dia");
+    return{ok:true,message:`🌙 Cierre del día.\n${metrics}\n${clean?"Guardé tu reflexión en la bóveda.":"Si querés registrar una reflexión decime: “cerrá el día: hoy logramos…”"}`};
+}
+function skillEstadoSistema(){
+    const ai=STATE.ai.backend?(STATE.ai.configured?"conectada":"backend disponible") : "sin conexión";return{ok:true,message:`🖥️ Estado de ÁNGELA:\n• Internet: ${navigator.onLine?"conectado":"sin conexión"}\n• IA: ${ai}${STATE.ai.model?` · ${STATE.ai.model}`:""}\n• Micrófono: ${getRecognitionCtor()?"disponible":navigator.mediaDevices?.getUserMedia?"grabación compatible":"no compatible"}\n• Voz: ${"speechSynthesis" in window?"disponible":"no compatible"}\n• Memoria: ${STATE.memory.filter(m=>m.profile===STATE.settings.activeProfile).length} datos\n• Bóveda: ${STATE.vault.filter(v=>v.profile===STATE.settings.activeProfile).length} notas\n• Tareas pendientes: ${tareasPendientes().length}`};
+}
+function skillHelp(){return{ok:true,message:"🧩 Habilidades de ÁNGELA:\n"+Object.values(ANGELA_SKILLS).map(s=>`• ${s.label}: ${s.detail}`).join("\n")+"\n\nPodés decir: “resumen matutino”, “plan de hoy”, “guardá en la bóveda…”, “qué sabés de…”, “recordame a las 19…”, “tareas pendientes”, “métricas de hoy” o “cerrá el día: …”."};}
+
+function rutinaDiaClave(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+function minutosHora(hhmm){const m=String(hhmm||"").match(/^(\d{1,2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):null;}
+function renderBovedaResumen(){
+    const box=$("estadoBovedaResumen");if(!box)return;const notes=STATE.vault.filter(v=>v.profile===STATE.settings.activeProfile).length,pending=tareasPendientes().length;box.textContent=`Bóveda: ${notes} notas · Agenda: ${pending} pendientes · Rutina diaria: ${STATE.settings.dailyRoutineEnabled?"activada":"desactivada"}`;
+    const btn=$("btnRutinaDiaria");if(btn)btn.textContent=STATE.settings.dailyRoutineEnabled?"⏹ Desactivar rutina":"▶ Activar rutina diaria";
+}
+async function toggleRutinaDiaria(){
+    STATE.settings.dailyRoutineEnabled=!STATE.settings.dailyRoutineEnabled;saveSettings();renderBovedaResumen();
+    if(STATE.settings.dailyRoutineEnabled&&STATE.settings.localNotifications&&"Notification" in window&&Notification.permission==="default"){try{await Notification.requestPermission();}catch{}}
+    showToast(STATE.settings.dailyRoutineEnabled?"Rutina diaria activada mientras ÁNGELA esté abierta.":"Rutina diaria desactivada.");
+}
+function textoRutinaDiaria(){const t=STATE.settings.dailyRoutineTimes||DEFAULT_SETTINGS.dailyRoutineTimes;return`Rutina diaria ${STATE.settings.dailyRoutineEnabled?"ACTIVADA":"DESACTIVADA"}: 07:00 resumen matutino · 09:00 plan de hoy · 14:00 métricas · 19:00 cierre del día. En navegador funciona mientras la página esté abierta o activa; no reemplaza un servicio de alarmas del sistema.`;}
+function avisoRutina(title,body){
+    if(STATE.settings.localNotifications&&"Notification" in window&&Notification.permission==="granted"){try{new Notification(title,{body});}catch{}}
+    showToast(`${title}: ${body}`);
+}
+async function ejecutarRutinaSlot(slot){
+    if(slot==="morning"){avisoRutina("ÁNGELA · Resumen matutino","Preparando tu resumen.");await skillResumenMatutino();return;}
+    if(slot==="plan"){avisoRutina("ÁNGELA · Plan de hoy","Preparando 3 prioridades.");await skillPlanHoy();return;}
+    if(slot==="metrics"){const r=skillMetricas();agregarMensaje("angela",r.message);hablar(r.message);avisoRutina("ÁNGELA · Métricas","Métricas del día listas.");return;}
+    if(slot==="close"){const msg="🌙 Es hora de cerrar el día. Decime “cerrá el día: …” y guardo tu reflexión en la bóveda.";agregarMensaje("angela",msg);hablar(msg);avisoRutina("ÁNGELA · Cierre del día","Tu reflexión puede guardarse en la bóveda.");}
+}
+async function checkDailyRoutines(){
+    if(!STATE.settings.dailyRoutineEnabled)return;const now=new Date(),mins=now.getHours()*60+now.getMinutes(),times=STATE.settings.dailyRoutineTimes||DEFAULT_SETTINGS.dailyRoutineTimes,key=rutinaDiaClave();STATE.routineState[key]=STATE.routineState[key]||{};
+    for(const slot of ["morning","plan","metrics","close"]){const target=minutosHora(times[slot]);if(target==null||STATE.routineState[key][slot])continue;const delta=mins-target;if(delta>=0&&delta<=20){STATE.routineState[key][slot]=Date.now();saveRoutineState();try{await ejecutarRutinaSlot(slot);}catch(e){console.error("Rutina",slot,e);}}}
+    const keys=Object.keys(STATE.routineState).sort().slice(-14);const keep={};for(const k of keys)keep[k]=STATE.routineState[k];STATE.routineState=keep;saveRoutineState();
+}
+async function uiResumenMatutino(){focusChat();await skillResumenMatutino();}
+async function uiPlanHoy(){focusChat();await skillPlanHoy();}
+function uiMetricas(){focusChat();const r=skillMetricas();agregarMensaje("angela",r.message);hablar(r.message);}
+
 function addProfile(){
     const input=$("nuevoPerfil"); const name=input?.value.trim().slice(0,50); if(!name) return;
     if(!STATE.settings.profiles.includes(name)) STATE.settings.profiles.push(name);
@@ -1182,6 +1330,28 @@ function localCommand(text){
     const imageCmd=detectarComandoImagen(p);
     if(imageCmd)return imageCmd;
 
+    // V6.4 · habilidades modulares, bóveda, agenda y ciclo diario.
+    const raw=textoSinNombreAsistente(text);
+    if(/^(que|qué) (podes|podés|puedes) hacer|^(habilidades|skills|comandos disponibles|que sabes hacer|qué sabés hacer)$/.test(p))return{tool:"skills_help",args:{}};
+    let vm=raw.match(/^(?:guard[aá]|anot[aá]|archiv[aá])(?:\s+esto)?\s+(?:en\s+)?(?:la\s+)?b[oó]veda(?:\s+(?:como|en)\s+(raw|wiki|output))?(?:\s*[:,-])?\s+(.+)/i);
+    if(vm)return{tool:"vault_add",args:{type:(vm[1]||"raw").toLowerCase(),text:vm[2]}};
+    vm=raw.match(/^(?:busc[aá]|buscar|consult[aá]|consulta)\s+(?:en\s+)?(?:la\s+)?b[oó]veda(?:\s*[:,-])?\s+(.+)/i);if(vm)return{tool:"vault_search",args:{query:vm[1]}};
+    if(/^(?:mostra|mostrar|mostrame|ver)\s+(?:la\s+)?boveda|^boveda$/.test(p))return{tool:"vault_list",args:{}};
+    if(/^(?:exporta|exportar|descarga|descargar)\s+(?:la\s+)?boveda/.test(p))return{tool:"vault_export",args:{}};
+    vm=raw.match(/^(?:que|qué)\s+(?:sabes|sabés|recordas|recordás)\s+(?:de|sobre)\s+(.+)/i);if(vm)return{tool:"knowledge_search",args:{query:vm[1]}};
+    if(/^(resumen matutino|resumen de la manana|resumen de la mañana|buen dia angela|buen día angela)$/.test(p))return{tool:"morning_brief",args:{}};
+    if(/^(plan de hoy|plan del dia|plan del día|mis 3 prioridades|mis tres prioridades)$/.test(p))return{tool:"plan_today",args:{}};
+    if(/^(metricas de hoy|métricas de hoy|metricas del dia|métricas del día|reporte de metricas|reporte de métricas)$/.test(p))return{tool:"daily_metrics",args:{}};
+    vm=raw.match(/^(?:cerra|cerrá|cerrar)\s+(?:el\s+)?d[ií]a(?:\s*[:,-])?\s*(.*)$/i);if(vm)return{tool:"close_day",args:{reflection:vm[1]||""}};
+    if(/^(estado del sistema|panel de control|estado de angela|estado de ángela|hud)$/.test(p))return{tool:"system_status",args:{}};
+    if(/^(activar|activa)\s+(?:la\s+)?rutina diaria$/.test(p))return{tool:"routine_on",args:{}};
+    if(/^(desactivar|desactiva)\s+(?:la\s+)?rutina diaria$/.test(p))return{tool:"routine_off",args:{}};
+    if(/^(rutina diaria|horarios de rutina|mostrar rutina)$/.test(p))return{tool:"routine_status",args:{}};
+    if(/^(?:recordame|recordá|recuerdame|recuérdame)\b/i.test(raw)){const reminder=crearRecordatorioDesdeTexto(raw);if(reminder)return{tool:"prebuilt_result",args:{result:reminder}};const reminderText=raw.replace(/^(?:recordame|recordá|recuerdame|recuérdame)\s*/i,"").trim();if(reminderText)return{tool:"task_add",args:{text:reminderText}};}
+    vm=raw.match(/^(?:anot[aá]|agreg[aá]|cre[aá])\s+(?:una\s+)?tarea(?:\s*[:,-])?\s+(.+)/i);if(vm)return{tool:"task_add",args:{text:vm[1]}};
+    if(/^(tareas pendientes|mis tareas|agenda local|que tengo pendiente|qué tengo pendiente)$/.test(p))return{tool:"task_list",args:{}};
+    vm=raw.match(/^(?:marca|marc[aá]|completa|complet[aá])\s+(?:la\s+)?tarea\s+(\d+)\s+(?:como\s+)?(?:hecha|lista|completada)?/i);if(vm)return{tool:"task_done",args:{number:Number(vm[1])}};
+
     if(/\b(podes|puedes|sabes|podrias|podria)\b.*\b(traducir|traducirme|traducime)\b/.test(p) || /\b(podes|puedes|sabes|podrias|podria)\b.*\b(hablar|leer)\b.*\b(idioma|idiomas|ingles|espanol|portugues|frances|italiano|aleman|texto)\b/.test(p) || /\b(que|cuales)\b.*\b(idiomas)\b.*\b(podes|puedes|hablas|lees|traducis|traducir)\b/.test(p))return{tool:"language_help",args:{}};
 
     const math=p.replace(/^cuanto es\s+/i,"").replace(/^calcul[aá]\s+/i,"");
@@ -1208,7 +1378,25 @@ async function executeLocalCommand(cmd){
         youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(),
         desktop_app:()=>abrirAppDesktop(cmd.args?.app),
         image_edit:()=>ejecutarComandoImagen(cmd.args||{}),
-        language_help:()=>({ok:true,message:"Sí. Puedo traducir y leer en español, inglés, portugués, francés, italiano y alemán. Decime, por ejemplo: ‘traducí al inglés: buen día’ o ‘¿cómo se dice gracias en francés?’. En modo de lectura Automático intento usar la voz correcta para cada idioma."})
+        language_help:()=>({ok:true,message:"Sí. Puedo traducir y leer en español, inglés, portugués, francés, italiano y alemán. Decime, por ejemplo: ‘traducí al inglés: buen día’ o ‘¿cómo se dice gracias en francés?’. En modo de lectura Automático intento usar la voz correcta para cada idioma."}),
+        skills_help:()=>skillHelp(),
+        vault_add:()=>agregarBoveda(cmd.args?.text,cmd.args?.type||"raw","usuario"),
+        vault_search:()=>({ok:true,message:formatearItemsBoveda(buscarBoveda(cmd.args?.query||"",8))}),
+        vault_list:()=>({ok:true,message:formatearItemsBoveda(listarBoveda(10))}),
+        vault_export:()=>exportarBovedaMarkdown(),
+        knowledge_search:()=>({ok:true,message:conocimientoLocal(cmd.args?.query||"")}),
+        task_add:()=>crearTareaLocal(cmd.args?.text||""),
+        task_list:()=>({ok:true,message:textoTareasPendientes(12)}),
+        task_done:()=>completarTareaLocal(cmd.args?.number),
+        prebuilt_result:()=>cmd.args?.result||null,
+        morning_brief:()=>skillResumenMatutino(),
+        plan_today:()=>skillPlanHoy(),
+        daily_metrics:()=>skillMetricas(),
+        close_day:()=>skillCierreDia(cmd.args?.reflection||""),
+        system_status:()=>skillEstadoSistema(),
+        routine_status:()=>({ok:true,message:textoRutinaDiaria()}),
+        routine_on:()=>{if(!STATE.settings.dailyRoutineEnabled){STATE.settings.dailyRoutineEnabled=true;saveSettings();renderBovedaResumen();}return{ok:true,message:textoRutinaDiaria()};},
+        routine_off:()=>{STATE.settings.dailyRoutineEnabled=false;saveSettings();renderBovedaResumen();return{ok:true,message:textoRutinaDiaria()};}
     };
     return map[cmd.tool]?await map[cmd.tool]():null;
 }
@@ -1266,7 +1454,9 @@ function buildAiContext(currentMessage=""){
     const history=recent.slice(-16).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}));
     const memories=STATE.settings.memoryEnabled?STATE.memory.filter(m=>m.profile===STATE.settings.activeProfile).slice(-20).map(m=>m.text):[];
     const machine=getSelectedMachine();
-    return {history, memories, profile:STATE.settings.activeProfile, assistant:STATE.settings.assistantName, machine, location:hasFreshLocation()?{available:true}:null, tools:["google_search","youtube","google","maps","weather","laser","images","image_edit","calculator","files","projects","radio","whatsapp","gmail"]};
+    const vault=STATE.settings.memoryEnabled?listarBoveda(12).map(v=>({type:v.type,text:v.text.slice(0,1200),tags:v.tags||[]})):[];
+    const tasks=tareasPendientes().slice(0,12).map(t=>({text:t.text,dueAt:t.dueAt||null}));
+    return {history, memories, vault, tasks, profile:STATE.settings.activeProfile, assistant:STATE.settings.assistantName, machine, location:hasFreshLocation()?{available:true}:null, tools:["google_search","youtube","google","maps","weather","laser","images","image_edit","calculator","files","projects","radio","whatsapp","gmail","vault","agenda","daily_plan","daily_report"]};
 }
 
 
@@ -1378,6 +1568,9 @@ REGLAS DE RESPUESTA:
 10. ÁNGELA SÍ puede editar fotos localmente dentro de esta página. Si el usuario pregunta si podés editar, mejorar o preparar una foto, respondé que sí y explicá brevemente las funciones disponibles. Si hay una imagen activa y pide mejorarla, prepararla para láser/sublimación, quitar fondo, cambiar contraste, nitidez, tamaño, Jarvis, Stucki o blanco y negro, priorizá las herramientas locales de edición de ÁNGELA. No recomiendes Remini, Upscale.media, Let's Enhance ni otra web cuando la acción pedida puede hacerse dentro de ÁNGELA. Si una mejora requiere un modelo generativo que esta versión local no tiene, explicá la limitación en una sola frase y ofrecé la mejor edición local disponible.
 11. Podés traducir entre español, inglés, portugués, francés, italiano y alemán. Si el usuario pide “traducí”, “traducime”, “cómo se dice”, “decilo en...” o “leelo en...”, hacé la traducción directamente, sin mandarlo a otra herramienta. Si pide solo la traducción, mostrala primero y evitá explicaciones innecesarias.
 12. Para ayudar a la voz del navegador: cuando una respuesta en español incluya un nombre, título, canción o frase que deba pronunciarse claramente en otro idioma, envolvé SOLO ese fragmento con una marca de idioma. Ejemplos: [[lang:en-US]]Guns N’ Roses[[/lang]], [[lang:en-US]]Sweet Child o’ Mine[[/lang]], [[lang:fr-FR]]Édith Piaf[[/lang]]. Estas marcas son internas: no las expliques. Si toda la respuesta está en un idioma distinto del español, podés envolver todo el texto con la marca correspondiente.
+13. ÁNGELA tiene habilidades locales en esta página: memoria, bóveda Markdown, agenda/tareas, resumen matutino, plan de hoy, métricas, cierre del día, edición de imágenes, voz, láser y taller. Si el contexto indica que una de estas funciones existe, no digas que no podés hacerla.
+14. La bóveda y la agenda son locales del navegador. No afirmes que leíste Gmail, Google Calendar, Obsidian u otra cuenta externa si no existe una integración autenticada que realmente haya entregado esos datos.
+15. Cuando el usuario pida un plan, resumen o reporte, aprovechá primero memoria, bóveda, tareas, archivos adjuntos y contexto reciente; después usá web solamente si aporta actualidad.
 
 Información institucional SOLO cuando corresponda:
 Comedor Ángel Guardián / Asociación Civil para la Niñez de Merlo. Dirección: ${comedor.location || DEFAULT_SETTINGS.comedor.location}. Tel/Email: ${comedor.contact || DEFAULT_SETTINGS.comedor.contact}. Redes: ${comedor.social || DEFAULT_SETTINGS.comedor.social}. Alias Banco Provincia: ${comedor.alias || "NIEBLA.REMO.TAMBOR"}. Web: https://www.comedorangelguardian.com.ar/`;
@@ -2412,18 +2605,18 @@ function guardarConfigAsistente(){
     const name=$("inputNombreAsistente")?.value.trim().slice(0,40)||"Ángela";STATE.settings.assistantName=name;STATE.settings.memoryEnabled=!!$("memoriaToggle")?.checked;STATE.settings.theme=$("temaSelect")?.value||"futurista";const machine=$("maquinaPredeterminada")?.value;if(machine)STATE.settings.defaultMachineId=machine;saveSettings();applySettings();showToast("Configuración guardada.");
 }
 function applySettings(){
-    const name=STATE.settings.assistantName||"Ángela";setText("brandNombre",name.toUpperCase());setText("orbTextLabel",name.toUpperCase());if($("inputNombreAsistente"))$("inputNombreAsistente").value=name;if($("memoriaToggle"))$("memoriaToggle").checked=!!STATE.settings.memoryEnabled;if($("temaSelect"))$("temaSelect").value=STATE.settings.theme||"futurista";document.body.classList.toggle("high-contrast",STATE.settings.theme==="alto-contraste");renderProfiles();renderMachines();renderVoiceSettings();renderMemory();renderComedor();updateStatusPanel();}
+    const name=STATE.settings.assistantName||"Ángela";setText("brandNombre",name.toUpperCase());setText("orbTextLabel",name.toUpperCase());if($("inputNombreAsistente"))$("inputNombreAsistente").value=name;if($("memoriaToggle"))$("memoriaToggle").checked=!!STATE.settings.memoryEnabled;if($("temaSelect"))$("temaSelect").value=STATE.settings.theme||"futurista";document.body.classList.toggle("high-contrast",STATE.settings.theme==="alto-contraste");renderProfiles();renderMachines();renderVoiceSettings();renderMemory();renderBovedaResumen();renderComedor();updateStatusPanel();}
 
 /* ==========================================
    BACKUP / IMPORT / RESTORE
    ========================================== */
 async function exportarConfig(){
-    const projects=await dbProjectsAll();const data={format:"ANGELA_BACKUP",version:2,exportedAt:new Date().toISOString(),settings:STATE.settings,machines:STATE.machines,memory:STATE.settings.memoryEnabled?STATE.memory:[],conversations:STATE.settings.memoryEnabled?STATE.conversations:[],projects:projects.map(p=>({...p,image:p.image&&p.image.length<1_500_000?p.image:null})),stock:STATE.stock};
+    const projects=await dbProjectsAll();const data={format:"ANGELA_BACKUP",version:3,exportedAt:new Date().toISOString(),settings:STATE.settings,machines:STATE.machines,memory:STATE.settings.memoryEnabled?STATE.memory:[],conversations:STATE.settings.memoryEnabled?STATE.conversations:[],vault:STATE.vault,tasks:STATE.tasks,routineState:STATE.routineState,projects:projects.map(p=>({...p,image:p.image&&p.image.length<1_500_000?p.image:null})),stock:STATE.stock};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`angela_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);logActivity("Backup","Exportado");
 }
 function importarConfig(){ $("inputImportConfig")?.click(); }
 async function procesarImportConfig(file){
-    if(!file||file.size>10*1024*1024){showToast("Backup inválido o demasiado grande.");return;}try{const data=JSON.parse(await file.text());if(data.format!=="ANGELA_BACKUP"||!data.settings)throw new Error("Formato");if(!confirm("¿Querés importar esta configuración? Se reemplazarán los datos compatibles de ÁNGELA."))return;STATE.settings={...DEFAULT_SETTINGS,...data.settings};STATE.machines=Array.isArray(data.machines)&&data.machines.length?data.machines:DEFAULT_MACHINES;STATE.memory=Array.isArray(data.memory)?data.memory:[];STATE.conversations=Array.isArray(data.conversations)?data.conversations:[];STATE.stock=Array.isArray(data.stock)?data.stock:[];saveSettings();saveMachines();saveMemory();saveConversations();saveStock();if(Array.isArray(data.projects)){for(const p of data.projects){if(p&&p.id&&p.name)await dbProjectPut(p);}}applySettings();mostrarStock();mostrarProyectos();renderHistory();renderChatConversation();showToast("Configuración importada.");logActivity("Backup","Importado");}catch(error){console.error(error);showToast("El archivo no es un backup válido de ÁNGELA.");}
+    if(!file||file.size>10*1024*1024){showToast("Backup inválido o demasiado grande.");return;}try{const data=JSON.parse(await file.text());if(data.format!=="ANGELA_BACKUP"||!data.settings)throw new Error("Formato");if(!confirm("¿Querés importar esta configuración? Se reemplazarán los datos compatibles de ÁNGELA."))return;STATE.settings={...DEFAULT_SETTINGS,...data.settings};STATE.settings.dailyRoutineTimes={...DEFAULT_SETTINGS.dailyRoutineTimes,...(data.settings?.dailyRoutineTimes||{})};STATE.machines=Array.isArray(data.machines)&&data.machines.length?data.machines:DEFAULT_MACHINES;STATE.memory=Array.isArray(data.memory)?data.memory:[];STATE.conversations=Array.isArray(data.conversations)?data.conversations:[];STATE.vault=Array.isArray(data.vault)?data.vault:[];STATE.tasks=Array.isArray(data.tasks)?data.tasks:[];STATE.routineState=data.routineState&&typeof data.routineState==="object"?data.routineState:{};STATE.stock=Array.isArray(data.stock)?data.stock:[];saveSettings();saveMachines();saveMemory();saveConversations();saveVault();saveTasks();saveRoutineState();saveStock();if(Array.isArray(data.projects)){for(const p of data.projects){if(p&&p.id&&p.name)await dbProjectPut(p);}}applySettings();mostrarStock();mostrarProyectos();renderHistory();renderChatConversation();showToast("Configuración importada.");logActivity("Backup","Importado");}catch(error){console.error(error);showToast("El archivo no es un backup válido de ÁNGELA.");}
 }
 function restaurarConfig(){
     if(!confirm("¿Querés restaurar la configuración de ÁNGELA a valores predeterminados? No se borrarán datos ajenos del sitio."))return;
@@ -2582,7 +2775,7 @@ async function init(){
         actualizarReloj();setInterval(actualizarReloj,1000);STATE.db=await openDatabase();await migrateLegacyProjects();ensureConversation();bindEvents();applySettings();renderChatConversation();renderHistory();renderActivityLog();mostrarStock();await mostrarProyectos();
         if(hasFreshLocation()){setText("ubicacion","📍 Ubicación autorizada previamente");setClassStatus("estadoUbicacion","🟢 Autorizada","text-green-400");cargarClima({askLocation:false});}else{setText("ubicacion","📍 Ubicación no solicitada");setClassStatus("estadoUbicacion","🟡 Sin permiso","text-yellow-400");setText("clima","🌤️ Clima: requiere ubicación");}
         if("speechSynthesis" in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
-        initPWA();updateStatusPanel();checkBackendLight();
+        initPWA();updateStatusPanel();checkBackendLight();renderBovedaResumen();setInterval(()=>checkDailyRoutines().catch(()=>{}),30000);setTimeout(()=>checkDailyRoutines().catch(()=>{}),4500);
         logActivity("Sistema",`ÁNGELA ${CONFIG.version} iniciada`);
     }catch(error){console.error("Init error",error);enterSafeMode(error.message);updateStatusPanel();}
 }
