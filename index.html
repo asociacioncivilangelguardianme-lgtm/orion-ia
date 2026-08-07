@@ -182,6 +182,8 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button onclick="filtroImagen('lineart')" class="quick">✒️ Line art</button>
 <button onclick="filtroImagen('stencil')" class="quick">🧩 Stencil</button>
 <button onclick="filtroImagen('dither')" class="quick">▦ Dither</button>
+<button onclick="filtroImagen('jarvis')" class="quick">▦ Jarvis</button>
+<button onclick="filtroImagen('stucki')" class="quick">▦ Stucki</button>
 <button onclick="filtroImagen('sepia')" class="quick">🟤 Sepia</button>
 <button onclick="filtroImagen('invertir')" class="quick">🎨 Invertir</button>
 </div>
@@ -201,6 +203,23 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button onclick="restaurarImagen()" class="quick">♻ Restaurar</button>
 <button onclick="guardarImagen()" class="quick">💾 Guardar PNG</button>
 <button onclick="usarImagenConAngela()" class="quick col-span-2">🧠 Usar imagen con ÁNGELA</button>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-700">
+<div class="text-xs font-bold text-fuchsia-300 mb-2">✨ EDITAR CON ÁNGELA</div>
+<p class="text-[10px] text-slate-400 mb-2">También podés pedir estas acciones escribiendo o hablando: “Ángela, mejorá esta foto”, “preparala para una medalla de 50 mm”, “quitale el fondo”, “más nitidez” o “pasala a Jarvis”.</p>
+<div class="grid grid-cols-2 gap-2">
+<button onclick="mejorarImagenAutomatico()" class="quick text-xs">✨ Mejorar automático</button>
+<button onclick="prepararMedallaImagen(50)" class="quick text-xs">🪙 Medalla 50 mm</button>
+<button onclick="recortarRostroAutomatico()" class="quick text-xs">🧑 Rostro / centrar</button>
+<button onclick="aumentarNitidezImagen()" class="quick text-xs">🔍 Más nitidez</button>
+<button onclick="aumentarResolucionImagen(2)" class="quick text-xs">⬆️ Resolución 2×</button>
+<button onclick="filtroImagen('jarvis')" class="quick text-xs">▦ Jarvis</button>
+<button onclick="filtroImagen('stucki')" class="quick text-xs">▦ Stucki</button>
+<button onclick="generarVersionesLaserSublimacion()" class="quick text-xs">🔥 + 👕 Dos versiones</button>
+</div>
+<label class="text-xs mt-3 block" for="nitidezImagen">🔍 Nitidez</label>
+<input id="nitidezImagen" type="range" min="0" max="100" value="0" class="w-full" oninput="ajustarNitidezImagen(this.value)">
+<div id="versionesImagenIA" class="hidden mt-3 grid grid-cols-2 gap-2"></div>
 </div>
 <div class="mt-4 pt-3 border-t border-slate-700">
 <div class="text-xs font-bold text-cyan-300 mb-2">📐 Medidas reales</div>
@@ -488,7 +507,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "6.1.0-multimedia-drive-canva-mobile",
+    version: "6.2.0-image-chat-actions",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -618,7 +637,7 @@ const STATE = {
     logs: STORAGE.get("angela_activity_log", []) || [],
     db: null,
     safeMode: false,
-    image: {sourceCanvas:null, mode:"normal", brightness:100, contrast:100, rotation:0, mirror:false, widthMm:0, heightMm:0, lockRatio:true, ratio:1},
+    image: {sourceCanvas:null, originalCanvas:null, mode:"normal", brightness:100, contrast:100, sharpness:0, rotation:0, mirror:false, widthMm:0, heightMm:0, lockRatio:true, ratio:1, versions:null},
     fileContext:null,
     pdfPageImages:[],
     videoFrames:[],
@@ -1125,6 +1144,12 @@ async function procesarComando(textoForzado=null){
 }
 function localCommand(text){
     const p=normalizeAssistantPrefix(text);
+
+    // V6.2 · órdenes de edición de imagen desde chat o voz.
+    // Se ejecutan localmente en el navegador y no pasan a la IA como simple consejo.
+    const imageCmd=detectarComandoImagen(p);
+    if(imageCmd)return imageCmd;
+
     const math=p.replace(/^cuanto es\s+/i,"").replace(/^calcul[aá]\s+/i,"");
     if(/^[0-9.,+\-*/()%x×÷\s]+$/.test(math) && /[+\-*/%x×÷]/.test(math)) return {tool:"calculator",args:{expression:math}};
     const rememberMatch=p.match(/^(?:acordate|recorda|recordá|guarda|guardá)(?:\s+que)?\s+(.+)/i); if(rememberMatch)return{tool:"remember",args:{text:rememberMatch[1]}};
@@ -1147,7 +1172,8 @@ async function executeLocalCommand(cmd){
         calculator:()=>TOOLS.calculator.calculate(cmd.args), remember:()=>TOOLS.memory.remember(cmd.args), radio:()=>TOOLS.radio.open(),
         youtube_open:()=>TOOLS.youtube.open(), google_open:()=>TOOLS.google.open(), whatsapp:()=>TOOLS.whatsapp.open(), gmail:()=>TOOLS.gmail.open(),
         youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(),
-        desktop_app:()=>abrirAppDesktop(cmd.args?.app)
+        desktop_app:()=>abrirAppDesktop(cmd.args?.app),
+        image_edit:()=>ejecutarComandoImagen(cmd.args||{})
     };
     return map[cmd.tool]?await map[cmd.tool]():null;
 }
@@ -1205,7 +1231,7 @@ function buildAiContext(currentMessage=""){
     const history=recent.slice(-16).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}));
     const memories=STATE.settings.memoryEnabled?STATE.memory.filter(m=>m.profile===STATE.settings.activeProfile).slice(-20).map(m=>m.text):[];
     const machine=getSelectedMachine();
-    return {history, memories, profile:STATE.settings.activeProfile, assistant:STATE.settings.assistantName, machine, location:hasFreshLocation()?{available:true}:null, tools:["google_search","youtube","google","maps","weather","laser","images","calculator","files","projects","radio","whatsapp","gmail"]};
+    return {history, memories, profile:STATE.settings.activeProfile, assistant:STATE.settings.assistantName, machine, location:hasFreshLocation()?{available:true}:null, tools:["google_search","youtube","google","maps","weather","laser","images","image_edit","calculator","files","projects","radio","whatsapp","gmail"]};
 }
 
 
@@ -1314,6 +1340,7 @@ REGLAS DE RESPUESTA:
 7. Si hay un error ortográfico o de reconocimiento de voz evidente, inferí la intención por contexto sin burlarte ni detener la conversación.
 8. No inventes. Si realmente no se puede verificar un dato, decilo brevemente y explicá qué parte es incierta.
 9. Nunca escribas “Modo de rescate”, “mis servidores están saturados”, “buscá en Wikipedia”, “leer más en Wikipedia” ni mensajes técnicos similares dentro de la respuesta normal.
+10. Si hay una imagen activa y el usuario pide mejorarla, prepararla para láser/sublimación, quitar fondo, cambiar contraste, nitidez, tamaño, Jarvis, Stucki o blanco y negro, priorizá las herramientas locales de edición de ÁNGELA. No recomiendes Remini, Upscale.media, Let's Enhance ni otra web cuando la acción pedida puede hacerse dentro de ÁNGELA. Si una mejora requiere un modelo generativo que esta versión local no tiene, explicá la limitación en una sola frase y ofrecé la mejor edición local disponible.
 
 Información institucional SOLO cuando corresponda:
 Comedor Ángel Guardián / Asociación Civil para la Niñez de Merlo. Dirección: ${comedor.location || DEFAULT_SETTINGS.comedor.location}. Tel/Email: ${comedor.contact || DEFAULT_SETTINGS.comedor.contact}. Redes: ${comedor.social || DEFAULT_SETTINGS.comedor.social}. Alias Banco Provincia: ${comedor.alias || "NIEBLA.REMO.TAMBOR"}. Web: https://www.comedorangelguardian.com.ar/`;
@@ -1970,32 +1997,173 @@ async function cargarImagenArchivo(file){
             const url=URL.createObjectURL(file);source=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("Formato de imagen no compatible"));img.src=url;});cleanup=()=>URL.revokeObjectURL(url);
         }
         const sw=source.width||source.naturalWidth,sh=source.height||source.naturalHeight,max=1600,scale=Math.min(1,max/Math.max(sw,sh));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));c.getContext("2d").drawImage(source,0,0,c.width,c.height);cleanup();
-        STATE.image.sourceCanvas=c;STATE.image.ratio=c.width/c.height;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.widthMm=100;STATE.image.heightMm=Number((100/STATE.image.ratio).toFixed(1));syncImageControls();renderImage();STATE.fileContext={kind:"image",name:file.name,text:"Imagen cargada en el editor de ÁNGELA."};STATE.pdfPageImages=[];STATE.videoFrames=[];renderContextoArchivo();logActivity("Imagen",`Cargada ${file.name}`);
+        STATE.image.sourceCanvas=c;STATE.image.originalCanvas=clonarCanvas(c);STATE.image.ratio=c.width/c.height;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.sharpness=0;STATE.image.widthMm=100;STATE.image.heightMm=Number((100/STATE.image.ratio).toFixed(1));STATE.image.versions=null;syncImageControls();renderImage();STATE.fileContext={kind:"image",name:file.name,text:"Imagen cargada en el editor de ÁNGELA."};STATE.pdfPageImages=[];STATE.videoFrames=[];renderContextoArchivo();logActivity("Imagen",`Cargada ${file.name}`);
     }catch(error){console.error(error);showToast("No pude abrir esa imagen en este navegador.");}
 }
-function syncImageControls(){if($("brillo"))$("brillo").value=STATE.image.brightness;if($("contraste"))$("contraste").value=STATE.image.contrast;if($("anchoMm"))$("anchoMm").value=STATE.image.widthMm||"";if($("altoMm"))$("altoMm").value=STATE.image.heightMm||"";if($("bloquearProporcion"))$("bloquearProporcion").checked=STATE.image.lockRatio;}
+function syncImageControls(){if($("brillo"))$("brillo").value=STATE.image.brightness;if($("contraste"))$("contraste").value=STATE.image.contrast;if($("nitidezImagen"))$("nitidezImagen").value=Math.round((STATE.image.sharpness||0)*100);if($("anchoMm"))$("anchoMm").value=STATE.image.widthMm||"";if($("altoMm"))$("altoMm").value=STATE.image.heightMm||"";if($("bloquearProporcion"))$("bloquearProporcion").checked=STATE.image.lockRatio;}
 function imageTransformCanvas(){
     const src=STATE.image.sourceCanvas;if(!src)return null;const rot=((STATE.image.rotation%360)+360)%360;const swap=rot===90||rot===270;const out=document.createElement("canvas");out.width=swap?src.height:src.width;out.height=swap?src.width:src.height;const ctx=out.getContext("2d",{willReadFrequently:true});ctx.save();ctx.translate(out.width/2,out.height/2);ctx.rotate(rot*Math.PI/180);ctx.scale(STATE.image.mirror?-1:1,1);ctx.drawImage(src,-src.width/2,-src.height/2);ctx.restore();return out;
 }
+function clonarCanvas(src){
+    if(!src)return null;
+    const c=document.createElement("canvas");c.width=src.width;c.height=src.height;
+    c.getContext("2d").drawImage(src,0,0);return c;
+}
+
+function difusionError(canvas,tipo="floyd"){
+    const ctx=canvas.getContext("2d",{willReadFrequently:true});
+    const img=ctx.getImageData(0,0,canvas.width,canvas.height),d=img.data,w=canvas.width,h=canvas.height;
+    const bright=STATE.image.brightness/100,contrast=(STATE.image.contrast-100)*2.55,cf=(259*(contrast+255))/(255*(259-contrast));
+    const gray=new Float32Array(w*h);
+    for(let i=0,p=0;i<d.length;i+=4,p++){
+        let g=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)*bright;
+        gray[p]=clamp(cf*(g-128)+128,0,255);
+    }
+    let kernel,den;
+    if(tipo==="jarvis"){
+        den=48;kernel=[[1,0,7],[2,0,5],[-2,1,3],[-1,1,5],[0,1,7],[1,1,5],[2,1,3],[-2,2,1],[-1,2,3],[0,2,5],[1,2,3],[2,2,1]];
+    }else if(tipo==="stucki"){
+        den=42;kernel=[[1,0,8],[2,0,4],[-2,1,2],[-1,1,4],[0,1,8],[1,1,4],[2,1,2],[-2,2,1],[-1,2,2],[0,2,4],[1,2,2],[2,2,1]];
+    }else{
+        den=16;kernel=[[1,0,7],[-1,1,3],[0,1,5],[1,1,1]];
+    }
+    for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+            const p=y*w+x,old=gray[p],nv=old<128?0:255,err=old-nv;gray[p]=nv;
+            for(const [dx,dy,k] of kernel){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<w&&yy<h)gray[yy*w+xx]+=err*k/den;}
+        }
+    }
+    for(let p=0,i=0;p<gray.length;p++,i+=4){const v=gray[p]<128?0:255;d[i]=d[i+1]=d[i+2]=v;}
+    ctx.putImageData(img,0,0);
+}
+
+function aplicarNitidezCanvas(canvas,amount=0){
+    amount=clamp(Number(amount)||0,0,1);if(amount<=0.01||canvas.width<3||canvas.height<3)return;
+    const ctx=canvas.getContext("2d",{willReadFrequently:true}),src=ctx.getImageData(0,0,canvas.width,canvas.height),out=ctx.createImageData(canvas.width,canvas.height);
+    const s=src.data,d=out.data,w=canvas.width,h=canvas.height,a=amount*1.15;
+    const center=1+4*a,side=-a;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+        const i=(y*w+x)*4;
+        if(x===0||y===0||x===w-1||y===h-1){d[i]=s[i];d[i+1]=s[i+1];d[i+2]=s[i+2];d[i+3]=s[i+3];continue;}
+        const l=i-4,r=i+4,u=i-w*4,down=i+w*4;
+        for(let c=0;c<3;c++)d[i+c]=clamp(center*s[i+c]+side*(s[l+c]+s[r+c]+s[u+c]+s[down+c]),0,255);
+        d[i+3]=s[i+3];
+    }
+    ctx.putImageData(out,0,0);
+}
+
 function applyPixelFilter(canvas){
-    const ctx=canvas.getContext("2d",{willReadFrequently:true});const img=ctx.getImageData(0,0,canvas.width,canvas.height);const d=img.data;const brightness=STATE.image.brightness/100;const contrast=(STATE.image.contrast-100)*2.55;const cf=(259*(contrast+255))/(255*(259-contrast));const mode=STATE.image.mode;
-    if(mode==="dither"){for(let y=0;y<canvas.height;y++){for(let x=0;x<canvas.width;x++){const idx=(y*canvas.width+x)*4;let gray=(d[idx]*.299+d[idx+1]*.587+d[idx+2]*.114)*brightness;gray=clamp(cf*(gray-128)+128,0,255);const nv=gray<128?0:255;const err=gray-nv;d[idx]=d[idx+1]=d[idx+2]=nv;const spread=(dx,dy,f)=>{const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=canvas.width||yy>=canvas.height)return;const j=(yy*canvas.width+xx)*4;for(let k=0;k<3;k++)d[j+k]=clamp(d[j+k]+err*f,0,255);};spread(1,0,7/16);spread(-1,1,3/16);spread(0,1,5/16);spread(1,1,1/16);}}ctx.putImageData(img,0,0);return;}
+    const mode=STATE.image.mode;
+    if(mode==="dither"||mode==="jarvis"||mode==="stucki"){difusionError(canvas,mode);return;}
+    const ctx=canvas.getContext("2d",{willReadFrequently:true});const img=ctx.getImageData(0,0,canvas.width,canvas.height);const d=img.data;const brightness=STATE.image.brightness/100;const contrast=(STATE.image.contrast-100)*2.55;const cf=(259*(contrast+255))/(255*(259-contrast));
     for(let i=0;i<d.length;i+=4){let r=d[i]*brightness,g=d[i+1]*brightness,b=d[i+2]*brightness;r=clamp(cf*(r-128)+128,0,255);g=clamp(cf*(g-128)+128,0,255);b=clamp(cf*(b-128)+128,0,255);const gray=.299*r+.587*g+.114*b;
         if(mode==="grises"){r=g=b=gray;}else if(mode==="bn"){r=g=b=gray<128?0:255;}else if(mode==="invertir"){r=255-r;g=255-g;b=255-b;}else if(mode==="sepia"){const nr=.393*r+.769*g+.189*b,ng=.349*r+.686*g+.168*b,nb=.272*r+.534*g+.131*b;r=clamp(nr,0,255);g=clamp(ng,0,255);b=clamp(nb,0,255);}else if(mode==="lineart"){const v=gray<170?0:255;r=g=b=v;}else if(mode==="stencil"){const v=gray<145?0:255;r=g=b=v;if(v===255)d[i+3]=0;}else if(mode==="removebg"){if(gray>235&&Math.max(r,g,b)-Math.min(r,g,b)<20)d[i+3]=0;}
         d[i]=r;d[i+1]=g;d[i+2]=b;
     }ctx.putImageData(img,0,0);
 }
-function renderImage(){const target=$("canvasImagen");const out=imageTransformCanvas();if(!target||!out){if(target){target.width=1;target.height=1;}return;}applyPixelFilter(out);target.width=out.width;target.height=out.height;target.getContext("2d").drawImage(out,0,0);}
-function filtroImagen(mode){STATE.image.mode=mode;renderImage();}
+
+function canvasImagenProcesada(){
+    const out=imageTransformCanvas();if(!out)return null;
+    aplicarNitidezCanvas(out,STATE.image.sharpness||0);applyPixelFilter(out);return out;
+}
+function renderImage(){const target=$("canvasImagen"),out=canvasImagenProcesada();if(!target||!out){if(target){target.width=1;target.height=1;}return;}target.width=out.width;target.height=out.height;target.getContext("2d").drawImage(out,0,0);}
+function filtroImagen(mode){if(!STATE.image.sourceCanvas){showToast("Primero cargá una imagen.");return;}STATE.image.mode=mode;renderImage();}
 function rotarImagen(){if(!STATE.image.sourceCanvas)return;STATE.image.rotation=(STATE.image.rotation+90)%360;STATE.image.ratio=1/STATE.image.ratio;if(STATE.image.lockRatio&&STATE.image.widthMm){STATE.image.heightMm=Number((STATE.image.widthMm/STATE.image.ratio).toFixed(1));syncImageControls();}renderImage();}
 function espejoImagen(){if(!STATE.image.sourceCanvas)return;STATE.image.mirror=!STATE.image.mirror;renderImage();}
-function restaurarImagen(){if(!STATE.image.sourceCanvas)return;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.rotation=0;STATE.image.mirror=false;syncImageControls();renderImage();}
+function restaurarImagen(){if(!STATE.image.sourceCanvas)return;if(STATE.image.originalCanvas)STATE.image.sourceCanvas=clonarCanvas(STATE.image.originalCanvas);STATE.image.ratio=STATE.image.sourceCanvas.width/STATE.image.sourceCanvas.height;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.sharpness=0;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.versions=null;syncImageControls();renderImage();renderVersionesImagenIA();}
 function recortarImagen(){
     const src=STATE.image.sourceCanvas;if(!src)return;const pct=Number(prompt("Porcentaje a recortar de cada borde (1 a 40):","5"));if(!Number.isFinite(pct)||pct<1||pct>40)return;const dx=Math.round(src.width*pct/100),dy=Math.round(src.height*pct/100),w=src.width-2*dx,h=src.height-2*dy;if(w<20||h<20)return;const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(src,dx,dy,w,h,0,0,w,h);STATE.image.sourceCanvas=c;STATE.image.ratio=w/h;if(STATE.image.lockRatio&&STATE.image.widthMm)STATE.image.heightMm=Number((STATE.image.widthMm/STATE.image.ratio).toFixed(1));syncImageControls();renderImage();
 }
-function quitarFondoImagen(){STATE.image.mode="removebg";renderImage();showToast("Se quitó localmente el fondo casi blanco. Revisá el resultado antes de guardar.");}
-function prepararLaserImagen(){STATE.image.mode="dither";STATE.image.brightness=100;STATE.image.contrast=125;syncImageControls();renderImage();}
-function prepararSublimacionImagen(){STATE.image.mode="normal";STATE.image.mirror=true;STATE.image.brightness=100;STATE.image.contrast=105;syncImageControls();renderImage();}
+function quitarFondoImagen(){if(!STATE.image.sourceCanvas){showToast("Primero cargá una imagen.");return;}STATE.image.mode="removebg";renderImage();showToast("Se quitó localmente el fondo casi blanco. Revisá el resultado antes de guardar.");}
+function prepararLaserImagen(){if(!STATE.image.sourceCanvas){showToast("Primero cargá una imagen.");return;}STATE.image.mode="jarvis";STATE.image.brightness=100;STATE.image.contrast=125;STATE.image.sharpness=Math.max(STATE.image.sharpness||0,.35);syncImageControls();renderImage();}
+function prepararSublimacionImagen(){if(!STATE.image.sourceCanvas){showToast("Primero cargá una imagen.");return;}STATE.image.mode="normal";STATE.image.mirror=true;STATE.image.brightness=100;STATE.image.contrast=105;STATE.image.sharpness=Math.max(STATE.image.sharpness||0,.2);syncImageControls();renderImage();}
+function ajustarNitidezImagen(value){STATE.image.sharpness=clamp(Number(value||0)/100,0,1);renderImage();}
+function aumentarNitidezImagen(){if(!STATE.image.sourceCanvas){showToast("Primero cargá una imagen.");return;}STATE.image.sharpness=clamp((STATE.image.sharpness||0)+.25,0,1);syncImageControls();renderImage();showToast("Nitidez aumentada sin modificar el archivo original.");}
+function mejorarImagenAutomatico(){
+    if(!STATE.image.sourceCanvas){abrirMenu("imagenes");showToast("Primero cargá una foto con + → Fotos o desde Imágenes.");return false;}
+    STATE.image.mode="normal";STATE.image.brightness=103;STATE.image.contrast=116;STATE.image.sharpness=.55;syncImageControls();renderImage();showToast("✨ Mejora automática aplicada. Podés seguir ajustando o guardar PNG.");return true;
+}
+function aumentarResolucionImagen(factor=2){
+    const src=STATE.image.sourceCanvas;if(!src){showToast("Primero cargá una imagen.");return false;}factor=clamp(Number(factor)||2,1.25,3);const maxSide=3600,scale=Math.min(factor,maxSide/Math.max(src.width,src.height));if(scale<=1.02){showToast("La imagen ya está cerca del máximo local de resolución.");return false;}
+    const c=document.createElement("canvas");c.width=Math.round(src.width*scale);c.height=Math.round(src.height*scale);const ctx=c.getContext("2d");ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.drawImage(src,0,0,c.width,c.height);STATE.image.sourceCanvas=c;STATE.image.ratio=c.width/c.height;STATE.image.sharpness=Math.max(STATE.image.sharpness||0,.3);syncImageControls();renderImage();showToast(`Resolución aumentada ${scale.toFixed(1)}× con reescalado local.`);return true;
+}
+function recortarCanvasRect(src,x,y,w,h){const c=document.createElement("canvas");c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));c.getContext("2d").drawImage(src,x,y,w,h,0,0,c.width,c.height);return c;}
+function recortarCuadradoCentro(margen=.92){
+    const src=STATE.image.sourceCanvas;if(!src)return false;const side=Math.min(src.width,src.height)*clamp(margen,.5,1);const x=(src.width-side)/2,y=(src.height-side)/2;STATE.image.sourceCanvas=recortarCanvasRect(src,x,y,side,side);STATE.image.ratio=1;return true;
+}
+async function recortarRostroAutomatico(notify=true){
+    const src=STATE.image.sourceCanvas;if(!src){showToast("Primero cargá una imagen.");return false;}
+    try{
+        if("FaceDetector" in window){const detector=new FaceDetector({fastMode:true,maxDetectedFaces:1});const faces=await detector.detect(src);const box=faces?.[0]?.boundingBox;if(box){const pad=Math.max(box.width,box.height)*.65;let x=Math.max(0,box.x-pad),y=Math.max(0,box.y-pad*.85),w=Math.min(src.width-x,box.width+pad*2),h=Math.min(src.height-y,box.height+pad*2);const side=Math.min(Math.max(w,h),src.width,src.height);x=clamp(box.x+box.width/2-side/2,0,src.width-side);y=clamp(box.y+box.height/2-side/2,0,src.height-side);STATE.image.sourceCanvas=recortarCanvasRect(src,x,y,side,side);STATE.image.ratio=1;syncImageControls();renderImage();if(notify)showToast("Rostro detectado y centrado.");return true;}}
+    }catch(error){console.warn("FaceDetector",error);}
+    recortarCuadradoCentro(.82);syncImageControls();renderImage();if(notify)showToast("Centré el recorte. Este navegador no ofrece detección de rostro, así que revisá el encuadre.");return true;
+}
+async function prepararMedallaImagen(mm=50){
+    if(!STATE.image.sourceCanvas){abrirMenu("imagenes");showToast("Primero cargá la foto que querés preparar para la medalla.");return false;}
+    mm=clamp(Number(mm)||50,10,200);await recortarRostroAutomatico(false);STATE.image.mode="jarvis";STATE.image.brightness=102;STATE.image.contrast=128;STATE.image.sharpness=.55;STATE.image.widthMm=mm;STATE.image.heightMm=mm;STATE.image.lockRatio=true;if($("imagenDpi"))$("imagenDpi").value="300";syncImageControls();renderImage();showToast(`🪙 Imagen preparada para medalla de ${mm} mm. Revisá la vista previa antes de guardar.`);return true;
+}
+function crearCanvasPreset(preset={}){
+    const saved={mode:STATE.image.mode,brightness:STATE.image.brightness,contrast:STATE.image.contrast,sharpness:STATE.image.sharpness,mirror:STATE.image.mirror};
+    Object.assign(STATE.image,preset);const c=canvasImagenProcesada();Object.assign(STATE.image,saved);return c;
+}
+function descargarCanvas(canvas,nombre){if(!canvas)return;canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=nombre;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);},"image/png");}
+function renderVersionesImagenIA(){
+    const box=$("versionesImagenIA");if(!box)return;box.replaceChildren();const v=STATE.image.versions;if(!v){box.classList.add("hidden");return;}box.classList.remove("hidden");
+    for(const item of v){const card=document.createElement("div");card.className="card-mini text-[10px]";const title=document.createElement("div");title.className="font-bold text-cyan-200 mb-1";title.textContent=item.label;const img=document.createElement("img");img.src=item.url;img.alt=item.label;img.className="w-full rounded-lg bg-white mb-2";const btn=document.createElement("button");btn.className="quick w-full text-xs";btn.textContent="💾 Guardar";btn.onclick=()=>descargarCanvas(item.canvas,item.file);card.append(title,img,btn);box.appendChild(card);}
+}
+function generarVersionesLaserSublimacion(){
+    if(!STATE.image.sourceCanvas){showToast("Primero cargá una imagen.");return false;}
+    const laser=crearCanvasPreset({mode:"jarvis",brightness:100,contrast:125,sharpness:.45,mirror:false});
+    const sub=crearCanvasPreset({mode:"normal",brightness:100,contrast:105,sharpness:.2,mirror:true});
+    STATE.image.versions=[{label:"🔥 Láser · Jarvis",canvas:laser,url:laser.toDataURL("image/png"),file:"angela_version_laser.png"},{label:"👕 Sublimación · espejo",canvas:sub,url:sub.toDataURL("image/png"),file:"angela_version_sublimacion.png"}];renderVersionesImagenIA();showToast("Generé dos versiones. Podés revisar y guardar cada una.");return true;
+}
+function imagenActiva(){return !!(STATE.image.sourceCanvas&&STATE.image.sourceCanvas.width>1);}
+function detectarComandoImagen(p){
+    const q=normalizarTexto(p);const mencionaImagen=/\b(foto|imagen|retrato|medalla|fondo|nitidez|resolucion|contraste|jarvis|stucki|dither|blanco y negro|laser|sublimacion)\b/.test(q);if(!mencionaImagen&&!imagenActiva())return null;
+    const mmMatch=q.match(/(\d+(?:[.,]\d+)?)\s*(?:mm|milimetros?)/);const mm=mmMatch?Number(mmMatch[1].replace(",",".")):50;
+    if(/\b(medalla|grabar.*medalla|medalla.*grabar)\b/.test(q)&&/(prepara|preparar|mejora|mejorar|hace|hacer|quiero|para|grabar)/.test(q))return{tool:"image_edit",args:{action:"medal",mm}};
+    if(/\b(version|versiones).*\blaser\b.*\b(sublimacion|sublimar)\b|\blaser\b.*\b(y|otra).*\bsublimacion\b/.test(q))return{tool:"image_edit",args:{action:"dual"}};
+    if(/\b(quita|quitar|saca|sacar|borra|borrar|elimina|eliminar).*\bfondo\b/.test(q))return{tool:"image_edit",args:{action:"removebg"}};
+    if(/\b(mas nitid|nitidez|enfoca|enfocar|definicion|definición)\b/.test(q)&&/(mas|subi|subir|aumenta|aumentar|mejora|mejorar|dale|pone)/.test(q))return{tool:"image_edit",args:{action:"sharpen"}};
+    if(/\b(aumenta|aumentar|subi|subir|mejora|mejorar).*\b(resolucion|tamaño|tamano)\b|\b(resolucion)\s*2x\b/.test(q))return{tool:"image_edit",args:{action:"upscale",factor:2}};
+    if(/\b(recorta|recortar|centra|centrar).*\b(cara|rostro|persona)\b|\bsolo (la )?(cara|rostro)\b/.test(q))return{tool:"image_edit",args:{action:"face"}};
+    if(/\b(jarvis)\b/.test(q)&&/(pasa|pasar|pone|poner|aplica|aplicar|hace|hacer|modo)/.test(q))return{tool:"image_edit",args:{action:"filter",mode:"jarvis"}};
+    if(/\b(stucki)\b/.test(q)&&/(pasa|pasar|pone|poner|aplica|aplicar|hace|hacer|modo)/.test(q))return{tool:"image_edit",args:{action:"filter",mode:"stucki"}};
+    if(/\b(dither)\b/.test(q)&&/(pasa|pasar|pone|poner|aplica|aplicar|hace|hacer|modo)/.test(q))return{tool:"image_edit",args:{action:"filter",mode:"dither"}};
+    if(/\b(blanco y negro|b\/n)\b/.test(q)&&/(pasa|pasar|pone|poner|hace|hacer|converti|convertir)/.test(q))return{tool:"image_edit",args:{action:"filter",mode:"bn"}};
+    if(/\b(grises|escala de grises)\b/.test(q)&&/(pasa|pasar|pone|poner|hace|hacer|converti|convertir)/.test(q))return{tool:"image_edit",args:{action:"filter",mode:"grises"}};
+    if(/\b(line art|lineart|lineas|contornos)\b/.test(q)&&/(pasa|pasar|pone|poner|hace|hacer|resalta|resaltar)/.test(q))return{tool:"image_edit",args:{action:"filter",mode:"lineart"}};
+    if(/\b(stencil)\b/.test(q)&&/(pasa|pasar|pone|poner|hace|hacer)/.test(q))return{tool:"image_edit",args:{action:"filter",mode:"stencil"}};
+    if(/\b(gira|girar|rota|rotar)\b/.test(q))return{tool:"image_edit",args:{action:"rotate"}};
+    if(/\b(espejo|espejar|inverti horizontal|invertir horizontal)\b/.test(q))return{tool:"image_edit",args:{action:"mirror"}};
+    if(/\b(prepara|preparar|optimiza|optimizar).*\b(laser|grabado)\b/.test(q))return{tool:"image_edit",args:{action:"laser"}};
+    if(/\b(prepara|preparar|optimiza|optimizar).*\b(sublimacion|sublimar)\b/.test(q))return{tool:"image_edit",args:{action:"sublimation"}};
+    if(/\b(aumenta|aumentar|subi|subir|mas).*\bcontraste\b/.test(q))return{tool:"image_edit",args:{action:"contrast"}};
+    if(/\b(guarda|guardar|descarga|descargar).*\b(foto|imagen|png)\b/.test(q))return{tool:"image_edit",args:{action:"save"}};
+    if(/\b(mejora|mejorar|mejorame|mejorala|arregla|arreglar|optimiza|optimizar|limpia|limpiar)\b/.test(q)&&/\b(foto|imagen|retrato)\b/.test(q))return{tool:"image_edit",args:{action:"auto"}};
+    return null;
+}
+async function ejecutarComandoImagen(args={}){
+    const action=args.action||"";
+    if(!imagenActiva()){abrirMenu("imagenes");return{ok:false,message:"Primero cargá una foto con ＋ → Fotos o desde Imágenes. Después pedime la edición y la hago acá mismo."};}
+    switch(action){
+        case "auto":mejorarImagenAutomatico();return{ok:true,message:"Listo. Mejoré brillo, contraste y nitidez de la foto. Revisá la vista previa y, si te gusta, guardala como PNG."};
+        case "medal":await prepararMedallaImagen(args.mm||50);return{ok:true,message:`Listo. Preparé la foto para una medalla de ${args.mm||50} mm: recorte centrado, nitidez, contraste y tramado Jarvis para láser.`};
+        case "removebg":quitarFondoImagen();return{ok:true,message:"Listo. Quité el fondo casi blanco de la imagen. Revisá los bordes en la vista previa."};
+        case "sharpen":aumentarNitidezImagen();return{ok:true,message:"Listo. Aumenté la nitidez de la foto."};
+        case "upscale":aumentarResolucionImagen(args.factor||2);return{ok:true,message:"Listo. Aumenté la resolución 2× con reescalado local y un toque de nitidez. Esto mejora la preparación, aunque no inventa detalle que no exista en la foto original."};
+        case "face":await recortarRostroAutomatico();return{ok:true,message:"Listo. Centré el rostro para trabajar mejor la imagen."};
+        case "filter":filtroImagen(args.mode||"normal");return{ok:true,message:`Listo. Apliqué el modo ${String(args.mode||"normal").toUpperCase()}.`};
+        case "rotate":rotarImagen();return{ok:true,message:"Listo. Roté la imagen 90 grados."};
+        case "mirror":espejoImagen();return{ok:true,message:"Listo. Apliqué espejo horizontal."};
+        case "laser":prepararLaserImagen();return{ok:true,message:"Listo. Preparé la imagen para láser con contraste, nitidez y tramado Jarvis."};
+        case "sublimation":prepararSublimacionImagen();return{ok:true,message:"Listo. Preparé la imagen para sublimación y la dejé espejada."};
+        case "contrast":STATE.image.contrast=clamp((STATE.image.contrast||100)+15,50,220);syncImageControls();renderImage();return{ok:true,message:"Listo. Aumenté el contraste de la imagen."};
+        case "dual":generarVersionesLaserSublimacion();return{ok:true,message:"Listo. Generé una versión para láser y otra para sublimación; las tenés debajo del editor para revisar y guardar."};
+        case "save":guardarImagen();return{ok:true,message:"Listo. Preparé la descarga PNG de la imagen actual."};
+        default:return{ok:false,message:"Tengo la imagen cargada. Pedime, por ejemplo: mejorar, quitar fondo, más nitidez, medalla 50 mm, Jarvis, Stucki, láser o sublimación."};
+    }
+}
 function ajustarMedidas(origen){
     const w=parseFloat($("anchoMm")?.value),h=parseFloat($("altoMm")?.value);STATE.image.lockRatio=!!$("bloquearProporcion")?.checked;if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0)return;
     if(STATE.image.lockRatio&&STATE.image.ratio){if(origen==="w"){STATE.image.widthMm=w;STATE.image.heightMm=Number((w/STATE.image.ratio).toFixed(2));$("altoMm").value=STATE.image.heightMm;}else{STATE.image.heightMm=h;STATE.image.widthMm=Number((h*STATE.image.ratio).toFixed(2));$("anchoMm").value=STATE.image.widthMm;}}else{STATE.image.widthMm=w;STATE.image.heightMm=h;}
