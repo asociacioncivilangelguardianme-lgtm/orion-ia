@@ -543,7 +543,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "6.4.0-skills-vault-routines",
+    version: "6.4.1-voice-intent-fix",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -1323,7 +1323,12 @@ async function procesarComando(textoForzado=null){
     await procesarEntrada(texto);
 }
 function localCommand(text){
-    const p=normalizeAssistantPrefix(text);
+    const corrected=corregirDictadoPorContexto(text);
+    const p=normalizeAssistantPrefix(corrected);
+
+    // V6.4.1 · evita confundir “prompt + imagen” con agenda/recordatorios.
+    const promptImagen=detectarConsultaPromptImagen(corrected);
+    if(promptImagen)return promptImagen;
 
     // V6.2 · órdenes de edición de imagen desde chat o voz.
     // Se ejecutan localmente en el navegador y no pasan a la IA como simple consejo.
@@ -1331,7 +1336,7 @@ function localCommand(text){
     if(imageCmd)return imageCmd;
 
     // V6.4 · habilidades modulares, bóveda, agenda y ciclo diario.
-    const raw=textoSinNombreAsistente(text);
+    const raw=textoSinNombreAsistente(corrected);
     if(/^(que|qué) (podes|podés|puedes) hacer|^(habilidades|skills|comandos disponibles|que sabes hacer|qué sabés hacer)$/.test(p))return{tool:"skills_help",args:{}};
     let vm=raw.match(/^(?:guard[aá]|anot[aá]|archiv[aá])(?:\s+esto)?\s+(?:en\s+)?(?:la\s+)?b[oó]veda(?:\s+(?:como|en)\s+(raw|wiki|output))?(?:\s*[:,-])?\s+(.+)/i);
     if(vm)return{tool:"vault_add",args:{type:(vm[1]||"raw").toLowerCase(),text:vm[2]}};
@@ -1378,6 +1383,7 @@ async function executeLocalCommand(cmd){
         youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(),
         desktop_app:()=>abrirAppDesktop(cmd.args?.app),
         image_edit:()=>ejecutarComandoImagen(cmd.args||{}),
+        image_prompt_help:()=>({ok:true,message:"Sí, entendí que hablás de un PROMPT para una imagen, no de agendar algo. Podés pasarme el prompt y puedo ayudarte a corregirlo, mejorarlo y dejarlo listo. En esta versión puedo editar y preparar fotos que cargues dentro de ÁNGELA; para crear una imagen totalmente nueva desde cero a partir de texto todavía hace falta conectar un generador de imágenes al backend."}),
         language_help:()=>({ok:true,message:"Sí. Puedo traducir y leer en español, inglés, portugués, francés, italiano y alemán. Decime, por ejemplo: ‘traducí al inglés: buen día’ o ‘¿cómo se dice gracias en francés?’. En modo de lectura Automático intento usar la voz correcta para cada idioma."}),
         skills_help:()=>skillHelp(),
         vault_add:()=>agregarBoveda(cmd.args?.text,cmd.args?.type||"raw","usuario"),
@@ -1431,7 +1437,7 @@ function respuestaLocalComedor(texto){
 }
 
 async function procesarEntrada(texto){
-    const clean=String(texto||"").trim(); if(!clean)return;
+    const clean=corregirDictadoPorContexto(String(texto||"").trim()); if(!clean)return;
 
     // Datos públicos básicos del Comedor: respuesta local y estable incluso si Gemini está ocupado.
     const comedor=respuestaLocalComedor(clean);
@@ -1563,6 +1569,8 @@ REGLAS DE RESPUESTA:
 5. Si usás fuentes, la respuesta debe ser completa por sí sola. Las fuentes son respaldo, no sustituto de la respuesta.
 6. No devuelvas páginas de desambiguación, listas de posibles significados ni frases como “hace referencia a varios artículos” cuando el contexto permite identificar la intención.
 7. Si hay un error ortográfico o de reconocimiento de voz evidente, inferí la intención por contexto sin burlarte ni detener la conversación.
+7.b En contexto de imágenes/diseño, “pronto” puede significar “prompt” y “me amas la imagen” puede significar “me armás la imagen”. Si aparecen “prompt/pronto” + “imagen/foto/diseño”, interpretá primero una intención de creación o diseño, NO una agenda. Solo interpretá “agendar/agregar a agenda/recordatorio” cuando el usuario mencione explícitamente hora, fecha, tarea, agenda o recordatorio.
+7.c Si el usuario pregunta si puede darte un prompt para que armes una imagen, distinguí dos capacidades: ÁNGELA puede mejorar el prompt y editar/preparar una imagen cargada; la generación de una imagen NUEVA desde cero requiere un generador de imágenes conectado al backend. No afirmes que ya está conectado si no lo está.
 8. No inventes. Si realmente no se puede verificar un dato, decilo brevemente y explicá qué parte es incierta.
 9. Nunca escribas “Modo de rescate”, “mis servidores están saturados”, “buscá en Wikipedia”, “leer más en Wikipedia” ni mensajes técnicos similares dentro de la respuesta normal.
 10. ÁNGELA SÍ puede editar fotos localmente dentro de esta página. Si el usuario pregunta si podés editar, mejorar o preparar una foto, respondé que sí y explicá brevemente las funciones disponibles. Si hay una imagen activa y pide mejorarla, prepararla para láser/sublimación, quitar fondo, cambiar contraste, nitidez, tamaño, Jarvis, Stucki o blanco y negro, priorizá las herramientas locales de edición de ÁNGELA. No recomiendes Remini, Upscale.media, Let's Enhance ni otra web cuando la acción pedida puede hacerse dentro de ÁNGELA. Si una mejora requiere un modelo generativo que esta versión local no tiene, explicá la limitación en una sola frase y ofrecé la mejor edición local disponible.
@@ -1710,6 +1718,34 @@ function corregirConsultaGeneral(texto){
     ];
     for(const [re,val] of reglas)p=p.replace(re,val);
     return p.replace(/\s+/g," ").trim();
+}
+
+// V6.4.1 · Corrección contextual de errores típicos del dictado.
+// Es deliberadamente conservadora: solo corrige cuando aparecen palabras de imagen/diseño.
+function corregirDictadoPorContexto(texto){
+    let t=corregirConsultaGeneral(String(texto||"").trim());
+    const q=normalizarTexto(t);
+    const contextoImagen=/\b(imagen|imagenes|foto|fotos|dibujo|diseno|diseño|flyer|logo|medalla|retrato)\b/.test(q);
+    if(contextoImagen){
+        // El reconocimiento suele oír “prompt” como “pronto”.
+        t=t.replace(/\b(un|el|este|ese)\s+pronto\b/gi,(m,a)=>`${a} prompt`);
+        t=t.replace(/\bpronto\b/gi,"prompt");
+        // “vos me armás la imagen” puede llegar como “vos me amas la imagen”.
+        t=t.replace(/\bme\s+amas\s+(la|una)\s+(imagen|foto|dibujo|diseno|diseño)\b/gi,"me armás $1 $2");
+        t=t.replace(/\bvos\s+amas\s+(la|una)\s+(imagen|foto|dibujo|diseno|diseño)\b/gi,"vos armás $1 $2");
+        t=t.replace(/\bme\s+arma\s+(la|una)\s+(imagen|foto)\b/gi,"me armás $1 $2");
+    }
+    return t.replace(/\s+/g," ").trim();
+}
+
+function detectarConsultaPromptImagen(texto){
+    const corregido=corregirDictadoPorContexto(texto);
+    const q=normalizarTexto(corregido);
+    const tienePrompt=/\bprompt\b/.test(q);
+    const tieneImagen=/\b(imagen|imagenes|foto|fotos|dibujo|diseno|diseño|flyer|logo|retrato)\b/.test(q);
+    const quiereCrear=/\b(armas|armar|armame|creas|crear|creame|generas|generar|generame|haces|hacer|haceme)\b/.test(q);
+    if(tienePrompt&&tieneImagen&&quiereCrear)return{tool:"image_prompt_help",args:{corrected:corregido}};
+    return null;
 }
 
 function limpiarTemaParaWikipedia(texto){
