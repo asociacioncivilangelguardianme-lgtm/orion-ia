@@ -272,6 +272,34 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 @media(max-width:640px){#angelaToolsDrawer{top:66px;left:5px;right:5px;bottom:5px;border-radius:15px}.angela-tools-grid{grid-template-columns:1fr}.angela-tool-card{min-height:126px}.angela-tools-head{padding:12px}.angela-tools-scroll{padding:11px}}
 </style>
 
+
+<style id="angela-sections-drawer-style">
+/* V7.1 · PANELES LATERALES POR SECCIÓN */
+#angelaSectionBackdrop{position:fixed;inset:0;background:rgba(1,5,12,.64);backdrop-filter:blur(2px);z-index:8920;opacity:0;pointer-events:none;transition:opacity .2s ease}
+#angelaSectionBackdrop.abierto{opacity:1;pointer-events:auto}
+#angelaSectionDrawer{position:fixed;z-index:8930;top:76px;bottom:18px;left:max(326px,calc((100vw - 1500px)/2 + 330px));right:max(18px,calc((100vw - 1500px)/2 + 265px));background:rgba(8,20,38,.985);border:1px solid #334a72;border-radius:22px;box-shadow:0 26px 90px rgba(0,0,0,.58),0 0 45px rgba(0,150,255,.10);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-18px) scale(.99);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease}
+#angelaSectionDrawer.abierto{transform:translateX(0) scale(1);opacity:1;pointer-events:auto}
+.angela-section-head{padding:16px 18px 12px;border-bottom:1px solid #253c60;background:linear-gradient(180deg,rgba(15,31,58,.98),rgba(7,19,33,.96))}
+.angela-section-search{width:100%;background:#071321;border:1px solid #36537b;color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;outline:none}
+.angela-section-search:focus{border-color:#22d3ee;box-shadow:0 0 0 2px rgba(34,211,238,.12)}
+.angela-section-scroll{padding:15px 18px 22px;overflow:auto;flex:1}
+.angela-section-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.angela-section-card{background:linear-gradient(155deg,#0a1728,#07111f);border:1px solid #294260;border-radius:16px;padding:14px;min-height:145px;display:flex;flex-direction:column;justify-content:space-between;transition:.18s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.angela-section-card:hover{transform:translateY(-2px);border-color:#536f9b;background:linear-gradient(155deg,#10223b,#09182b);box-shadow:0 12px 28px rgba(0,0,0,.24)}
+.angela-section-card.oculta{display:none}
+.angela-section-icon{font-size:27px;line-height:1;margin-bottom:10px}
+.angela-section-title{font-weight:800;font-size:14px;color:#f8fafc}
+.angela-section-sub{font-size:10px;line-height:1.35;color:#94a3b8;margin-top:5px;min-height:28px}
+.angela-section-tag{display:inline-flex;align-items:center;width:max-content;border:1px solid #314c70;border-radius:999px;padding:2px 7px;font-size:9px;color:#93c5fd;margin-top:8px;background:#071321}
+.angela-section-use{margin-top:12px;width:100%;border:1px solid #7c3aed;background:linear-gradient(90deg,rgba(124,58,237,.72),rgba(236,72,153,.70));padding:8px 10px;border-radius:10px;font-size:11px;font-weight:800;color:#fff;transition:.16s}
+.angela-section-use:hover{filter:brightness(1.12)}
+.angela-section-empty{display:none;text-align:center;color:#94a3b8;padding:34px 10px;font-size:13px}
+.angela-section-empty.visible{display:block}
+.angela-classic-note{font-size:10px;color:#94a3b8;padding:6px 4px 2px}
+@media(max-width:1100px){#angelaSectionDrawer{left:18px;right:18px}.angela-section-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){#angelaSectionDrawer{top:66px;left:5px;right:5px;bottom:5px;border-radius:15px}.angela-section-grid{grid-template-columns:1fr}.angela-section-card{min-height:126px}.angela-section-head{padding:12px}.angela-section-scroll{padding:11px}}
+</style>
+
 </head>
 <body>
 <header class="border-b border-slate-700 bg-slate-950/80 sticky top-0 z-50 backdrop-blur">
@@ -299,6 +327,11 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button class="menu-btn bg-blue-600" onclick="irInicio()">🏠 Inicio</button>
 <button class="menu-btn" onclick="focusChat()">💬 Chat Directo</button>
 <button id="btnHerramientasPanel" class="menu-btn" onclick="abrirPanelHerramientasAngela()">🧰 Herramientas <span class="float-right">›</span></button>
+<button id="btnMultimediaPanel" class="menu-btn" onclick="abrirPanelSeccionAngela('multimedia')">🖼️ Multimedia <span class="float-right">›</span></button>
+<button id="btnTallerPanel" class="menu-btn" onclick="abrirPanelSeccionAngela('taller')">🛠️ Taller y Producción <span class="float-right">›</span></button>
+<button id="btnGestionPanel" class="menu-btn" onclick="abrirPanelSeccionAngela('gestion')">📁 Gestión y Archivos <span class="float-right">›</span></button>
+<button id="btnWebIAPanel" class="menu-btn" onclick="abrirPanelSeccionAngela('webia')">🌐 Web / IA / Redes <span class="float-right">›</span></button>
+<div class="angela-classic-note">⬇️ Debajo sigue el modo clásico de ÁNGELA por si querés abrir los paneles como antes.</div>
 <button class="menu-btn" onclick="toggleMenu('imagenes')">🖼️ Imágenes y Diseños <span class="float-right">›</span></button>
 <div id="imagenes" class="submenu custom-scrollbar">
 <h3 class="font-bold text-cyan-300 mb-3">🎨 Editor de imágenes</h3>
@@ -3537,7 +3570,179 @@ function cargarArchivoImpresion(file){ANGELA_PROD.printFile=file||null;prodSetSt
 function papelCssProduccion(){const p=$("prodPapel")?.value||"A4",ori=$("prodOrientacion")?.value||"portrait";let size=p==="A3"?"A3":p==="10x15"?"100mm 150mm":"A4";return `${size} ${ori}`;}
 function abrirVentanaImpresionImagen(dataUrl,title="ÁNGELA · Impresión"){
     const mirror=$("prodEspejo")?.checked?"scaleX(-1)":"none",cssSize=papelCssProduccion();const w=window.open("","_blank");if(!w){showToast("El navegador bloqueó la ventana de impresión.");return false;}
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>@page{size:${cssSize};margin:0}html,body{margin:0;width:100%;height:100%;display:grid;place-items:center;background:white}img{max-width:100%;max-height:100%;object-fit:contain;transform:${mirror}}</style></head><body><img src="${dataUrl}" onload="setTimeout(()=>window.print(),250)"></body></html>`);w.document.close();return true;
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>@page{size:${cssSize};margin:0}html,body{margin:0;width:100%;height:100%;display:grid;place-items:center;background:white}img{max-width:100%;max-height:100%;object-fit:contain;transform:${mirror}}</style>
+<style id="angela-sections-drawer-style">
+/* V7.1 · PANELES LATERALES POR SECCIÓN */
+#angelaSectionBackdrop{position:fixed;inset:0;background:rgba(1,5,12,.64);backdrop-filter:blur(2px);z-index:8920;opacity:0;pointer-events:none;transition:opacity .2s ease}
+#angelaSectionBackdrop.abierto{opacity:1;pointer-events:auto}
+#angelaSectionDrawer{position:fixed;z-index:8930;top:76px;bottom:18px;left:max(326px,calc((100vw - 1500px)/2 + 330px));right:max(18px,calc((100vw - 1500px)/2 + 265px));background:rgba(8,20,38,.985);border:1px solid #334a72;border-radius:22px;box-shadow:0 26px 90px rgba(0,0,0,.58),0 0 45px rgba(0,150,255,.10);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-18px) scale(.99);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease}
+#angelaSectionDrawer.abierto{transform:translateX(0) scale(1);opacity:1;pointer-events:auto}
+.angela-section-head{padding:16px 18px 12px;border-bottom:1px solid #253c60;background:linear-gradient(180deg,rgba(15,31,58,.98),rgba(7,19,33,.96))}
+.angela-section-search{width:100%;background:#071321;border:1px solid #36537b;color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;outline:none}
+.angela-section-search:focus{border-color:#22d3ee;box-shadow:0 0 0 2px rgba(34,211,238,.12)}
+.angela-section-scroll{padding:15px 18px 22px;overflow:auto;flex:1}
+.angela-section-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.angela-section-card{background:linear-gradient(155deg,#0a1728,#07111f);border:1px solid #294260;border-radius:16px;padding:14px;min-height:145px;display:flex;flex-direction:column;justify-content:space-between;transition:.18s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.angela-section-card:hover{transform:translateY(-2px);border-color:#536f9b;background:linear-gradient(155deg,#10223b,#09182b);box-shadow:0 12px 28px rgba(0,0,0,.24)}
+.angela-section-card.oculta{display:none}
+.angela-section-icon{font-size:27px;line-height:1;margin-bottom:10px}
+.angela-section-title{font-weight:800;font-size:14px;color:#f8fafc}
+.angela-section-sub{font-size:10px;line-height:1.35;color:#94a3b8;margin-top:5px;min-height:28px}
+.angela-section-tag{display:inline-flex;align-items:center;width:max-content;border:1px solid #314c70;border-radius:999px;padding:2px 7px;font-size:9px;color:#93c5fd;margin-top:8px;background:#071321}
+.angela-section-use{margin-top:12px;width:100%;border:1px solid #7c3aed;background:linear-gradient(90deg,rgba(124,58,237,.72),rgba(236,72,153,.70));padding:8px 10px;border-radius:10px;font-size:11px;font-weight:800;color:#fff;transition:.16s}
+.angela-section-use:hover{filter:brightness(1.12)}
+.angela-section-empty{display:none;text-align:center;color:#94a3b8;padding:34px 10px;font-size:13px}
+.angela-section-empty.visible{display:block}
+.angela-classic-note{font-size:10px;color:#94a3b8;padding:6px 4px 2px}
+@media(max-width:1100px){#angelaSectionDrawer{left:18px;right:18px}.angela-section-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){#angelaSectionDrawer{top:66px;left:5px;right:5px;bottom:5px;border-radius:15px}.angela-section-grid{grid-template-columns:1fr}.angela-section-card{min-height:126px}.angela-section-head{padding:12px}.angela-section-scroll{padding:11px}}
+</style>
+
+</head><body><img src="${dataUrl}" onload="setTimeout(()=>window.print(),250)">
+<script id="angela-tools-drawer-script">
+/* V7.0 · PANEL LATERAL DE HERRAMIENTAS */
+function abrirPanelHerramientasAngela(){
+  const d=document.getElementById('angelaToolsDrawer'),b=document.getElementById('angelaToolsBackdrop');
+  if(!d||!b)return;
+  d.classList.add('abierto'); b.classList.add('abierto');
+  document.body.style.overflow='hidden';
+  const s=document.getElementById('angelaToolsSearch');
+  if(s){s.value=''; filtrarHerramientasAngela(); setTimeout(()=>s.focus(),120);}
+}
+function cerrarPanelHerramientasAngela(){
+  document.getElementById('angelaToolsDrawer')?.classList.remove('abierto');
+  document.getElementById('angelaToolsBackdrop')?.classList.remove('abierto');
+  if(!document.getElementById('angelaProduccionModal')?.classList.contains('abierto')) document.body.style.overflow='';
+}
+function filtrarHerramientasAngela(){
+  const q=(document.getElementById('angelaToolsSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const cards=[...document.querySelectorAll('#angelaToolsGrid .angela-tool-card')];let visibles=0;
+  cards.forEach(card=>{const hay=(card.getAttribute('data-search')||'')+' '+card.innerText;const n=hay.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');const ok=!q||n.includes(q);card.classList.toggle('oculta',!ok);if(ok)visibles++;});
+  document.getElementById('angelaToolsEmpty')?.classList.toggle('visible',visibles===0);
+}
+function usarHerramientaPanelAngela(tipo){
+  cerrarPanelHerramientasAngela();
+  switch(tipo){
+    case 'chat': focusChat(); break;
+    case 'web': abrirMenu('web'); break;
+    case 'imagenes': abrirMenu('imagenes'); break;
+    case 'laser': abrirMenu('laser'); break;
+    case 'produccion': abrirCentroProduccion('laser'); break;
+    case 'impresion': abrirCentroProduccion('impresion'); break;
+    case '3d': abrirCentroProduccion('3d'); break;
+    case 'sublimacion': abrirMenu('sublimacion'); break;
+    case 'archivos': abrirMenu('archivos'); break;
+    case 'proyectos': abrirMenu('proyectos'); break;
+    case 'stock': abrirMenu('stock'); break;
+    case 'redesIA': abrirMenu('redesIA'); break;
+    case 'motion3d': abrirMenu('motion3d'); break;
+    case 'comedor': abrirMenu('comedor'); break;
+    case 'config': abrirMenu('config'); break;
+    case 'canva': if(typeof abrirCanva==='function') abrirCanva(); else window.open('https://www.canva.com/','_blank'); break;
+    case 'drive': if(typeof elegirDesdeDrive==='function') elegirDesdeDrive(); else abrirMenu('archivos'); break;
+  }
+}
+window.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('angelaToolsDrawer')?.classList.contains('abierto'))cerrarPanelHerramientasAngela();});
+</script>
+
+
+<div id="angelaSectionBackdrop" onclick="cerrarPanelSeccionAngela()" aria-hidden="true"></div>
+<aside id="angelaSectionDrawer" aria-hidden="true" aria-labelledby="angelaSectionTitle">
+  <div class="angela-section-head">
+    <div class="flex items-start justify-between gap-3 mb-3">
+      <div>
+        <h2 id="angelaSectionTitle" class="font-bold text-cyan-300 text-lg">📂 Panel de sección</h2>
+        <p id="angelaSectionDesc" class="text-[10px] text-slate-400 mt-1">Elegí cómo querés trabajar dentro de esta sección.</p>
+      </div>
+      <button onclick="cerrarPanelSeccionAngela()" class="quick text-xs px-3" title="Cerrar panel">✕ Cerrar</button>
+    </div>
+    <input id="angelaSectionSearch" class="angela-section-search" type="search" placeholder="🔎 Buscar dentro de esta sección..." oninput="filtrarPanelSeccionAngela()" autocomplete="off">
+  </div>
+  <div class="angela-section-scroll custom-scrollbar">
+    <div id="angelaSectionGrid" class="angela-section-grid"></div>
+    <div id="angelaSectionEmpty" class="angela-section-empty">No encontré herramientas dentro de esta sección.</div>
+  </div>
+</aside>
+
+
+<script id="angela-sections-drawer-script">
+window.ANGELA_SECTION_CARDS={
+  multimedia:{title:'🖼️ Multimedia',desc:'Abrí las herramientas visuales, multimedia y de diseño de ÁNGELA.',cards:[
+    {icon:'🎨',title:'Imágenes y Diseños',sub:'Editor, filtros, quitar fondo y preparación de imágenes.',tag:'Diseño',search:'imagenes diseno foto jarvis stucki dither fondo',action:"abrirMenu('imagenes')"},
+    {icon:'✨',title:'Tipografía 3D / Motion',sub:'Textos 3D, animación y preparación visual.',tag:'Creativo',search:'motion tipografia 3d spline blender capcut',action:"abrirMenu('motion3d')"},
+    {icon:'👕',title:'Sublimación',sub:'Productos, medidas y ayuda para sublimar.',tag:'Taller',search:'sublimacion taza remera mate diseno',action:"abrirMenu('sublimacion')"},
+    {icon:'🪄',title:'Canva',sub:'Abrir Canva para diseñar y después traer el archivo a ÁNGELA.',tag:'Web',search:'canva diseno online',action:"(typeof abrirCanva==='function'?abrirCanva():window.open('https://www.canva.com/','_blank'))"},
+    {icon:'☁️',title:'Google Drive',sub:'Elegir archivos o apoyarte en Drive.',tag:'Archivos',search:'drive google archivos nube',action:"(typeof elegirDesdeDrive==='function'?elegirDesdeDrive():abrirMenu('archivos'))"},
+    {icon:'💬',title:'Usar con ÁNGELA',sub:'Ir al chat para pedir ediciones o ideas por voz/escrito.',tag:'IA',search:'chat ia ayuda editar imagen',action:"focusChat()"}
+  ]},
+  taller:{title:'🛠️ Taller y Producción',desc:'Accesos cómodos para grabado, impresión, 3D y producción del taller.',cards:[
+    {icon:'🔥',title:'Láser',sub:'Materiales, parámetros y herramientas del láser.',tag:'Láser',search:'laser grabado corte materiales parametros',action:"abrirMenu('laser')"},
+    {icon:'🛠️',title:'Producción Pro',sub:'Centro avanzado con Láser Pro, Impresión y 3D/STL.',tag:'PRO',search:'produccion pro lightburn impresion 3d stl',action:"abrirCentroProduccion('laser')"},
+    {icon:'🖨️',title:'Impresión',sub:'Preparar e imprimir trabajos, imágenes o documentos.',tag:'Impresión',search:'impresion imprimir epson pdf imagen',action:"abrirCentroProduccion('impresion')"},
+    {icon:'🧊',title:'3D / STL',sub:'Modelos, STL y herramientas para impresión 3D.',tag:'3D',search:'3d stl cura openscad impresion',action:"abrirCentroProduccion('3d')"},
+    {icon:'📦',title:'Stock / Materiales',sub:'Organizar materiales, insumos y control del taller.',tag:'Control',search:'stock materiales insumos control',action:"abrirMenu('stock')"},
+    {icon:'🎯',title:'Parámetros rápidos',sub:'Ir directo a los parámetros y biblioteca del láser.',tag:'Atajo',search:'parametros rapidos laser biblioteca medidas',action:"abrirMenu('laser'); if(typeof mostrarLaser==='function'){try{mostrarLaser('mdf','engrave');}catch(e){}}"}
+  ]},
+  gestion:{title:'📁 Gestión y Archivos',desc:'Todo lo que necesitás para organizar proyectos, documentos y configuraciones.',cards:[
+    {icon:'📂',title:'Proyectos',sub:'Trabajos guardados, ideas y organización de proyectos.',tag:'Proyecto',search:'proyectos trabajos ideas guardar',action:"abrirMenu('proyectos')"},
+    {icon:'📁',title:'Archivos',sub:'Abrir, revisar y trabajar con archivos dentro de ÁNGELA.',tag:'Archivos',search:'archivos documentos pdf ocr',action:"abrirMenu('archivos')"},
+    {icon:'☁️',title:'Google Drive',sub:'Buscar o importar archivos desde la nube.',tag:'Nube',search:'drive google nube',action:"(typeof elegirDesdeDrive==='function'?elegirDesdeDrive():abrirMenu('archivos'))"},
+    {icon:'⚙️',title:'Configuración',sub:'Ajustes del asistente, voz, nombre y sistema.',tag:'Ajustes',search:'configuracion ajustes voz nombre sistema',action:"abrirMenu('config')"},
+    {icon:'📊',title:'Stock',sub:'Entrar al panel de stock y control del taller.',tag:'Control',search:'stock control materiales',action:"abrirMenu('stock')"},
+    {icon:'🧠',title:'Herramientas generales',sub:'Volver al panel grande de herramientas y plugins.',tag:'General',search:'herramientas plugins general',action:"abrirPanelHerramientasAngela()"}
+  ]},
+  webia:{title:'🌐 Web / IA / Redes',desc:'Panel cómodo para navegar, usar IA y abrir módulos conectados.',cards:[
+    {icon:'💬',title:'Chat IA',sub:'Ir al chat principal para trabajar con ÁNGELA.',tag:'IA',search:'chat ia asistente conversar',action:"focusChat()"},
+    {icon:'🌐',title:'Web / Internet',sub:'Búsqueda web, enlaces y navegación.',tag:'Web',search:'web internet buscar navegar',action:"abrirMenu('web')"},
+    {icon:'🤖',title:'Redes IA',sub:'Herramientas IA, agentes y conexiones.',tag:'IA',search:'redes ia agentes herramientas api',action:"abrirMenu('redesIA')"},
+    {icon:'🧰',title:'Herramientas',sub:'Abrir el panel general de herramientas tipo tarjetas.',tag:'Panel',search:'herramientas tarjetas panel',action:"abrirPanelHerramientasAngela()"},
+    {icon:'💛',title:'Comedor',sub:'Módulo del comedor y contenido social.',tag:'Comedor',search:'comedor publicaciones ayuda social',action:"abrirMenu('comedor')"},
+    {icon:'⚙️',title:'Configuración',sub:'Ajustes generales y estado del sistema.',tag:'Ajustes',search:'configuracion sistema ajustes',action:"abrirMenu('config')"}
+  ]}
+};
+window.angelaSectionActual='';
+function renderCardsPanelSeccionAngela(section){
+  const data=window.ANGELA_SECTION_CARDS?.[section];
+  const grid=document.getElementById('angelaSectionGrid');
+  if(!data||!grid)return;
+  document.getElementById('angelaSectionTitle').textContent=data.title;
+  document.getElementById('angelaSectionDesc').textContent=data.desc;
+  grid.innerHTML=data.cards.map((card,idx)=>`<article class="angela-section-card" data-search="${(card.search||'').replace(/"/g,'&quot;')}"><div><div class="angela-section-icon">${card.icon}</div><div class="angela-section-title">${card.title}</div><div class="angela-section-sub">${card.sub}</div><span class="angela-section-tag">${card.tag}</span></div><button class="angela-section-use" onclick="usarCardSeccionAngela(${idx})">Usar</button></article>`).join('');
+  document.getElementById('angelaSectionSearch').value='';
+  filtrarPanelSeccionAngela();
+}
+function abrirPanelSeccionAngela(section){
+  const data=window.ANGELA_SECTION_CARDS?.[section];
+  const d=document.getElementById('angelaSectionDrawer'),b=document.getElementById('angelaSectionBackdrop');
+  if(!data||!d||!b)return;
+  window.angelaSectionActual=section;
+  renderCardsPanelSeccionAngela(section);
+  d.classList.add('abierto');b.classList.add('abierto');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('angelaSectionSearch')?.focus(),120);
+}
+function cerrarPanelSeccionAngela(){
+  document.getElementById('angelaSectionDrawer')?.classList.remove('abierto');
+  document.getElementById('angelaSectionBackdrop')?.classList.remove('abierto');
+  if(!document.getElementById('angelaProduccionModal')?.classList.contains('abierto') && !document.getElementById('angelaToolsDrawer')?.classList.contains('abierto')) document.body.style.overflow='';
+}
+function filtrarPanelSeccionAngela(){
+  const q=(document.getElementById('angelaSectionSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+  const cards=[...document.querySelectorAll('#angelaSectionGrid .angela-section-card')]; let visibles=0;
+  cards.forEach(card=>{const hay=(card.getAttribute('data-search')||'')+' '+card.innerText;const n=hay.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');const ok=!q||n.includes(q);card.classList.toggle('oculta',!ok);if(ok)visibles++;});
+  document.getElementById('angelaSectionEmpty')?.classList.toggle('visible',visibles===0);
+}
+function usarCardSeccionAngela(index){
+  const data=window.ANGELA_SECTION_CARDS?.[window.angelaSectionActual];
+  const card=data?.cards?.[index];
+  if(!card)return;
+  cerrarPanelSeccionAngela();
+  try{ new Function(card.action)(); }catch(e){ console.error(e); if(typeof showToast==='function') showToast('No pude abrir esta opción.'); }
+}
+window.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('angelaSectionDrawer')?.classList.contains('abierto'))cerrarPanelSeccionAngela();});
+</script>
+
+</body></html>`);w.document.close();return true;
 }
 function imprimirImagenEditor(){const c=$("canvasImagen");if(!c||c.width<2){showToast("Primero cargá una imagen en el editor.");return;}abrirVentanaImpresionImagen(c.toDataURL("image/png"));prodSetStatus("prodImpresionEstado","Abrí el cuadro de impresión con la imagen del editor.","prod-ok");}
 async function imprimirArchivoSeleccionado(){
@@ -3771,52 +3976,5 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
 <script type="module" src="./pro/monitoring.js"></script>
 <script type="module" src="./pro/cloud.js"></script>
 <script type="module" src="./pro/wakeword.js"></script>
-
-<script id="angela-tools-drawer-script">
-/* V7.0 · PANEL LATERAL DE HERRAMIENTAS */
-function abrirPanelHerramientasAngela(){
-  const d=document.getElementById('angelaToolsDrawer'),b=document.getElementById('angelaToolsBackdrop');
-  if(!d||!b)return;
-  d.classList.add('abierto'); b.classList.add('abierto');
-  document.body.style.overflow='hidden';
-  const s=document.getElementById('angelaToolsSearch');
-  if(s){s.value=''; filtrarHerramientasAngela(); setTimeout(()=>s.focus(),120);}
-}
-function cerrarPanelHerramientasAngela(){
-  document.getElementById('angelaToolsDrawer')?.classList.remove('abierto');
-  document.getElementById('angelaToolsBackdrop')?.classList.remove('abierto');
-  if(!document.getElementById('angelaProduccionModal')?.classList.contains('abierto')) document.body.style.overflow='';
-}
-function filtrarHerramientasAngela(){
-  const q=(document.getElementById('angelaToolsSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-  const cards=[...document.querySelectorAll('#angelaToolsGrid .angela-tool-card')];let visibles=0;
-  cards.forEach(card=>{const hay=(card.getAttribute('data-search')||'')+' '+card.innerText;const n=hay.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');const ok=!q||n.includes(q);card.classList.toggle('oculta',!ok);if(ok)visibles++;});
-  document.getElementById('angelaToolsEmpty')?.classList.toggle('visible',visibles===0);
-}
-function usarHerramientaPanelAngela(tipo){
-  cerrarPanelHerramientasAngela();
-  switch(tipo){
-    case 'chat': focusChat(); break;
-    case 'web': abrirMenu('web'); break;
-    case 'imagenes': abrirMenu('imagenes'); break;
-    case 'laser': abrirMenu('laser'); break;
-    case 'produccion': abrirCentroProduccion('laser'); break;
-    case 'impresion': abrirCentroProduccion('impresion'); break;
-    case '3d': abrirCentroProduccion('3d'); break;
-    case 'sublimacion': abrirMenu('sublimacion'); break;
-    case 'archivos': abrirMenu('archivos'); break;
-    case 'proyectos': abrirMenu('proyectos'); break;
-    case 'stock': abrirMenu('stock'); break;
-    case 'redesIA': abrirMenu('redesIA'); break;
-    case 'motion3d': abrirMenu('motion3d'); break;
-    case 'comedor': abrirMenu('comedor'); break;
-    case 'config': abrirMenu('config'); break;
-    case 'canva': if(typeof abrirCanva==='function') abrirCanva(); else window.open('https://www.canva.com/','_blank'); break;
-    case 'drive': if(typeof elegirDesdeDrive==='function') elegirDesdeDrive(); else abrirMenu('archivos'); break;
-  }
-}
-window.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('angelaToolsDrawer')?.classList.contains('abierto'))cerrarPanelHerramientasAngela();});
-</script>
-
 </body>
 </html>
