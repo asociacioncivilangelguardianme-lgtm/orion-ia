@@ -198,10 +198,25 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 .angela-fullscreen-module .angela-module-tools{top:-18px;margin:-18px -18px 12px;padding:10px 12px;background:#081426;border-bottom:1px solid #253c60;}
 .angela-fs-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:9997;backdrop-filter:blur(7px);}
 .redes-media-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
-.redes-media-card{position:relative;overflow:hidden;border-radius:12px;border:1px solid #294260;background:#071321;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;}
+.redes-media-card{position:relative;overflow:hidden;border-radius:12px;border:1px solid #294260;background:#071321;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.redes-media-card.active{border-color:#22d3ee;box-shadow:0 0 0 2px rgba(34,211,238,.18),0 10px 24px rgba(0,0,0,.28);}
 .redes-media-card img,.redes-media-card video{width:100%;height:100%;object-fit:cover;display:block;}
 .redes-media-card .redes-file-label{padding:10px;font-size:10px;text-align:center;word-break:break-word;color:#cbd5e1;}
+.redes-media-card .redes-media-badge{position:absolute;left:6px;bottom:6px;background:rgba(2,6,23,.82);border:1px solid #334155;border-radius:999px;padding:2px 7px;font-size:9px;color:#cbd5e1;}
+.redes-preview-shell{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:10px;align-items:start;background:#06101e;border:1px solid #294260;border-radius:14px;padding:10px;margin-top:10px;}
+.redes-preview-stage{background:#02050a;border:1px solid #243b59;border-radius:12px;min-height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+.redes-preview-stage img,.redes-preview-stage video{max-width:100%;max-height:380px;display:block;object-fit:contain;}
+.redes-preview-empty{font-size:11px;color:#94a3b8;padding:20px;text-align:center;}
+.redes-preview-side{display:flex;flex-direction:column;gap:8px;}
+.redes-preview-meta{font-size:10px;color:#94a3b8;background:#020817;border:1px solid #243b59;border-radius:10px;padding:8px;white-space:pre-wrap;}
+.redes-preview-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9500;padding:18px;display:none;align-items:center;justify-content:center;}
+.redes-preview-modal.open{display:flex;}
+.redes-preview-modal-inner{width:min(1100px,100%);height:min(92vh,100%);background:#050d18;border:1px solid #334155;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.52);}
+.redes-preview-modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid #243b59;background:#091325;}
+.redes-preview-modal-body{flex:1;display:flex;align-items:center;justify-content:center;padding:12px;background:#02050a;overflow:hidden;}
+.redes-preview-modal-body img,.redes-preview-modal-body video{max-width:100%;max-height:100%;object-fit:contain;}
 .redes-ai-output{white-space:pre-wrap;min-height:190px;resize:vertical;}
+@media(max-width:768px){.redes-preview-shell{grid-template-columns:1fr}.redes-preview-stage{min-height:220px}.redes-preview-stage img,.redes-preview-stage video{max-height:260px}}
 .redes-flyer-wrap{background:#02050a;border:1px solid #294260;border-radius:14px;padding:8px;}
 #canvasRedesFlyer{width:100%;height:auto;display:block;border-radius:10px;background:#0b1020;}
 @media(max-width:768px){
@@ -629,31 +644,37 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 
 <button class="menu-btn" onclick="toggleMenu('redesIA')">📣 Redes IA <span class="float-right">›</span></button>
 <div id="redesIA" class="submenu custom-scrollbar">
-<h3 class="font-bold text-fuchsia-300 mb-2">📣 Redes IA · Crear y compartir</h3>
-<p class="text-[10px] text-slate-400 mb-3">Elegí fotos o videos del celular, contale a ÁNGELA qué querés comunicar y prepará una publicación lista para compartir. Nada se publica sin que vos toques Compartir.</p>
+<h3 class="font-bold text-fuchsia-300 mb-2">🎨 IA Creativa · Imágenes, flyers, video y 3D</h3>
+<p class="text-[10px] text-slate-400 mb-3">Subí fotos o videos, miralos en grande y pedile a ÁNGELA cualquier creación: publicación, flyer, prompt, idea visual, imagen, video, 3D o pieza de marca. Este módulo es general; solo usa el contexto del comedor si vos lo pedís.</p>
 
-<label class="text-[10px] text-cyan-300">¿Qué querés publicar?</label>
-<textarea id="redesTema" rows="4" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs" placeholder="Ej.: Nos faltan 200 juguetes y golosinas para el Día del Niño..."></textarea>
+<label class="text-[10px] text-cyan-300">¿Qué querés crear o pedirle a la IA?</label>
+<textarea id="redesTema" rows="4" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs" placeholder="Ej.: Quiero una imagen de un perro con una pelota y una flor en estilo 3D. / Haceme un flyer para una promo. / Armame un prompt para un video corto."></textarea>
 
 <div class="grid grid-cols-2 gap-2 mt-2">
-<label class="text-[10px]">Tipo
+<label class="text-[10px]">Modo creativo
+<select id="redesModo" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
+<option value="general">General / libre</option><option value="publicacion">Publicación / copy</option><option value="flyer">Flyer / afiche</option><option value="imagen">Imagen / prompt visual</option><option value="video">Video / guion / prompt</option><option value="3d">3D / render / idea</option><option value="comedor">Comedor / campaña solidaria</option>
+</select></label>
+<label class="text-[10px]">Salida principal
 <select id="redesTipo" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
-<option>Pedido solidario</option><option>Evento</option><option>Taller / venta</option><option>Agradecimiento</option><option>Urgencia</option><option>Historia del comedor</option><option>Publicación libre</option>
+<option>Texto listo para publicar</option><option>Prompt de imagen</option><option>Prompt de video</option><option>Idea visual / concepto</option><option>Flyer</option><option>Guion corto</option><option>Descripción de producto</option><option>Texto libre</option>
 </select></label>
-<label class="text-[10px]">Red
+<label class="text-[10px]">Canal / destino
 <select id="redesPlataforma" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
-<option value="todas">Todas</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="tiktok">TikTok</option><option value="whatsapp">WhatsApp / Estado</option>
+<option value="general">General</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="tiktok">TikTok</option><option value="whatsapp">WhatsApp / Estado</option><option value="youtube">YouTube</option><option value="web">Web / tienda</option>
 </select></label>
-<label class="text-[10px]">Tono
+<label class="text-[10px]">Tono / estilo
 <select id="redesTono" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
-<option value="emotivo">Emotivo</option><option value="directo">Directo</option><option value="urgente">Urgente</option><option value="agradecido">Agradecido</option><option value="profesional">Profesional</option>
+<option value="creativo">Creativo</option><option value="profesional">Profesional</option><option value="emotivo">Emotivo</option><option value="directo">Directo</option><option value="urgente">Urgente</option><option value="minimalista">Minimalista</option><option value="divertido">Divertido</option>
 </select></label>
-<label class="text-[10px]">Flyer
+<label class="text-[10px]">Formato visual
 <select id="redesFormato" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
-<option value="45">Post vertical 4:5</option><option value="11">Cuadrado 1:1</option><option value="916">Historia / Reel 9:16</option>
+<option value="45">Post vertical 4:5</option><option value="11">Cuadrado 1:1</option><option value="916">Historia / Reel 9:16</option><option value="169">Horizontal 16:9</option>
 </select></label>
+<label class="text-[10px]">Proyecto / marca / contexto
+<input id="redesProyecto" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs" placeholder="Ej.: tienda de mates, promo escolar, emprendimiento, comedor, marca X"></label>
 </div>
-<label class="flex items-center gap-2 text-[10px] my-3"><input id="redesIncluirAlias" type="checkbox" checked> 💳 Incluir alias del comedor automáticamente</label>
+<label class="flex items-center gap-2 text-[10px] my-3"><input id="redesIncluirAlias" type="checkbox"> 💳 Incluir alias/datos del proyecto solo si corresponde</label>
 
 <input id="inputRedesMedia" type="file" accept="image/*,video/*" multiple class="hidden">
 <div class="grid grid-cols-2 gap-2">
@@ -663,26 +684,46 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <div id="redesMediaInfo" class="text-[10px] text-slate-500 mt-2">Sin fotos ni videos seleccionados.</div>
 <div id="redesMediaPreview" class="redes-media-grid mt-2"></div>
 
+<div id="redesPreviewGrande" class="redes-preview-shell">
+  <div class="redes-preview-stage" id="redesPreviewStage"><div class="redes-preview-empty">Subí una imagen o video para verlo en grande y trabajar con más comodidad.</div></div>
+  <div class="redes-preview-side">
+    <div id="redesPreviewMeta" class="redes-preview-meta">Nada seleccionado.</div>
+    <button onclick="abrirPreviewGrandeRedes()" class="quick text-xs">🔍 Pantalla grande</button>
+    <button onclick="usarMediaRedesEnImagenes()" class="quick text-xs">🖼️ Abrir en Imágenes</button>
+    <button onclick="crearFlyerRedes()" class="quick text-xs">✨ Usar para flyer</button>
+  </div>
+</div>
+
 <div class="grid grid-cols-2 gap-2 mt-3">
-<button id="btnGenerarRedesIA" onclick="generarPublicacionRedesIA()" class="quick text-xs bg-gradient-to-r from-fuchsia-700 to-cyan-700">✨ Crear publicación IA</button>
+<button id="btnGenerarRedesIA" onclick="generarPublicacionRedesIA()" class="quick text-xs bg-gradient-to-r from-fuchsia-700 to-cyan-700">✨ Crear con IA</button>
 <button onclick="crearFlyerRedes()" class="quick text-xs">🖼️ Crear flyer</button>
 </div>
 <div id="redesEstado" class="text-[10px] text-cyan-300 mt-2" role="status" aria-live="polite">Listo para crear.</div>
 
-<label class="text-[10px] text-cyan-300 mt-3 block">Texto listo para publicar</label>
-<textarea id="redesResultado" class="redes-ai-output w-full bg-slate-950 border border-slate-700 p-3 rounded-xl mt-1 text-xs" placeholder="Acá aparecerá la publicación creada por ÁNGELA..."></textarea>
+<label class="text-[10px] text-cyan-300 mt-3 block">Resultado / texto / prompt</label>
+<textarea id="redesResultado" class="redes-ai-output w-full bg-slate-950 border border-slate-700 p-3 rounded-xl mt-1 text-xs" placeholder="Acá aparecerá el texto, prompt o idea generada por ÁNGELA..."></textarea>
 <div class="grid grid-cols-2 gap-2 mt-2">
-<button onclick="copiarPublicacionRedes()" class="quick text-xs">📋 Copiar texto</button>
+<button onclick="copiarPublicacionRedes()" class="quick text-xs">📋 Copiar resultado</button>
 <button onclick="compartirPublicacionRedes()" class="quick text-xs bg-gradient-to-r from-pink-600 to-orange-500">🚀 Compartir</button>
 </div>
 
 <div class="mt-4 pt-3 border-t border-slate-700">
 <div class="text-xs font-bold text-yellow-300 mb-2">🎨 Flyer automático</div>
-<p class="text-[10px] text-slate-400 mb-2">Si elegiste una foto, ÁNGELA la usa como fondo. Si no elegiste ninguna, crea un diseño desde cero con el estilo visual de la app.</p>
+<p class="text-[10px] text-slate-400 mb-2">Si elegiste una foto, ÁNGELA la usa como fondo. Si no elegiste ninguna, crea un diseño base según el modo creativo, el tono y el texto del proyecto.</p>
 <div class="redes-flyer-wrap"><canvas id="canvasRedesFlyer" width="1080" height="1350" aria-label="Vista previa del flyer"></canvas></div>
 <div class="grid grid-cols-2 gap-2 mt-2"><button onclick="guardarFlyerRedes()" class="quick text-xs">💾 Guardar PNG</button><button onclick="usarFlyerEnImagenes()" class="quick text-xs">🖼️ Editar en Imágenes</button></div>
 </div>
+
+<div id="redesPreviewModal" class="redes-preview-modal" onclick="if(event.target===this)cerrarPreviewGrandeRedes()">
+  <div class="redes-preview-modal-inner">
+    <div class="redes-preview-modal-head">
+      <div><div class="font-bold text-cyan-300">Vista previa grande</div><div id="redesPreviewModalTitle" class="text-[10px] text-slate-400">Archivo seleccionado</div></div>
+      <button onclick="cerrarPreviewGrandeRedes()" class="quick text-xs px-3">✕ Cerrar</button>
+    </div>
+    <div id="redesPreviewModalBody" class="redes-preview-modal-body"></div>
+  </div>
 </div>
+</div></div>
 
 </aside>
 <main class="space-y-5">
@@ -1060,7 +1101,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "6.9.0-redes-ia-produccion-sin-cambiar-formato",
+    version: "7.3.0-redes-ia-generativa-preview",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -2118,10 +2159,10 @@ REGLAS DE RESPUESTA:
 13.b También existe Tipografía 3D / Motion: puede mostrar una vista previa 3D animada, generar prompts, preparar formato TikTok/Reels y abrir Spline, Blender o CapCut. El editor de imágenes tiene una vista grande con zoom, arrastre y comparación antes/después. No afirmes que la vista previa CSS es un render 3D profesional ni que exporta video por sí sola.
 14. La bóveda y la agenda son locales del navegador. No afirmes que leíste Gmail, Google Calendar, Obsidian u otra cuenta externa si no existe una integración autenticada que realmente haya entregado esos datos.
 15. Cuando el usuario pida un plan, resumen o reporte, aprovechá primero memoria, bóveda, tareas, archivos adjuntos y contexto reciente; después usá web solamente si aporta actualidad.
-16. ÁNGELA tiene un módulo Redes IA para crear textos de publicaciones, usar fotos/videos seleccionados por el usuario, crear un flyer local y abrir el menú Compartir del dispositivo. Nada se publica automáticamente sin una acción explícita del usuario.
+16. ÁNGELA tiene un módulo Redes IA / IA Creativa para crear textos, prompts, ideas visuales, flyers, conceptos de video y piezas para redes a partir de texto, fotos o videos seleccionados por el usuario. Por defecto usalo de forma GENERATIVA y GENERAL. NO asumas que todo se refiere al Comedor Ángel Guardián. Solo usá el contexto institucional del comedor cuando el usuario lo pida de forma explícita o cuando mencione comedor, donaciones, campaña solidaria, Ángel Guardián, alias o una publicación solidaria. Nada se publica automáticamente sin una acción explícita del usuario.
 17. ÁNGELA tiene Producción Pro en un panel flotante que preserva la interfaz original: Impresión, 3D/STL/OpenSCAD y Láser Pro con modos de imagen, biblioteca de medidas, centrado, rotativo y conexión opcional con ÁNGELA Bridge/LightBurn. Nunca afirmes que una máquina inició un trabajo físico sin confirmación explícita y respuesta positiva del Bridge.
 
-Información institucional SOLO cuando corresponda:
+Información institucional SOLO cuando corresponda y SOLO si el pedido está ligado al comedor o a una campaña solidaria:
 Comedor Ángel Guardián / Asociación Civil para la Niñez de Merlo. Dirección: ${comedor.location || DEFAULT_SETTINGS.comedor.location}. Tel/Email: ${comedor.contact || DEFAULT_SETTINGS.comedor.contact}. Redes: ${comedor.social || DEFAULT_SETTINGS.comedor.social}. Alias Banco Provincia: ${comedor.alias || "NIEBLA.REMO.TAMBOR"}. Web: https://www.comedorangelguardian.com.ar/`;
 
     const archivoTexto=textoContextoArchivo();
@@ -3422,28 +3463,63 @@ async function salirPantallaCompletaModulo(restaurarFullscreen=true){
 /* ==========================================
    V6.6 · REDES IA
    ========================================== */
-const REDES_IA={files:[],urls:[],flyerBlob:null};
+const REDES_IA={files:[],urls:[],flyerBlob:null,selectedIndex:-1};
 function elegirMediaRedes(){$("inputRedesMedia")?.click();}
 function bytesHuman(n){if(n<1024)return`${n} B`;if(n<1024*1024)return`${(n/1024).toFixed(1)} KB`;return`${(n/1024/1024).toFixed(1)} MB`;}
-function limpiarMediaRedes(){
+function limpiarMediaRedes(silent=false){
     for(const u of REDES_IA.urls)try{URL.revokeObjectURL(u)}catch{}
-    REDES_IA.files=[];REDES_IA.urls=[];REDES_IA.flyerBlob=null;
+    REDES_IA.files=[];REDES_IA.urls=[];REDES_IA.flyerBlob=null;REDES_IA.selectedIndex=-1;
     if($("inputRedesMedia"))$("inputRedesMedia").value="";
-    const p=$("redesMediaPreview");if(p)p.replaceChildren();setText("redesMediaInfo","Sin fotos ni videos seleccionados.");showToast("Archivos de Redes IA quitados.");
+    $("redesMediaPreview")?.replaceChildren();
+    setText("redesMediaInfo","Sin fotos ni videos seleccionados.");
+    const stage=$("redesPreviewStage"); if(stage) stage.innerHTML='<div class="redes-preview-empty">Subí una imagen o video para verlo en grande y trabajar con más comodidad.</div>';
+    setText("redesPreviewMeta","Nada seleccionado.");
+    $("redesPreviewModalBody")?.replaceChildren();
+    setText("redesPreviewModalTitle","Archivo seleccionado");
+    if(!silent)showToast("Archivos de IA Creativa quitados.");
+}
+function seleccionarMediaRedes(index){
+    REDES_IA.selectedIndex=index;
+    const file=REDES_IA.files[index]; const url=REDES_IA.urls[index];
+    document.querySelectorAll('#redesMediaPreview .redes-media-card').forEach((el,i)=>el.classList.toggle('active',i===index));
+    const stage=$("redesPreviewStage"); const meta=$("redesPreviewMeta");
+    if(!file||!stage||!meta){return;}
+    stage.replaceChildren();
+    let node;
+    if(file.type.startsWith('image/')){node=document.createElement('img'); node.src=url; node.alt=file.name;}
+    else if(file.type.startsWith('video/')){node=document.createElement('video'); node.src=url; node.controls=true; node.playsInline=true; node.preload='metadata';}
+    else {node=document.createElement('div'); node.className='redes-preview-empty'; node.textContent=file.name;}
+    stage.appendChild(node);
+    meta.textContent=`Archivo: ${file.name}
+Tipo: ${file.type||'desconocido'}
+Peso: ${bytesHuman(file.size||0)}
+${file.type.startsWith('image/')?'Uso sugerido: referencia, flyer, edición o prompt visual.':file.type.startsWith('video/')?'Uso sugerido: portada, guion, reel, idea o prompt de video.':'Uso sugerido: referencia del proyecto.'}`;
+    const modalBody=$("redesPreviewModalBody"); if(modalBody){ modalBody.replaceChildren(node.cloneNode(true)); if(file.type.startsWith('video/')){ const v=modalBody.querySelector('video'); if(v){v.controls=true;v.muted=false;}} }
+    setText('redesPreviewModalTitle',file.name);
 }
 function cargarMediaRedes(files){
-    limpiarMediaRedes();REDES_IA.files=Array.from(files||[]).slice(0,12);
-    const box=$("redesMediaPreview");if(!box)return;
-    for(const file of REDES_IA.files){
-        const card=document.createElement("div");card.className="redes-media-card";
-        const url=URL.createObjectURL(file);REDES_IA.urls.push(url);
-        if(file.type.startsWith("image/")){const img=document.createElement("img");img.src=url;img.alt=file.name;card.appendChild(img);}
-        else if(file.type.startsWith("video/")){const v=document.createElement("video");v.src=url;v.muted=true;v.playsInline=true;v.preload="metadata";card.appendChild(v);}
-        else{const d=document.createElement("div");d.className="redes-file-label";d.textContent=file.name;card.appendChild(d);}
+    limpiarMediaRedes(true);
+    REDES_IA.files=Array.from(files||[]).slice(0,12);
+    const box=$("redesMediaPreview"); if(!box)return;
+    REDES_IA.files.forEach((file,idx)=>{
+        const card=document.createElement('div'); card.className='redes-media-card';
+        const url=URL.createObjectURL(file); REDES_IA.urls.push(url);
+        let node;
+        if(file.type.startsWith('image/')){node=document.createElement('img'); node.src=url; node.alt=file.name;}
+        else if(file.type.startsWith('video/')){node=document.createElement('video'); node.src=url; node.muted=true; node.playsInline=true; node.preload='metadata';}
+        else {node=document.createElement('div'); node.className='redes-file-label'; node.textContent=file.name;}
+        card.appendChild(node);
+        const badge=document.createElement('div'); badge.className='redes-media-badge'; badge.textContent=file.type.startsWith('video/')?'VIDEO':'IMAGEN'; card.appendChild(badge);
+        card.onclick=()=>seleccionarMediaRedes(idx);
         box.appendChild(card);
-    }
-    const total=REDES_IA.files.reduce((a,f)=>a+f.size,0);setText("redesMediaInfo",`${REDES_IA.files.length} archivo(s) · ${bytesHuman(total)} · se compartirán solo cuando toques Compartir.`);
+    });
+    const total=REDES_IA.files.reduce((a,f)=>a+f.size,0);
+    setText('redesMediaInfo',`${REDES_IA.files.length} archivo(s) · ${bytesHuman(total)} · tocá una miniatura para verla en grande.`);
+    if(REDES_IA.files.length) seleccionarMediaRedes(0);
 }
+function abrirPreviewGrandeRedes(){ const m=$("redesPreviewModal"); if(!m)return; if(REDES_IA.selectedIndex<0 && REDES_IA.files.length) seleccionarMediaRedes(0); m.classList.add('open'); document.body.style.overflow='hidden'; }
+function cerrarPreviewGrandeRedes(){ $("redesPreviewModal")?.classList.remove('open'); document.body.style.overflow=''; }
+async function usarMediaRedesEnImagenes(){ const idx=REDES_IA.selectedIndex>=0?REDES_IA.selectedIndex:0; const file=REDES_IA.files[idx]; if(!file){showToast('Primero elegí una imagen o video.'); return;} if(!file.type.startsWith('image/')){showToast('Por ahora Abrir en Imágenes funciona con fotos. Para video usalo como referencia.'); return;} await cargarImagenArchivo(file); abrirMenu('imagenes'); showToast('Imagen abierta en el editor para seguir trabajando.'); }
 function fileAsDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||""));r.onerror=()=>reject(r.error||new Error("No pude leer el archivo"));r.readAsDataURL(file);});}
 async function imagenRedesAAdjunto(file){
     if(!file?.type?.startsWith("image/"))return null;
@@ -3453,29 +3529,90 @@ async function imagenRedesAAdjunto(file){
     const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
     return dataUrlToAttachment(c.toDataURL("image/jpeg",.78),file.name.replace(/\.[^.]+$/,".jpg"));
 }
+function proyectoRedesActual(){
+    const modo=String($("redesModo")?.value||"general").trim();
+    const proyecto=String($("redesProyecto")?.value||"").trim();
+    const tema=String($("redesTema")?.value||"").toLowerCase();
+    const mencionaComedor=/comedor|angel guardian|ángel guardián|donaci|juguetes|merlo|alias/.test(`${proyecto} ${tema}`.toLowerCase());
+    const esComedor=modo==='comedor'||mencionaComedor;
+    return {modo, proyecto: proyecto|| (esComedor?'Comedor Ángel Guardián':''), esComedor};
+}
 function plantillaLocalRedes(tema){
+    const {modo, proyecto, esComedor}=proyectoRedesActual();
     const alias=STATE.settings?.comedor?.alias||DEFAULT_SETTINGS.comedor.alias||"NIEBLA.REMO.TAMBOR";
     const incluir=$("redesIncluirAlias")?.checked;
-    const tono=$("redesTono")?.value||"emotivo";
+    const tono=$("redesTono")?.value||"creativo";
     const entrada=String(tema||"").trim();
-    const inicio=tono==="urgente"?"🚨 NECESITAMOS TU AYUDA 🚨":tono==="agradecido"?"💛 GRACIAS POR ESTAR SIEMPRE 💛":"💛 COMEDOR ÁNGEL GUARDIÁN 💛";
-    return `${inicio}\n\n${entrada}\n\nCada colaboración y cada vez que compartís nos ayuda a llegar a más personas. 🙌${incluir?`\n\n💳 Alias Banco Provincia: ${alias}`:""}\n\n📲 Compartí esta publicación para que llegue más lejos.\n\n#ComedorAngelGuardian #Merlo #Solidaridad #AyudarHaceBien`;
+    const inicio=modo==='video'?"🎬 IDEA / GUION BASE":"✨ IDEA CREATIVA";
+    const encabezado=esComedor?"💛 COMEDOR ÁNGEL GUARDIÁN 💛":(proyecto?`✨ ${proyecto.toUpperCase()} ✨`:inicio);
+    const cierre=esComedor?"Compartí esta publicación para que llegue más lejos. 🙌":"Si querés, ahora puedo convertir esto en flyer, prompt visual o texto final para redes.";
+    return `${encabezado}
+
+${entrada}${tono?`
+
+Tono sugerido: ${tono}.`:''}${incluir&&esComedor?`
+
+💳 Alias: ${alias}`:''}
+
+${cierre}`;
 }
 async function generarPublicacionRedesIA(){
-    const tema=String($("redesTema")?.value||"").trim();if(!tema){showToast("Escribí primero qué querés comunicar.");$("redesTema")?.focus();return;}
-    const btn=$("btnGenerarRedesIA");if(btn)btn.disabled=true;setText("redesEstado","✨ ÁNGELA está preparando la publicación…");
-    const plataforma=$("redesPlataforma")?.value||"todas",tipo=$("redesTipo")?.value||"Publicación",tono=$("redesTono")?.value||"emotivo";
-    const alias=STATE.settings?.comedor?.alias||DEFAULT_SETTINGS.comedor.alias||"NIEBLA.REMO.TAMBOR";const incluir=$("redesIncluirAlias")?.checked;
-    const mediaInfo=REDES_IA.files.length?`Material seleccionado por el usuario: ${REDES_IA.files.map(f=>`${f.type.startsWith("video/")?"video":"foto"} ${f.name}`).join(", ")}.`:`No hay fotos ni videos seleccionados.`;
-    const prompt=`Actuá como community manager del Comedor Ángel Guardián. Creá UNA publicación final lista para copiar y publicar.\nTipo: ${tipo}.\nPlataforma: ${plataforma}.\nTono: ${tono}.\nPedido/idea del usuario: ${tema}\n${mediaInfo}\n${incluir?`Incluí exactamente este alias de Banco Provincia: ${alias}.`:"No incluyas datos bancarios salvo que el usuario los haya pedido en el texto."}\nUsá español argentino natural, emojis útiles sin exagerar, un llamado claro a compartir/colaborar y entre 4 y 8 hashtags relevantes. No expliques lo que hiciste, no pongas títulos como 'opción', no inventes cantidades, fechas, direcciones ni necesidades que no estén en el pedido. Si hay fotos adjuntas, tenelas en cuenta para que el texto combine con ellas.`;
+    const tema=String($("redesTema")?.value||"").trim(); if(!tema){showToast("Escribí primero qué querés crear o pedirle a la IA."); $("redesTema")?.focus(); return;}
+    const btn=$("btnGenerarRedesIA"); if(btn)btn.disabled=true; setText("redesEstado","✨ ÁNGELA está preparando el resultado…");
+    const salida=$("redesTipo")?.value||"Texto libre", plataforma=$("redesPlataforma")?.value||"general", tono=$("redesTono")?.value||"creativo", formato=$("redesFormato")?.value||"45";
+    const {modo, proyecto, esComedor}=proyectoRedesActual();
+    const alias=STATE.settings?.comedor?.alias||DEFAULT_SETTINGS.comedor.alias||"NIEBLA.REMO.TAMBOR"; const incluir=$("redesIncluirAlias")?.checked;
+    const mediaInfo=REDES_IA.files.length?`Material seleccionado por el usuario: ${REDES_IA.files.map(f=>`${f.type.startsWith("video/")?"video":"imagen"} ${f.name}`).join(", ")}.`:`No hay fotos ni videos seleccionados.`;
+    const prompt=`Actuá como un asistente creativo integral. Generá una salida útil, concreta y lista para usar.
+Modo creativo: ${modo}.
+Tipo de salida: ${salida}.
+Canal/destino: ${plataforma}.
+Tono/estilo: ${tono}.
+Formato visual sugerido: ${formato}.
+Proyecto o marca: ${proyecto||'General / sin marca fija'}.
+Pedido del usuario: ${tema}.
+${mediaInfo}
+${esComedor?`Este pedido sí pertenece al Comedor Ángel Guardián.${incluir?` Incluí exactamente este alias de Banco Provincia: ${alias}.`:''}`:'NO asumas que se trata del comedor ni de una campaña solidaria. No menciones comedor, donaciones, Merlo ni alias salvo que el usuario lo haya pedido expresamente.'}
+Reglas: respondé en español argentino natural, no expliques el proceso, entregá solo el resultado final útil. Si la salida pedida es texto para publicar, podés usar emojis y hashtags moderados. Si la salida pedida es prompt, devolvé un prompt claro y detallado. Si la salida pedida es una idea visual o guion, devolvelo estructurado y listo para usar.`;
     try{
-        const attachments=[];for(const f of REDES_IA.files.filter(f=>f.type.startsWith("image/")).slice(0,3)){try{const a=await imagenRedesAAdjunto(f);if(a)attachments.push(a);}catch(e){console.warn("Redes IA imagen",e);}}
-        const payload=buildCompatiblePayload(prompt,{socialMedia:true,attachments,answerStyle:"social_post",useWeb:false});
-        const packet=await requestAiWithFallback(payload,new AbortController().signal);let reply=limpiarMarcadoresIdioma(limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(packet.data))));
-        if(!reply)throw new Error("La IA no devolvió texto");$("redesResultado").value=reply;setText("redesEstado",`✅ Publicación creada${attachments.length?` usando ${attachments.length} foto(s) como referencia`:""}. Podés editarla antes de compartir.`);logActivity("Redes IA",`Publicación creada para ${plataforma}`);
-    }catch(error){console.error(error);$("redesResultado").value=plantillaLocalRedes(tema);setText("redesEstado","🟡 No respondió la IA; preparé una versión local para que no pierdas el trabajo.");}
-    finally{if(btn)btn.disabled=false;}
+        const attachments=[]; for(const f of REDES_IA.files.filter(f=>f.type.startsWith('image/')).slice(0,3)){ try{ const a=await imagenRedesAAdjunto(f); if(a)attachments.push(a);}catch(e){console.warn('IA Creativa imagen',e);} }
+        const payload=buildCompatiblePayload(prompt,{socialMedia:true,creativeMode:modo,attachments,answerStyle: salida.toLowerCase().includes('prompt')?'prompt':'creative',useWeb:false});
+        const packet=await requestAiWithFallback(payload,new AbortController().signal); let reply=limpiarMarcadoresIdioma(limpiarRespuestaTecnicaAI(limpiarFormatoIA(extractAiReply(packet.data))));
+        if(!reply) throw new Error('La IA no devolvió texto');
+        $("redesResultado").value=reply;
+        setText("redesEstado",`✅ Resultado creado${attachments.length?` usando ${attachments.length} imagen(es) como referencia`:''}. Podés copiarlo, convertirlo en flyer o seguir editándolo.`);
+        logActivity('IA Creativa',`Salida creada: ${salida} / ${modo}`);
+    }catch(error){ console.error(error); $("redesResultado").value=plantillaLocalRedes(tema); setText("redesEstado","🟡 No respondió la IA; preparé una versión local para que no pierdas el trabajo."); }
+    finally{ if(btn)btn.disabled=false; }
 }
+function wrapCanvasText(ctx,text,maxWidth){
+    const words=String(text||"").trim().split(/\s+/).filter(Boolean),lines=[];let line="";
+    for(const w of words){const test=line?`${line} ${w}`:w;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=w;}else line=test;}if(line)lines.push(line);return lines;
+}
+function redesDimensiones(){const f=$("redesFormato")?.value||"45";return f==="916"?[1080,1920]:f==="11"?[1080,1080]:f==="169"?[1600,900]:[1080,1350];}
+async function dibujarFondoFotoRedes(ctx,w,h){
+    const file=REDES_IA.files.find(f=>f.type.startsWith("image/")); if(!file) return false;
+    try{const url=await fileAsDataUrl(file); const img=new Image(); await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url;}); const scale=Math.max(w/img.naturalWidth,h/img.naturalHeight); const dw=img.naturalWidth*scale, dh=img.naturalHeight*scale; ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh); return true;}catch{return false;}
+}
+async function crearFlyerRedes(){
+    const canvas=$("canvasRedesFlyer"); if(!canvas)return; const [w,h]=redesDimensiones(); canvas.width=w; canvas.height=h; const ctx=canvas.getContext("2d");
+    const conFoto=await dibujarFondoFotoRedes(ctx,w,h);
+    if(!conFoto){const g=ctx.createLinearGradient(0,0,w,h); g.addColorStop(0,"#081426"); g.addColorStop(.52,"#3b1f68"); g.addColorStop(1,"#b52b62"); ctx.fillStyle=g; ctx.fillRect(0,0,w,h);}
+    const shade=ctx.createLinearGradient(0,0,0,h); shade.addColorStop(0,"rgba(2,5,10,.30)"); shade.addColorStop(.45,"rgba(2,5,10,.58)"); shade.addColorStop(1,"rgba(2,5,10,.92)"); ctx.fillStyle=shade; ctx.fillRect(0,0,w,h);
+    const pad=Math.round(w*.075); const {modo, proyecto, esComedor}=proyectoRedesActual(); const tono=$("redesTono")?.value||'creativo';
+    ctx.textAlign="left"; ctx.textBaseline="top"; ctx.fillStyle="#67e8f9"; ctx.font=`700 ${Math.round(w*.032)}px Arial`;
+    const tag=esComedor?"COMEDOR ÁNGEL GUARDIÁN":(proyecto?String(proyecto).toUpperCase():(modo==='video'?'VIDEO / REEL':modo==='3d'?'3D / IDEA VISUAL':'IA CREATIVA'));
+    ctx.fillText(tag,pad,pad);
+    const tema=String($("redesTema")?.value||"Creá algo llamativo").trim(); ctx.fillStyle="#ffffff"; ctx.font=`800 ${Math.round(w*.07)}px Arial`;
+    let lines=wrapCanvasText(ctx,tema,w-pad*2).slice(0,h>1500?7:5); let y=Math.max(pad*2.2,h*.44); const lh=Math.round(w*.082); for(const line of lines){ctx.fillText(line,pad,y); y+=lh;}
+    ctx.font=`700 ${Math.round(w*.036)}px Arial`; ctx.fillStyle="#fde68a"; ctx.fillText(`Tono: ${tono}`,pad,Math.min(h-pad*2.4,y+20));
+    const info=String($("redesResultado")?.value||"").trim(); if(info){ctx.fillStyle="#e2e8f0"; ctx.font=`600 ${Math.round(w*.025)}px Arial`; const body=wrapCanvasText(ctx,info,w-pad*2).slice(0,h>1500?12:8); let by=Math.min(h*.72,y+95); const blh=Math.round(w*.034); body.forEach(line=>{ctx.fillText(line,pad,by); by+=blh;});}
+    if(esComedor && $("redesIncluirAlias")?.checked){ const alias=STATE.settings?.comedor?.alias||DEFAULT_SETTINGS.comedor.alias||"NIEBLA.REMO.TAMBOR"; ctx.font=`700 ${Math.round(w*.035)}px Arial`; ctx.fillStyle="#fde68a"; ctx.fillText(`Alias: ${alias}`,pad,h-pad*1.8); }
+    ctx.fillStyle="#ffffff"; ctx.font=`700 ${Math.round(w*.033)}px Arial`; ctx.fillText(esComedor?"SUMATE • DONÁ • COMPARTÍ":"CREÁ • DISEÑÁ • COMPARTÍ",pad,h-pad*1.2);
+    REDES_IA.flyerBlob=await new Promise(r=>canvas.toBlob(r,'image/png',.95)); setText('redesEstado','✅ Flyer preparado. Podés guardarlo, editarlo o compartirlo.'); showToast('Flyer creado.');
+}
+async function guardarFlyerRedes(){ if(!REDES_IA.flyerBlob) await crearFlyerRedes(); if(!REDES_IA.flyerBlob) return; const a=document.createElement('a'); a.href=URL.createObjectURL(REDES_IA.flyerBlob); a.download=`ia-creativa-${Date.now()}.png`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); }
+async function usarFlyerEnImagenes(){ if(!REDES_IA.flyerBlob) await crearFlyerRedes(); if(!REDES_IA.flyerBlob) return; const f=new File([REDES_IA.flyerBlob],'flyer-ia-creativa.png',{type:'image/png'}); await cargarImagenArchivo(f); abrirMenu('imagenes'); showToast('Flyer abierto en Imágenes para seguir editando.'); }
 async function copiarPublicacionRedes(){const t=String($("redesResultado")?.value||"").trim();if(!t){showToast("Primero creá o escribí la publicación.");return;}try{await navigator.clipboard.writeText(t);showToast("Texto copiado.");}catch{const ta=$("redesResultado");ta.focus();ta.select();document.execCommand?.("copy");showToast("Texto seleccionado para copiar.");}}
 function wrapCanvasText(ctx,text,maxWidth){
     const words=String(text||"").trim().split(/\s+/).filter(Boolean),lines=[];let line="";
@@ -3501,7 +3638,7 @@ async function guardarFlyerRedes(){if(!REDES_IA.flyerBlob)await crearFlyerRedes(
 async function usarFlyerEnImagenes(){if(!REDES_IA.flyerBlob)await crearFlyerRedes();if(!REDES_IA.flyerBlob)return;const f=new File([REDES_IA.flyerBlob],"flyer-redes-ia.png",{type:"image/png"});await cargarImagenArchivo(f);abrirMenu("imagenes");showToast("Flyer abierto en Imágenes para seguir editando.");}
 async function compartirPublicacionRedes(){
     const text=String($("redesResultado")?.value||"").trim()||plantillaLocalRedes($("redesTema")?.value||"");if(!text.trim()){showToast("Primero escribí o creá una publicación.");return;}
-    let files=[];if(REDES_IA.flyerBlob)files.push(new File([REDES_IA.flyerBlob],"flyer-comedor.png",{type:"image/png"}));files.push(...REDES_IA.files.slice(0,8));
+    let files=[];if(REDES_IA.flyerBlob)files.push(new File([REDES_IA.flyerBlob],"flyer-ia-creativa.png",{type:"image/png"}));files.push(...REDES_IA.files.slice(0,8));
     try{
         if(navigator.share){let data={text};if(files.length && (!navigator.canShare || navigator.canShare({files})))data.files=files;await navigator.share(data);setText("redesEstado","✅ Abrí el menú Compartir del celular. Elegí Instagram, Facebook, TikTok, WhatsApp u otra app.");return;}
     }catch(error){if(error?.name==="AbortError")return;console.warn("Compartir archivos",error);try{if(navigator.share){await navigator.share({text});return;}}catch(e){if(e?.name==="AbortError")return;}}
