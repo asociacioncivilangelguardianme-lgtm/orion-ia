@@ -245,6 +245,33 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 @media(max-width:768px){#angelaProduccionModal{padding:3px}#angelaProduccionShell{height:calc(100vh - 6px);border-radius:14px}#angelaProduccionBody{padding:9px}}
 </style>
 
+
+<style id="angela-tools-drawer-style">
+/* V7.0 · PANEL LATERAL DE HERRAMIENTAS - agregado sin reemplazar el formato original */
+#angelaToolsBackdrop{position:fixed;inset:0;background:rgba(1,5,12,.60);backdrop-filter:blur(2px);z-index:8900;opacity:0;pointer-events:none;transition:opacity .2s ease}
+#angelaToolsBackdrop.abierto{opacity:1;pointer-events:auto}
+#angelaToolsDrawer{position:fixed;z-index:8910;top:76px;bottom:18px;left:max(326px,calc((100vw - 1500px)/2 + 330px));right:max(18px,calc((100vw - 1500px)/2 + 265px));background:rgba(8,20,38,.98);border:1px solid #334a72;border-radius:22px;box-shadow:0 26px 90px rgba(0,0,0,.58),0 0 45px rgba(0,150,255,.10);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-18px) scale(.99);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease}
+#angelaToolsDrawer.abierto{transform:translateX(0) scale(1);opacity:1;pointer-events:auto}
+.angela-tools-head{padding:16px 18px 12px;border-bottom:1px solid #253c60;background:linear-gradient(180deg,rgba(15,31,58,.98),rgba(7,19,33,.96))}
+.angela-tools-search{width:100%;background:#071321;border:1px solid #36537b;color:#fff;border-radius:12px;padding:10px 12px;font-size:13px;outline:none}
+.angela-tools-search:focus{border-color:#22d3ee;box-shadow:0 0 0 2px rgba(34,211,238,.12)}
+.angela-tools-scroll{padding:15px 18px 22px;overflow:auto;flex:1}
+.angela-tools-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.angela-tool-card{background:linear-gradient(155deg,#0a1728,#07111f);border:1px solid #294260;border-radius:16px;padding:14px;min-height:145px;display:flex;flex-direction:column;justify-content:space-between;transition:.18s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.angela-tool-card:hover{transform:translateY(-2px);border-color:#536f9b;background:linear-gradient(155deg,#10223b,#09182b);box-shadow:0 12px 28px rgba(0,0,0,.24)}
+.angela-tool-card.oculta{display:none}
+.angela-tool-icon{font-size:27px;line-height:1;margin-bottom:10px}
+.angela-tool-title{font-weight:800;font-size:14px;color:#f8fafc}
+.angela-tool-sub{font-size:10px;line-height:1.35;color:#94a3b8;margin-top:5px;min-height:28px}
+.angela-tool-tag{display:inline-flex;align-items:center;width:max-content;border:1px solid #314c70;border-radius:999px;padding:2px 7px;font-size:9px;color:#93c5fd;margin-top:8px;background:#071321}
+.angela-tool-use{margin-top:12px;width:100%;border:1px solid #7c3aed;background:linear-gradient(90deg,rgba(124,58,237,.72),rgba(236,72,153,.70));padding:8px 10px;border-radius:10px;font-size:11px;font-weight:800;color:#fff;transition:.16s}
+.angela-tool-use:hover{filter:brightness(1.12)}
+.angela-tools-empty{display:none;text-align:center;color:#94a3b8;padding:34px 10px;font-size:13px}
+.angela-tools-empty.visible{display:block}
+@media(max-width:1100px){#angelaToolsDrawer{left:18px;right:18px}.angela-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){#angelaToolsDrawer{top:66px;left:5px;right:5px;bottom:5px;border-radius:15px}.angela-tools-grid{grid-template-columns:1fr}.angela-tool-card{min-height:126px}.angela-tools-head{padding:12px}.angela-tools-scroll{padding:11px}}
+</style>
+
 </head>
 <body>
 <header class="border-b border-slate-700 bg-slate-950/80 sticky top-0 z-50 backdrop-blur">
@@ -271,6 +298,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <h2 class="font-bold text-yellow-300 mb-4">🛡️ MENÚ PRINCIPAL</h2>
 <button class="menu-btn bg-blue-600" onclick="irInicio()">🏠 Inicio</button>
 <button class="menu-btn" onclick="focusChat()">💬 Chat Directo</button>
+<button id="btnHerramientasPanel" class="menu-btn" onclick="abrirPanelHerramientasAngela()">🧰 Herramientas <span class="float-right">›</span></button>
 <button class="menu-btn" onclick="toggleMenu('imagenes')">🖼️ Imágenes y Diseños <span class="float-right">›</span></button>
 <div id="imagenes" class="submenu custom-scrollbar">
 <h3 class="font-bold text-cyan-300 mb-3">🎨 Editor de imágenes</h3>
@@ -770,6 +798,44 @@ button:disabled{opacity:.55;cursor:not-allowed;}
     </div>
   </div>
 </div>
+
+
+<!-- V7.0 · PANEL LATERAL DE HERRAMIENTAS -->
+<div id="angelaToolsBackdrop" onclick="cerrarPanelHerramientasAngela()" aria-hidden="true"></div>
+<section id="angelaToolsDrawer" role="dialog" aria-modal="true" aria-labelledby="angelaToolsTitle">
+  <div class="angela-tools-head">
+    <div class="flex items-start justify-between gap-3 mb-3">
+      <div>
+        <h2 id="angelaToolsTitle" class="font-bold text-cyan-300 text-lg">🧰 Herramientas y funciones</h2>
+        <p class="text-[10px] text-slate-400 mt-1">Elegí qué querés abrir. Todo sigue funcionando dentro de ÁNGELA.</p>
+      </div>
+      <button onclick="cerrarPanelHerramientasAngela()" class="quick text-xs px-3" title="Cerrar panel">✕ Cerrar</button>
+    </div>
+    <input id="angelaToolsSearch" class="angela-tools-search" type="search" placeholder="🔎 Buscar: láser, imágenes, 3D, impresión, archivos..." oninput="filtrarHerramientasAngela()" autocomplete="off">
+  </div>
+  <div class="angela-tools-scroll custom-scrollbar">
+    <div id="angelaToolsGrid" class="angela-tools-grid">
+      <article class="angela-tool-card" data-search="chat ia conversar asistente inteligencia artificial"><div><div class="angela-tool-icon">💬</div><div class="angela-tool-title">Chat IA</div><div class="angela-tool-sub">Hablar o escribirle directamente a ÁNGELA.</div><span class="angela-tool-tag">IA</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('chat')">Usar</button></article>
+      <article class="angela-tool-card" data-search="internet web buscar navegar investigación"><div><div class="angela-tool-icon">🌐</div><div class="angela-tool-title">Internet / Web</div><div class="angela-tool-sub">Búsqueda web, enlaces y herramientas online.</div><span class="angela-tool-tag">Web</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('web')">Usar</button></article>
+      <article class="angela-tool-card" data-search="imagenes diseño foto editor jarvis stucki dither grabado"><div><div class="angela-tool-icon">🎨</div><div class="angela-tool-title">Imágenes y Diseños</div><div class="angela-tool-sub">Editor, filtros y preparación de imágenes.</div><span class="angela-tool-tag">Diseño</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('imagenes')">Usar</button></article>
+      <article class="angela-tool-card" data-search="laser lightburn grabado corte rotativo virola termo vaso medalla"><div><div class="angela-tool-icon">🔥</div><div class="angela-tool-title">Láser</div><div class="angela-tool-sub">Parámetros, materiales y acceso a Producción Pro.</div><span class="angela-tool-tag">Taller</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('laser')">Usar</button></article>
+      <article class="angela-tool-card" data-search="produccion pro lightburn medidas rotativo virolas termos vasos medallas"><div><div class="angela-tool-icon">🛠️</div><div class="angela-tool-title">Producción Pro</div><div class="angela-tool-sub">Centro avanzado: Láser Pro, Impresión y 3D/STL.</div><span class="angela-tool-tag">PRO</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('produccion')">Usar</button></article>
+      <article class="angela-tool-card" data-search="impresion imprimir epson sublimacion papel foto pdf"><div><div class="angela-tool-icon">🖨️</div><div class="angela-tool-title">Impresión</div><div class="angela-tool-sub">Preparar e imprimir imágenes o documentos.</div><span class="angela-tool-tag">Producción</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('impresion')">Usar</button></article>
+      <article class="angela-tool-card" data-search="3d stl cura ender open scad modelo imprimir 3d"><div><div class="angela-tool-icon">🧊</div><div class="angela-tool-title">3D / STL</div><div class="angela-tool-sub">Crear STL, modelos básicos y preparar impresión 3D.</div><span class="angela-tool-tag">3D</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('3d')">Usar</button></article>
+      <article class="angela-tool-card" data-search="sublimacion taza remera mate gorra temperatura tiempo"><div><div class="angela-tool-icon">👕</div><div class="angela-tool-title">Sublimación</div><div class="angela-tool-sub">Guías, tiempos y temperaturas del taller.</div><span class="angela-tool-tag">Taller</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('sublimacion')">Usar</button></article>
+      <article class="angela-tool-card" data-search="documentos pdf archivos multimedia word excel imagen video"><div><div class="angela-tool-icon">📄</div><div class="angela-tool-title">Archivos y Documentos</div><div class="angela-tool-sub">Abrir y trabajar con archivos y multimedia.</div><span class="angela-tool-tag">Archivos</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('archivos')">Usar</button></article>
+      <article class="angela-tool-card" data-search="proyectos trabajos guardar taller organizacion"><div><div class="angela-tool-icon">📂</div><div class="angela-tool-title">Proyectos</div><div class="angela-tool-sub">Organizar trabajos, materiales y máquinas.</div><span class="angela-tool-tag">Organización</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('proyectos')">Usar</button></article>
+      <article class="angela-tool-card" data-search="stock inventario materiales insumos taller"><div><div class="angela-tool-icon">📦</div><div class="angela-tool-title">Stock</div><div class="angela-tool-sub">Control de materiales e insumos.</div><span class="angela-tool-tag">Taller</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('stock')">Usar</button></article>
+      <article class="angela-tool-card" data-search="redes ia social facebook instagram tiktok publicaciones flyer"><div><div class="angela-tool-icon">📣</div><div class="angela-tool-title">Redes IA</div><div class="angela-tool-sub">Publicaciones, flyers y contenido para redes.</div><span class="angela-tool-tag">IA</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('redesIA')">Usar</button></article>
+      <article class="angela-tool-card" data-search="tipografia 3d motion spline blender capcut video"><div><div class="angela-tool-icon">✨</div><div class="angela-tool-title">Tipografía 3D / Motion</div><div class="angela-tool-sub">Texto 3D, animación y accesos a herramientas creativas.</div><span class="angela-tool-tag">Creativo</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('motion3d')">Usar</button></article>
+      <article class="angela-tool-card" data-search="canva diseño plantilla flyer redes"><div><div class="angela-tool-icon">🟣</div><div class="angela-tool-title">Canva</div><div class="angela-tool-sub">Abrir Canva para diseños y publicaciones.</div><span class="angela-tool-tag">Complemento</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('canva')">Usar</button></article>
+      <article class="angela-tool-card" data-search="google drive nube archivos guardar abrir"><div><div class="angela-tool-icon">🟨</div><div class="angela-tool-title">Google Drive</div><div class="angela-tool-sub">Elegir archivos desde Drive o el dispositivo.</div><span class="angela-tool-tag">Nube</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('drive')">Usar</button></article>
+      <article class="angela-tool-card" data-search="comedor angel guardian donaciones campaña publicaciones"><div><div class="angela-tool-icon">🥣</div><div class="angela-tool-title">Comedor Ángel Guardián</div><div class="angela-tool-sub">Herramientas y contenido del comedor.</div><span class="angela-tool-tag">Comedor</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('comedor')">Usar</button></article>
+      <article class="angela-tool-card" data-search="config configuracion ajustes voz microfono perfil sistema"><div><div class="angela-tool-icon">⚙️</div><div class="angela-tool-title">Configuración</div><div class="angela-tool-sub">Voz, perfiles, preferencias y sistema.</div><span class="angela-tool-tag">Sistema</span></div><button class="angela-tool-use" onclick="usarHerramientaPanelAngela('config')">Usar</button></article>
+    </div>
+    <div id="angelaToolsEmpty" class="angela-tools-empty">No encontré herramientas con ese nombre.</div>
+  </div>
+</section>
 
 <div id="toastAngela" class="hidden" role="status" aria-live="polite"></div>
 
@@ -3705,5 +3771,52 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
 <script type="module" src="./pro/monitoring.js"></script>
 <script type="module" src="./pro/cloud.js"></script>
 <script type="module" src="./pro/wakeword.js"></script>
+
+<script id="angela-tools-drawer-script">
+/* V7.0 · PANEL LATERAL DE HERRAMIENTAS */
+function abrirPanelHerramientasAngela(){
+  const d=document.getElementById('angelaToolsDrawer'),b=document.getElementById('angelaToolsBackdrop');
+  if(!d||!b)return;
+  d.classList.add('abierto'); b.classList.add('abierto');
+  document.body.style.overflow='hidden';
+  const s=document.getElementById('angelaToolsSearch');
+  if(s){s.value=''; filtrarHerramientasAngela(); setTimeout(()=>s.focus(),120);}
+}
+function cerrarPanelHerramientasAngela(){
+  document.getElementById('angelaToolsDrawer')?.classList.remove('abierto');
+  document.getElementById('angelaToolsBackdrop')?.classList.remove('abierto');
+  if(!document.getElementById('angelaProduccionModal')?.classList.contains('abierto')) document.body.style.overflow='';
+}
+function filtrarHerramientasAngela(){
+  const q=(document.getElementById('angelaToolsSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const cards=[...document.querySelectorAll('#angelaToolsGrid .angela-tool-card')];let visibles=0;
+  cards.forEach(card=>{const hay=(card.getAttribute('data-search')||'')+' '+card.innerText;const n=hay.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');const ok=!q||n.includes(q);card.classList.toggle('oculta',!ok);if(ok)visibles++;});
+  document.getElementById('angelaToolsEmpty')?.classList.toggle('visible',visibles===0);
+}
+function usarHerramientaPanelAngela(tipo){
+  cerrarPanelHerramientasAngela();
+  switch(tipo){
+    case 'chat': focusChat(); break;
+    case 'web': abrirMenu('web'); break;
+    case 'imagenes': abrirMenu('imagenes'); break;
+    case 'laser': abrirMenu('laser'); break;
+    case 'produccion': abrirCentroProduccion('laser'); break;
+    case 'impresion': abrirCentroProduccion('impresion'); break;
+    case '3d': abrirCentroProduccion('3d'); break;
+    case 'sublimacion': abrirMenu('sublimacion'); break;
+    case 'archivos': abrirMenu('archivos'); break;
+    case 'proyectos': abrirMenu('proyectos'); break;
+    case 'stock': abrirMenu('stock'); break;
+    case 'redesIA': abrirMenu('redesIA'); break;
+    case 'motion3d': abrirMenu('motion3d'); break;
+    case 'comedor': abrirMenu('comedor'); break;
+    case 'config': abrirMenu('config'); break;
+    case 'canva': if(typeof abrirCanva==='function') abrirCanva(); else window.open('https://www.canva.com/','_blank'); break;
+    case 'drive': if(typeof elegirDesdeDrive==='function') elegirDesdeDrive(); else abrirMenu('archivos'); break;
+  }
+}
+window.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.getElementById('angelaToolsDrawer')?.classList.contains('abierto'))cerrarPanelHerramientasAngela();});
+</script>
+
 </body>
 </html>
