@@ -191,8 +191,8 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 </style>
 
 
-<style id="angela-menu-cards-v76-style">
-/* V7.6 · paneles de tarjetas sobre el diseño original */
+<style id="angela-menu-cards-v77-style">
+/* V7.7 · paneles de tarjetas + pantalla grande universal */
 #angelaMenuBackdrop{position:fixed;inset:0;background:rgba(1,5,12,.68);backdrop-filter:blur(3px);z-index:9200;opacity:0;pointer-events:none;transition:.18s ease}
 #angelaMenuBackdrop.open{opacity:1;pointer-events:auto}
 #angelaMenuDrawer{position:fixed;z-index:9210;top:72px;bottom:14px;left:max(326px,calc((100vw - 1500px)/2 + 330px));right:14px;background:rgba(7,19,33,.985);border:1px solid #334a72;border-radius:22px;box-shadow:0 28px 90px rgba(0,0,0,.62),0 0 46px rgba(0,150,255,.11);display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transform:translateX(-16px) scale(.992);transition:.2s ease}
@@ -221,6 +221,27 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 .angela-menu-empty{display:none;text-align:center;color:#94a3b8;padding:36px 10px;font-size:13px}.angela-menu-empty.visible{display:block}
 @media(max-width:1100px){#angelaMenuDrawer{left:12px;right:12px}.angela-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.angela-menu-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){#angelaMenuDrawer{top:64px;left:5px;right:5px;bottom:5px;border-radius:15px}.angela-menu-grid{grid-template-columns:1fr}.angela-menu-card{min-height:128px}.angela-menu-head{padding:11px}.angela-menu-body{padding:10px}.angela-menu-detail-grid{grid-template-columns:1fr}.angela-menu-head-row{align-items:flex-start}.angela-menu-actions button{padding:7px!important;font-size:10px!important}}
+
+<style id="angela-v77-fullscreen-style">
+/* V7.7 · AMPLIAR PANTALLA EN TODOS LOS PANELES Y MÓDULOS */
+#btnMaxAngelaPanel{font-weight:900;border-color:#22d3ee;background:linear-gradient(135deg,#0e7490,#4338ca);box-shadow:0 0 0 1px rgba(34,211,238,.18),0 8px 24px rgba(0,0,0,.28)}
+#btnMaxAngelaPanel:hover{filter:brightness(1.15)}
+#btnMaxAngelaPanelFloat{position:absolute;right:18px;bottom:16px;z-index:4;border:1px solid #22d3ee;background:linear-gradient(135deg,#0e7490,#4338ca);color:#fff;border-radius:999px;padding:10px 15px;font-size:11px;font-weight:900;box-shadow:0 10px 28px rgba(0,0,0,.4)}
+#angelaMenuDrawer.maximizado #btnMaxAngelaPanelFloat{background:linear-gradient(135deg,#334155,#0f172a)}
+#angelaWorkspaceBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);z-index:9340;display:none}
+#angelaWorkspaceBackdrop.open{display:block}
+#angelaWorkspaceModal{position:fixed;z-index:9350;inset:8px;background:#071321;border:1px solid #3b5680;border-radius:22px;box-shadow:0 28px 100px rgba(0,0,0,.68);display:none;flex-direction:column;overflow:hidden}
+#angelaWorkspaceModal.open{display:flex}
+.angela-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #294260;background:linear-gradient(180deg,#101f38,#081426)}
+.angela-workspace-title{font-weight:900;color:#67e8f9;font-size:16px}
+.angela-workspace-actions{display:flex;gap:8px;flex-wrap:wrap}
+#angelaWorkspaceBody{flex:1;overflow:auto;padding:14px;min-height:0}
+#angelaWorkspaceBody>.submenu{display:block!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:14px!important;width:100%!important;background:#081426!important;border:1px solid #253c60!important;border-radius:16px!important}
+#angelaWorkspaceBody .motion-preview-shell{min-height:360px}
+#angelaWorkspaceBody #canvasImagen{max-height:64vh;width:auto!important;max-width:100%!important}
+#angelaWorkspaceBody .file-work-preview{max-height:56vh}
+@media(max-width:700px){#angelaWorkspaceModal{inset:3px;border-radius:14px}.angela-workspace-head{padding:9px 10px}.angela-workspace-title{font-size:13px}#angelaWorkspaceBody{padding:8px}#btnMaxAngelaPanelFloat{right:10px;bottom:10px}}
+</style>
 </style>
 
 </head>
@@ -678,7 +699,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "7.6.0-paneles-tarjetas-completos",
+    version: "7.7.0-pantalla-grande-universal",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -3092,7 +3113,7 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
         <p id="angelaMenuDesc" class="text-[10px] text-slate-400 mt-1">Elegí una tarjeta para trabajar.</p>
       </div>
       <div class="angela-menu-actions">
-        <button id="btnMaxAngelaPanel" onclick="toggleMaxPanelAngela()" class="quick text-xs px-3" title="Ampliar panel">⛶ Ampliar</button>
+        <button id="btnMaxAngelaPanel" onclick="toggleMaxPanelAngela()" class="quick text-xs px-3" title="Ampliar panel a pantalla completa">⛶ AMPLIAR PANTALLA</button>
         <button onclick="cerrarPanelMenuAngela()" class="quick text-xs px-3" title="Cerrar">✕ Cerrar</button>
       </div>
     </div>
@@ -3103,10 +3124,11 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
     <div id="angelaMenuGrid" class="angela-menu-grid"></div>
     <div id="angelaMenuEmpty" class="angela-menu-empty">No encontré una tarjeta con ese nombre.</div>
   </div>
+  <button id="btnMaxAngelaPanelFloat" onclick="toggleMaxPanelAngela()" title="Ampliar / restaurar panel">⛶ AMPLIAR PANTALLA</button>
 </section>
 
 
-<script id="angela-menu-cards-v76-script">
+<script id="angela-menu-cards-v77-script">
 (function(){
   const $a=id=>document.getElementById(id);
   const card=(icon,title,sub,tag,action,value,button='Usar')=>({icon,title,sub,tag,action,value,button});
@@ -3131,8 +3153,9 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       card('☁️','Google Drive','Elegir un archivo desde Drive usando el selector del dispositivo.','Archivos','file','drive','Elegir')
     ]},
     imagenes:{title:'🖼️ Imágenes y Diseños',desc:'Acciones visuales directas. Podés cargar una foto, editarla y abrirla en pantalla grande.',cards:[
+      card('⛶','Editor a pantalla completa','Abrir todo el editor de imágenes ocupando casi toda la pantalla.','Pantalla grande','legacyBig','imagenes','⛶ Trabajar grande'),
       card('📸','Cargar imagen','Elegir JPG, PNG o WEBP y abrirla en el editor.','Entrada','image','upload','Elegir'),
-      card('🎛️','Editor completo','Abrir el editor clásico con filtros, medidas, brillo y contraste.','Editor','legacy','imagenes','Abrir'),
+      card('🎛️','Editor completo','Abrir el editor clásico con filtros, medidas, brillo y contraste.','Editor','legacyBig','imagenes','⛶ Abrir grande'),
       card('🔍','Pantalla grande','Abrir el editor grande con zoom, arrastre y comparación.','Vista','image','viewer','Ampliar'),
       card('✨','Mejorar automático','Ajuste inicial de contraste y nitidez sin reemplazar el original.','Retoque','image','improve'),
       card('🪄','Quitar fondo claro','Elimina localmente fondos casi blancos.','Retoque','image','removebg'),
@@ -3147,7 +3170,8 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       card('✨','Tipografía 3D','Pasar al módulo de texto 3D y Motion.','Creativo','section','motion3d','Abrir')
     ]},
     motion3d:{title:'✨ Tipografía 3D / Motion',desc:'Texto animado, estilos 3D y accesos para continuar el trabajo en otras herramientas.',cards:[
-      card('🎛️','Editor Motion','Abrir todos los controles de texto, estilo, movimiento y formato.','Editor','legacy','motion3d','Abrir'),
+      card('⛶','Motion a pantalla completa','Abrir todos los controles de Tipografía 3D / Motion en área grande.','Pantalla grande','legacyBig','motion3d','⛶ Trabajar grande'),
+      card('🎛️','Editor Motion','Abrir todos los controles de texto, estilo, movimiento y formato.','Editor','legacyBig','motion3d','⛶ Abrir grande'),
       card('🔍','Vista grande','Revisar el texto 3D en pantalla grande.','Vista','motion','viewer','Ampliar'),
       card('🪄','Crear prompt','Generar el prompt actual del diseño 3D.','Prompt','motion','prompt'),
       card('📱','Preparar TikTok / Reel','Configurar salida vertical 9:16.','Video','motion','tiktok'),
@@ -3159,8 +3183,9 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       card('🪞','Estilo Cromado','Aplicar estilo cromado al texto y abrir editor.','Estilo','motionStyle','chrome','Aplicar')
     ]},
     laser:{title:'🔥 Herramientas Láser',desc:'Atajos para parámetros, preparación fotográfica y trabajo en grande. Los valores son puntos de partida: siempre probá en una muestra.',cards:[
+      card('⛶','Láser a pantalla completa','Abrir parámetros, máquina, proceso y materiales en un área grande y legible.','Pantalla grande','legacyBig','laser','⛶ Trabajar grande'),
       card('🖥️','Mesa de trabajo grande','Abrir la imagen en pantalla grande con controles tipo Lightroom: zoom, mejorar, Jarvis, Stucki y preparación láser.','Editor Pro','laser','lab','Abrir'),
-      card('🎛️','Parámetros y materiales','Abrir la biblioteca clásica de máquina, proceso y materiales.','Parámetros','legacy','laser','Abrir'),
+      card('🎛️','Parámetros y materiales','Abrir la biblioteca clásica de máquina, proceso y materiales.','Parámetros','legacyBig','laser','⛶ Abrir grande'),
       card('▦','Jarvis','Aplicar Jarvis a la imagen activa y abrir vista grande.','Imagen','laserImage','jarvis','Aplicar'),
       card('▦','Stucki','Aplicar Stucki a la imagen activa y abrir vista grande.','Imagen','laserImage','stucki','Aplicar'),
       card('▦','Dither','Aplicar tramado Dither a la imagen activa.','Imagen','laserImage','dither','Aplicar'),
@@ -3177,24 +3202,27 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       card('🟤','Cuero','Ver referencia de grabado/corte y advertencia de materiales.','Material','laserMaterial','cuero','Ver'),
       card('◼️','Acrílico','Ver referencia según color y tipo de láser.','Material','laserMaterial','acrilico','Ver'),
       card('📦','Cartón','Ver referencia y recordar supervisión constante.','Material','laserMaterial','carton','Ver'),
-      card('📐','Medidas de imagen','Abrir ancho, alto y DPI del editor de imágenes.','Medidas','legacy','imagenes','Abrir')
+      card('📐','Medidas de imagen','Abrir ancho, alto y DPI del editor de imágenes.','Medidas','legacyBig','imagenes','⛶ Abrir grande')
     ]},
     proyectos:{title:'📂 Proyectos',desc:'Crear, completar y revisar trabajos sin perder el formulario original.',cards:[
+      card('⛶','Proyectos a pantalla completa','Abrir el formulario completo de proyectos en área grande.','Pantalla grande','legacyBig','proyectos','⛶ Trabajar grande'),
       card('➕','Nuevo proyecto','Abrir gestión y empezar por el nombre del proyecto.','Proyecto','project','new','Crear'),
-      card('📂','Gestión completa','Abrir todos los campos de proyecto, máquina, material, medidas y notas.','Proyecto','legacy','proyectos','Abrir'),
+      card('📂','Gestión completa','Abrir todos los campos de proyecto, máquina, material, medidas y notas.','Proyecto','legacyBig','proyectos','⛶ Abrir grande'),
       card('🖼️','Trabajar imagen primero','Abrir Imágenes y Diseños antes de guardar el proyecto.','Diseño','section','imagenes','Abrir'),
       card('🔥','Elegir parámetros láser','Ir al panel de Láser para definir material y proceso.','Láser','section','laser','Abrir'),
       card('📦','Revisar stock','Comprobar materiales e insumos antes de producir.','Stock','section','stock','Abrir'),
       card('💬','Consultar a ÁNGELA','Pedir un plan de trabajo o ayuda con el proyecto.','IA','chat','')
     ]},
     stock:{title:'📦 Stock / Insumos',desc:'Accesos rápidos al inventario del taller.',cards:[
+      card('⛶','Stock a pantalla completa','Abrir el control de stock en un área grande.','Pantalla grande','legacyBig','stock','⛶ Trabajar grande'),
       card('➕','Agregar insumo','Abrir Stock y escribir un material nuevo.','Stock','stock','new','Agregar'),
-      card('📦','Ver inventario','Abrir la lista completa de insumos y cantidades.','Stock','legacy','stock','Abrir'),
+      card('📦','Ver inventario','Abrir la lista completa de insumos y cantidades.','Stock','legacyBig','stock','⛶ Abrir grande'),
       card('📂','Usar en proyecto','Abrir Proyectos para asociar material y trabajo.','Proyecto','section','proyectos','Abrir'),
       card('🔥','Material para láser','Ir a la biblioteca de materiales del láser.','Láser','section','laser','Abrir'),
       card('👕','Material para sublimación','Ir a la biblioteca de productos sublimables.','Sublimación','section','sublimacion','Abrir')
     ]},
     archivos:{title:'📁 Archivos y Multimedia',desc:'Cámara, fotos, video, documentos y servicios de diseño.',cards:[
+      card('⛶','Archivos a pantalla completa','Abrir cámara, documentos, video y vistas previas en área grande.','Pantalla grande','legacyBig','archivos','⛶ Trabajar grande'),
       card('📷','Cámara','Tomar una foto desde el dispositivo.','Entrada','file','camera','Abrir'),
       card('🖼️','Fotos','Elegir una foto y trabajarla en ÁNGELA.','Imagen','file','photos','Elegir'),
       card('🎬','Video','Elegir un video y abrir el laboratorio básico.','Video','file','video','Elegir'),
@@ -3206,15 +3234,17 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       card('🖼️','Editor de imágenes','Pasar al módulo visual y abrir pantalla grande si hace falta.','Diseño','section','imagenes','Abrir')
     ]},
     web:{title:'🌐 Web y accesos',desc:'Búsquedas y servicios externos. Se abren solo cuando vos elegís la tarjeta.',cards:[
+      card('⛶','Web a pantalla completa','Abrir búsquedas y accesos Web en área grande.','Pantalla grande','legacyBig','web','⛶ Trabajar grande'),
       card('🔎','Buscar en Google','Abrir el buscador interno del módulo Web.','Web','web','googleSearch','Buscar'),
       card('▶️','Buscar en YouTube','Abrir el buscador de YouTube.','Video','web','youtubeSearch','Buscar'),
       card('💬','WhatsApp','Abrir WhatsApp.','Comunicación','web','whatsapp','Abrir'),
       card('📧','Gmail','Abrir Gmail.','Comunicación','web','gmail','Abrir'),
       card('📍','Maps / ubicación','Usar ubicación y abrir Maps cuando la autorices.','Mapa','web','maps','Abrir'),
-      card('🌐','Panel Web completo','Abrir los campos clásicos de búsquedas y enlaces.','Web','legacy','web','Abrir')
+      card('🌐','Panel Web completo','Abrir los campos clásicos de búsquedas y enlaces.','Web','legacyBig','web','⛶ Abrir grande')
     ]},
     comedor:{title:'🥣 Comedor Ángel Guardián',desc:'Este módulo queda separado del uso general de ÁNGELA. Solo entra acá cuando vos querés trabajar con el comedor.',cards:[
-      card('🥣','Datos del comedor','Abrir ubicación, contacto, redes, alias y notas.','Comedor','legacy','comedor','Abrir'),
+      card('⛶','Comedor a pantalla completa','Abrir radio y datos del módulo del comedor en área grande.','Pantalla grande','legacyBig','comedor','⛶ Trabajar grande'),
+      card('🥣','Datos del comedor','Abrir ubicación, contacto, redes, alias y notas.','Comedor','legacyBig','comedor','⛶ Abrir grande'),
       card('📻','Abrir radio','Abrir la página de la radio.','Radio','comedor','radioOpen','Abrir'),
       card('▶️','Reproducir radio','Intentar reproducir el stream configurado.','Radio','comedor','radioPlay','Reproducir'),
       card('⏸️','Pausar radio','Pausar el reproductor actual.','Radio','comedor','radioPause','Pausar'),
@@ -3222,7 +3252,8 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       card('💬','Crear texto con ÁNGELA','Ir al chat para pedir publicaciones o campañas cuando corresponda.','IA','prompt','comedor','Crear')
     ]},
     config:{title:'⚙️ Configuración de ÁNGELA',desc:'Voz, memoria, historial, diagnóstico, respaldo y preferencias.',cards:[
-      card('⚙️','Configuración completa','Abrir el panel clásico con todos los ajustes.','Sistema','legacy','config','Abrir'),
+      card('⛶','Configuración a pantalla completa','Abrir voz, memoria, historial y diagnóstico en área grande.','Pantalla grande','legacyBig','config','⛶ Trabajar grande'),
+      card('⚙️','Configuración completa','Abrir el panel clásico con todos los ajustes.','Sistema','legacyBig','config','⛶ Abrir grande'),
       card('🔊','Voz y accesibilidad','Abrir configuración y ubicar controles de voz.','Voz','config','voice','Abrir'),
       card('🧠','Memoria','Abrir configuración para revisar o borrar memoria del perfil.','Memoria','config','memory','Abrir'),
       card('📜','Historial','Abrir el historial de conversaciones.','Historial','config','history','Abrir'),
@@ -3240,7 +3271,7 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       card('🖼️','Preparar imagen','Espejar y preparar la imagen activa para sublimación.','Diseño','image','sublimacion','Preparar'),
       card('🔍','Imagen en pantalla grande','Revisar el diseño con zoom antes de imprimir.','Vista','image','viewer','Ampliar')
     ];
-    const products=Object.entries(data).map(([key,d])=>card('👕',d.label,`${d.temp} · ${d.time} · Presión ${d.pressure}`,categorizarSubAngela(key,d.label),'subInfo',key,'Ver ficha'));
+    const products=Object.entries(data).map(([key,d])=>card('👕',d.label,`${d.temp} · ${d.time} · Presión ${d.pressure}`,categorizarSubAngela(key,d.label),'subInfo',key,'Ver ficha')); products.unshift(card('⛶','Guía de sublimación a pantalla completa','Abrir la guía clásica completa en un área grande.','Pantalla grande','legacyBig','sublimacion','⛶ Trabajar grande'));
     return intro.concat(products);
   }
   function categorizarSubAngela(key,label){const s=(key+' '+label).toLowerCase();if(/remera|buzo|body|gorra|almohad|bolso|delantal|bandera|cinta|medias|pañuelo|panuelo/.test(s))return 'Textil';if(/taza|jarro|azulejo|plato|roca/.test(s))return 'Cerámica';if(/aluminio|metal|termo|botella|vaso/.test(s))return 'Metal';if(/neopreno|mouse|individual/.test(s))return 'Flexible';return 'Producto';}
@@ -3268,16 +3299,34 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
     drawer.classList.add('open');back.classList.add('open');drawer.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';filtrarPanelMenuAngela();setTimeout(()=>search.focus(),100);
   };
   window.cerrarPanelMenuAngela=function(){const d=$a('angelaMenuDrawer'),b=$a('angelaMenuBackdrop');d?.classList.remove('open');b?.classList.remove('open');d?.setAttribute('aria-hidden','true');document.body.style.overflow='';};
-  window.toggleMaxPanelAngela=function(){const d=$a('angelaMenuDrawer');if(!d)return;d.classList.toggle('maximizado');$a('btnMaxAngelaPanel').textContent=d.classList.contains('maximizado')?'🗗 Restaurar':'⛶ Ampliar';};
+  window.toggleMaxPanelAngela=function(){const d=$a('angelaMenuDrawer');if(!d)return;d.classList.toggle('maximizado');const max=d.classList.contains('maximizado');const t=max?'🗗 RESTAURAR':'⛶ AMPLIAR PANTALLA';if($a('btnMaxAngelaPanel'))$a('btnMaxAngelaPanel').textContent=t;if($a('btnMaxAngelaPanelFloat'))$a('btnMaxAngelaPanelFloat').textContent=t;};
   window.filtrarPanelMenuAngela=function(){const q=($a('angelaMenuSearch')?.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();let n=0;document.querySelectorAll('#angelaMenuGrid .angela-menu-card').forEach(el=>{const hay=(el.dataset.search||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');const ok=!q||hay.includes(q);el.classList.toggle('oculta',!ok);if(ok)n++;});$a('angelaMenuEmpty')?.classList.toggle('visible',n===0);};
 
   function closeThen(fn){cerrarPanelMenuAngela();setTimeout(fn,40);}
   function openLegacy(id){closeThen(()=>abrirMenu(id));}
+  const WORKSPACE={module:null,parent:null,next:null,style:null};
+  const WORKSPACE_TITLES={imagenes:'🖼️ Imágenes y Diseños',motion3d:'✨ Tipografía 3D / Motion',laser:'🔥 Herramientas Láser',sublimacion:'👕 Sublimación',proyectos:'📂 Proyectos',stock:'📦 Stock',archivos:'📁 Archivos y Multimedia',web:'🌐 Web',comedor:'🥣 Comedor Ángel Guardián',config:'⚙️ Configuración'};
+  window.abrirModuloGrandeAngela=function(id){
+    const el=$a(id),modal=$a('angelaWorkspaceModal'),back=$a('angelaWorkspaceBackdrop'),body=$a('angelaWorkspaceBody');if(!el||!modal||!back||!body)return;
+    if(WORKSPACE.module)cerrarModuloGrandeAngela();
+    WORKSPACE.module=el;WORKSPACE.parent=el.parentNode;WORKSPACE.next=el.nextSibling;WORKSPACE.style=el.getAttribute('style');
+    cerrarPanelMenuAngela();
+    body.appendChild(el);el.classList.add('angela-workspace-module');el.style.display='block';el.style.maxHeight='none';
+    $a('angelaWorkspaceTitle').textContent=`⛶ ${WORKSPACE_TITLES[id]||'Área de trabajo grande'}`;
+    modal.classList.add('open');back.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+    if(id==='motion3d')setTimeout(()=>actualizarMotion3D?.(),40);
+  };
+  window.cerrarModuloGrandeAngela=function(){
+    const el=WORKSPACE.module,modal=$a('angelaWorkspaceModal'),back=$a('angelaWorkspaceBackdrop');
+    if(el&&WORKSPACE.parent){el.classList.remove('angela-workspace-module');if(WORKSPACE.style===null)el.removeAttribute('style');else el.setAttribute('style',WORKSPACE.style);if(WORKSPACE.next&&WORKSPACE.next.parentNode===WORKSPACE.parent)WORKSPACE.parent.insertBefore(el,WORKSPACE.next);else WORKSPACE.parent.appendChild(el);}
+    WORKSPACE.module=null;WORKSPACE.parent=null;WORKSPACE.next=null;WORKSPACE.style=null;modal?.classList.remove('open');back?.classList.remove('open');modal?.setAttribute('aria-hidden','true');document.body.style.overflow='';
+  };
   function requireImage(fn,openViewer=false){if(!window.STATE?.image?.sourceCanvas){cerrarPanelMenuAngela();abrirMenu('imagenes');showToast('Primero cargá una imagen.');setTimeout(()=>$a('archivoImagen')?.click(),120);return;}cerrarPanelMenuAngela();fn();if(openViewer)setTimeout(()=>abrirVisorImagenGrande(),80);}
   window.usarTarjetaMenuAngela=function(c){
     switch(c.action){
       case 'section': abrirPanelMenuAngela(c.value); break;
       case 'legacy': openLegacy(c.value); break;
+      case 'legacyBig': abrirModuloGrandeAngela(c.value); break;
       case 'chat': closeThen(()=>focusChat()); break;
       case 'prompt': closeThen(()=>{focusChat();setTimeout(()=>{const i=$a('entradaChat');if(!i)return;const p=c.value==='imagen'?'Quiero crear una imagen de ':c.value==='video'?'Quiero crear un video de ':c.value==='3d'?'Quiero crear un diseño 3D de ':c.value==='comedor'?'Quiero crear una publicación para el Comedor Ángel Guardián sobre ':'';i.value=p;i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch{}},180)});break;
       case 'image':
@@ -3305,7 +3354,7 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
     const grid=document.createElement('div');grid.className='angela-menu-detail-grid';[['🌡️ Temperatura',d.temp],['⏱️ Tiempo',d.time],['🗜️ Presión',d.pressure],['💡 Tip',d.note]].forEach(([a,b])=>{const cell=document.createElement('div');cell.className='angela-menu-detail-cell';const strong=document.createElement('div');strong.className='font-bold text-cyan-200 mb-1';strong.textContent=a;const val=document.createElement('div');val.textContent=b;cell.append(strong,val);grid.appendChild(cell);});
     const actions=document.createElement('div');actions.className='grid grid-cols-2 gap-2 mt-3';const prep=document.createElement('button');prep.className='quick text-xs';prep.textContent='🖼️ Preparar imagen';prep.onclick=()=>usarTarjetaMenuAngela({action:'image',value:'sublimacion'});const classic=document.createElement('button');classic.className='quick text-xs';classic.textContent='🎛️ Abrir guía clásica';classic.onclick=()=>{cerrarPanelMenuAngela();abrirMenu('sublimacion');const r=$a('resultadoSub');if(r){r.replaceChildren();const h=document.createElement('div');h.className='font-bold text-green-300';h.textContent='👕 '+d.label;r.appendChild(h);[`Temperatura: ${d.temp}`,`Tiempo: ${d.time}`,`Presión: ${d.pressure}`,d.note,'⚠️ Valores orientativos: verificá siempre el fabricante.'].forEach(t=>{const x=document.createElement('div');x.className='mt-2';x.textContent=t;r.appendChild(x);});}};actions.append(prep,classic);box.append(title,warn,grid,actions);box.classList.add('visible');box.scrollIntoView({behavior:'smooth',block:'start'});};
 
-  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$a('angelaMenuDrawer')?.classList.contains('open'))cerrarPanelMenuAngela();});
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$a('angelaWorkspaceModal')?.classList.contains('open')){cerrarModuloGrandeAngela();return;}if(e.key==='Escape'&&$a('angelaMenuDrawer')?.classList.contains('open'))cerrarPanelMenuAngela();});
 })();
 </script>
 
