@@ -1,1153 +1,754 @@
-// ÁNGELA PRO V6.1 - Backend para Vercel
-// Variables de entorno necesarias:
-// GEMINI_API_KEY
-// OPENROUTER_API_KEY
-// GEMINI_MODEL=gemini-2.5-flash
-// OPENROUTER_MODELS=openrouter/free
-// AI_PROVIDER_ORDER=gemini,openrouter
-// Opcionales: ALLOWED_ORIGIN, SITE_URL, OPENROUTER_WEB=true
+// ============================================================
+// ÁNGELA PRO V7.8
+// MULTI-IA + INTERNET + RESPALDO AUTOMÁTICO
+// Archivo: /api/chat.js
+// ============================================================
 
-const TEMPORARY = new Set([408,409,425,429,500,502,503,504]);
+export default async function handler(req, res) {
+  // ----------------------------------------------------------
+  // CORS
+  // ----------------------------------------------------------
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-function clean(v,max=60000){return typeof v==="string"?v.trim().slice(0,max):"";}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-function normalize(s){return clean(s,12000).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
-
-function cors(req,res){
-  const configured=clean(process.env.ALLOWED_ORIGIN||"*",2000);
-  const origin=clean(req.headers?.origin||"",1000);
-  const allowed=configured.split(",").map(x=>x.trim()).filter(Boolean);
-  const allow=configured==="*"?"*":(allowed.includes(origin)?origin:(allowed[0]||"*"));
-
-  res.setHeader("Access-Control-Allow-Origin",allow);
-  res.setHeader("Vary","Origin");
-  res.setHeader("Access-Control-Allow-Methods","GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization,Accept");
-  res.setHeader("Access-Control-Max-Age","86400");
-  res.setHeader("Cache-Control","no-store");
-}
-
-function uniqueSources(items=[]){
-  const seen=new Set(),out=[];
-
-  for(const s of items){
-    const url=clean(s?.url||s?.uri,1800);
-
-    if(!url||seen.has(url))continue;
-
-    seen.add(url);
-
-    out.push({
-      title:clean(s?.title||"Fuente",200),
-      url
-    });
-
-    if(out.length>=6)break;
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
   }
 
-  return out;
-}
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      ok: false,
+      error: "Método no permitido"
+    });
+  }
 
-function normalizeHistory(body){
-  const context=body?.context||body?.contexto||{};
+  try {
+    const body = req.body || {};
 
-  const raw=
-    Array.isArray(body?.history)
+    const mensaje =
+      body.message ||
+      body.mensaje ||
+      body.prompt ||
+      body.text ||
+      "";
+
+    const historial = Array.isArray(body.history)
       ? body.history
-      : Array.isArray(body?.historial)
-        ? body.historial
-        : Array.isArray(context?.history)
-          ? context.history
-          : [];
+      : Array.isArray(body.historial)
+      ? body.historial
+      : [];
 
-  return raw
-    .slice(-16)
-    .map(m=>({
-      role:(m?.role==="assistant"||m?.role==="model")?"assistant":"user",
-      content:clean(m?.content??m?.text,5000)
-    }))
-    .filter(m=>m.content);
-}
+    const memoria =
+      body.memory ||
+      body.memoria ||
+      "";
 
-function currentMessage(body){
-  const direct=clean(
-    body?.message||
-    body?.prompt||
-    body?.pregunta||
-    body?.text,
-    12000
-  );
+    const proveedorSolicitado = String(
+      body.provider ||
+      body.proveedor ||
+      body.ai ||
+      "auto"
+    ).toLowerCase();
 
-  if(direct)return direct;
+    const usarInternet =
+      body.internet === true ||
+      body.web === true ||
+      body.buscarInternet === true;
 
-  const rich=clean(body?.mensaje,60000);
+    if (!mensaje || !String(mensaje).trim()) {
+      return res.status(400).json({
+        ok: false,
+        error: "No se recibió ningún mensaje."
+      });
+    }
 
-  const m=rich.match(
-    /Pregunta actual del usuario:\s*([\s\S]*)$/i
-  );
+    const promptSistema = crearPromptSistema(memoria);
 
-  return m
-    ? clean(m[1],12000)
-    : rich;
-}
+    // ----------------------------------------------------------
+    // ORDEN DE PROVEEDORES
+    // ----------------------------------------------------------
 
-function isFresh(body,message){
-  if(
-    body?.fresh===true||
-    body?.actualidad===true||
-    body?.useWeb===true
-  )return true;
+    let proveedores = [];
 
-  const q=normalize(message);
+    if (proveedorSolicitado === "auto") {
+      proveedores = [
+        "gemini",
+        "openai",
+        "claude",
+        "openrouter"
+      ];
+    } else {
+      proveedores = [
+        proveedorSolicitado,
+        "gemini",
+        "openai",
+        "claude",
+        "openrouter"
+      ];
+    }
 
-  // Preguntas "quién es" pueden depender
-  // de un cargo, profesión o situación actual.
-  if(/^quien\s+es\b/.test(q))return true;
+    // eliminar repetidos
+    proveedores = [...new Set(proveedores)];
 
-  return /\b(hoy|ahora|actual|actualmente|ultimo|ultima|ultimos|ultimas|reciente|noticia|noticias|esta semana|este mes|presidente actual|gobierno actual|ministro actual|gobernador actual|intendente actual|cotizacion|dolar|precio|resultado|en vivo|elecciones|quien gobierna|clima|pronostico|temperatura|ultimo partido)\b/.test(q);
-}
+    const errores = [];
 
-function attachmentText(body){
-  return clean(
-    body?.attachmentText||
-    body?.archivoTexto||
-    "",
-    42000
-  );
-}
+    for (const proveedor of proveedores) {
+      try {
+        let resultado = null;
 
-function binaryAttachments(body){
-  const raw=Array.isArray(body?.attachments)
-    ? body.attachments
-    : [];
+        if (proveedor === "gemini") {
+          resultado = await consultarGemini({
+            mensaje,
+            historial,
+            promptSistema,
+            usarInternet
+          });
+        }
 
-  return raw
-    .slice(0,4)
-    .map(a=>({
-      name:clean(a?.name||"adjunto",180),
-      type:clean(a?.type||a?.mimeType||"",120),
-      data:clean(a?.data||"",3_600_000)
-    }))
-    .filter(a=>
-      a.type &&
-      a.data &&
-      /^(image|audio)\//i.test(a.type)
-    );
-}
+        if (proveedor === "openai") {
+          resultado = await consultarOpenAI({
+            mensaje,
+            historial,
+            promptSistema
+          });
+        }
 
-function systemPrompt(body,fresh,hasAttachments){
-  const context=body?.context||body?.contexto||{};
+        if (
+          proveedor === "claude" ||
+          proveedor === "anthropic"
+        ) {
+          resultado = await consultarClaude({
+            mensaje,
+            historial,
+            promptSistema
+          });
+        }
 
-  const assistant=
-    clean(
-      body?.assistant||
-      body?.asistente||
-      context?.assistant,
-      50
-    )||"Ángela";
+        if (proveedor === "openrouter") {
+          resultado = await consultarOpenRouter({
+            mensaje,
+            historial,
+            promptSistema
+          });
+        }
 
-  const usuario=
-    clean(
-      body?.usuario||
-      body?.user||
-      context?.profile,
-      100
-    )||"Usuario";
+        if (
+          resultado &&
+          resultado.text &&
+          resultado.text.trim()
+        ) {
+          return res.status(200).json({
+            ok: true,
 
-  const ubicacion=
-    clean(
-      body?.ubicacion||
-      body?.location,
-      300
-    );
+            // distintos nombres para compatibilidad
+            reply: resultado.text,
+            response: resultado.text,
+            respuesta: resultado.text,
+            text: resultado.text,
 
-  const fecha=
-    new Date().toLocaleDateString(
-      "es-AR",
-      {
-        timeZone:"America/Argentina/Buenos_Aires",
-        year:"numeric",
-        month:"long",
-        day:"numeric"
+            provider: proveedor,
+            proveedor: proveedor,
+
+            model: resultado.model || "",
+            modelo: resultado.model || "",
+
+            internet:
+              proveedor === "gemini"
+                ? usarInternet
+                : false,
+
+            fallback:
+              proveedor !== proveedorSolicitado &&
+              proveedorSolicitado !== "auto",
+
+            sources: resultado.sources || []
+          });
+        }
+
+      } catch (errorProveedor) {
+        console.error(
+          `Error proveedor ${proveedor}:`,
+          errorProveedor
+        );
+
+        errores.push({
+          proveedor,
+          error:
+            errorProveedor?.message ||
+            String(errorProveedor)
+        });
       }
-    );
+    }
 
-  return `Sos ${assistant}, una asistente virtual general, inteligente, clara, rápida y conversacional.
-Respondés en español con voseo argentino. Fecha actual en Argentina: ${fecha}.
+    return res.status(500).json({
+      ok: false,
+      error:
+        "Ninguna IA disponible pudo responder.",
+      detalles: errores
+    });
+
+  } catch (error) {
+    console.error("ERROR GENERAL ÁNGELA:", error);
+
+    return res.status(500).json({
+      ok: false,
+      error:
+        error?.message ||
+        "Error interno del servidor."
+    });
+  }
+}
+
+
+// ============================================================
+// PROMPT MAESTRO DE ÁNGELA
+// ============================================================
+
+function crearPromptSistema(memoria = "") {
+  return `
+Sos ÁNGELA, una asistente virtual inteligente.
+
+Respondé de forma natural, clara, directa y útil.
 
 REGLAS:
-- Respondé directamente lo que preguntó el usuario.
-- Por defecto respondé en 2 a 5 frases o párrafos cortos; ampliá si lo piden.
-- Conservá el hilo de la conversación y entendé referencias como “él”, “ella”, “el prócer”, “el anterior”, “y cuándo nació”, “y dónde murió”.
-- Corregí mentalmente errores evidentes de dictado u ortografía usando el contexto.
-- Si preguntan “quién es” una persona viva y tiene un cargo, función o actividad pública actual relevante, verificá la actualidad y mencioná ese rol en la primera frase.
-- Nunca respondas con una página de desambiguación cuando el contexto permite saber de quién o de qué hablan.
-- Nunca digas “Modo de rescate”, que Gemini/OpenRouter falló, que hay saturación, ni muestres errores técnicos o nombres internos de modelos.
-- Nunca mandes al usuario a Wikipedia o Google para conseguir la respuesta: contestá vos.
-- Si existen fuentes, usalas como respaldo y devolvelas por separado.
-- No inventes información. Si algo realmente no puede verificarse, decilo brevemente.
-${fresh?"- Esta consulta depende de información actual: verificá datos recientes con búsqueda web disponible antes de responder.":"- Esta consulta no parece requerir actualidad: priorizá conocimiento general y continuidad."}
-${hasAttachments?"- Hay archivos, imágenes o audio adjuntos. Analizalos y usalos como base cuando sean relevantes. Si el archivo es un video representado por fotogramas, aclaralo solo si la limitación importa para la respuesta.":""}
 
-DATOS DEL COMEDOR ÁNGEL GUARDIÁN, SOLO SI EL USUARIO PREGUNTA POR EL COMEDOR:
-Nombre: Asociación Civil Ángel Guardián para la Niñez de Merlo.
-Dirección: García Velloso 4269, Mariano Acosta, Merlo, Buenos Aires.
-Teléfonos: 11-3898-0135 / 11-2257-3722.
-Email: comedor.angel.guardian@gmail.com
-Instagram: @comedorangelguardian_ok
-X: @angelguardianc3
-Alias Banco Provincia: NIEBLA.REMO.TAMBOR
-Web: https://www.comedorangelguardian.com.ar/
-Usuario actual: ${usuario}
-${ubicacion?`Ubicación informada: ${ubicacion}`:""}`.trim();
+- No respondas como un robot.
+- No inventes información.
+- Si no sabés algo, decilo.
+- Cuando haya información suficiente, respondé directamente.
+- Priorizá respuestas fáciles de entender.
+- Usá español de Argentina salvo que el usuario use otro idioma.
+- Recordá el contexto de la conversación.
+- Aprovechá la memoria disponible cuando sea relevante.
+- No menciones detalles técnicos internos innecesariamente.
+- No digas "User Safety", "Response Safety" ni textos internos del modelo.
+- Para cálculos, verificá correctamente los números.
+- Para láser, sublimación, herramientas o maquinaria, diferenciá claramente orientación de parámetros confirmados.
+- Si hay información actual obtenida de Internet, indicá que se usó información actual cuando sea útil.
+- No afirmes que hiciste una acción externa si realmente no fue ejecutada.
+
+MEMORIA DISPONIBLE:
+${limitarTexto(memoria, 12000)}
+`;
 }
 
-function weak(reply,question){
-  const r=normalize(reply);
-  const q=normalize(question);
 
-  if(!r||r.length<15)return true;
+// ============================================================
+// GEMINI
+// ============================================================
 
-  if(
-    /reporte tecnico|modo de rescate|servidores?.{0,30}saturad|gemini.{0,25}(fall|error|ocup)|openrouter.{0,25}(fall|error|ocup)/.test(r)
-  )return true;
+async function consultarGemini({
+  mensaje,
+  historial,
+  promptSistema,
+  usarInternet
+}) {
 
-  if(
-    /hace referencia a varios|puede referirse a|desambiguacion|varios articulos/.test(r)
-  )return true;
+  const apiKey = process.env.GEMINI_API_KEY;
 
-  if(
-    /busca(?:lo)? en wikipedia|consulta wikipedia|leer mas en wikipedia|te recomiendo buscar|busca en google/.test(r)
-  )return true;
-
-  if(
-    /^(quien fue|quien es|quien era)\b/.test(q) &&
-    /\bsan martin\b/.test(q) &&
-    !/jose de san martin|libertador|general argentino/.test(r)
-  )return true;
-
-  return false;
-}
-
-function cleanReply(reply){
-  let t=clean(reply,14000);
-
-  t=t.replace(
-    /^\s*⚠️?\s*reporte t[eé]cnico autom[aá]tico[^\n]*\n*/i,
-    ""
-  );
-
-  t=t.replace(
-    /^\s*\(?\s*modo de rescate[^\n\)]*\)?\s*/i,
-    ""
-  );
-
-  t=t.replace(
-    /\n?\s*(?:🔗\s*)?\[?leer m[aá]s en wikipedia\]?\s*(?:\([^\)]*\)|https?:\/\/\S+)\s*$/i,
-    ""
-  );
-
-  return t.trim();
-}
-
-async function fetchTimeout(url,options={},timeout=30000){
-  const c=new AbortController();
-
-  const timer=setTimeout(
-    ()=>c.abort(),
-    timeout
-  );
-
-  try{
-    return await fetch(
-      url,
-      {
-        ...options,
-        signal:c.signal
-      }
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY no configurada"
     );
-  }finally{
-    clearTimeout(timer);
-  }
-}
-
-function geminiModels(){
-  const raw=clean(
-    process.env.GEMINI_MODELS||
-    process.env.GEMINI_MODEL||
-    "gemini-2.5-flash",
-    500
-  );
-
-  return [
-    ...new Set(
-      raw
-        .split(",")
-        .map(x=>x.trim())
-        .filter(Boolean)
-    )
-  ].slice(0,3);
-}
-
-function openRouterModels(){
-  const raw=clean(
-    process.env.OPENROUTER_MODELS||
-    process.env.OPENROUTER_MODEL||
-    "openrouter/free",
-    1000
-  );
-
-  return [
-    ...new Set(
-      raw
-        .split(",")
-        .map(x=>x.trim())
-        .filter(Boolean)
-    )
-  ].slice(0,5);
-}
-
-function providerOrder(){
-  const allowed=new Set([
-    "gemini",
-    "openrouter"
-  ]);
-
-  const order=clean(
-    process.env.AI_PROVIDER_ORDER||
-    "gemini,openrouter",
-    100
-  )
-  .split(",")
-  .map(x=>x.trim().toLowerCase())
-  .filter(x=>allowed.has(x));
-
-  return order.length
-    ? [...new Set(order)]
-    : ["gemini","openrouter"];
-}
-
-function geminiSources(data){
-  const chunks=
-    data?.candidates?.[0]
-      ?.groundingMetadata
-      ?.groundingChunks||
-    [];
-
-  return uniqueSources(
-    chunks.map(c=>({
-      title:c?.web?.title||"Fuente web",
-      url:c?.web?.uri||""
-    }))
-  );
-}
-
-function makeConv(body){
-  const message=currentMessage(body);
-  const history=normalizeHistory(body);
-  const fresh=isFresh(body,message);
-  const docText=attachmentText(body);
-  const attachments=binaryAttachments(body);
-
-  return {
-    message,
-    history,
-    fresh,
-    docText,
-    attachments,
-    system:systemPrompt(
-      body,
-      fresh,
-      Boolean(
-        docText||
-        attachments.length
-      )
-    )
-  };
-}
-
-function geminiParts(conv,extra=""){
-  let prompt=`${conv.system}\n\n`;
-
-  if(conv.history.length){
-    prompt+=
-      "Conversación reciente:\n"+
-      conv.history
-        .map(
-          m=>
-            `${m.role==="assistant"?"ÁNGELA":"Usuario"}: ${m.content}`
-        )
-        .join("\n")+
-      "\n\n";
   }
 
-  if(conv.docText){
-    prompt+=
-      `CONTEXTO EXTRAÍDO DEL ARCHIVO:\n${conv.docText}\n\n`;
-  }
+  const model =
+    process.env.GEMINI_MODEL ||
+    "gemini-2.5-flash";
 
-  prompt+=
-    `PREGUNTA ACTUAL DEL USUARIO:\n${conv.message}`;
+  const contents = [];
 
-  if(extra){
-    prompt+=`\n\n${extra}`;
-  }
+  // Historial
+  for (const item of historial.slice(-20)) {
+    const role =
+      item.role === "assistant" ||
+      item.role === "model"
+        ? "model"
+        : "user";
 
-  if(
-    conv.attachments.some(
-      a=>a.type.startsWith("audio/")
-    )
-  ){
-    prompt+=
-      "\n\nHay un audio adjunto: escuchalo y respondé a lo que dice el usuario.";
-  }
+    const texto =
+      item.content ||
+      item.text ||
+      item.message ||
+      "";
 
-  if(
-    conv.attachments.some(
-      a=>a.type.startsWith("image/")
-    )
-  ){
-    prompt+=
-      "\n\nHay una o más imágenes adjuntas: analizalas cuando sean relevantes.";
-  }
+    if (!texto) continue;
 
-  const parts=[
-    {
-      text:prompt
-    }
-  ];
-
-  for(const a of conv.attachments){
-    parts.push({
-      inline_data:{
-        mime_type:a.type,
-        data:a.data
-      }
+    contents.push({
+      role,
+      parts: [
+        {
+          text: String(texto)
+        }
+      ]
     });
   }
 
-  return parts;
-}
-
-async function callGemini(conv,extra=""){
-  const key=clean(
-    process.env.GEMINI_API_KEY,
-    700
-  );
-
-  if(!key){
-    throw Object.assign(
-      new Error(
-        "GEMINI_API_KEY no configurada"
-      ),
+  contents.push({
+    role: "user",
+    parts: [
       {
-        skip:true
+        text: String(mensaje)
       }
-    );
-  }
+    ]
+  });
 
-  let last=null;
-
-  for(const model of geminiModels()){
-    try{
-      const payload={
-        contents:[
-          {
-            role:"user",
-            parts:geminiParts(
-              conv,
-              extra
-            )
-          }
-        ],
-        generationConfig:{
-          temperature:.32,
-          topP:.9,
-          maxOutputTokens:1500
+  const requestBody = {
+    systemInstruction: {
+      parts: [
+        {
+          text: promptSistema
         }
-      };
-
-      if(conv.fresh){
-        payload.tools=[
-          {
-            google_search:{}
-          }
-        ];
-      }
-
-      const url=
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-
-      const r=
-        await fetchTimeout(
-          url,
-          {
-            method:"POST",
-            headers:{
-              "Content-Type":"application/json",
-              "x-goog-api-key":key
-            },
-            body:JSON.stringify(payload)
-          },
-          35000
-        );
-
-      const raw=await r.text();
-
-      let data={};
-
-      try{
-        data=JSON.parse(raw);
-      }catch{}
-
-      if(!r.ok){
-        const e=new Error(
-          `Gemini ${model} HTTP ${r.status}: ${data?.error?.message||raw||r.statusText}`
-        );
-
-        e.status=r.status;
-        last=e;
-
-        if(
-          TEMPORARY.has(r.status)
-        ){
-          await sleep(500);
-        }
-
-        continue;
-      }
-
-      const reply=
-        cleanReply(
-          (
-            data?.candidates?.[0]
-              ?.content
-              ?.parts||
-            []
-          )
-          .map(
-            p=>p?.text||""
-          )
-          .join("\n")
-        );
-
-      if(!reply){
-        last=new Error(
-          `Gemini ${model} respondió sin texto`
-        );
-
-        continue;
-      }
-
-      const sources=
-        geminiSources(data);
-
-      return {
-        reply,
-        provider:"gemini",
-        model,
-        sources,
-        verified:
-          conv.fresh
-            ? sources.length>0
-            : undefined
-      };
-
-    }catch(e){
-      last=e;
-    }
-  }
-
-  throw last||
-    new Error(
-      "Gemini no respondió"
-    );
-}
-
-function openRouterSources(data){
-  const msg=
-    data?.choices?.[0]
-      ?.message||
-    {};
-
-  const all=[];
-
-  if(
-    Array.isArray(
-      data?.citations
-    )
-  ){
-    all.push(
-      ...data.citations
-    );
-  }
-
-  if(
-    Array.isArray(
-      msg?.citations
-    )
-  ){
-    all.push(
-      ...msg.citations
-    );
-  }
-
-  if(
-    Array.isArray(
-      msg?.annotations
-    )
-  ){
-    for(const a of msg.annotations){
-      const url=
-        a?.url_citation?.url||
-        a?.url||
-        a?.uri;
-
-      if(url){
-        all.push({
-          title:
-            a?.url_citation?.title||
-            a?.title||
-            "Fuente web",
-          url
-        });
-      }
-    }
-  }
-
-  return uniqueSources(
-    all.map(
-      x=>
-        typeof x==="string"
-          ? {
-              title:"Fuente web",
-              url:x
-            }
-          : x
-    )
-  );
-}
-
-function openRouterUserContent(conv,extra=""){
-  let text=conv.message;
-
-  if(conv.docText){
-    text+=
-      `\n\nCONTEXTO EXTRAÍDO DEL ARCHIVO:\n${conv.docText}`;
-  }
-
-  if(extra){
-    text+=`\n\n${extra}`;
-  }
-
-  const imgs=
-    conv.attachments.filter(
-      a=>a.type.startsWith("image/")
-    );
-
-  if(!imgs.length){
-    return text;
-  }
-
-  return [
-    {
-      type:"text",
-      text
+      ]
     },
-    ...imgs.map(a=>({
-      type:"image_url",
-      image_url:{
-        url:
-          `data:${a.type};base64,${a.data}`
-      }
-    }))
-  ];
-}
 
-async function callOpenRouter(conv,extra=""){
-  const key=clean(
-    process.env.OPENROUTER_API_KEY,
-    900
-  );
+    contents,
 
-  if(!key){
-    throw Object.assign(
-      new Error(
-        "OPENROUTER_API_KEY no configurada"
-      ),
+    generationConfig: {
+      temperature: 0.65,
+      maxOutputTokens: 4096
+    }
+  };
+
+  // INTERNET REAL CON GOOGLE SEARCH
+  if (usarInternet) {
+    requestBody.tools = [
       {
-        skip:true
+        google_search: {}
       }
+    ];
+  }
+
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/` +
+    `${encodeURIComponent(model)}:generateContent?key=` +
+    `${encodeURIComponent(apiKey)}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  const data = await leerJsonSeguro(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.message ||
+      `Gemini HTTP ${response.status}`
     );
   }
 
-  // Si hay audio, Gemini es el proveedor adecuado.
-  // OpenRouter queda como respaldo textual/visual.
-  const hasAudio=
-    conv.attachments.some(
-      a=>a.type.startsWith("audio/")
-    );
+  const partes =
+    data?.candidates?.[0]?.content?.parts || [];
 
-  if(hasAudio){
-    throw Object.assign(
-      new Error(
-        "OpenRouter omitido para audio"
-      ),
-      {
-        skip:true
-      }
+  const texto = partes
+    .map(p => p.text || "")
+    .join("\n")
+    .trim();
+
+  if (!texto) {
+    throw new Error(
+      "Gemini devolvió una respuesta vacía."
     );
   }
 
-  let last=null;
-
-  for(
-    const model of openRouterModels()
-  ){
-    try{
-      const payload={
-        model,
-        messages:[
-          {
-            role:"system",
-            content:conv.system
-          },
-          ...conv.history.map(
-            m=>({
-              role:m.role,
-              content:m.content
-            })
-          ),
-          {
-            role:"user",
-            content:
-              openRouterUserContent(
-                conv,
-                extra
-              )
-          }
-        ],
-        temperature:.32,
-        max_tokens:1500,
-        provider:{
-          allow_fallbacks:true
-        }
-      };
-
-      if(
-        conv.fresh &&
-        normalize(
-          process.env.OPENROUTER_WEB
-        )==="true"
-      ){
-        payload.plugins=[
-          {
-            id:"web",
-            max_results:5
-          }
-        ];
-      }
-
-      const r=
-        await fetchTimeout(
-          "https://openrouter.ai/api/v1/chat/completions",
-          {
-            method:"POST",
-            headers:{
-              "Authorization":
-                `Bearer ${key}`,
-              "Content-Type":
-                "application/json",
-              "HTTP-Referer":
-                clean(
-                  process.env.SITE_URL,
-                  1000
-                )||
-                "https://orion-ia-sooty.vercel.app",
-              "X-Title":
-                "ÁNGELA Assistant"
-            },
-            body:
-              JSON.stringify(
-                payload
-              )
-          },
-          35000
-        );
-
-      const raw=
-        await r.text();
-
-      let data={};
-
-      try{
-        data=JSON.parse(raw);
-      }catch{}
-
-      if(!r.ok){
-        const e=new Error(
-          `OpenRouter ${model} HTTP ${r.status}: ${data?.error?.message||raw||r.statusText}`
-        );
-
-        e.status=r.status;
-        last=e;
-
-        if(
-          TEMPORARY.has(
-            r.status
-          )
-        ){
-          await sleep(500);
-        }
-
-        continue;
-      }
-
-      const content=
-        data?.choices?.[0]
-          ?.message
-          ?.content;
-
-      const reply=
-        cleanReply(
-          typeof content==="string"
-            ? content
-            : Array.isArray(content)
-              ? content
-                  .map(
-                    x=>x?.text||""
-                  )
-                  .join("\n")
-              : ""
-        );
-
-      if(!reply){
-        last=new Error(
-          `OpenRouter ${model} respondió sin texto`
-        );
-
-        continue;
-      }
-
-      return {
-        reply,
-        provider:"openrouter",
-        model:
-          data?.model||
-          model,
-        sources:
-          openRouterSources(data)
-      };
-
-    }catch(e){
-      last=e;
-    }
-  }
-
-  throw last||
-    new Error(
-      "OpenRouter no respondió"
-    );
-}
-
-async function callProvider(name,conv,extra=""){
-  return name==="openrouter"
-    ? callOpenRouter(conv,extra)
-    : callGemini(conv,extra);
-}
-
-async function cascade(conv,order,extra=""){
-  const errors=[];
-  let weakDraft=null;
-
-  for(const provider of order){
-    try{
-      const result=
-        await callProvider(
-          provider,
-          conv,
-          extra
-        );
-
-      if(
-        weak(
-          result.reply,
-          conv.message
-        )
-      ){
-        weakDraft=result;
-
-        errors.push(
-          `${provider}: respuesta débil`
-        );
-
-        continue;
-      }
-
-      return {
-        result,
-        errors
-      };
-
-    }catch(e){
-      if(!e?.skip){
-        errors.push(
-          `${provider}: ${e?.message||"error"}`
-        );
-      }
-    }
-  }
-
-  if(weakDraft){
-    const repair=
-`La respuesta anterior fue defectuosa:
-${weakDraft.reply}
-
-Respondé nuevamente a la pregunta exacta.
-Sé concreta, usá el contexto, no muestres desambiguaciones ni errores internos.`;
-
-    for(
-      const provider
-      of [...order].reverse()
-    ){
-      try{
-        const result=
-          await callProvider(
-            provider,
-            conv,
-            repair
-          );
-
-        if(
-          !weak(
-            result.reply,
-            conv.message
-          )
-        ){
-          return {
-            result,
-            errors
-          };
-        }
-
-      }catch(e){
-        if(!e?.skip){
-          errors.push(
-            `${provider} revisión: ${e?.message||"error"}`
-          );
-        }
-      }
-    }
-  }
+  const sources = extraerFuentesGemini(data);
 
   return {
-    result:null,
-    errors
+    text: texto,
+    model,
+    sources
   };
 }
 
-export default async function handler(req,res){
-  cors(req,res);
 
-  if(req.method==="OPTIONS"){
-    return res
-      .status(204)
-      .end();
+// ============================================================
+// OPENAI
+// Responses API
+// ============================================================
+
+async function consultarOpenAI({
+  mensaje,
+  historial,
+  promptSistema
+}) {
+
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "OPENAI_API_KEY no configurada"
+    );
   }
 
-  const geminiConfigured=
-    Boolean(
-      clean(
-        process.env.GEMINI_API_KEY,
-        700
-      )
-    );
+  const model =
+    process.env.OPENAI_MODEL ||
+    "gpt-5-mini";
 
-  const openRouterConfigured=
-    Boolean(
-      clean(
-        process.env.OPENROUTER_API_KEY,
-        900
-      )
-    );
+  let historialTexto = "";
 
-  if(req.method==="GET"){
-    return res
-      .status(200)
-      .json({
-        ok:true,
-        backend:true,
-        configured:
-          geminiConfigured||
-          openRouterConfigured,
-        geminiConfigured,
-        openrouterConfigured:
-          openRouterConfigured,
-        providers:
-          providerOrder(),
-        geminiModels:
-          geminiModels(),
-        openrouterModels:
-          openRouterModels(),
-        multimodal:true,
-        documents:true,
-        version:"6.1.0"
-      });
+  for (const item of historial.slice(-20)) {
+    const rol =
+      item.role === "assistant"
+        ? "ÁNGELA"
+        : "Usuario";
+
+    const texto =
+      item.content ||
+      item.text ||
+      item.message ||
+      "";
+
+    if (!texto) continue;
+
+    historialTexto +=
+      `${rol}: ${texto}\n`;
   }
 
-  if(req.method!=="POST"){
-    return res
-      .status(405)
-      .json({
-        error:
-          "Método no permitido"
-      });
+  const input = `
+${historialTexto}
+
+Usuario:
+${mensaje}
+`;
+
+  const response = await fetch(
+    "https://api.openai.com/v1/responses",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+
+      body: JSON.stringify({
+        model,
+        instructions: promptSistema,
+        input,
+        max_output_tokens: 4096
+      })
+    }
+  );
+
+  const data = await leerJsonSeguro(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.message ||
+      `OpenAI HTTP ${response.status}`
+    );
   }
 
-  try{
-    const body=
-      typeof req.body==="string"
-        ? (()=>{
-            try{
-              return JSON.parse(
-                req.body
-              );
-            }catch{
-              return {
-                message:req.body
-              };
-            }
-          })()
-        : (
-            req.body||
-            {}
-          );
+  let texto = "";
 
-    if(
-      body?.mode==="diagnostic"||
-      body?.diagnostic===true
-    ){
-      return res
-        .status(200)
-        .json({
-          ok:true,
-          backend:true,
-          configured:
-            geminiConfigured||
-            openRouterConfigured,
-          geminiConfigured,
-          openrouterConfigured:
-            openRouterConfigured,
-          geminiOk:
-            geminiConfigured,
-          verified:
-            geminiConfigured||
-            openRouterConfigured,
-          providers:
-            providerOrder(),
-          geminiModels:
-            geminiModels(),
-          openrouterModels:
-            openRouterModels(),
-          webGrounding:true,
-          multimodal:true,
-          documents:true,
-          version:"6.1.0"
-        });
-    }
-
-    const conv=
-      makeConv(body);
-
-    if(!conv.message){
-      return res
-        .status(400)
-        .json({
-          error:
-            "Falta el mensaje"
-        });
-    }
-
-    let order=
-      providerOrder();
-
-    if(
-      body?.forceAlternate===true
-    ){
-      order=[
-        ...order
-      ].reverse();
-    }
-
-    const extra=
-      body?.repair===true &&
-      body?.badReply
-        ? `La respuesta anterior fue mala:
-${clean(body.badReply,2500)}
-Rehacela correctamente.`
-        : "";
-
-    const {
-      result,
-      errors
-    }=
-      await cascade(
-        conv,
-        order,
-        extra
-      );
-
-    if(result){
-      return res
-        .status(200)
-        .json({
-          ok:true,
-          respuesta:
-            result.reply,
-          reply:
-            result.reply,
-          provider:
-            result.provider,
-          model:
-            result.model,
-          sources:
-            result.sources||[],
-          fresh:
-            conv.fresh,
-          verified:
-            result.verified
-        });
-    }
-
-    console.error(
-      "ÁNGELA: todos los proveedores fallaron",
-      errors
-    );
-
-    return res
-      .status(503)
-      .json({
-        ok:false,
-        error:
-          "No pude obtener una respuesta confiable en este momento.",
-        detalle:
-          "Revisá los logs de Vercel para ver el detalle técnico."
-      });
-
-  }catch(error){
-    console.error(
-      "ERROR SERVIDOR ÁNGELA:",
-      error
-    );
-
-    return res
-      .status(500)
-      .json({
-        ok:false,
-        error:
-          "Error interno del servidor",
-        detalle:
-          "Revisá los logs de Vercel para ver el detalle técnico."
-      });
+  if (data.output_text) {
+    texto = data.output_text;
   }
+
+  if (
+    !texto &&
+    Array.isArray(data.output)
+  ) {
+    for (const item of data.output) {
+      if (!Array.isArray(item.content)) continue;
+
+      for (const contenido of item.content) {
+        if (
+          contenido.type === "output_text" &&
+          contenido.text
+        ) {
+          texto += contenido.text;
+        }
+      }
+    }
+  }
+
+  texto = String(texto || "").trim();
+
+  if (!texto) {
+    throw new Error(
+      "OpenAI devolvió una respuesta vacía."
+    );
+  }
+
+  return {
+    text: texto,
+    model
+  };
+}
+
+
+// ============================================================
+// CLAUDE / ANTHROPIC
+// ============================================================
+
+async function consultarClaude({
+  mensaje,
+  historial,
+  promptSistema
+}) {
+
+  const apiKey =
+    process.env.ANTHROPIC_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "ANTHROPIC_API_KEY no configurada"
+    );
+  }
+
+  const model =
+    process.env.ANTHROPIC_MODEL ||
+    "claude-sonnet-4-5";
+
+  const messages = [];
+
+  for (const item of historial.slice(-20)) {
+    const role =
+      item.role === "assistant"
+        ? "assistant"
+        : "user";
+
+    const texto =
+      item.content ||
+      item.text ||
+      item.message ||
+      "";
+
+    if (!texto) continue;
+
+    messages.push({
+      role,
+      content: String(texto)
+    });
+  }
+
+  messages.push({
+    role: "user",
+    content: String(mensaje)
+  });
+
+  const response = await fetch(
+    "https://api.anthropic.com/v1/messages",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01"
+      },
+
+      body: JSON.stringify({
+        model,
+        max_tokens: 4096,
+        system: promptSistema,
+        messages
+      })
+    }
+  );
+
+  const data = await leerJsonSeguro(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.message ||
+      `Claude HTTP ${response.status}`
+    );
+  }
+
+  const texto = Array.isArray(data.content)
+    ? data.content
+        .filter(x => x.type === "text")
+        .map(x => x.text)
+        .join("\n")
+        .trim()
+    : "";
+
+  if (!texto) {
+    throw new Error(
+      "Claude devolvió una respuesta vacía."
+    );
+  }
+
+  return {
+    text: texto,
+    model
+  };
+}
+
+
+// ============================================================
+// OPENROUTER
+// ============================================================
+
+async function consultarOpenRouter({
+  mensaje,
+  historial,
+  promptSistema
+}) {
+
+  const apiKey =
+    process.env.OPENROUTER_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "OPENROUTER_API_KEY no configurada"
+    );
+  }
+
+  const model =
+    process.env.OPENROUTER_MODEL ||
+    "google/gemini-2.5-flash";
+
+  const messages = [
+    {
+      role: "system",
+      content: promptSistema
+    }
+  ];
+
+  for (const item of historial.slice(-20)) {
+    const role =
+      item.role === "assistant"
+        ? "assistant"
+        : "user";
+
+    const texto =
+      item.content ||
+      item.text ||
+      item.message ||
+      "";
+
+    if (!texto) continue;
+
+    messages.push({
+      role,
+      content: String(texto)
+    });
+  }
+
+  messages.push({
+    role: "user",
+    content: String(mensaje)
+  });
+
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+
+        "HTTP-Referer":
+          process.env.APP_URL ||
+          "https://angela.vercel.app",
+
+        "X-Title":
+          "ANGELA PRO"
+      },
+
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: 0.65,
+        max_tokens: 4096
+      })
+    }
+  );
+
+  const data = await leerJsonSeguro(response);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.message ||
+      `OpenRouter HTTP ${response.status}`
+    );
+  }
+
+  const texto =
+    data?.choices?.[0]?.message?.content;
+
+  if (!texto) {
+    throw new Error(
+      "OpenRouter devolvió una respuesta vacía."
+    );
+  }
+
+  return {
+    text: String(texto).trim(),
+    model
+  };
+}
+
+
+// ============================================================
+// EXTRAER FUENTES DE GEMINI
+// ============================================================
+
+function extraerFuentesGemini(data) {
+  try {
+    const metadata =
+      data?.candidates?.[0]?.groundingMetadata;
+
+    const chunks =
+      metadata?.groundingChunks || [];
+
+    return chunks
+      .map(chunk => {
+        const web = chunk.web;
+
+        if (!web) return null;
+
+        return {
+          title:
+            web.title || "Fuente",
+          url:
+            web.uri || ""
+        };
+      })
+      .filter(Boolean);
+
+  } catch {
+    return [];
+  }
+}
+
+
+// ============================================================
+// UTILIDADES
+// ============================================================
+
+async function leerJsonSeguro(response) {
+  const texto = await response.text();
+
+  try {
+    return JSON.parse(texto);
+  } catch {
+    return {
+      raw: texto
+    };
+  }
+}
+
+
+function limitarTexto(texto, max = 12000) {
+  if (!texto) return "";
+
+  const limpio = String(texto);
+
+  if (limpio.length <= max) {
+    return limpio;
+  }
+
+  return limpio.slice(
+    limpio.length - max
+  );
 }
