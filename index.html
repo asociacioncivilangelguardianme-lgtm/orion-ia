@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ÁNGELA | Asistente Virtual</title>
+<!-- V7.8 TIEMPO/CLIMA/CALENDARIO + IA estable · 2026-08-16 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
@@ -242,6 +243,23 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 #angelaWorkspaceBody .file-work-preview{max-height:56vh}
 @media(max-width:700px){#angelaWorkspaceModal{inset:3px;border-radius:14px}.angela-workspace-head{padding:9px 10px}.angela-workspace-title{font-size:13px}#angelaWorkspaceBody{padding:8px}#btnMaxAngelaPanelFloat{right:10px;bottom:10px}}
 </style>
+</style>
+
+
+<style id="angela-v78-tiempo-clima-calendario">
+/* V7.8 · Fecha, hora, calendario y clima ampliado */
+.angela-time-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.angela-time-card{background:#071321;border:1px solid #294260;border-radius:12px;padding:9px}
+.angela-calendar{background:#050d19;border:1px solid #294260;border-radius:14px;padding:10px;margin-top:10px}
+.angela-calendar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.angela-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.angela-calendar-dayname{font-size:9px;color:#67e8f9;text-align:center;font-weight:800;padding:3px 0}
+.angela-calendar-day{font-size:10px;min-height:27px;display:grid;place-items:center;border-radius:8px;border:1px solid transparent;color:#cbd5e1}
+.angela-calendar-day.other{opacity:.28}
+.angela-calendar-day.today{background:linear-gradient(135deg,#0e7490,#7c3aed);border-color:#67e8f9;color:white;font-weight:900}
+.angela-forecast{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
+.angela-forecast-day{background:#071321;border:1px solid #294260;border-radius:10px;padding:7px;font-size:9px;line-height:1.45}
+@media(max-width:640px){.angela-forecast{grid-template-columns:1fr}.angela-time-grid{grid-template-columns:1fr}}
 </style>
 
 </head>
@@ -625,11 +643,20 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button onclick="TOOLS.maps.open()" class="quick">📍 Maps</button>
 </div>
 </div>
-<div class="panel rounded-3xl p-4 text-center">
-<div class="text-xs font-bold text-cyan-300 mb-2">📍 UBICACIÓN Y CLIMA</div>
-<div id="ubicacion" class="text-sm">📍 Ubicación no solicitada</div>
-<div id="clima" class="text-sm mt-2 text-cyan-300">🌤️ Clima: requiere ubicación</div>
-<button onclick="cargarClima({askLocation:true})" class="quick w-full mt-3 text-xs">📍 Permitir ubicación y ver clima</button>
+<div class="panel rounded-3xl p-4">
+<div class="text-xs font-bold text-cyan-300 mb-2 text-center">🕐 FECHA · HORA · CALENDARIO · CLIMA</div>
+<div class="angela-time-grid">
+  <div class="angela-time-card text-center"><div class="text-[9px] text-slate-400">HORA LOCAL</div><div id="horaPanel" class="text-xl font-black text-white">--:--</div></div>
+  <div class="angela-time-card text-center"><div class="text-[9px] text-slate-400">FECHA</div><div id="fechaPanel" class="text-[10px] font-bold text-cyan-200">--</div></div>
+</div>
+<div id="calendarioAngela" class="angela-calendar"></div>
+<div class="mt-3 pt-3 border-t border-slate-700">
+  <div id="ubicacion" class="text-xs text-center">📍 Ubicación no solicitada</div>
+  <div id="clima" class="text-xs mt-2 text-cyan-300 text-center">🌤️ Clima: requiere ubicación</div>
+  <div id="climaDetalles" class="text-[10px] mt-2 text-slate-300"></div>
+  <div id="pronostico7dias" class="angela-forecast"></div>
+  <button onclick="cargarClima({askLocation:true})" class="quick w-full mt-3 text-xs">📍 Actualizar ubicación y clima</button>
+</div>
 </div>
 </aside>
 </div>
@@ -998,10 +1025,62 @@ function showToast(message){
 /* ==========================================
    CLOCK
    ========================================== */
-function actualizarReloj(){
+let ANGELA_CALENDAR_CURSOR=new Date();
+
+function obtenerFechaHoraAngela(){
     const now=new Date();
-    setText("reloj", now.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit", second:"2-digit"}));
-    setText("fecha", now.toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long", year:"numeric"}));
+    const zona=Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Argentina/Buenos_Aires";
+    return {
+        now,
+        zona,
+        hora:now.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit"}),
+        horaCorta:now.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}),
+        fecha:now.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}),
+        fechaCorta:now.toLocaleDateString("es-AR"),
+        iso:now.toISOString()
+    };
+}
+
+function actualizarReloj(){
+    const d=obtenerFechaHoraAngela();
+    setText("reloj",d.hora);
+    setText("fecha",d.fecha);
+    setText("horaPanel",d.horaCorta);
+    setText("fechaPanel",d.fecha);
+}
+
+function moverCalendarioAngela(delta){
+    ANGELA_CALENDAR_CURSOR=new Date(ANGELA_CALENDAR_CURSOR.getFullYear(),ANGELA_CALENDAR_CURSOR.getMonth()+delta,1);
+    renderCalendarioAngela();
+}
+function calendarioHoyAngela(){
+    ANGELA_CALENDAR_CURSOR=new Date();
+    renderCalendarioAngela();
+}
+function renderCalendarioAngela(){
+    const box=$("calendarioAngela"); if(!box)return;
+    const cursor=ANGELA_CALENDAR_CURSOR || new Date();
+    const y=cursor.getFullYear(),m=cursor.getMonth();
+    const first=new Date(y,m,1);
+    const startOffset=(first.getDay()+6)%7; // lunes = 0
+    const gridStart=new Date(y,m,1-startOffset);
+    const hoy=new Date();
+    const title=new Intl.DateTimeFormat("es-AR",{month:"long",year:"numeric"}).format(first);
+    const names=["L","M","X","J","V","S","D"];
+    let html=`<div class="angela-calendar-head">
+      <button class="quick text-[10px] px-2 py-1" onclick="moverCalendarioAngela(-1)">‹</button>
+      <button class="text-[11px] font-black text-cyan-200 capitalize" onclick="calendarioHoyAngela()">${title}</button>
+      <button class="quick text-[10px] px-2 py-1" onclick="moverCalendarioAngela(1)">›</button>
+    </div><div class="angela-calendar-grid">`;
+    html+=names.map(n=>`<div class="angela-calendar-dayname">${n}</div>`).join("");
+    for(let i=0;i<42;i++){
+        const d=new Date(gridStart); d.setDate(gridStart.getDate()+i);
+        const other=d.getMonth()!==m;
+        const isToday=d.getFullYear()===hoy.getFullYear()&&d.getMonth()===hoy.getMonth()&&d.getDate()===hoy.getDate();
+        html+=`<div class="angela-calendar-day${other?" other":""}${isToday?" today":""}" title="${d.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}">${d.getDate()}</div>`;
+    }
+    html+="</div>";
+    box.innerHTML=html;
 }
 
 /* ==========================================
@@ -1361,18 +1440,84 @@ async function solicitarUbicacion({silent=false,fresh=true}={}){
         }
     });
 }
+function descripcionCodigoClima(code){
+    const c=Number(code);
+    if(c===0)return["☀️","Despejado"];
+    if([1,2].includes(c))return["🌤️","Parcialmente nublado"];
+    if(c===3)return["☁️","Nublado"];
+    if([45,48].includes(c))return["🌫️","Niebla"];
+    if([51,53,55,56,57].includes(c))return["🌦️","Llovizna"];
+    if([61,63,65,66,67].includes(c))return["🌧️","Lluvia"];
+    if([71,73,75,77].includes(c))return["🌨️","Nieve"];
+    if([80,81,82].includes(c))return["🌦️","Chaparrones"];
+    if([85,86].includes(c))return["🌨️","Chaparrones de nieve"];
+    if([95,96,99].includes(c))return["⛈️","Tormenta"];
+    return["🌡️","Tiempo variable"];
+}
+function fmtHoraClima(iso){
+    if(!iso)return"-";
+    const d=new Date(iso);
+    return Number.isNaN(d.getTime())?String(iso).slice(11,16):d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+}
+function renderPronostico7Dias(data){
+    const box=$("pronostico7dias"); if(!box)return;
+    const d=data?.daily; if(!d?.time?.length){box.innerHTML="";return;}
+    box.innerHTML=d.time.slice(0,7).map((date,i)=>{
+        const x=new Date(date+"T12:00:00");
+        const dia=i===0?"Hoy":x.toLocaleDateString("es-AR",{weekday:"short",day:"numeric"});
+        const [ico,desc]=descripcionCodigoClima(d.weather_code?.[i]);
+        const max=d.temperature_2m_max?.[i]??"-",min=d.temperature_2m_min?.[i]??"-";
+        const lluvia=d.precipitation_probability_max?.[i]??0;
+        return `<div class="angela-forecast-day"><b class="text-cyan-200">${dia}</b><br>${ico} ${desc}<br>🌡️ ${max}° / ${min}°<br>☔ ${lluvia}%</div>`;
+    }).join("");
+}
 async function cargarClima({askLocation=true}={}){
     let loc=hasFreshLocation()?STATE.location:null;
     if(!loc && askLocation) loc=await solicitarUbicacion({fresh:true});
-    if(!loc){ setText("clima","🌤️ Clima: requiere ubicación"); return null; }
+    if(!loc){
+        setText("clima","🌤️ Clima: requiere ubicación");
+        setText("climaDetalles","Permití la ubicación para ver temperatura, humedad, viento, amanecer, atardecer y pronóstico.");
+        return null;
+    }
     try{
         setText("clima","🌤️ Consultando clima…");
-        const url=`https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(loc.lat)}&longitude=${encodeURIComponent(loc.lon)}&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&hourly=precipitation,rain&timezone=auto`;
-        const r=await fetch(url,{headers:{Accept:"application/json"}}); if(!r.ok)throw new Error(`HTTP ${r.status}`);
-        const data=await r.json(); STATE.weather=data.current||null; STATE.hourlyWeather=data.hourly||null;
-        const c=STATE.weather; setText("clima",`🌡️ ${c.temperature_2m} °C · sensación ${c.apparent_temperature} °C · lluvia ${c.precipitation??0} mm · viento ${c.wind_speed_10m??"-"} km/h`);
-        logActivity("Clima","Actualizado"); return c;
-    }catch(error){ console.error(error);setText("clima","🌤️ No pude consultar el clima");logActivity("Clima","Error");return null; }
+        setText("climaDetalles","Actualizando datos meteorológicos…");
+        const params=new URLSearchParams({
+            latitude:String(loc.lat),
+            longitude:String(loc.lon),
+            current:"temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,showers,weather_code,cloud_cover,wind_speed_10m,wind_gusts_10m",
+            daily:"weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset",
+            hourly:"temperature_2m,precipitation_probability,precipitation,rain",
+            timezone:"auto",
+            forecast_days:"7"
+        });
+        const url=`https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+        const r=await fetch(url,{headers:{Accept:"application/json"},cache:"no-store"});
+        if(!r.ok)throw new Error(`HTTP ${r.status}`);
+        const data=await r.json();
+        STATE.weather=data.current||null;
+        STATE.hourlyWeather=data.hourly||null;
+        STATE.weatherForecast=data.daily||null;
+        const c=STATE.weather||{};
+        const [ico,desc]=descripcionCodigoClima(c.weather_code);
+        setText("clima",`${ico} ${desc} · ${c.temperature_2m??"-"} °C · sensación ${c.apparent_temperature??"-"} °C`);
+        const sunrise=data.daily?.sunrise?.[0],sunset=data.daily?.sunset?.[0];
+        setText("climaDetalles",
+            `💧 Humedad ${c.relative_humidity_2m??"-"}% · ☔ Precipitación ${c.precipitation??0} mm · `+
+            `💨 Viento ${c.wind_speed_10m??"-"} km/h (ráfagas ${c.wind_gusts_10m??"-"}) · ☁️ Nubes ${c.cloud_cover??"-"}% · `+
+            `🌅 ${fmtHoraClima(sunrise)} · 🌇 ${fmtHoraClima(sunset)}`
+        );
+        renderPronostico7Dias(data);
+        logActivity("Clima","Actualizado · pronóstico 7 días");
+        return c;
+    }catch(error){
+        console.error(error);
+        setText("clima","🌤️ No pude consultar el clima");
+        setText("climaDetalles",navigator.onLine?"El servicio meteorológico no respondió. Probá Actualizar nuevamente.":"No hay conexión a Internet.");
+        const box=$("pronostico7dias");if(box)box.innerHTML="";
+        logActivity("Clima",`Error: ${error?.message||"desconocido"}`);
+        return null;
+    }
 }
 async function ubicameEnMaps(){
     const pestaña=window.open("about:blank","_blank");
@@ -1526,6 +1671,12 @@ function localCommand(text){
     const corrected=corregirDictadoPorContexto(text);
     const p=normalizeAssistantPrefix(corrected);
 
+    // V7.8 · tiempo local: responde sin depender de la IA ni de Internet.
+    if(/^(que|qué)\s+(dia|día)\s+es\s+hoy\??$|^fecha(?:\s+de\s+hoy)?\??$|^hoy\s+(que|qué)\s+(dia|día)\s+es\??$/.test(p))return{tool:"datetime_local",args:{mode:"date"}};
+    if(/^(que|qué)\s+hora\s+es\??$|^hora(?:\s+actual)?\??$/.test(p))return{tool:"datetime_local",args:{mode:"time"}};
+    if(/^fecha\s+y\s+hora\??$|^(que|qué)\s+fecha\s+y\s+hora/.test(p))return{tool:"datetime_local",args:{mode:"both"}};
+    if(/^(abr[ií]|abrir|mostra|mostrar|mostrame|ver)\s+(el\s+)?calendario$|^calendario$/.test(p))return{tool:"calendar_local",args:{}};
+
     // V6.4.1 · evita confundir “prompt + imagen” con agenda/recordatorios.
     const promptImagen=detectarConsultaPromptImagen(corrected);
     if(promptImagen)return promptImagen;
@@ -1588,6 +1739,13 @@ function localCommand(text){
 }
 async function executeLocalCommand(cmd){
     const map={
+        datetime_local:()=>{
+            const d=obtenerFechaHoraAngela(),mode=cmd.args?.mode||"both";
+            if(mode==="date")return{ok:true,message:`Hoy es ${d.fecha}.`};
+            if(mode==="time")return{ok:true,message:`Son las ${d.horaCorta}.`};
+            return{ok:true,message:`Hoy es ${d.fecha} y son las ${d.horaCorta}.`};
+        },
+        calendar_local:()=>{calendarioHoyAngela();$("calendarioAngela")?.scrollIntoView({behavior:"smooth",block:"center"});return{ok:true,message:`Abrí el calendario. Hoy es ${obtenerFechaHoraAngela().fecha}.`};},
         calculator:()=>TOOLS.calculator.calculate(cmd.args), remember:()=>TOOLS.memory.remember(cmd.args), radio:()=>TOOLS.radio.open(),
         youtube_open:()=>TOOLS.youtube.open(), google_open:()=>TOOLS.google.open(), whatsapp:()=>TOOLS.whatsapp.open(), gmail:()=>TOOLS.gmail.open(),
         youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(),
@@ -1795,6 +1953,9 @@ REGLAS DE RESPUESTA:
 13.b También existe Tipografía 3D / Motion: puede mostrar una vista previa 3D animada, generar prompts, preparar formato TikTok/Reels y abrir Spline, Blender o CapCut. El editor de imágenes tiene una vista grande con zoom, arrastre y comparación antes/después. No afirmes que la vista previa CSS es un render 3D profesional ni que exporta video por sí sola.
 14. La bóveda y la agenda son locales del navegador. No afirmes que leíste Gmail, Google Calendar, Obsidian u otra cuenta externa si no existe una integración autenticada que realmente haya entregado esos datos.
 15. Cuando el usuario pida un plan, resumen o reporte, aprovechá primero memoria, bóveda, tareas, archivos adjuntos y contexto reciente; después usá web solamente si aporta actualidad.
+
+Fecha y hora local del dispositivo en este momento: ${obtenerFechaHoraAngela().fecha}, ${obtenerFechaHoraAngela().hora} (zona ${obtenerFechaHoraAngela().zona}).
+Si el usuario pregunta la fecha o la hora, usá este dato y no digas que no tenés acceso al tiempo actual.
 
 Información institucional SOLO cuando corresponda:
 Comedor Ángel Guardián / Asociación Civil para la Niñez de Merlo. Dirección: ${comedor.location || DEFAULT_SETTINGS.comedor.location}. Tel/Email: ${comedor.contact || DEFAULT_SETTINGS.comedor.contact}. Redes: ${comedor.social || DEFAULT_SETTINGS.comedor.social}. Alias Banco Provincia: ${comedor.alias || "NIEBLA.REMO.TAMBOR"}. Web: https://www.comedorangelguardian.com.ar/`;
@@ -2976,9 +3137,10 @@ async function checkBackendLight(){
             // Incluso un 400/422 confirma que el endpoint existe; 404 no.
             if(r.status !== 404){
                 STATE.ai.backend=true;
-                const anyProviderConfigured = d.configured ?? ((d.geminiConfigured===true || d.openrouterConfigured===true) ? true : undefined);
-                STATE.ai.configured = anyProviderConfigured ?? d.ok ?? r.ok;
-                STATE.ai.verified = d.geminiOk===true || d.verified===true;
+                const anyProviderConfigured = d.configured ?? ((d.geminiConfigured===true || d.openrouterConfigured===true || d.openaiConfigured===true) ? true : undefined);
+                const hasNamedModel=!!(d.model || d.modelo || d.geminiModel || (Array.isArray(d.geminiModels)&&d.geminiModels.length) || (Array.isArray(d.openrouterModels)&&d.openrouterModels.length));
+                STATE.ai.configured = anyProviderConfigured ?? hasNamedModel ?? d.ok ?? r.ok;
+                STATE.ai.verified = d.geminiOk===true || d.openrouterOk===true || d.verified===true || d.aiOk===true;
                 STATE.ai.model=d.model || d.modelo || d.geminiModel || (Array.isArray(d.geminiModels)?d.geminiModels[0]:"") || (Array.isArray(d.openrouterModels)?d.openrouterModels[0]:"") || STATE.ai.model;
                 logActivity("Backend",`${endpoint} · HTTP ${r.status}`);
                 updateStatusPanel();
@@ -3086,7 +3248,7 @@ function bindEvents(){
    ========================================== */
 async function init(){
     try{
-        actualizarReloj();setInterval(actualizarReloj,1000);STATE.db=await openDatabase();await migrateLegacyProjects();ensureConversation();bindEvents();applySettings();renderChatConversation();renderHistory();renderActivityLog();mostrarStock();await mostrarProyectos();
+        actualizarReloj();renderCalendarioAngela();setInterval(actualizarReloj,1000);STATE.db=await openDatabase();await migrateLegacyProjects();ensureConversation();bindEvents();applySettings();renderChatConversation();renderHistory();renderActivityLog();mostrarStock();await mostrarProyectos();
         if(hasFreshLocation()){setText("ubicacion","📍 Ubicación autorizada previamente");setClassStatus("estadoUbicacion","🟢 Autorizada","text-green-400");cargarClima({askLocation:false});}else{setText("ubicacion","📍 Ubicación no solicitada");setClassStatus("estadoUbicacion","🟡 Sin permiso","text-yellow-400");setText("clima","🌤️ Clima: requiere ubicación");}
         if("speechSynthesis" in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
         initPWA();updateStatusPanel();checkBackendLight();renderBovedaResumen();setInterval(()=>checkDailyRoutines().catch(()=>{}),30000);setTimeout(()=>checkDailyRoutines().catch(()=>{}),4500);
@@ -3355,6 +3517,292 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
     const actions=document.createElement('div');actions.className='grid grid-cols-2 gap-2 mt-3';const prep=document.createElement('button');prep.className='quick text-xs';prep.textContent='🖼️ Preparar imagen';prep.onclick=()=>usarTarjetaMenuAngela({action:'image',value:'sublimacion'});const classic=document.createElement('button');classic.className='quick text-xs';classic.textContent='🎛️ Abrir guía clásica';classic.onclick=()=>{cerrarPanelMenuAngela();abrirMenu('sublimacion');const r=$a('resultadoSub');if(r){r.replaceChildren();const h=document.createElement('div');h.className='font-bold text-green-300';h.textContent='👕 '+d.label;r.appendChild(h);[`Temperatura: ${d.temp}`,`Tiempo: ${d.time}`,`Presión: ${d.pressure}`,d.note,'⚠️ Valores orientativos: verificá siempre el fabricante.'].forEach(t=>{const x=document.createElement('div');x.className='mt-2';x.textContent=t;r.appendChild(x);});}};actions.append(prep,classic);box.append(title,warn,grid,actions);box.classList.add('visible');box.scrollIntoView({behavior:'smooth',block:'start'});};
 
   window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$a('angelaWorkspaceModal')?.classList.contains('open')){cerrarModuloGrandeAngela();return;}if(e.key==='Escape'&&$a('angelaMenuDrawer')?.classList.contains('open'))cerrarPanelMenuAngela();});
+})();
+</script>
+
+
+
+<!-- ============================================================
+     ÁNGELA PRO V7.8 · EXTENSIÓN ADITIVA MULTI-IA + INTERNET + MEMORIA PRO
+     IMPORTANTE: no reemplaza ni rediseña V7.7. Solo amplía funciones.
+     Las claves privadas siguen exclusivamente en el backend/Vercel.
+     ============================================================ -->
+<style id="angela-v78-pro-addon-style">
+/* Controles nuevos solo dentro de Configuración: no altera la pantalla principal. */
+#angelaProIABox .angela-pro-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#angelaProIABox .angela-pro-status{background:#050d19;border:1px solid #294260;border-radius:10px;padding:8px 10px;font-size:10px;line-height:1.5}
+#angelaProIABox .angela-pro-divider{border-top:1px solid #263b59;margin:10px 0}
+#angelaProIABox input[type=file]{display:none}
+@media(max-width:640px){#angelaProIABox .angela-pro-grid{grid-template-columns:1fr}}
+</style>
+<script id="angela-v78-pro-addon">
+(() => {
+'use strict';
+window.ANGELA_PRO_EXTENSION_VERSION='7.8.0-multi-ia-internet-memoria';
+
+const PRO_DEFAULTS = Object.freeze({
+  provider:'auto',
+  webMode:'auto',
+  fallback:true,
+  qualityReview:true,
+  memoryContext:true,
+  learnEnabled:true,
+  providerOrder:['gemini','openai','claude','openrouter']
+});
+
+function proLoad(){
+  try{return {...PRO_DEFAULTS,...JSON.parse(localStorage.getItem('angela_pro_ai_v78')||'{}')}}catch{return {...PRO_DEFAULTS}}
+}
+function proSave(){
+  try{localStorage.setItem('angela_pro_ai_v78',JSON.stringify(window.ANGELA_PRO_AI));}catch(e){console.warn(e)}
+}
+window.ANGELA_PRO_AI=proLoad();
+
+function proEscape(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]))}
+function proToast(msg){ if(typeof showToast==='function') showToast(msg); else alert(msg); }
+function proLog(type,detail=''){ if(typeof logActivity==='function') logActivity(type,detail); }
+function proState(){try{return (typeof STATE!=='undefined'&&STATE)?STATE:null}catch{return null}}
+function proProfile(){return proState()?.settings?.activeProfile||'General'}
+
+function installProPanel(){
+  const config=document.getElementById('config');
+  if(!config || document.getElementById('angelaProIABox')) return;
+  const anchor=[...config.querySelectorAll('details')].find(d=>d.textContent.includes('Complementos PRO')) || config.querySelector('details');
+  const box=document.createElement('details');
+  box.id='angelaProIABox';
+  box.className='card-mini mb-2';
+  box.innerHTML=`
+    <summary class="cursor-pointer text-xs font-bold">🧠 IA PRO · Internet · Memoria avanzada</summary>
+    <div class="mt-3 text-[10px] text-slate-400">Extensión V7.8. La pantalla y las funciones V7.7 quedan intactas. Las claves privadas se configuran únicamente en Vercel/backend.</div>
+    <div class="angela-pro-divider"></div>
+    <label class="text-[10px] text-cyan-300">🤖 Motor preferido</label>
+    <select id="proProvider" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
+      <option value="auto">✨ Automático · ÁNGELA decide</option>
+      <option value="gemini">Gemini</option>
+      <option value="openai">OpenAI</option>
+      <option value="claude">Claude</option>
+      <option value="openrouter">OpenRouter</option>
+    </select>
+    <label class="text-[10px] text-cyan-300 mt-2 block">🌐 Uso de Internet</label>
+    <select id="proWebMode" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs">
+      <option value="auto">Automático · solo cuando haga falta</option>
+      <option value="always">Siempre que el backend lo permita</option>
+      <option value="off">Desactivado</option>
+    </select>
+    <label class="flex items-center gap-2 text-xs my-2"><input id="proFallback" type="checkbox"> 🔄 Cambiar de IA automáticamente si una falla</label>
+    <label class="flex items-center gap-2 text-xs my-2"><input id="proQuality" type="checkbox"> ✅ Segunda revisión automática si la respuesta sale floja</label>
+    <label class="flex items-center gap-2 text-xs my-2"><input id="proMemoryContext" type="checkbox"> 🧠 Usar memoria avanzada como contexto</label>
+    <div class="angela-pro-grid mt-3">
+      <button type="button" onclick="angelaProAgregarMemoria()" class="quick text-xs">➕ Agregar memoria</button>
+      <button type="button" onclick="document.getElementById('proMemoryFile').click()" class="quick text-xs">📥 Importar memoria</button>
+      <button type="button" onclick="document.getElementById('proChatFile').click()" class="quick text-xs">💬 Importar chats</button>
+      <button type="button" onclick="angelaProAprenderUltima()" class="quick text-xs">⭐ Aprender respuesta</button>
+      <button type="button" onclick="angelaProBuscarMemoria()" class="quick text-xs">🔎 Buscar memoria</button>
+      <button type="button" onclick="angelaProExportarMemoria()" class="quick text-xs">💾 Exportar memoria</button>
+      <button type="button" onclick="angelaProDiagnostico()" class="quick text-xs">🩺 Diagnóstico Multi-IA</button>
+      <button type="button" onclick="angelaProGuardar()" class="quick text-xs text-green-300">✅ Guardar IA PRO</button>
+    </div>
+    <input id="proMemoryFile" type="file" accept=".txt,.md,.json,.html,.htm">
+    <input id="proChatFile" type="file" accept=".txt,.md,.json,.html,.htm">
+    <div id="proAiStatus" class="angela-pro-status mt-3 text-slate-300">Preparando IA PRO…</div>
+    <div class="mt-2 text-[10px] text-slate-500">Gemini, OpenAI, Claude y OpenRouter requieren soporte del endpoint <b>/api/chat</b>. Este HTML nunca expone API keys.</div>`;
+  if(anchor) anchor.insertAdjacentElement('afterend',box); else config.appendChild(box);
+  document.getElementById('proMemoryFile')?.addEventListener('change',e=>importMemoryFile(e.target.files?.[0]));
+  document.getElementById('proChatFile')?.addEventListener('change',e=>importChatFile(e.target.files?.[0]));
+  syncProUI();
+}
+
+function syncProUI(){
+  const p=window.ANGELA_PRO_AI;
+  const set=(id,v,checked=false)=>{const el=document.getElementById(id);if(el){if(checked)el.checked=!!v;else el.value=v}};
+  set('proProvider',p.provider);set('proWebMode',p.webMode);set('proFallback',p.fallback,true);set('proQuality',p.qualityReview,true);set('proMemoryContext',p.memoryContext,true);
+  renderProStatus();
+}
+
+function renderProStatus(extra=''){
+  const el=document.getElementById('proAiStatus'); if(!el)return;
+  const p=window.ANGELA_PRO_AI;
+  const model=proState()?.ai?.model||'sin informar';
+  const backend=proState()?.ai?.backend?'🟢 conectado':'🟡 sin verificar';
+  el.innerHTML=`<b>IA PRO V7.8</b><br>Backend: ${backend}<br>Motor: ${proEscape(p.provider)} · Internet: ${proEscape(p.webMode)} · Respaldo: ${p.fallback?'sí':'no'}<br>Modelo actual: ${proEscape(model)}${extra?`<br>${proEscape(extra)}`:''}`;
+}
+
+window.angelaProGuardar=function(){
+  const g=id=>document.getElementById(id);
+  window.ANGELA_PRO_AI.provider=g('proProvider')?.value||'auto';
+  window.ANGELA_PRO_AI.webMode=g('proWebMode')?.value||'auto';
+  window.ANGELA_PRO_AI.fallback=!!g('proFallback')?.checked;
+  window.ANGELA_PRO_AI.qualityReview=!!g('proQuality')?.checked;
+  window.ANGELA_PRO_AI.memoryContext=!!g('proMemoryContext')?.checked;
+  proSave(); renderProStatus('Configuración guardada.'); proToast('IA PRO guardada.'); proLog('IA PRO','Configuración guardada');
+};
+
+window.angelaProAgregarMemoria=function(){
+  const t=prompt('Escribí lo que querés que ÁNGELA recuerde:'); if(!t?.trim())return;
+  if(typeof remember==='function'){const r=remember(t.trim());proToast(r?.message||'Memoria guardada.');}
+};
+
+function memoryTextBlob(){
+  const prof=proProfile();
+  const items=(proState()?.memory||[]).filter(m=>m.profile===prof).slice(-80);
+  return items.map(m=>m.text).join('\n');
+}
+
+window.angelaProBuscarMemoria=function(){
+  const q=prompt('¿Qué querés buscar en la memoria?'); if(!q?.trim())return;
+  const toks=q.toLowerCase().split(/\s+/).filter(x=>x.length>2);
+  const prof=proProfile();
+  const hits=(proState()?.memory||[]).filter(m=>m.profile===prof).map(m=>({m,s:toks.reduce((a,t)=>a+(String(m.text).toLowerCase().includes(t)?1:0),0)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,8);
+  const msg=hits.length?'Encontré en memoria:\n\n'+hits.map((x,i)=>`${i+1}. ${x.m.text}`).join('\n'):'No encontré coincidencias en la memoria de este perfil.';
+  if(typeof agregarMensaje==='function'){if(typeof focusChat==='function')focusChat();agregarMensaje('angela',msg);}else alert(msg);
+};
+
+window.angelaProAprenderUltima=function(){
+  const c=typeof getActiveConversation==='function'?getActiveConversation():null;
+  const msgs=c?.messages||[];
+  const last=[...msgs].reverse().find(m=>m.role==='assistant');
+  if(!last?.text){proToast('Todavía no hay una respuesta de ÁNGELA para aprender.');return;}
+  const clean=String(last.text).trim().slice(0,600);
+  if(typeof remember==='function'){const r=remember(clean);proToast(r?.ok?'Respuesta guardada en memoria.':(r?.message||'No pude guardarla.'));proLog('Memoria PRO','Aprendió última respuesta');}
+};
+
+function extractTextNodesFromChatGPTJson(data){
+  const out=[];
+  const walk=node=>{
+    if(!node||typeof node!=='object')return;
+    if(Array.isArray(node)){node.forEach(walk);return;}
+    const parts=node?.message?.content?.parts;
+    if(Array.isArray(parts))parts.forEach(p=>{if(typeof p==='string'&&p.trim())out.push(p.trim())});
+    for(const [k,v] of Object.entries(node)){if(k!=='message')walk(v)}
+  };
+  walk(data);return out;
+}
+
+function plainTextFromAny(data,raw=''){
+  if(typeof data==='string')return data;
+  if(Array.isArray(data)){
+    const chat=extractTextNodesFromChatGPTJson(data); if(chat.length)return chat.join('\n\n');
+    return data.map(x=>typeof x==='string'?x:(x?.text||x?.content||x?.message||'')).filter(Boolean).join('\n');
+  }
+  if(data&&typeof data==='object'){
+    const direct=data.memory||data.memoria||data.notes||data.notas||data.text||data.content;
+    if(typeof direct==='string')return direct;
+    if(Array.isArray(direct))return direct.map(x=>typeof x==='string'?x:(x?.text||JSON.stringify(x))).join('\n');
+    const chat=extractTextNodesFromChatGPTJson(data); if(chat.length)return chat.join('\n\n');
+  }
+  return raw;
+}
+
+function chunksForMemory(text){
+  const cleaned=String(text||'').replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\r/g,'').replace(/\n{3,}/g,'\n\n').trim();
+  const lines=cleaned.split(/\n+/).map(x=>x.trim()).filter(x=>x.length>=8);
+  const unique=[]; const seen=new Set();
+  for(const line of lines){const v=line.slice(0,600),key=v.toLowerCase();if(!seen.has(key)){seen.add(key);unique.push(v)}if(unique.length>=80)break;}
+  return unique;
+}
+
+async function readImportFile(file){
+  if(!file)throw new Error('No hay archivo.');
+  if(file.size>20*1024*1024)throw new Error('El archivo supera 20 MB.');
+  const raw=await file.text();
+  let data=null;if(/\.json$/i.test(file.name)){try{data=JSON.parse(raw)}catch{}}
+  return {raw,data};
+}
+
+async function importMemoryFile(file){
+  try{
+    const {raw,data}=await readImportFile(file); const chunks=chunksForMemory(plainTextFromAny(data,raw));
+    if(!chunks.length)throw new Error('No encontré texto para importar.');
+    let n=0;for(const t of chunks){if(typeof remember==='function'){const r=remember(t);if(r?.ok)n++;}}
+    proToast(`Memoria importada: ${n} datos.`);proLog('Memoria PRO',`Importados ${n} datos`);renderProStatus(`Memoria importada: ${n} datos.`);
+  }catch(e){proToast(`No pude importar la memoria: ${e.message}`)}finally{const el=document.getElementById('proMemoryFile');if(el)el.value=''}
+}
+
+async function importChatFile(file){
+  try{
+    const {raw,data}=await readImportFile(file);
+    let texts=[];
+    if(data)texts=extractTextNodesFromChatGPTJson(data);
+    if(!texts.length)texts=chunksForMemory(plainTextFromAny(data,raw));
+    texts=texts.filter(Boolean).slice(-120);
+    if(!texts.length)throw new Error('No encontré conversaciones para importar.');
+    if(proState()?.settings?.memoryEnabled && Array.isArray(proState()?.conversations)){
+      const conv={id:(typeof uid==='function'?uid('convimp'):`convimp-${Date.now()}`),profile:proProfile(),title:`Importado · ${file.name}`.slice(0,54),createdAt:Date.now(),updatedAt:Date.now(),messages:texts.slice(-30).map((t,i)=>({role:i%2===0?'user':'assistant',text:String(t).slice(0,8000),at:Date.now()+i}))};
+      proState().conversations.unshift(conv); if(typeof saveConversations==='function')saveConversations(); if(typeof renderHistory==='function')renderHistory();
+    }
+    let n=0;for(const t of chunksForMemory(texts.join('\n')).slice(0,40)){if(typeof remember==='function'&&remember(t)?.ok)n++;}
+    proToast(`Chats importados. ${n} datos útiles agregados a memoria.`);proLog('Chats PRO',`Importación ${file.name}`);
+  }catch(e){proToast(`No pude importar los chats: ${e.message}`)}finally{const el=document.getElementById('proChatFile');if(el)el.value=''}
+}
+
+window.angelaProExportarMemoria=function(){
+  const prof=proProfile(); const items=(proState()?.memory||[]).filter(m=>m.profile===prof);
+  const payload={format:'ANGELA_MEMORY_EXPORT',version:'7.8',profile:prof,exportedAt:new Date().toISOString(),memory:items};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`angela-memoria-${prof.replace(/[^a-z0-9_-]+/gi,'-')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);proToast('Memoria exportada.');
+};
+
+window.angelaProDiagnostico=async function(){
+  renderProStatus('Consultando backend…');
+  const endpoints=typeof getAiEndpoints==='function'?getAiEndpoints():[];
+  let last='Sin endpoint disponible.';
+  for(const endpoint of endpoints){
+    try{
+      const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({mode:'diagnostic',diagnostic:true,multiProvider:true}),cache:'no-store'});
+      const raw=await r.text();let d={};try{d=JSON.parse(raw)}catch{}
+      const providers=[];
+      for(const key of ['gemini','openai','claude','openrouter']){
+        const configured=d[`${key}Configured`]; const ok=d[`${key}Ok`];
+        if(ok===true)providers.push(`${key}: ✅`);else if(configured===true)providers.push(`${key}: 🟡`);else if(configured===false)providers.push(`${key}: ⚫`);
+      }
+      last=`HTTP ${r.status}${providers.length?' · '+providers.join(' · '):' · el backend no informa proveedores individuales'}`;
+      renderProStatus(last);proLog('Diagnóstico Multi-IA',last);return;
+    }catch(e){last=e.message||'Error de conexión';}
+  }
+  renderProStatus(last);
+};
+
+/* Amplía el payload existente sin reemplazar la lógica V7.7. */
+function enhancePayload(payload,message){
+  const p=window.ANGELA_PRO_AI||PRO_DEFAULTS;
+  const fresh=!!payload?.fresh;
+  const useWeb=p.webMode==='always'?true:p.webMode==='off'?false:fresh;
+  payload.preferredProvider=p.provider||'auto';
+  payload.provider=p.provider||'auto';
+  payload.multiProvider=true;
+  payload.autoFallback=!!p.fallback;
+  payload.qualityReview=!!p.qualityReview;
+  payload.useWeb=useWeb;
+  payload.webMode=p.webMode||'auto';
+  payload.internet=useWeb;
+  payload.proVersion=window.ANGELA_PRO_EXTENSION_VERSION;
+  if(p.memoryContext){
+    const mem=memoryTextBlob();
+    if(mem){payload.advancedMemory=mem.slice(-12000);payload.memoriaAvanzada=payload.advancedMemory;}
+  }
+  return payload;
+}
+
+function hookPayload(){
+  if(typeof buildCompatiblePayload!=='function' || window.__angelaV78PayloadHook)return;
+  const original=buildCompatiblePayload;
+  window.__angelaV78BuildCompatiblePayloadOriginal=original;
+  buildCompatiblePayload=function(message,extra={}){return enhancePayload(original(message,extra),message)};
+  window.__angelaV78PayloadHook=true;
+}
+
+function hookStatus(){
+  if(typeof updateStatusPanel!=='function' || window.__angelaV78StatusHook)return;
+  const original=updateStatusPanel;
+  updateStatusPanel=function(){const r=original.apply(this,arguments);renderProStatus();return r};
+  window.__angelaV78StatusHook=true;
+}
+
+function bootV78(){
+  try{installProPanel();hookPayload();hookStatus();renderProStatus();proLog('ÁNGELA PRO','Extensión V7.8 activa');}
+  catch(e){console.error('ÁNGELA V7.8 addon',e);proLog('V7.8 error',e.message||String(e));}
+}
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bootV78,0));else setTimeout(bootV78,0);
 })();
 </script>
 
