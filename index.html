@@ -827,6 +827,11 @@ const CONFIG = Object.freeze({
     version: "7.7.0-pantalla-grande-universal",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
+    
+apiImage: "https://orion-ia-sooty.vercel.app/api/image",
+apiImageLocal: "/api/image",
+
+
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
     maxChatChars: 12000,
     maxHistoryMessages: 30,
@@ -2010,7 +2015,14 @@ function getAiEndpoints(){
     // Evita duplicados.
     return [...new Set(list.filter(Boolean))];
 }
+// ===== ÁNGELA · DETECTAR PEDIDOS DE CREACIÓN DE IMÁGENES =====
+function esPedidoGenerarImagen(message){
+    const t = normalizarTexto(message || "");
 
+    return /\b(crea|crear|creame|créame|genera|generar|generame|genérame|hace|haceme|hazme|dibuja|dibujame|diseña|diseñame)\b.*\b(imagen|dibujo|diseño|ilustracion|ilustración|logo|medalla|virola|sticker|foto)\b/i.test(t)
+        ||
+        /\b(imagen|dibujo|diseño|ilustracion|ilustración|logo|medalla|virola|sticker)\b.*\b(desde cero|con ia|generada|generado)\b/i.test(t);
+}
 function clasificarConsultaAI(message){
     const p=normalizarTexto(message);
     const fresh=/^quien\s+es\b/.test(p) || /\b(hoy|ahora|actual|actualmente|ultimo|ultima|ultimos|ultimas|reciente|recientes|noticia|noticias|esta semana|este mes|presidente actual|gobierno actual|ministro actual|gobernador actual|intendente actual|cotizacion|cotización|dolar|dólar|precio|resultado|partido de hoy|en vivo|clima|pronostico|pronóstico|elecciones|quien gobierna|quién gobierna)\b/.test(p);
@@ -4078,6 +4090,154 @@ function descargarImagenIA() {
 </script>
 <!-- ===== FIN FUNCIONES GENERADOR DE IMÁGENES IA ===== -->
 
-    
+<!-- =========================================================
+     ÁNGELA V7.9 · CONEXIÓN CHAT DIRECTO → GENERADOR DE IMÁGENES
+     ========================================================= -->
+<script>
+(function () {
+
+    // Detecta cuando el usuario está pidiendo CREAR una imagen desde cero
+    function angelaEsPedidoImagen(texto) {
+        const t = String(texto || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+
+        const accion =
+            /\b(crea|crear|creame|genera|generar|generame|hace|hacer|haceme|hazme|dibuja|dibujar|dibujame|disena|disenar|disename)\b/.test(t);
+
+        const imagen =
+            /\b(imagen|dibujo|diseno|ilustracion|logo|medalla|virola|sticker|foto|fotograbado|grabado|laser|sublimacion|dtf)\b/.test(t);
+
+        return accion && imagen;
+    }
+
+
+    // Guardamos el funcionamiento original de ÁNGELA
+    const procesarEntradaOriginalAngela = window.procesarEntrada;
+
+
+    // Reemplazamos solamente la entrada para detectar pedidos de imágenes
+    window.procesarEntrada = async function(texto) {
+
+        const clean = String(texto || "").trim();
+
+        if (!clean) return;
+
+
+        // =============================================
+        // SI EL USUARIO PIDE CREAR UNA IMAGEN
+        // =============================================
+        if (angelaEsPedidoImagen(clean)) {
+
+            console.log("ÁNGELA: pedido de imagen detectado:", clean);
+
+            try {
+
+                // Colocamos automáticamente el pedido en el generador
+                const promptImagen = document.getElementById("promptImagenIA");
+
+                if (promptImagen) {
+                    promptImagen.value = clean;
+                }
+
+
+                // Mensaje en Chat Directo
+                if (typeof agregarMensaje === "function") {
+                    agregarMensaje(
+                        "angela",
+                        "✨ Entendido. Voy a crear esa imagen con IA."
+                    );
+                }
+
+
+                // Abrimos automáticamente Imágenes y Diseños
+                if (typeof abrirModuloGrandeAngela === "function") {
+
+                    abrirModuloGrandeAngela("imagenes");
+
+                } else if (typeof abrirMenu === "function") {
+
+                    abrirMenu("imagenes");
+                }
+
+
+                // Esperamos un instante para que se abra el panel
+                setTimeout(async function () {
+
+                    const campo = document.getElementById("promptImagenIA");
+
+                    if (campo) {
+                        campo.value = clean;
+                    }
+
+
+                    // Ejecutamos el generador real
+                    if (typeof generarImagenIA === "function") {
+
+                        try {
+                            await generarImagenIA();
+                        } catch (error) {
+
+                            console.error(
+                                "ÁNGELA · Error generando imagen:",
+                                error
+                            );
+
+                            if (typeof showToast === "function") {
+                                showToast("No se pudo generar la imagen.");
+                            }
+                        }
+
+                    } else {
+
+                        console.error(
+                            "ÁNGELA: generarImagenIA() no está disponible."
+                        );
+
+                        if (typeof showToast === "function") {
+                            showToast(
+                                "El generador de imágenes todavía no está disponible."
+                            );
+                        }
+                    }
+
+                }, 350);
+
+
+                // IMPORTANTE:
+                // detenemos acá para que NO vaya a /api/chat
+                // y no vuelva a responder con SVG o texto.
+                return;
+
+            } catch (error) {
+
+                console.error(
+                    "ÁNGELA · Error abriendo generador:",
+                    error
+                );
+            }
+        }
+
+
+        // =============================================
+        // SI NO ES UNA IMAGEN:
+        // ÁNGELA SIGUE FUNCIONANDO EXACTAMENTE COMO ANTES
+        // =============================================
+        if (typeof procesarEntradaOriginalAngela === "function") {
+
+            return procesarEntradaOriginalAngela.call(this, texto);
+        }
+    };
+
+
+    console.log(
+        "ÁNGELA V7.9 · Chat conectado al generador de imágenes IA"
+    );
+
+})();
+</script>
+<!-- ===== FIN ÁNGELA V7.9 · IMÁGENES DESDE CHAT ===== -->    
 </body>
 </html>
