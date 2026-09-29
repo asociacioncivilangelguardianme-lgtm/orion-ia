@@ -286,7 +286,105 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 <button class="menu-btn" onclick="abrirPanelMenuAngela('herramientas')">🧰 Herramientas <span class="float-right">›</span></button>
 <button class="menu-btn" onclick="abrirPanelMenuAngela('imagenes')">🖼️ Imágenes y Diseños <span class="float-right">›</span></button>
 <div id="imagenes" class="submenu custom-scrollbar">
-<h3 class="font-bold text-cyan-300 mb-3">🎨 Editor de imágenes</h3>
+<!-- ===== ÁNGELA · GENERADOR DE IMÁGENES IA ===== -->
+<div id="generadorImagenIA" class="bg-slate-900 rounded-xl p-4 mb-4 border border-cyan-700">
+
+  <h3 class="font-bold text-cyan-300 mb-3">
+    ✨ Generar imagen con IA
+  </h3>
+
+  <textarea
+    id="promptImagenIA"
+    class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 mb-3 text-white"
+    rows="3"
+    placeholder="Decile a ÁNGELA qué imagen querés crear. Ej: Creá un diseño de una madre con su hijo, sin fondo, en blanco y negro para grabado láser."
+  ></textarea>
+
+  <div class="grid grid-cols-2 gap-2 mb-3">
+
+    <select
+      id="usoImagenIA"
+      class="bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
+    >
+      <option value="general">🎨 Imagen general</option>
+      <option value="laser">🔥 Grabado láser</option>
+      <option value="fotograbado">📷 Fotograbado láser</option>
+      <option value="vector">✒️ Vector / Line art</option>
+      <option value="sublimacion">☕ Sublimación</option>
+      <option value="dtf">👕 DTF</option>
+      <option value="sticker">🏷️ Sticker</option>
+      <option value="redes">📱 Redes sociales</option>
+    </select>
+
+    <select
+      id="aspectoImagenIA"
+      class="bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
+    >
+      <option value="1:1">⬜ Cuadrada 1:1</option>
+      <option value="3:4">▯ Vertical 3:4</option>
+      <option value="4:3">▭ Horizontal 4:3</option>
+      <option value="9:16">📱 Historia 9:16</option>
+      <option value="16:9">🖥️ Horizontal 16:9</option>
+    </select>
+
+  </div>
+
+  <label class="flex items-center gap-2 mb-3 text-sm">
+    <input
+      id="fondoTransparenteIA"
+      type="checkbox"
+    >
+    Fondo transparente / sin fondo
+  </label>
+
+  <button
+    id="btnGenerarImagenIA"
+    type="button"
+    onclick="generarImagenIA()"
+    class="w-full bg-cyan-600 hover:bg-cyan-500 rounded-lg p-3 font-bold"
+  >
+    ✨ Generar imagen
+  </button>
+
+  <div
+    id="estadoImagenIA"
+    class="text-sm text-cyan-200 mt-3 hidden"
+  ></div>
+
+  <div
+    id="resultadoImagenIA"
+    class="mt-3 hidden"
+  >
+    <img
+      id="imagenGeneradaIA"
+      alt="Imagen generada por ÁNGELA"
+      class="max-w-full rounded-lg mx-auto"
+    >
+
+    <div class="grid grid-cols-2 gap-2 mt-3">
+
+      <button
+        type="button"
+        onclick="usarImagenIAGenerada()"
+        class="quick"
+      >
+        🖼️ Pasar al editor
+      </button>
+
+      <button
+        type="button"
+        onclick="descargarImagenIA()"
+        class="quick"
+      >
+        💾 Guardar PNG
+      </button>
+
+    </div>
+  </div>
+
+</div>
+<!-- ===== FIN GENERADOR DE IMÁGENES IA ===== -->
+    <h3 class="font-bold text-cyan-300 mb-3">🎨 Editor de imágenes</h3>
 <input type="file" id="archivoImagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="w-full bg-slate-900 p-2 rounded-lg mb-3 text-xs" aria-label="Subir imagen">
 <div class="bg-white rounded-xl p-2 mb-3 min-h-16 flex items-center justify-center">
 <canvas id="canvasImagen" style="max-width:100%;height:auto;display:block;margin:auto" aria-label="Vista previa de imagen"></canvas>
@@ -3832,6 +3930,154 @@ function bootV78(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bootV78,0));else setTimeout(bootV78,0);
 })();
 </script>
+<!-- ===== ÁNGELA · FUNCIONES GENERADOR DE IMÁGENES IA ===== -->
+<script>
+let ultimaImagenIAGenerada = "";
 
+async function generarImagenIA() {
+  const prompt = document.getElementById("promptImagenIA")?.value?.trim();
+  const uso = document.getElementById("usoImagenIA")?.value || "general";
+  const aspecto = document.getElementById("aspectoImagenIA")?.value || "1:1";
+  const transparente =
+    document.getElementById("fondoTransparenteIA")?.checked || false;
+
+  const estado = document.getElementById("estadoImagenIA");
+  const resultado = document.getElementById("resultadoImagenIA");
+  const imagen = document.getElementById("imagenGeneradaIA");
+  const boton = document.getElementById("btnGenerarImagenIA");
+
+  if (!prompt) {
+    alert("Escribí qué imagen querés que ÁNGELA genere.");
+    return;
+  }
+
+  try {
+    if (estado) {
+      estado.classList.remove("hidden");
+      estado.textContent = "✨ ÁNGELA está generando la imagen...";
+    }
+
+    if (resultado) resultado.classList.add("hidden");
+
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "⏳ Generando...";
+    }
+
+    const respuesta = await fetch("/api/image", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        uso: uso,
+        aspecto: aspecto,
+        transparente: transparente
+      })
+    });
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(
+        datos?.error ||
+        datos?.message ||
+        "No se pudo generar la imagen."
+      );
+    }
+
+    const imagenRecibida =
+      datos.image ||
+      datos.imageUrl ||
+      datos.url ||
+      datos.dataUrl;
+
+    if (!imagenRecibida) {
+      throw new Error("El servidor respondió, pero no devolvió una imagen.");
+    }
+
+    ultimaImagenIAGenerada = imagenRecibida;
+
+    if (imagen) imagen.src = imagenRecibida;
+
+    if (resultado) resultado.classList.remove("hidden");
+
+    if (estado) {
+      estado.textContent = "✅ Imagen generada correctamente.";
+    }
+
+  } catch (error) {
+    console.error("Error generando imagen:", error);
+
+    if (estado) {
+      estado.classList.remove("hidden");
+      estado.textContent =
+        "❌ No se pudo generar la imagen: " +
+        (error?.message || "Error desconocido");
+    }
+  } finally {
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = "✨ Generar imagen";
+    }
+  }
+}
+
+function usarImagenIAGenerada() {
+  if (!ultimaImagenIAGenerada) {
+    alert("Primero generá una imagen.");
+    return;
+  }
+
+  const img = new Image();
+
+  img.onload = function () {
+    const canvas = document.getElementById("canvasImagen");
+
+    if (!canvas) {
+      alert("No encontré el editor de imágenes de ÁNGELA.");
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+
+    canvas.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  };
+
+  img.onerror = function () {
+    alert("No se pudo pasar la imagen al editor.");
+  };
+
+  img.src = ultimaImagenIAGenerada;
+}
+
+function descargarImagenIA() {
+  if (!ultimaImagenIAGenerada) {
+    alert("Primero generá una imagen.");
+    return;
+  }
+
+  const enlace = document.createElement("a");
+  enlace.href = ultimaImagenIAGenerada;
+  enlace.download = "imagen-angela.png";
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+}
+</script>
+<!-- ===== FIN FUNCIONES GENERADOR DE IMÁGENES IA ===== -->
+
+    
 </body>
 </html>
