@@ -4238,6 +4238,80 @@ function descargarImagenIA() {
 
 })();
 </script>
-<!-- ===== FIN ÁNGELA V7.9 · IMÁGENES DESDE CHAT ===== -->    
+<!-- ===== FIN ÁNGELA V7.9 · IMÁGENES DESDE CHAT ===== -->
+ <script>
+/* ÁNGELA V7.9.1 · ACCESO DIRECTO AL GENERADOR IA */
+(function(){
+
+    function agregarBotonGeneradorIA(){
+
+        // Evita agregarlo dos veces
+        if(document.getElementById("btnAngelaGeneradorIADirecto")) return;
+
+        const boton = document.createElement("button");
+
+        boton.id = "btnAngelaGeneradorIADirecto";
+        boton.type = "button";
+        boton.innerHTML = "✨ GENERAR IMAGEN CON IA";
+
+        boton.style.position = "fixed";
+        boton.style.right = "20px";
+        boton.style.bottom = "85px";
+        boton.style.zIndex = "99999";
+        boton.style.padding = "14px 18px";
+        boton.style.borderRadius = "14px";
+        boton.style.border = "1px solid #22d3ee";
+        boton.style.background =
+            "linear-gradient(135deg,#0891b2,#7c3aed)";
+        boton.style.color = "white";
+        boton.style.fontWeight = "900";
+        boton.style.boxShadow =
+            "0 10px 35px rgba(0,0,0,.45)";
+        boton.style.cursor = "pointer";
+
+        boton.onclick = function(){
+
+            const modulo =
+                document.getElementById("imagenes");
+
+            if(modulo){
+                modulo.style.display = "block";
+                modulo.style.maxHeight = "none";
+
+                const generador =
+                    document.getElementById("generadorImagenIA");
+
+                if(generador){
+                    generador.style.display = "block";
+
+                    generador.scrollIntoView({
+                        behavior:"smooth",
+                        block:"center"
+                    });
+
+                    setTimeout(function(){
+                        const campo =
+                            document.getElementById("promptImagenIA");
+
+                        if(campo) campo.focus();
+                    },300);
+                }
+            }
+        };
+
+        document.body.appendChild(boton);
+    }
+
+    if(document.readyState === "loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            agregarBotonGeneradorIA
+        );
+    }else{
+        agregarBotonGeneradorIA();
+    }
+
+})();
+</script>   
 </body>
 </html>
