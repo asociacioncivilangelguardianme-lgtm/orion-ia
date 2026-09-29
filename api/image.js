@@ -321,10 +321,9 @@ export default async function handler(req, res) {
                 "Content-Type": "application/json"
             },
 
-            body: JSON.stringify({
-                prompt: prompt,
-                num_steps: 4
-            })
+           body: JSON.stringify({
+    prompt: prompt
+})
 
         });
 
