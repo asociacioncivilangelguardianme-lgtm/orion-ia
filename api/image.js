@@ -1,409 +1,446 @@
 // ======================================================
 // ÁNGELA PRO · GENERADOR DE IMÁGENES IA
-// Archivo: /API/image.js
-// Backend Vercel + Gemini
+// Archivo: /api/image.js
+// Backend Vercel + Cloudflare Workers AI + FLUX
 // ======================================================
 
-const IMAGE_MODEL =
-  process.env.GEMINI_IMAGE_MODEL ||
-  "gemini-2.5-flash-image";
+const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 
 function cors(req, res) {
-  const permitido = process.env.ALLOWED_ORIGIN || "*";
-
-  res.setHeader("Access-Control-Allow-Origin", permitido);
-  res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization"
+    );
 }
 
 function responderError(res, status, mensaje, detalle = "") {
-  return res.status(status).json({
-    ok: false,
-    error: mensaje,
-    detail: detalle
-  });
-}
-
-function normalizarAspecto(valor) {
-  const permitidos = [
-    "1:1",
-    "2:3",
-    "3:2",
-    "3:4",
-    "4:3",
-    "4:5",
-    "5:4",
-    "9:16",
-    "16:9",
-    "21:9"
-  ];
-
-  return permitidos.includes(valor) ? valor : "1:1";
+    return res.status(status).json({
+        ok: false,
+        error: mensaje,
+        detail: detalle
+    });
 }
 
 function construirPrompt(body) {
-  const pedido =
-    body.prompt ||
-    body.text ||
-    body.descripcion ||
-    body.pedido ||
-    "";
 
-  const uso = String(
-    body.uso ||
-    body.tipo ||
-    "general"
-  ).toLowerCase();
+    const pedido =
+        body.prompt ||
+        body.text ||
+        body.descripcion ||
+        body.pedido ||
+        "";
 
-  const fondoTransparente =
-    body.transparent === true ||
-    body.fondoTransparente === true ||
-    body.fondo === "transparente";
+    const uso = String(
+        body.uso ||
+        body.tipo ||
+        "general"
+    ).toLowerCase();
 
-  let instrucciones = "";
+    const transparente =
+        body.transparent === true ||
+        body.transparente === true ||
+        body.fondoTransparente === true ||
+        body.fondo === "transparente";
 
-  // ==============================================
-  // GRABADO LÁSER
-  // ==============================================
+    let instrucciones = "";
 
-  if (
-    uso.includes("laser") ||
-    uso.includes("láser")
-  ) {
-    instrucciones = `
-La imagen será utilizada para grabado láser.
+    // ==========================
+    // GRABADO LÁSER
+    // ==========================
 
-Crear un diseño extremadamente limpio y bien definido.
-Usar alto contraste.
-Evitar detalles diminutos que puedan desaparecer al grabar.
-Utilizar contornos claros y perfectamente distinguibles.
-No utilizar sombras innecesarias.
-No utilizar degradados complejos.
-Mantener el motivo principal perfectamente reconocible.
-Preparar profesionalmente la composición para grabado láser.
+    if (
+        uso.includes("laser") ||
+        uso.includes("láser") ||
+        pedido.toLowerCase().includes("laser") ||
+        pedido.toLowerCase().includes("láser")
+    ) {
+
+        instrucciones += `
+The image is intended for laser engraving.
+
+Create a professional black and white engraving design.
+Pure white background.
+Strong black lines.
+Very high contrast.
+Clean and clearly defined contours.
+No colors.
+No unnecessary shadows.
+No complex gradients.
+No photographic background.
+No decorative background.
+Avoid extremely small details.
+Keep the main subject completely visible.
+Do not crop the main subject.
+The design must remain readable when engraved on a small object.
 `;
-  }
 
-  // ==============================================
-  // FOTOGRABADO
-  // ==============================================
+    }
 
-  else if (
-    uso.includes("fotograbado") ||
-    uso.includes("foto grabado")
-  ) {
-    instrucciones = `
-Preparar la composición para fotograbado láser.
+    // ==========================
+    // MEDALLAS
+    // ==========================
 
-Excelente separación entre luces y sombras.
-Escala tonal clara.
-Rostros y detalles principales muy definidos.
-Evitar negros empastados.
-Evitar blancos quemados.
-Mantener alta nitidez.
-Conservar rasgos naturales cuando existan personas.
+    if (
+        uso.includes("medalla") ||
+        pedido.toLowerCase().includes("medalla")
+    ) {
+
+        instrucciones += `
+The design will be engraved on a medal.
+
+Center the main subject.
+Keep the entire subject inside the composition.
+Do not draw the physical medal.
+Do not create a circular or rectangular medal mockup.
+Generate only the artwork that will be engraved.
+Clean white background.
+Strong black engraving lines.
 `;
-  }
 
-  // ==============================================
-  // VECTOR / LINE ART
-  // ==============================================
+    }
 
-  else if (
-    uso.includes("vector") ||
-    uso.includes("lineart") ||
-    uso.includes("line art")
-  ) {
-    instrucciones = `
-Crear un diseño estilo vectorial limpio.
+    // ==========================
+    // VIROLAS DE MATE
+    // ==========================
 
-Utilizar líneas fuertes, claras y continuas.
-Fondo limpio.
-Sin ruido.
-Sin sombras fotográficas.
-Sin texturas innecesarias.
-Preparado para posterior vectorización o grabado.
+    if (
+        uso.includes("virola") ||
+        pedido.toLowerCase().includes("virola")
+    ) {
+
+        instrucciones += `
+The artwork will be laser engraved on a mate rim (virola).
+
+Create a clean horizontal engraving composition.
+Do not draw the mate.
+Do not draw the metal rim itself.
+Generate only the artwork.
+Use bold black lines and a clean white background.
+Avoid tiny details.
 `;
-  }
 
-  // ==============================================
-  // SUBLIMACIÓN
-  // ==============================================
+    }
 
-  else if (uso.includes("sublim")) {
-    instrucciones = `
-Crear una imagen profesional para sublimación.
+    // ==========================
+    // FOTOGRABADO
+    // ==========================
 
-Colores definidos y vivos.
-Muy buena nitidez.
-Composición limpia.
-Alta calidad visual.
-Mantener todos los elementos importantes dentro del diseño.
+    if (
+        uso.includes("fotograbado") ||
+        pedido.toLowerCase().includes("fotograbado")
+    ) {
+
+        instrucciones += `
+Prepare the image for photographic laser engraving.
+
+Use grayscale.
+Excellent separation between highlights and shadows.
+High facial definition when people are present.
+Preserve natural facial features.
+Avoid crushed blacks.
+Avoid blown highlights.
+Sharp important details.
+Clean background.
 `;
-  }
 
-  // ==============================================
-  // DTF
-  // ==============================================
+    }
 
-  else if (uso.includes("dtf")) {
-    instrucciones = `
-Crear un diseño profesional para impresión DTF.
+    // ==========================
+    // VECTOR / LINE ART
+    // ==========================
 
-Contornos perfectamente definidos.
-Colores sólidos y claros.
-Composición apta para estampar en prendas.
-Mantener el diseño principal completamente visible.
+    if (
+        uso.includes("vector") ||
+        uso.includes("lineart") ||
+        uso.includes("line art")
+    ) {
+
+        instrucciones += `
+Create clean vector-style line art.
+Strong continuous lines.
+No photographic textures.
+No visual noise.
+No unnecessary shading.
+Suitable for tracing and laser engraving.
 `;
-  }
 
-  // ==============================================
-  // STICKERS
-  // ==============================================
+    }
 
-  else if (uso.includes("sticker")) {
-    instrucciones = `
-Crear un diseño profesional para sticker.
+    // ==========================
+    // SUBLIMACIÓN
+    // ==========================
 
-Silueta clara.
-Bordes perfectamente definidos.
-Elemento principal completamente visible.
-Composición limpia y preparada para recorte.
+    if (uso.includes("sublim")) {
+
+        instrucciones += `
+Create a professional design for sublimation printing.
+Sharp details.
+Balanced composition.
+Vivid and well separated colors.
+High quality.
+Keep the complete design inside the canvas.
 `;
-  }
 
-  // ==============================================
-  // REDES SOCIALES
-  // ==============================================
+    }
 
-  else if (
-    uso.includes("redes") ||
-    uso.includes("instagram") ||
-    uso.includes("facebook")
-  ) {
-    instrucciones = `
-Crear una imagen profesional para redes sociales.
+    // ==========================
+    // DTF
+    // ==========================
 
-Composición visual equilibrada.
-Elementos principales claramente visibles.
-Excelente legibilidad.
-Diseño limpio y atractivo.
+    if (uso.includes("dtf")) {
+
+        instrucciones += `
+Create professional artwork for DTF printing.
+Clean defined edges.
+Strong colors.
+High resolution appearance.
+Keep the complete artwork visible.
+No mockup.
 `;
-  }
 
-  // ==============================================
-  // FONDO TRANSPARENTE
-  // ==============================================
+    }
 
-  if (fondoTransparente) {
-    instrucciones += `
-El usuario solicita fondo transparente.
+    // ==========================
+    // STICKERS
+    // ==========================
 
-El elemento principal debe quedar aislado y limpio.
-No agregar escenario.
-No agregar fondos decorativos.
-Mantener bordes definidos alrededor del elemento principal.
+    if (uso.includes("sticker")) {
+
+        instrucciones += `
+Create professional sticker artwork.
+Clear silhouette.
+Clean defined edges.
+Centered subject.
+No mockup.
 `;
-  }
 
-  return `
+    }
+
+    // ==========================
+    // FONDO
+    // ==========================
+
+    if (transparente) {
+
+        instrucciones += `
+Isolate the main subject completely.
+No scenery.
+No decorative background.
+Use a plain pure white background so it can be removed easily afterward.
+Clear separation between subject and background.
+`;
+
+    }
+
+    return `
+USER REQUEST:
 ${pedido}
 
+PRODUCTION INSTRUCTIONS:
 ${instrucciones}
 
-Respetar exactamente el tema solicitado por el usuario.
-No agregar palabras, nombres ni textos que el usuario no haya solicitado.
-Mantener todos los elementos importantes dentro de los límites de la imagen.
-Crear una imagen de buena calidad y claramente definida.
+IMPORTANT:
+Follow the user's requested subject faithfully.
+Do not add words, letters, names, numbers or text unless explicitly requested.
+Do not add frames or product mockups unless explicitly requested.
+Keep all important elements completely inside the image.
+Create a clean, professional and clearly defined composition.
 `;
 }
 
-// ======================================================
-// FUNCIÓN PRINCIPAL
-// ======================================================
 
 export default async function handler(req, res) {
-  cors(req, res);
 
-  // Respuesta CORS
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+    cors(req, res);
 
-  // Solamente POST
-  if (req.method !== "POST") {
-    return responderError(
-      res,
-      405,
-      "Método no permitido. Usá POST."
-    );
-  }
-
-  // Utiliza la misma clave de Gemini configurada
-  // en Vercel para ÁNGELA.
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    return responderError(
-      res,
-      500,
-      "Falta GEMINI_API_KEY en Vercel."
-    );
-  }
-
-  try {
-    const body =
-      typeof req.body === "string"
-        ? JSON.parse(req.body || "{}")
-        : (req.body || {});
-
-    const prompt = construirPrompt(body).trim();
-
-    if (!prompt) {
-      return responderError(
-        res,
-        400,
-        "Escribí qué imagen querés crear."
-      );
+    if (req.method === "OPTIONS") {
+        return res.status(200).end();
     }
 
-    const aspecto = normalizarAspecto(
-      body.aspectRatio ||
-      body.aspect_ratio ||
-      body.formato ||
-      "1:1"
-    );
+    if (req.method !== "POST") {
+        return responderError(
+            res,
+            405,
+            "Método no permitido. Usá POST."
+        );
+    }
 
-    const url =
-      `https://generativelanguage.googleapis.com/v1beta/models/` +
-      `${encodeURIComponent(IMAGE_MODEL)}:generateContent`;
+    const accountId =
+        process.env.CLOUDFLARE_ACCOUNT_ID;
 
-    const solicitud = {
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: prompt
-            }
-          ]
+    const apiToken =
+        process.env.CLOUDFLARE_API_TOKEN;
+
+    if (!accountId) {
+        return responderError(
+            res,
+            500,
+            "Falta CLOUDFLARE_ACCOUNT_ID en Vercel."
+        );
+    }
+
+    if (!apiToken) {
+        return responderError(
+            res,
+            500,
+            "Falta CLOUDFLARE_API_TOKEN en Vercel."
+        );
+    }
+
+    try {
+
+        const body =
+            typeof req.body === "string"
+                ? JSON.parse(req.body || "{}")
+                : (req.body || {});
+
+        const prompt =
+            construirPrompt(body).trim();
+
+        if (!prompt) {
+            return responderError(
+                res,
+                400,
+                "Escribí qué imagen querés crear."
+            );
         }
-      ],
 
-      generationConfig: {
-        responseModalities: [
-          "TEXT",
-          "IMAGE"
-        ]
-      }
-    };
+        const url =
+            `https://api.cloudflare.com/client/v4/accounts/` +
+            `${accountId}/ai/run/${IMAGE_MODEL}`;
 
-    const respuesta = await fetch(url, {
-      method: "POST",
+        const respuesta = await fetch(url, {
 
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey
-      },
+            method: "POST",
 
-      body: JSON.stringify(solicitud)
-    });
+            headers: {
+                "Authorization": `Bearer ${apiToken}`,
+                "Content-Type": "application/json"
+            },
 
-    const data = await respuesta.json();
+            body: JSON.stringify({
+                prompt: prompt,
+                num_steps: 4
+            })
 
-    if (!respuesta.ok) {
-      const mensajeGoogle =
-        data?.error?.message ||
-        `Gemini respondió ${respuesta.status}`;
+        });
 
-      return responderError(
-        res,
-        respuesta.status,
-        "No se pudo generar la imagen.",
-        mensajeGoogle
-      );
+        const contentType =
+            respuesta.headers.get("content-type") || "";
+
+        let data;
+
+        if (contentType.includes("application/json")) {
+            data = await respuesta.json();
+        } else {
+            const buffer =
+                Buffer.from(await respuesta.arrayBuffer());
+
+            const base64 =
+                buffer.toString("base64");
+
+            const mimeType =
+                contentType.includes("image/")
+                    ? contentType
+                    : "image/png";
+
+            const dataUrl =
+                `data:${mimeType};base64,${base64}`;
+
+            return res.status(200).json({
+                ok: true,
+                image: dataUrl,
+                imageUrl: dataUrl,
+                url: dataUrl,
+                dataUrl: dataUrl,
+                mimeType: mimeType,
+                model: IMAGE_MODEL
+            });
+        }
+
+        if (!respuesta.ok || data?.success === false) {
+
+            const detalle =
+                data?.errors?.[0]?.message ||
+                data?.errors?.[0]?.code ||
+                data?.error ||
+                `Cloudflare respondió ${respuesta.status}`;
+
+            return responderError(
+                res,
+                respuesta.status || 500,
+                "No se pudo generar la imagen.",
+                String(detalle)
+            );
+        }
+
+        const resultado =
+            data?.result || data;
+
+        let base64 =
+            resultado?.image ||
+            resultado?.data ||
+            resultado?.base64 ||
+            null;
+
+        if (Array.isArray(base64)) {
+            base64 = base64[0];
+        }
+
+        if (
+            typeof base64 === "string" &&
+            base64.startsWith("data:image")
+        ) {
+
+            return res.status(200).json({
+                ok: true,
+                image: base64,
+                imageUrl: base64,
+                url: base64,
+                dataUrl: base64,
+                mimeType: "image/png",
+                model: IMAGE_MODEL
+            });
+        }
+
+        if (typeof base64 === "string" && base64.length > 100) {
+
+            const dataUrl =
+                `data:image/png;base64,${base64}`;
+
+            return res.status(200).json({
+                ok: true,
+                image: dataUrl,
+                imageUrl: dataUrl,
+                url: dataUrl,
+                dataUrl: dataUrl,
+                mimeType: "image/png",
+                model: IMAGE_MODEL
+            });
+        }
+
+        return responderError(
+            res,
+            502,
+            "Cloudflare respondió pero no devolvió una imagen.",
+            JSON.stringify(data).slice(0, 1000)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "ANGELA CLOUDFLARE IMAGE ERROR:",
+            error
+        );
+
+        return responderError(
+            res,
+            500,
+            "Error interno al generar la imagen.",
+            error?.message || String(error)
+        );
     }
-
-    const parts =
-      data?.candidates?.[0]?.content?.parts || [];
-
-    let imagenBase64 = null;
-    let mimeType = "image/png";
-    let texto = "";
-
-    for (const part of parts) {
-      if (part.inlineData?.data) {
-        imagenBase64 = part.inlineData.data;
-
-        mimeType =
-          part.inlineData.mimeType ||
-          "image/png";
-      }
-
-      if (part.inline_data?.data) {
-        imagenBase64 = part.inline_data.data;
-
-        mimeType =
-          part.inline_data.mime_type ||
-          "image/png";
-      }
-
-      if (part.text) {
-        texto += part.text;
-      }
-    }
-
-    if (!imagenBase64) {
-      const bloqueo =
-        data?.promptFeedback?.blockReason ||
-        data?.candidates?.[0]?.finishReason ||
-        "";
-
-      return responderError(
-        res,
-        502,
-        "Gemini respondió pero no devolvió una imagen.",
-        bloqueo ||
-        texto ||
-        "Sin imagen en la respuesta."
-      );
-    }
-
-    const dataUrl =
-      `data:${mimeType};base64,${imagenBase64}`;
-
-    // Devuelve varios nombres para facilitar
-    // la compatibilidad con el panel de ÁNGELA.
-    return res.status(200).json({
-      ok: true,
-
-      image: dataUrl,
-      imageUrl: dataUrl,
-      url: dataUrl,
-      dataUrl: dataUrl,
-
-      mimeType: mimeType,
-      model: IMAGE_MODEL,
-      aspectRatio: aspecto,
-
-      text: texto.trim()
-    });
-
-  } catch (error) {
-    console.error(
-      "ANGELA IMAGE ERROR:",
-      error
-    );
-
-    return responderError(
-      res,
-      500,
-      "Error interno al generar la imagen.",
-      error?.message || String(error)
-    );
-  }
 }
