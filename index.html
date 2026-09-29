@@ -3992,11 +3992,13 @@ async function generarImagenIA() {
     const datos = await respuesta.json();
 
     if (!respuesta.ok) {
-      throw new Error(
+    throw new Error(
+        datos?.detail ||
         datos?.error ||
         datos?.message ||
         "No se pudo generar la imagen."
-      );
+    );
+}
     }
 
     const imagenRecibida =
