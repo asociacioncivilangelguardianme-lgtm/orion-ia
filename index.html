@@ -4786,5 +4786,166 @@ setTimeout(instalarBoton,500);
 })();
 </script>
 
+
+<script id="angela-documentacion-control-v2">
+(()=>{
+const KEY="ANGELA_MASTER_LOCAL_V1";
+const cats=["Actas","Personería","DPPJ","ARCA","REPOC","Programas","Certificados","Anexos","Otros"];
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+const save=db=>localStorage.setItem(KEY,JSON.stringify(db));
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const days=(d)=>{if(!d)return null;let a=new Date();a.setHours(0,0,0,0);let b=new Date(d+"T00:00:00");return Math.ceil((b-a)/86400000)};
+const estado=d=>{let n=days(d);if(n===null)return ["❓","Sin vencimiento"];if(n<0)return ["❌","Vencido"];if(n<=30)return ["⚠️",`Vence en ${n} días`];return ["✅","Vigente"]};
+function ensure(db){db.documentos=Array.isArray(db.documentos)?db.documentos:[];db.recordatorios=Array.isArray(db.recordatorios)?db.recordatorios:[];db.autoridades=Array.isArray(db.autoridades)?db.autoridades:[];return db}
+function open(){
+ let db=ensure(load()), b=document.getElementById("angelaGestionContenido"); if(!b)return;
+ b.classList.remove("hidden");
+ let cards=cats.map(c=>`<button onclick="angelaFiltrarDocs('${c}')" class="quick text-xs">${c}<br><b>${db.documentos.filter(x=>x.categoria===c).length}</b></button>`).join("");
+ b.innerHTML=`<div class="border border-slate-700 rounded-2xl p-4 bg-slate-950/40">
+ <div class="flex justify-between"><h3 class="font-bold text-cyan-300">📁 Documentación + Control documental</h3><button onclick="this.closest('#angelaGestionContenido').classList.add('hidden')" class="text-xs bg-slate-700 px-3 rounded-lg">Cerrar</button></div>
+ <div class="grid grid-cols-3 md:grid-cols-5 gap-2 mt-3">${cards}</div>
+ <div class="grid md:grid-cols-4 gap-2 mt-4">
+  <select id="doc_cat" class="bg-slate-900 rounded-lg p-2 text-xs">${cats.map(c=>`<option>${c}</option>`).join("")}</select>
+  <input id="doc_nombre" placeholder="Nombre del documento" class="bg-slate-900 rounded-lg p-2 text-xs">
+  <input id="doc_fecha" type="date" title="Fecha del documento" class="bg-slate-900 rounded-lg p-2 text-xs">
+  <input id="doc_vto" type="date" title="Vencimiento" class="bg-slate-900 rounded-lg p-2 text-xs">
+  <input id="doc_autoridad" placeholder="Autoridad / período" class="bg-slate-900 rounded-lg p-2 text-xs">
+  <input id="doc_nota" placeholder="Observaciones" class="bg-slate-900 rounded-lg p-2 text-xs">
+  <label class="quick text-xs cursor-pointer">📎 Adjuntar referencia<input id="doc_file" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="hidden"></label>
+  <button onclick="angelaGuardarDocumentoV2()" class="quick text-xs">💾 Guardar documento</button>
+ </div>
+ <p class="text-[10px] text-slate-500 mt-2">El navegador guarda el registro y nombre del archivo. Para conservar el archivo completo entre dispositivos necesitaremos Supabase/almacenamiento en nube.</p>
+ <div class="flex flex-wrap gap-2 mt-4">
+  <button onclick="angelaControlDocumental()" class="quick text-xs">📋 Revisar faltantes y vencimientos</button>
+  <button onclick="angelaCompararAutoridades()" class="quick text-xs">👤 Comparar autoridades</button>
+  <button onclick="angelaCrearRecordatoriosDocs()" class="quick text-xs">⏰ Crear recordatorios</button>
+  <button onclick="angelaPrepararNotaDoc()" class="quick text-xs">📝 Preparar nota</button>
+ </div>
+ <div id="doc_control" class="mt-3"></div><div id="doc_lista" class="mt-4 overflow-auto"></div></div>`;
+ renderList();
+}
+function renderList(filter=""){
+ let db=ensure(load()), el=document.getElementById("doc_lista");if(!el)return;
+ let arr=filter?db.documentos.filter(x=>x.categoria===filter):db.documentos;
+ el.innerHTML=`<table class="w-full text-xs"><thead><tr><th class="p-2 text-left">Estado</th><th class="p-2 text-left">Categoría</th><th class="p-2 text-left">Documento</th><th class="p-2 text-left">Fecha</th><th class="p-2 text-left">Vencimiento</th><th class="p-2 text-left">Autoridad</th><th></th></tr></thead><tbody>`+
+ arr.map(x=>{let e=estado(x.vencimiento);return `<tr class="border-t border-slate-800"><td class="p-2">${e[0]} ${e[1]}</td><td class="p-2">${esc(x.categoria)}</td><td class="p-2">${esc(x.nombre)}${x.archivo?`<br><span class="text-slate-500">📎 ${esc(x.archivo)}</span>`:""}</td><td class="p-2">${esc(x.fecha)}</td><td class="p-2">${esc(x.vencimiento)}</td><td class="p-2">${esc(x.autoridad)}</td><td><button class="text-red-300" onclick="angelaBorrarDocV2('${x.id}')">Eliminar</button></td></tr>`}).join("")+"</tbody></table>";
+}
+window.angelaFiltrarDocs=renderList;
+window.angelaGuardarDocumentoV2=()=>{
+ let db=ensure(load()), f=document.getElementById("doc_file")?.files?.[0];
+ let o={id:uid(),categoria:document.getElementById("doc_cat").value,nombre:document.getElementById("doc_nombre").value.trim(),fecha:document.getElementById("doc_fecha").value,vencimiento:document.getElementById("doc_vto").value,autoridad:document.getElementById("doc_autoridad").value.trim(),nota:document.getElementById("doc_nota").value.trim(),archivo:f?.name||"",creado:new Date().toISOString()};
+ if(!o.nombre)return alert("Escribí el nombre del documento.");
+ db.documentos.unshift(o);save(db);open();
+};
+window.angelaBorrarDocV2=id=>{if(!confirm("¿Eliminar este registro documental?"))return;let db=ensure(load());db.documentos=db.documentos.filter(x=>x.id!==id);save(db);open()};
+window.angelaControlDocumental=()=>{
+ let db=ensure(load()), el=document.getElementById("doc_control");
+ let faltan=cats.slice(0,8).filter(c=>!db.documentos.some(x=>x.categoria===c));
+ let venc=db.documentos.filter(x=>days(x.vencimiento)!==null&&days(x.vencimiento)<0);
+ let pronto=db.documentos.filter(x=>{let n=days(x.vencimiento);return n!==null&&n>=0&&n<=30});
+ el.innerHTML=`<div class="card-mini"><b>📋 Control documental</b><br>❓ Categorías sin documentos registrados: ${faltan.length?faltan.join(", "):"ninguna"}<br>❌ Vencidos: ${venc.length}<br>⚠️ Vencen dentro de 30 días: ${pronto.length}</div>`;
+};
+window.angelaCompararAutoridades=()=>{
+ let db=ensure(load()), el=document.getElementById("doc_control");
+ let docs=db.documentos.filter(x=>x.autoridad);
+ let groups={};docs.forEach(x=>(groups[x.autoridad]??=[]).push(`${x.categoria}: ${x.nombre}`));
+ el.innerHTML=`<div class="card-mini"><b>👤 Autoridades/períodos encontrados</b><br>${Object.keys(groups).length?Object.entries(groups).map(([a,d])=>`<b>${esc(a)}</b>: ${d.map(esc).join(" · ")}`).join("<br>"):"Todavía no cargaste autoridades en los documentos."}</div>`;
+};
+window.angelaCrearRecordatoriosDocs=()=>{
+ let db=ensure(load()), n=0;
+ db.documentos.forEach(x=>{let d=days(x.vencimiento);if(d!==null&&d>=0&&d<=60&&!db.recordatorios.some(r=>r.docId===x.id)){let aviso=new Date(x.vencimiento+"T09:00:00");aviso.setDate(aviso.getDate()-30);db.recordatorios.unshift({id:uid(),docId:x.id,titulo:`Revisar vencimiento: ${x.nombre}`,fecha:aviso.toISOString().slice(0,16),categoria:"Documentación"});n++}});
+ save(db);document.getElementById("doc_control").innerHTML=`<div class="card-mini">⏰ Se crearon ${n} recordatorios nuevos. Se programa el aviso 30 días antes cuando corresponde.</div>`;
+};
+window.angelaPrepararNotaDoc=()=>{
+ let db=ensure(load()), faltan=cats.slice(0,8).filter(c=>!db.documentos.some(x=>x.categoria===c)), venc=db.documentos.filter(x=>days(x.vencimiento)!==null&&days(x.vencimiento)<0);
+ let txt=`NOTA DE CONTROL DOCUMENTAL\n\nFecha: ${new Date().toLocaleDateString("es-AR")}\n\nDocumentación faltante por categoría: ${faltan.length?faltan.join(", "):"No se registran categorías faltantes."}\nDocumentos vencidos: ${venc.length?venc.map(x=>x.nombre).join(", "):"Ninguno."}\n\nObservaciones:\n`;
+ document.getElementById("doc_control").innerHTML=`<textarea id="nota_doc_generada" class="w-full min-h-48 bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs">${esc(txt)}</textarea><button class="quick text-xs mt-2" onclick="navigator.clipboard.writeText(document.getElementById('nota_doc_generada').value)">📋 Copiar nota</button>`;
+};
+const prev=window.angelaAbrirGestion;
+window.angelaAbrirGestion=function(m){if(m==="documentos")return open();return prev?.(m)};
+})();
+</script>
+
+
+<script id="angela-documentos-personales-familias-v1">
+(()=>{
+const KEY="ANGELA_MASTER_LOCAL_V1";
+const tipos=["DNI","CUIL","Partida de nacimiento","Certificado de escolaridad","Certificado","Otro"];
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+const save=db=>localStorage.setItem(KEY,JSON.stringify(db));
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const ensure=db=>{db.familias=Array.isArray(db.familias)?db.familias:[];db.documentosPersonales=Array.isArray(db.documentosPersonales)?db.documentosPersonales:[];return db};
+
+function abrir(){
+ const db=ensure(load()), b=document.getElementById("angelaGestionContenido");if(!b)return;
+ b.classList.remove("hidden");
+ const opts=db.familias.slice().sort((a,b)=>String(a.nombre||"").localeCompare(String(b.nombre||""))).map(p=>`<option value="${esc(p.id)}">${esc(p.nombre||"Sin nombre")} ${p.dni?`— DNI ${esc(p.dni)}`:""}</option>`).join("");
+ b.innerHTML=`<div class="border border-slate-700 rounded-2xl p-4 bg-slate-950/40">
+ <div class="flex justify-between gap-2"><h3 class="font-bold text-cyan-300">👨‍👩‍👧 Familias y Personas</h3><button class="text-xs bg-slate-700 px-3 py-1 rounded-lg" onclick="document.getElementById('angelaGestionContenido').classList.add('hidden')">Cerrar</button></div>
+ <div class="flex flex-wrap gap-2 mt-3">
+  <button class="quick text-xs" onclick="angelaVistaPersonas()">👥 Personas</button>
+  <button class="quick text-xs" onclick="angelaVistaDocsPersonales()">📎 Documentos personales</button>
+ </div>
+ <div id="familia_vista_v2" class="mt-4"></div></div>`;
+ window.__angelaPersonaOptions=opts;
+ vistaPersonas();
+}
+function edad(f){if(!f)return "";let d=new Date(f),n=new Date(),e=n.getFullYear()-d.getFullYear(),m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))e--;return e}
+function vistaPersonas(){
+ const db=ensure(load()), el=document.getElementById("familia_vista_v2");if(!el)return;
+ el.innerHTML=`<div class="grid md:grid-cols-4 gap-2">
+ <input id="fp_familia" placeholder="Familia / grupo" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <input id="fp_nombre" placeholder="Apellido y nombre" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <input id="fp_dni" placeholder="DNI" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <input id="fp_nac" type="date" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <input id="fp_tel" placeholder="Teléfono" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <input id="fp_dom" placeholder="Domicilio" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <button onclick="angelaGuardarPersonaV2()" class="quick text-xs">💾 Guardar persona</button>
+ </div>
+ <div class="text-xs mt-3">Personas: <b>${db.familias.length}</b> · Familias: <b>${new Set(db.familias.map(x=>x.familia).filter(Boolean)).size}</b></div>
+ <div class="overflow-auto mt-3"><table class="w-full text-xs"><thead><tr><th class="p-2 text-left">Familia</th><th class="p-2 text-left">Nombre</th><th class="p-2">DNI</th><th class="p-2">Edad</th><th class="p-2">Documentos</th></tr></thead><tbody>`+
+ db.familias.map(p=>`<tr class="border-t border-slate-800"><td class="p-2">${esc(p.familia)}</td><td class="p-2">${esc(p.nombre)}</td><td class="p-2">${esc(p.dni)}</td><td class="p-2">${edad(p.nacimiento)}</td><td class="p-2"><button class="quick text-xs" onclick="angelaDocsDePersona('${p.id}')">📎 ${db.documentosPersonales.filter(d=>d.personaId===p.id).length}</button></td></tr>`).join("")+
+ `</tbody></table></div>`;
+}
+window.angelaVistaPersonas=vistaPersonas;
+window.angelaGuardarPersonaV2=()=>{
+ let db=ensure(load()), nombre=document.getElementById("fp_nombre").value.trim();if(!nombre)return alert("Ingresá apellido y nombre.");
+ db.familias.push({id:uid(),creado:new Date().toISOString(),familia:document.getElementById("fp_familia").value.trim(),nombre,dni:document.getElementById("fp_dni").value.replace(/\D/g,""),nacimiento:document.getElementById("fp_nac").value,telefono:document.getElementById("fp_tel").value.trim(),domicilio:document.getElementById("fp_dom").value.trim()});
+ save(db);abrir();
+};
+function vistaDocs(personaId=""){
+ const db=ensure(load()), el=document.getElementById("familia_vista_v2");if(!el)return;
+ const opts=db.familias.slice().sort((a,b)=>String(a.nombre||"").localeCompare(String(b.nombre||""))).map(p=>`<option value="${esc(p.id)}" ${p.id===personaId?"selected":""}>${esc(p.nombre||"Sin nombre")} ${p.dni?`— DNI ${esc(p.dni)}`:""}</option>`).join("");
+ el.innerHTML=`<div class="grid md:grid-cols-4 gap-2">
+ <select id="dp_persona" class="bg-slate-900 rounded-lg p-2 text-xs"><option value="">Seleccionar persona…</option>${opts}</select>
+ <select id="dp_tipo" class="bg-slate-900 rounded-lg p-2 text-xs">${tipos.map(t=>`<option>${t}</option>`).join("")}</select>
+ <input id="dp_numero" placeholder="Número / referencia" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <input id="dp_vto" type="date" title="Vencimiento si corresponde" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <input id="dp_nota" placeholder="Observación" class="bg-slate-900 rounded-lg p-2 text-xs">
+ <label class="quick text-xs cursor-pointer">📎 Elegir archivo<input id="dp_file" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="hidden"></label>
+ <button onclick="angelaGuardarDocPersonal()" class="quick text-xs">💾 Asociar documento</button>
+ </div>
+ <p class="text-[10px] text-slate-500 mt-2">El documento queda asociado al registro interno de la persona. El archivo completo necesitará almacenamiento en nube para conservarse entre dispositivos; por ahora se registra su nombre.</p>
+ <div class="mt-3 overflow-auto"><table class="w-full text-xs"><thead><tr><th class="p-2 text-left">Persona</th><th class="p-2">Tipo</th><th class="p-2">Número</th><th class="p-2">Archivo</th><th class="p-2">Vencimiento</th><th></th></tr></thead><tbody>`+
+ db.documentosPersonales.map(d=>{let p=db.familias.find(x=>x.id===d.personaId);return `<tr class="border-t border-slate-800"><td class="p-2">${esc(p?.nombre||"Persona no encontrada")}</td><td class="p-2">${esc(d.tipo)}</td><td class="p-2">${esc(d.numero)}</td><td class="p-2">${esc(d.archivo)}</td><td class="p-2">${esc(d.vencimiento)}</td><td><button class="text-red-300" onclick="angelaBorrarDocPersonal('${d.id}')">Eliminar</button></td></tr>`}).join("")+
+ `</tbody></table></div>`;
+}
+window.angelaVistaDocsPersonales=()=>vistaDocs();
+window.angelaDocsDePersona=id=>vistaDocs(id);
+window.angelaGuardarDocPersonal=()=>{
+ let db=ensure(load()), personaId=document.getElementById("dp_persona").value;if(!personaId)return alert("Seleccioná la persona.");
+ let f=document.getElementById("dp_file")?.files?.[0];
+ db.documentosPersonales.unshift({id:uid(),personaId,tipo:document.getElementById("dp_tipo").value,numero:document.getElementById("dp_numero").value.trim(),vencimiento:document.getElementById("dp_vto").value,nota:document.getElementById("dp_nota").value.trim(),archivo:f?.name||"",creado:new Date().toISOString()});
+ save(db);vistaDocs(personaId);
+};
+window.angelaBorrarDocPersonal=id=>{if(!confirm("¿Eliminar este documento personal del registro?"))return;let db=ensure(load());let d=db.documentosPersonales.find(x=>x.id===id);db.documentosPersonales=db.documentosPersonales.filter(x=>x.id!==id);save(db);vistaDocs(d?.personaId||"")};
+
+const prev=window.angelaAbrirGestion;
+window.angelaAbrirGestion=function(m){if(m==="familias")return abrir();return prev?.(m)};
+})();
+</script>
+
 </body>
 </html>
