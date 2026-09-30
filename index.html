@@ -589,6 +589,22 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 </div>
 <input id="archivoGeneral" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.json,.dxf,.mp4,.webm,.mov,.m4v" class="w-full bg-slate-900 p-2 rounded-lg text-xs" aria-label="Seleccionar archivo">
 <p class="text-[10px] text-slate-500 mt-2">ÁNGELA puede leer texto de PDF, DOCX, TXT, CSV y Excel. También puede analizar imágenes y fotogramas de video. Los archivos se procesan primero en tu navegador.</p>
+
+<div class="mt-4 border-t border-slate-700 pt-3">
+  <div class="font-bold text-emerald-300 text-xs mb-2">📊 Excel y Word · varios archivos</div>
+  <input id="archivosMultiplesAngela" type="file" multiple accept=".xlsx,.xls,.csv,.docx"
+    class="w-full bg-slate-900 p-2 rounded-lg text-xs"
+    aria-label="Seleccionar varios archivos Excel, CSV o Word">
+  <p class="text-[10px] text-slate-500 mt-2">Podés seleccionar 2 o más Excel/CSV/Word juntos. Para Excel, ÁNGELA puede cruzar, unificar y buscar duplicados sin modificar los originales.</p>
+  <div id="multiArchivosLista" class="mt-2 text-xs space-y-1"></div>
+  <div class="grid grid-cols-2 gap-2 mt-3">
+    <button onclick="analizarArchivosMultiplesAngela()" class="quick text-xs">🧠 Leer varios</button>
+    <button onclick="cruzarExcelAngela()" class="quick text-xs">🔀 Cruzar Excel</button>
+    <button onclick="unificarExcelAngela()" class="quick text-xs">📚 Unificar Excel</button>
+    <button onclick="exportarCruceAngela()" class="quick text-xs">💾 Descargar resultado</button>
+  </div>
+  <div id="multiArchivosResultado" class="file-work-preview hidden mt-3"></div>
+</div>
 <div id="contextoArchivoPanel" class="mt-3"></div>
 <div id="archivoInfo" class="mt-3 text-xs"></div>
 <div id="archivoPreviewTexto" class="file-work-preview hidden mt-3"></div>
@@ -4344,6 +4360,146 @@ function descargarImagenIA() {
  }
  window.pedidoImagen29=pedidoImagen29;
  window.ejecutarImagen29=ejecutarImagen29;
+})();
+</script>
+
+
+<script id="angela-multi-excel-word-v1">
+(function(){
+  const M={files:[],books:[],rows:[],resultRows:[],headers:[]};
+  window.ANGELA_MULTI=M;
+  const $m=id=>document.getElementById(id);
+  const norm=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const val=(r,keys)=>{
+    const entries=Object.entries(r||{});
+    for(const k of keys){
+      const nk=norm(k);
+      let hit=entries.find(([h])=>norm(h)===nk);
+      if(!hit) hit=entries.find(([h])=>norm(h).includes(nk)||nk.includes(norm(h)));
+      if(hit && String(hit[1]??"").trim()) return String(hit[1]).trim();
+    }
+    return "";
+  };
+  const keyRow=r=>{
+    const dni=val(r,["dni","documento","nro documento","numero documento","doc"]);
+    if(dni) return "dni:"+dni.replace(/\D/g,"");
+    const tel=val(r,["telefono","celular","whatsapp","tel"]);
+    if(tel) return "tel:"+tel.replace(/\D/g,"");
+    const nom=val(r,["apellido y nombre","nombre y apellido","nombre","apellido"]);
+    const nac=val(r,["fecha nacimiento","nacimiento","fecha de nacimiento"]);
+    return nom ? "nom:"+norm(nom)+"|"+norm(nac) : "";
+  };
+  function show(text){
+    const el=$m("multiArchivosResultado"); if(!el)return;
+    el.classList.remove("hidden"); el.textContent=text;
+  }
+  function list(){
+    const el=$m("multiArchivosLista"); if(!el)return;
+    el.innerHTML="";
+    M.files.forEach((f,i)=>{
+      const d=document.createElement("div"); d.className="card-mini";
+      d.textContent=`${i+1}. ${f.name} · ${(f.size/1024).toFixed(0)} KB`; el.appendChild(d);
+    });
+  }
+  async function readExcel(f){
+    const wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true});
+    const out=[];
+    wb.SheetNames.forEach(sn=>{
+      const data=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:"",raw:false});
+      data.forEach((r,i)=>out.push({...r,__archivo:f.name,__hoja:sn,__fila:i+2}));
+    });
+    return {file:f,wb,rows:out};
+  }
+  async function ensureExcel(){
+    if(!window.XLSX) throw new Error("No cargó el lector Excel.");
+    const fs=M.files.filter(f=>/\.(xlsx|xls|csv)$/i.test(f.name));
+    if(fs.length<2) throw new Error("Seleccioná por lo menos 2 archivos Excel/CSV.");
+    M.books=[];
+    for(const f of fs) M.books.push(await readExcel(f));
+    return M.books;
+  }
+  window.analizarArchivosMultiplesAngela=async function(){
+    if(!M.files.length){show("Seleccioná archivos primero.");return}
+    try{
+      let context=[], excelCount=0, wordCount=0;
+      for(const f of M.files){
+        if(/\.(xlsx|xls|csv)$/i.test(f.name)){
+          excelCount++;
+          const b=await readExcel(f);
+          context.push(`ARCHIVO: ${f.name}\nFilas: ${b.rows.length}\nColumnas: ${Object.keys(b.rows[0]||{}).filter(x=>!x.startsWith("__")).join(", ")}`);
+        }else if(/\.docx$/i.test(f.name)){
+          wordCount++;
+          const t=await extraerTextoDOCX(f);
+          context.push(`WORD: ${f.name}\n${t.slice(0,12000)}`);
+        }
+      }
+      const text=context.join("\n\n====================\n\n").slice(0,42000);
+      if(window.STATE) STATE.fileContext={kind:"multi",name:`${M.files.length} archivos`,text};
+      if(typeof renderContextoArchivo==="function")renderContextoArchivo();
+      if(typeof mostrarPreviewTexto==="function")mostrarPreviewTexto(text);
+      show(`✅ Leídos ${M.files.length} archivos: ${excelCount} Excel/CSV y ${wordCount} Word.\nYa podés preguntarle a ÁNGELA por el contenido.`);
+    }catch(e){show("❌ "+(e.message||e))}
+  };
+  window.cruzarExcelAngela=async function(){
+    try{
+      const books=await ensureExcel(), map=new Map();
+      books.forEach(b=>b.rows.forEach(r=>{
+        const k=keyRow(r); if(!k)return;
+        if(!map.has(k))map.set(k,[]);
+        map.get(k).push(r);
+      }));
+      const result=[];
+      for(const [k,arr] of map){
+        const archivos=[...new Set(arr.map(r=>r.__archivo))];
+        if(archivos.length>1){
+          const base={};
+          arr.forEach(r=>Object.entries(r).forEach(([h,v])=>{
+            if(!h.startsWith("__") && String(v??"").trim() && !base[h])base[h]=v;
+          }));
+          result.push({...base,
+            "Coincide en archivos":archivos.join(" | "),
+            "Cantidad de coincidencias":arr.length,
+            "__clave":k
+          });
+        }
+      }
+      M.resultRows=result;
+      const total=books.reduce((a,b)=>a+b.rows.length,0);
+      show(`🔀 Cruce terminado.\nArchivos: ${books.length}\nRegistros leídos: ${total}\nCoincidencias entre archivos: ${result.length}\n\nCriterio automático: primero DNI/documento; luego teléfono; y como alternativa nombre + fecha de nacimiento.\nLos archivos originales NO fueron modificados.`);
+    }catch(e){show("❌ "+(e.message||e))}
+  };
+  window.unificarExcelAngela=async function(){
+    try{
+      const books=await ensureExcel(), map=new Map(), sinClave=[];
+      books.forEach(b=>b.rows.forEach(r=>{
+        const k=keyRow(r);
+        if(!k){sinClave.push(r);return}
+        if(!map.has(k)){map.set(k,{...r});return}
+        const dst=map.get(k);
+        Object.entries(r).forEach(([h,v])=>{if(!String(dst[h]??"").trim()&&String(v??"").trim())dst[h]=v});
+        dst.__archivo=[...new Set(String(dst.__archivo||"").split(" | ").concat(r.__archivo))].filter(Boolean).join(" | ");
+      }));
+      M.resultRows=[...map.values(),...sinClave];
+      show(`📚 Unificación preparada.\nRegistros finales: ${M.resultRows.length}\nRegistros sin clave suficiente: ${sinClave.length}\nNo se borró ni sobrescribió ningún archivo. Tocá “Descargar resultado” para crear uno nuevo.`);
+    }catch(e){show("❌ "+(e.message||e))}
+  };
+  window.exportarCruceAngela=function(){
+    if(!M.resultRows.length){show("Primero usá “Cruzar Excel” o “Unificar Excel”.");return}
+    const clean=M.resultRows.map(r=>{
+      const o={}; Object.entries(r).forEach(([k,v])=>{if(!k.startsWith("__"))o[k]=v}); return o;
+    });
+    const ws=XLSX.utils.json_to_sheet(clean), wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Resultado");
+    XLSX.writeFile(wb,"ANGELA_resultado_excel.xlsx");
+    show(`💾 Resultado descargado: ANGELA_resultado_excel.xlsx\nLos originales siguen intactos.`);
+  };
+  document.addEventListener("DOMContentLoaded",()=>{
+    const inp=$m("archivosMultiplesAngela");
+    inp?.addEventListener("change",e=>{
+      M.files=Array.from(e.target.files||[]); M.books=[];M.resultRows=[]; list();
+      show(M.files.length?`📎 ${M.files.length} archivos seleccionados. Elegí “Leer varios”, “Cruzar Excel” o “Unificar Excel”.`:"");
+    });
+  });
 })();
 </script>
 
