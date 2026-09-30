@@ -5161,5 +5161,116 @@ new MutationObserver(inject).observe(document.documentElement,{childList:true,su
 })();
 </script>
 
+
+<script id="angela-base-maestra-personas-v4">
+(()=>{
+const KEY="ANGELA_MASTER_LOCAL_V1";
+const norm=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const dni=s=>String(s??"").replace(/\D/g,"");
+const tel=s=>String(s??"").replace(/[^\d+]/g,"");
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+const save=db=>localStorage.setItem(KEY,JSON.stringify(db));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const val=(r,aliases)=>{
+ let entries=Object.entries(r||{});
+ for(const a of aliases){
+  let na=norm(a);
+  let hit=entries.find(([k])=>norm(k)===na);
+  if(!hit)hit=entries.find(([k])=>norm(k).includes(na)||na.includes(norm(k)));
+  if(hit&&String(hit[1]??"").trim()!=="")return String(hit[1]).trim();
+ }
+ return "";
+};
+const aliases={
+ nombre:["apellido y nombre","apellidos y nombres","nombre y apellido","nombres y apellidos","nombre completo","beneficiario","integrante","persona"],
+ apellido:["apellido","apellidos"], nombres:["nombres","nombre"],
+ dni:["dni","d.n.i","d n i","n° dni","nº dni","nro dni","numero dni","número dni","documento","n° documento","nº documento","nro documento","numero documento","número documento","nro doc","n° doc","doc","documento identidad"],
+ nacimiento:["fecha de nacimiento","fecha nacimiento","nacimiento","fec nac","f nac","fecha nac"],
+ telefono:["telefono","teléfono","celular","whatsapp","tel","nro telefono","número teléfono","numero telefono"],
+ domicilio:["domicilio","direccion","dirección","calle","domicilio completo","direccion completa"],
+ familia:["familia","grupo familiar","nro familia","numero familia","número familia","titular","responsable","grupo"]
+};
+const toISO=v=>{if(!v)return "";let s=String(v).trim();if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);if(m){let y=m[3];if(y.length===2)y=(+y>30?"19":"20")+y;return `${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`};let d=new Date(s);return isNaN(d)?"":d.toISOString().slice(0,10)};
+function header(matrix){
+ const aa=Object.values(aliases).flat().map(norm);let best={row:0,score:-1};
+ for(let i=0;i<Math.min(30,matrix.length);i++){let sc=(matrix[i]||[]).reduce((n,c)=>n+(aa.some(a=>norm(c)===a||norm(c).includes(a))?1:0),0);if(sc>best.score)best={row:i,score:sc}}
+ return best;
+}
+function rows(ws){
+ let m=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:false});if(!m.length)return [];
+ let h=header(m);if(h.score<1)return [];
+ let hs=m[h.row].map((x,i)=>String(x||`columna_${i+1}`).trim());
+ return m.slice(h.row+1).filter(r=>r.some(v=>String(v??"").trim())).map(r=>Object.fromEntries(hs.map((k,i)=>[k,r[i]??""])));
+}
+function person(r){
+ let nombre=val(r,aliases.nombre);
+ if(!nombre){let a=val(r,aliases.apellido),n=val(r,aliases.nombres);nombre=[a,n].filter(Boolean).join(" ").trim()}
+ return {familia:val(r,aliases.familia),nombre,dni:dni(val(r,aliases.dni)),nacimiento:toISO(val(r,aliases.nacimiento)),telefono:tel(val(r,aliases.telefono)),domicilio:val(r,aliases.domicilio)};
+}
+function find(arr,p){
+ let d=dni(p.dni),n=norm(p.nombre);
+ if(d){let i=arr.findIndex(x=>dni(x.dni)===d);if(i>=0)return i}
+ if(n){let i=arr.findIndex(x=>norm(x.nombre)===n);if(i>=0)return i}
+ return -1;
+}
+function merge(old,p,conflicts){
+ ["familia","dni","nacimiento","telefono","domicilio"].forEach(k=>{
+  let a=String(old[k]??"").trim(),b=String(p[k]??"").trim();
+  if(!a&&b)old[k]=p[k];
+  else if(a&&b&&norm(a)!==norm(b))conflicts.push({persona:old.nombre,campo:k,actual:a,nuevo:b});
+ });
+ old.actualizado=new Date().toISOString();
+}
+async function processFiles(files){
+ if(!window.XLSX)throw new Error("No está disponible el lector Excel.");
+ let db=load();db.familias=Array.isArray(db.familias)?db.familias:[];db.historialImportaciones=Array.isArray(db.historialImportaciones)?db.historialImportaciones:[];
+ let report=[],conflicts=[];
+ for(const f of files){
+  let wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true}), all=[];
+  for(const sn of wb.SheetNames)all.push(...rows(wb.Sheets[sn]).map(person).filter(p=>p.nombre||p.dni));
+  let nuevos=0,repetidos=0,completados=0;
+  for(const p of all){
+   let i=find(db.familias,p);
+   if(i<0){db.familias.push({id:uid(),creado:new Date().toISOString(),...p});nuevos++}
+   else{repetidos++;let before=JSON.stringify(db.familias[i]);merge(db.familias[i],p,conflicts);if(before!==JSON.stringify(db.familias[i]))completados++}
+  }
+  let rec={id:uid(),archivo:f.name,fecha:new Date().toISOString(),leidos:all.length,nuevos,repetidos,completados,total:db.familias.length};
+  db.historialImportaciones.unshift(rec);report.push(rec);
+ }
+ db.conflictosFamilias=conflicts;save(db);return {report,conflicts,total:db.familias.length};
+}
+window.angelaCruzarPlanillasMaestra=async input=>{
+ let fs=[...(input.files||[])];if(!fs.length)return;
+ let st=document.getElementById("maestra_estado");st.innerHTML="⏳ Cruzando planillas y actualizando la Base Maestra…";
+ try{
+  let r=await processFiles(fs);
+  st.innerHTML=`✅ <b>Base Maestra actualizada.</b><br>${r.report.map(x=>`${x.archivo}: ${x.leidos} leídos · ${x.nuevos} nuevos · ${x.repetidos} repetidos`).join("<br>")}<br><b>Total único: ${r.total}</b> · Conflictos para revisar: ${r.conflicts.length}<br><span class="text-[10px] text-slate-400">Los repetidos no se duplican. Los campos vacíos se completan; datos diferentes se conservan para revisión.</span>`;
+  setTimeout(()=>window.angelaAbrirGestion?.("familias"),1200);
+ }catch(e){st.innerHTML="❌ "+String(e.message||e)}
+};
+window.angelaDescargarBaseMaestra=()=>{
+ if(!window.XLSX)return alert("No está disponible XLSX.");
+ let db=load(),a=Array.isArray(db.familias)?db.familias:[];if(!a.length)return alert("La Base Maestra todavía está vacía.");
+ let data=a.map((x,i)=>({"N°":i+1,"Familia / Grupo":x.familia||"","Apellido y Nombre":x.nombre||"","DNI / Documento":x.dni||"","Fecha de nacimiento":x.nacimiento||"","Edad":window.angelaEdad?angelaEdad(x.nacimiento):"","Teléfono":x.telefono||"","Domicilio":x.domicilio||""}));
+ let ws=XLSX.utils.json_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Base Maestra");
+ ws["!cols"]=[{wch:6},{wch:20},{wch:34},{wch:18},{wch:20},{wch:8},{wch:20},{wch:40}];
+ XLSX.writeFile(wb,`ANGELA_BASE_MAESTRA_${new Date().toISOString().slice(0,10)}.xlsx`);
+};
+window.angelaDescargarConflictos=()=>{
+ let db=load(),a=db.conflictosFamilias||[];if(!a.length)return alert("No hay conflictos pendientes.");
+ let ws=XLSX.utils.json_to_sheet(a.map(x=>({"Persona":x.persona,"Campo":x.campo,"Dato actual":x.actual,"Dato en nueva planilla":x.nuevo}))),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Revisar");XLSX.writeFile(wb,"ANGELA_DATOS_A_REVISAR.xlsx");
+};
+function inject(){
+ let host=document.getElementById("familia_vista_v2");if(!host||document.getElementById("base_maestra_panel"))return;
+ let db=load(),d=document.createElement("div");d.id="base_maestra_panel";d.className="mb-4 p-4 rounded-xl border border-emerald-700 bg-emerald-950/20";
+ d.innerHTML=`<div class="flex flex-wrap justify-between gap-2"><div><b>📚 Base Maestra de Familias y Personas</b><div class="text-xs mt-1">Total único guardado: <b>${(db.familias||[]).length}</b></div></div><div class="flex flex-wrap gap-2"><button class="quick text-xs" onclick="angelaDescargarBaseMaestra()">⬇️ Descargar Excel Maestro</button><button class="quick text-xs" onclick="angelaDescargarConflictos()">⚠️ Descargar datos a revisar</button></div></div><p class="text-[10px] text-slate-400 mt-2">Podés elegir varias planillas juntas o ir agregándolas de a una. Nunca reemplaza la base anterior: cruza, agrega faltantes y elimina duplicados lógicos.</p><input type="file" multiple accept=".xlsx,.xls,.csv" class="text-xs mt-2" onchange="angelaCruzarPlanillasMaestra(this)"><div id="maestra_estado" class="text-xs mt-2"></div>`;
+ host.prepend(d);
+}
+const old=window.angelaAbrirGestion;
+window.angelaAbrirGestion=function(m){let r=old?.(m);if(m==="familias"){setTimeout(inject,80);setTimeout(inject,350)}return r};
+new MutationObserver(inject).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
 </body>
 </html>
