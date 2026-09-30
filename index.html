@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ÁNGELA | Asistente Virtual</title>
-<!-- V7.8 TIEMPO/CLIMA/CALENDARIO + IA estable · 2026-08-16 -->
+<title>ÁNGELA V7.8 | Interfaz Foto Corregida</title>
+<!-- V7.8 ESTABLE · SOLO TONO PROFESIONAL + LIMPIEZA DE VOZ · 2026-08-18 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
@@ -349,42 +349,41 @@ input,textarea,select,button{max-width:100%}
   #chat{max-height:38vh}
 }
 </style>
-<style id="angela-interfaz-foto-v79">
-/* V7.9 VISUAL: interfaz de referencia de la foto, conservando motores V7.8 */
-body{background:#050914!important;overflow-x:hidden}
-header{display:none!important}
-body>div.max-w-\[1500px\]{max-width:none!important;margin:0!important;padding:0!important;display:grid!important;grid-template-columns:285px minmax(0,1fr) 260px!important;gap:0!important;min-height:100vh}
-body>div.max-w-\[1500px\]>aside:first-child{background:linear-gradient(180deg,#080d18,#060a12);border-right:1px solid #172238;padding:18px 14px!important;min-height:100vh;position:sticky;top:0;height:100vh;overflow:auto}
-body>div.max-w-\[1500px\]>aside:first-child>.panel{display:none!important}
-body>div.max-w-\[1500px\]>main{padding:18px 30px!important;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:14px;background:radial-gradient(circle at 52% 45%,rgba(21,43,73,.28),transparent 38%)}
-body>div.max-w-\[1500px\]>aside:last-child{padding:18px 14px!important;background:#060a12;border-left:1px solid #172238;min-height:100vh}
-body>div.max-w-\[1500px\]>aside:last-child>.panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:10px!important}
-#inicio{background:transparent!important;border:0!important;box-shadow:none!important;min-height:390px;display:flex;flex-direction:column;justify-content:center}
-#inicio #greeting-title{display:none}
-#inicio #textoActivacion{order:3;font-size:12px;color:#cbd5e1;margin-top:14px!important}
-#inicio .orb{width:205px;height:205px;font-size:24px;background:radial-gradient(circle at 38% 35%,#77fff2 0%,#42e8e2 34%,#54d8e5 55%,#ff6689 77%,#ff825d 100%);box-shadow:0 0 26px rgba(89,240,236,.42),0 0 65px rgba(70,210,255,.18)}
-#inicio #estadoVoz{order:4;font-size:12px}
-#chat{background:transparent!important;border:0!important;box-shadow:none!important;padding:0 10px 20px!important}
-#chat>div:first-child,#mensajes,#estadoPensando{display:none!important}
-#chat .chat-input-row{max-width:900px;margin:0 auto!important;background:#0a101d;border:1px solid #27344a;border-radius:18px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
-#entradaChat{background:transparent!important;border:0!important}
-#chat .chat-input-row button:last-child{border-radius:50%!important;width:44px;height:44px;padding:0!important;font-size:0}
-#chat .chat-input-row button:last-child:after{content:'➤';font-size:18px}
-.angela-photo-nav{display:flex;flex-direction:column;min-height:calc(100vh - 36px)}
-.angela-photo-brand{font-size:19px;font-weight:900;padding:4px 8px 25px;color:#f8fafc}.angela-photo-brand span{color:#67e8f9}
-.angela-photo-section{font-size:9px;color:#64748b;font-weight:900;letter-spacing:.09em;padding:18px 10px 7px}
-.angela-photo-btn{width:100%;display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;color:#e5edf8;font-size:13px;font-weight:750;text-align:left;transition:.18s}
-.angela-photo-btn:hover,.angela-photo-btn.active{background:#101a2b;color:#fff}.angela-photo-btn .ico{width:20px;text-align:center}
-.angela-photo-user{margin-top:auto;border-top:1px solid #253047;padding:15px 8px 4px;display:flex;gap:10px;align-items:center;font-size:11px}.angela-photo-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#0891b2;font-weight:900}.angela-online{color:#4ade80;font-size:9px}
-.angela-photo-topmsg{position:fixed;top:20px;left:calc(285px + 8%);right:285px;z-index:20;text-align:center;pointer-events:none}.angela-photo-topmsg span{display:inline-block;border:1px solid #2986e8;background:rgba(11,29,53,.9);padding:9px 16px;border-radius:8px;font-size:12px;font-weight:800;box-shadow:0 0 0 2px rgba(41,134,232,.15)}
-.angela-photo-clock{text-align:right;padding:10px 4px 22px;border-bottom:1px solid #202a3b;margin-bottom:18px}.angela-photo-clock #photoHora{font-size:26px;font-weight:950}.angela-photo-clock #photoFecha{font-size:9px;color:#94a3b8}.angela-photo-weather{text-align:right;font-size:11px;color:#67e8f9;margin-top:8px}
-body>div.max-w-\[1500px\]>aside:last-child .angela-time-grid,body>div.max-w-\[1500px\]>aside:last-child #calendarioAngela,body>div.max-w-\[1500px\]>aside:last-child #pronostico7dias,body>div.max-w-\[1500px\]>aside:last-child button[onclick*="cargarClima"]{display:none!important}
-body>div.max-w-\[1500px\]>aside:last-child .panel:nth-child(2)>div:first-child{display:none}
-body>div.max-w-\[1500px\]>aside:last-child .panel:nth-child(2){position:absolute;top:76px;right:20px;width:220px}
-body>div.max-w-\[1500px\]>aside:last-child .panel:nth-child(1){margin-top:150px}
-body>div.max-w-\[1500px\]>aside:last-child .quick{background:#101827;border-color:#26344b;font-size:10px;padding:9px}
-@media(max-width:1000px){body>div.max-w-\[1500px\]{grid-template-columns:220px minmax(0,1fr)!important}body>div.max-w-\[1500px\]>aside:last-child{display:none}.angela-photo-topmsg{left:230px;right:15px}}
-@media(max-width:700px){body>div.max-w-\[1500px\]{display:block!important}body>div.max-w-\[1500px\]>aside:first-child{position:relative;height:auto;min-height:0}.angela-photo-nav{min-height:0}.angela-photo-user{margin-top:16px}body>div.max-w-\[1500px\]>main{padding:14px!important}.angela-photo-topmsg{position:static;margin:10px}.angela-photo-topmsg span{font-size:10px}.angela-photo-btn{padding:9px}}
+
+<style id="angela-menu-final-fix">
+/* Menú izquierdo completo y siempre accesible */
+aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
+  overflow-y:auto!important; overflow-x:hidden!important;
+  scrollbar-width:thin;
+}
+@media (min-width:769px){
+  aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
+    max-height:calc(100dvh - 12px)!important;
+  }
+}
+#angelaRightUtilities{
+ position:fixed;right:14px;top:112px;z-index:7000;width:218px;
+ background:rgba(7,16,30,.90);border:1px solid rgba(82,120,175,.45);
+ border-radius:16px;padding:12px;backdrop-filter:blur(12px);
+ box-shadow:0 10px 30px rgba(0,0,0,.35)
+}
+#angelaRightUtilities .aru-time{font-size:30px;font-weight:900;text-align:center;color:#fff}
+#angelaRightUtilities .aru-date{text-align:center;font-size:11px;color:#9ee7ff;margin:2px 0 10px}
+#angelaRightUtilities .aru-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#angelaRightUtilities button{border:1px solid #38527a;background:#101d31;color:#eaf6ff;border-radius:9px;padding:8px 5px;font-size:10px;font-weight:800;cursor:pointer}
+#angelaRightUtilities .aru-weather{margin:9px 0;padding:8px;border-radius:10px;background:#0c1728;font-size:11px}
+@media(max-width:1100px){#angelaRightUtilities{position:relative;right:auto;top:auto;width:auto;margin:10px}}
+</style>
+
+
+
+
+<style id="angela-v79-image-ai-style">
+#angelaImageAI{margin-top:14px;padding-top:14px;border-top:1px solid #334155}
+.ai-img-preview{min-height:240px;background:#02050a;border:1px solid #294260;border-radius:16px;display:grid;place-items:center;overflow:hidden;position:relative}
+.ai-img-preview img{max-width:100%;max-height:62vh;object-fit:contain;display:block}
+.ai-img-status{font-size:11px;color:#94a3b8;text-align:center;padding:12px}
+.ai-img-chip{border:1px solid #36537b;background:#071321;border-radius:999px;padding:6px 9px;font-size:10px}
 </style>
 </head>
 <body>
@@ -2077,6 +2076,10 @@ REGLAS DE RESPUESTA:
 13.b También existe Tipografía 3D / Motion: puede mostrar una vista previa 3D animada, generar prompts, preparar formato TikTok/Reels y abrir Spline, Blender o CapCut. El editor de imágenes tiene una vista grande con zoom, arrastre y comparación antes/después. No afirmes que la vista previa CSS es un render 3D profesional ni que exporta video por sí sola.
 14. La bóveda y la agenda son locales del navegador. No afirmes que leíste Gmail, Google Calendar, Obsidian u otra cuenta externa si no existe una integración autenticada que realmente haya entregado esos datos.
 15. Cuando el usuario pida un plan, resumen o reporte, aprovechá primero memoria, bóveda, tareas, archivos adjuntos y contexto reciente; después usá web solamente si aporta actualidad.
+16. Cuando el usuario pida una publicación, comunicado, flyer, carta, campaña, pedido de donaciones o texto para redes, usá un tono profesional, humano, claro y respetuoso.
+17. En textos públicos o institucionales no uses expresiones demasiado informales como “che”, “mirá”, “vení” o similares, salvo que el usuario pida expresamente un tono coloquial.
+18. En publicaciones del Comedor Ángel Guardián preferí un estilo profesional-cercano, natural y listo para copiar y publicar. Evitá frases artificiales, exageradas o culpabilizantes.
+19. Si el usuario pide textos breves o varias publicaciones, respetá esa extensión y hacé versiones diferentes entre sí.
 
 Fecha y hora local del dispositivo en este momento: ${obtenerFechaHoraAngela().fecha}, ${obtenerFechaHoraAngela().hora} (zona ${obtenerFechaHoraAngela().zona}).
 Si el usuario pregunta la fecha o la hora, usá este dato y no digas que no tenés acceso al tiempo actual.
@@ -2733,9 +2736,32 @@ function detectarIdiomaTextoVoz(texto){
 }
 function prepararTextoParaVoz(texto,lang="es-AR"){
     let t=limpiarMarcadoresIdioma(String(texto||""));
-    t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,"$1").replace(/https?:\/\/\S+/g,"").replace(/\*\*|__|`|###|##|#/g,"");
-    if(normalizarCodigoIdioma(lang).toLowerCase().startsWith("es"))t=t.replace(/\b(1\d{3}|20\d{2})\b/g,a=>numeroATexto(Number(a)));
-    return t.replace(/\s+/g," ").trim();
+
+    // La pantalla conserva emojis y formato; solamente limpiamos lo que se pronuncia.
+    t=t
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,"$1")
+      .replace(/https?:\/\/\S+/g," ")
+      .replace(/\*\*|__|~~|`{1,3}|#{1,6}|>/g," ");
+
+    // No pronunciar rótulos como "Post 1" o "Publicación 2".
+    t=t.replace(/\b(?:post|publicaci[oó]n|opci[oó]n|versi[oó]n)\s*(?:n[°º.]?\s*)?\d+\s*[:.\-–—]?\s*/gi," ");
+
+    // Quitar emojis únicamente de la voz.
+    try{
+        t=t.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200D]/gu," ");
+    }catch(error){
+        t=t.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]/gu," ");
+    }
+
+    if(normalizarCodigoIdioma(lang).toLowerCase().startsWith("es")){
+        t=t.replace(/\b(1\d{3}|20\d{2})\b/g,a=>numeroATexto(Number(a)));
+    }
+
+    return t
+      .replace(/[ \t]+/g," ")
+      .replace(/\s*\n+\s*/g,". ")
+      .replace(/\.{2,}/g,".")
+      .trim();
 }
 function segmentarTextoParaVoz(texto){
     const mode=STATE.settings.voiceLanguageMode||"auto";
@@ -3930,19 +3956,396 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+<style id="angela-interfaz-foto-v79">
+/* V7.9 VISUAL: interfaz de referencia de la foto, conservando motores V7.8 */
+body{background:#050914!important;overflow-x:hidden}
+header{display:none!important}
+body>div.max-w-\[1500px\]{max-width:none!important;margin:0!important;padding:0!important;display:grid!important;grid-template-columns:285px minmax(0,1fr) 260px!important;gap:0!important;min-height:100vh}
+body>div.max-w-\[1500px\]>aside:first-child{background:linear-gradient(180deg,#080d18,#060a12);border-right:1px solid #172238;padding:18px 14px!important;min-height:100vh;position:sticky;top:0;height:100vh;overflow:auto}
+body>div.max-w-\[1500px\]>aside:first-child>.panel{display:none!important}
+body>div.max-w-\[1500px\]>main{padding:18px 30px!important;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:14px;background:radial-gradient(circle at 52% 45%,rgba(21,43,73,.28),transparent 38%)}
+body>div.max-w-\[1500px\]>aside:last-child{padding:18px 14px!important;background:#060a12;border-left:1px solid #172238;min-height:100vh}
+body>div.max-w-\[1500px\]>aside:last-child>.panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:10px!important}
+#inicio{background:transparent!important;border:0!important;box-shadow:none!important;min-height:390px;display:flex;flex-direction:column;justify-content:center}
+#inicio #greeting-title{display:none}
+#inicio #textoActivacion{order:3;font-size:12px;color:#cbd5e1;margin-top:14px!important}
+#inicio .orb{width:205px;height:205px;font-size:24px;background:radial-gradient(circle at 38% 35%,#77fff2 0%,#42e8e2 34%,#54d8e5 55%,#ff6689 77%,#ff825d 100%);box-shadow:0 0 26px rgba(89,240,236,.42),0 0 65px rgba(70,210,255,.18)}
+#inicio #estadoVoz{order:4;font-size:12px}
+#chat{background:transparent!important;border:0!important;box-shadow:none!important;padding:0 10px 20px!important}
+#chat>div:first-child,#mensajes,#estadoPensando{display:none!important}
+#chat .chat-input-row{max-width:900px;margin:0 auto!important;background:#0a101d;border:1px solid #27344a;border-radius:18px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+#entradaChat{background:transparent!important;border:0!important}
+#chat .chat-input-row button:last-child{border-radius:50%!important;width:44px;height:44px;padding:0!important;font-size:0}
+#chat .chat-input-row button:last-child:after{content:'➤';font-size:18px}
+.angela-photo-nav{display:flex;flex-direction:column;min-height:calc(100vh - 36px)}
+.angela-photo-brand{font-size:19px;font-weight:900;padding:4px 8px 25px;color:#f8fafc}.angela-photo-brand span{color:#67e8f9}
+.angela-photo-section{font-size:9px;color:#64748b;font-weight:900;letter-spacing:.09em;padding:18px 10px 7px}
+.angela-photo-btn{width:100%;display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;color:#e5edf8;font-size:13px;font-weight:750;text-align:left;transition:.18s}
+.angela-photo-btn:hover,.angela-photo-btn.active{background:#101a2b;color:#fff}.angela-photo-btn .ico{width:20px;text-align:center}
+.angela-photo-user{margin-top:auto;border-top:1px solid #253047;padding:15px 8px 4px;display:flex;gap:10px;align-items:center;font-size:11px}.angela-photo-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#0891b2;font-weight:900}.angela-online{color:#4ade80;font-size:9px}
+.angela-photo-topmsg{position:fixed;top:20px;left:calc(285px + 8%);right:285px;z-index:20;text-align:center;pointer-events:none}.angela-photo-topmsg span{display:inline-block;border:1px solid #2986e8;background:rgba(11,29,53,.9);padding:9px 16px;border-radius:8px;font-size:12px;font-weight:800;box-shadow:0 0 0 2px rgba(41,134,232,.15)}
+.angela-photo-clock{text-align:right;padding:10px 4px 22px;border-bottom:1px solid #202a3b;margin-bottom:18px}.angela-photo-clock #photoHora{font-size:26px;font-weight:950}.angela-photo-clock #photoFecha{font-size:9px;color:#94a3b8}.angela-photo-weather{text-align:right;font-size:11px;color:#67e8f9;margin-top:8px}
+body>div.max-w-\[1500px\]>aside:last-child .angela-time-grid,body>div.max-w-\[1500px\]>aside:last-child #calendarioAngela,body>div.max-w-\[1500px\]>aside:last-child #pronostico7dias,body>div.max-w-\[1500px\]>aside:last-child button[onclick*="cargarClima"]{display:none!important}
+body>div.max-w-\[1500px\]>aside:last-child .panel:nth-child(2)>div:first-child{display:none}
+body>div.max-w-\[1500px\]>aside:last-child .panel:nth-child(2){position:absolute;top:76px;right:20px;width:220px}
+body>div.max-w-\[1500px\]>aside:last-child .panel:nth-child(1){margin-top:150px}
+body>div.max-w-\[1500px\]>aside:last-child .quick{background:#101827;border-color:#26344b;font-size:10px;padding:9px}
+@media(max-width:1000px){body>div.max-w-\[1500px\]{grid-template-columns:220px minmax(0,1fr)!important}body>div.max-w-\[1500px\]>aside:last-child{display:none}.angela-photo-topmsg{left:230px;right:15px}}
+@media(max-width:700px){body>div.max-w-\[1500px\]{display:block!important}body>div.max-w-\[1500px\]>aside:first-child{position:relative;height:auto;min-height:0}.angela-photo-nav{min-height:0}.angela-photo-user{margin-top:16px}body>div.max-w-\[1500px\]>main{padding:14px!important}.angela-photo-topmsg{position:static;margin:10px}.angela-photo-topmsg span{font-size:10px}.angela-photo-btn{padding:9px}}
+</style>
+<script id="angela-interfaz-foto-v79-js">
+(function(){
+function abrirModulo(id){
+  try{ if(typeof abrirPanelMenuAngela==='function') return abrirPanelMenuAngela(id); }catch(e){}
+  try{ if(typeof abrirMenu==='function') return abrirMenu(id); }catch(e){}
+  const el=document.getElementById(id); if(el){el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+window.abrirModuloFoto=abrirModulo;
+function montar(){
+ const root=document.querySelector('body>div.max-w-\\[1500px\\]'); if(!root)return;
+ const left=root.querySelector('aside:first-child'), right=root.querySelector('aside:last-child');
+ if(left&&!document.getElementById('photoNav')){
+  const nav=document.createElement('div');nav.id='photoNav';nav.className='angela-photo-nav';
+  nav.innerHTML=`<div class="angela-photo-brand"><span>🛡️</span> ÁNGELA</div>
+  <button class="angela-photo-btn active" onclick="irInicio()"><span class="ico">🏠</span>Inicio / Chat</button>
+  <div class="angela-photo-section">HERRAMIENTAS</div>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('imagenes')"><span class="ico">🖼️</span>Imágenes y Diseños</button>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('laser')"><span class="ico">🟡</span>Mi Láser</button>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('sublimacion')"><span class="ico">👕</span>Sublimación / DTF</button>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('proyectos')"><span class="ico">📁</span>Proyectos y Stock</button>
+  <div class="angela-photo-section">GESTIÓN</div>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('comedor')"><span class="ico">🪽</span>Ángel Guardián</button>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('archivos')"><span class="ico">📁</span>Archivos · Excel · Word</button>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('web')"><span class="ico">🌐</span>Navegación Web</button>
+  <div class="angela-photo-section">SISTEMA</div>
+  <button class="angela-photo-btn" onclick="abrirModuloFoto('config')"><span class="ico">⚙️</span>Configuración</button>
+  <div class="angela-photo-user"><div class="angela-photo-avatar">AG</div><div><b>Admin</b><div class="angela-online">Conectado</div></div></div>`;
+  left.prepend(nav);
+ }
+ if(!document.getElementById('photoTopMsg')){const m=document.createElement('div');m.id='photoTopMsg';m.className='angela-photo-topmsg';m.innerHTML='<span>ÁNGELA: ¡Hola! ¿En qué te ayudo hoy?</span>';document.body.appendChild(m)}
+ if(right&&!document.getElementById('photoClock')){const c=document.createElement('div');c.id='photoClock';c.className='angela-photo-clock';c.innerHTML='<div id="photoHora">--:--</div><div id="photoFecha">--</div><div class="angela-photo-weather" id="photoClima">🌤️ Clima</div>';right.prepend(c)}
+ setInterval(()=>{const d=new Date();const h=document.getElementById('photoHora'),f=document.getElementById('photoFecha');if(h)h.textContent=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});if(f)f.textContent=d.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'short'});const pc=document.getElementById('photoClima'),cl=document.getElementById('clima');if(pc&&cl&&cl.textContent)pc.textContent=cl.textContent.replace('Clima:','').trim()},1000)
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',montar);else montar();
+})();
+</script>
 
-<div id="angelaAccesosRecuperados" style="position:fixed;right:12px;bottom:12px;z-index:8000;
-background:rgba(7,19,33,.96);border:1px solid #334a72;border-radius:14px;padding:9px;
-box-shadow:0 10px 35px rgba(0,0,0,.45);max-width:250px">
-  <div style="font-size:10px;color:#67e8f9;font-weight:800;margin-bottom:6px">ACCESOS RECUPERADOS V7.8</div>
-  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px">
-    <button class="quick" style="font-size:10px;padding:7px" onclick="document.getElementById('buscarWeb')?.focus()">🔎 Google</button>
-    <button class="quick" style="font-size:10px;padding:7px" onclick="document.getElementById('buscarYouTube')?.focus()">▶ YouTube</button>
-    <button class="quick" style="font-size:10px;padding:7px" onclick="if(typeof ubicameEnMaps==='function')ubicameEnMaps();else document.getElementById('inputUbicacionComedor')?.focus()">📍 Ubicación</button>
-    <button class="quick" style="font-size:10px;padding:7px" onclick="if(typeof actualizarClima==='function')actualizarClima();else if(typeof obtenerClima==='function')obtenerClima()">🌤️ Clima</button>
+<div id="angelaRightUtilities">
+  <div id="aruClock" class="aru-time">--:--</div>
+  <div id="aruDate" class="aru-date">Cargando fecha…</div>
+  <div id="aruWeather" class="aru-weather">🌤️ Clima · 📍 Ubicación</div>
+  <div class="aru-grid">
+    <button onclick="window.open('https://www.google.com','_blank')">🌐 Google</button>
+    <button onclick="window.open('https://www.youtube.com','_blank')">▶ YouTube</button>
+    <button onclick="window.open('https://web.whatsapp.com','_blank')">💬 WhatsApp</button>
+    <button onclick="window.open('https://www.canva.com','_blank')">🎨 Canva</button>
+    <button onclick="if(typeof ubicameEnMaps==='function')ubicameEnMaps();else if(navigator.geolocation)navigator.geolocation.getCurrentPosition(()=>{},()=>{});">📍 Ubicación</button>
+    <button onclick="if(typeof actualizarClima==='function')actualizarClima();else if(typeof obtenerClima==='function')obtenerClima();">🌤️ Clima</button>
+    <button onclick="if(typeof abrirRadioAngelGuardian==='function')abrirRadioAngelGuardian();else if(typeof toggleRadio==='function')toggleRadio();">📻 Radio Ángel G.</button>
+    <button onclick="if(typeof abrirCalendario==='function')abrirCalendario();else document.querySelector('[data-view*=calendario],#calendario')?.scrollIntoView({behavior:'smooth'});">📅 Calendario</button>
   </div>
-  <div style="font-size:9px;color:#94a3b8;margin-top:6px">Hora, fecha y calendario se mantienen desde la V7.8 Tiempo/Clima/Calendario.</div>
+  <div style="margin-top:10px;border-top:1px solid #263b5c;padding-top:8px;font-size:10px">
+    <div>🟢 IA <span style="float:right">Estado</span></div>
+    <div>🟢 Internet <span id="aruNet" style="float:right">Online</span></div>
+    <div>🎙️ Micrófono <span style="float:right">Listo</span></div>
+  </div>
 </div>
+<script id="angela-right-utilities-js">
+(function(){
+ function tick(){
+   const d=new Date();
+   const c=document.getElementById('aruClock'), f=document.getElementById('aruDate');
+   if(c)c.textContent=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+   if(f)f.textContent=d.toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'short',year:'numeric'});
+ }
+ function net(){const e=document.getElementById('aruNet');if(e)e.textContent=navigator.onLine?'Online':'Sin conexión'}
+ tick();net();setInterval(tick,1000);addEventListener('online',net);addEventListener('offline',net);
+})();
+</script>
+
+
+<!-- MENÚ ESPERADO: Inicio / Chat | Imágenes y Diseños | Mi Láser | Sublimación | Proyectos y Stock | Ángel Guardián | Archivos | Navegación Web | Configuración; faltantes textuales detectados: ninguno -->
+
+
+
+
+
+
+
+<!-- IMÁGENES IA V7.9 ORIGINAL RECUPERADO DE BIBLIOTECA -->
+<script id="angela-v79-image-ai-script">
+(()=>{
+'use strict';
+window.ANGELA_IMAGE_AI_VERSION='7.9.0';
+let ultimaImagenIA={url:'',blob:null,prompt:'',mime:'image/png'};
+const $i=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function imageApiEndpoints(){
+ const cfg=window.ANGELA_PRO_CONFIG||{}; const list=[];
+ if(cfg.apiImage) list.push(cfg.apiImage);
+ try{list.push(new URL('/api/image',location.origin).href)}catch{}
+ list.push('https://orion-ia-sooty.vercel.app/api/image');
+ return [...new Set(list.filter(Boolean))];
+}
+function instalarPanelImagenIA(){
+ const panel=$i('imagenes'); if(!panel||$i('angelaImageAI'))return;
+ const box=document.createElement('div');box.id='angelaImageAI';
+ box.innerHTML=`
+ <div class="text-sm font-black text-fuchsia-300 mb-1">✨ IMÁGENES IA</div>
+ <p class="text-[10px] text-slate-400 mb-3">Pedile a ÁNGELA cualquier imagen. Elegí el destino y ella prepara el pedido para láser, sublimación, DTF, stickers o redes.</p>
+ <textarea id="imagenIAPrompt" rows="4" class="w-full bg-slate-950 border border-slate-700 p-3 rounded-xl text-xs" placeholder="Ej.: Pomba Gira 7 Rosas, cuerpo entero, alto contraste, sin fondo, para medalla militar..."></textarea>
+ <div class="grid grid-cols-2 gap-2 mt-2">
+  <label class="text-[10px]">Uso<select id="imagenIAUso" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs"><option value="general">Imagen general</option><option value="laser">Grabado láser</option><option value="fotograbado">Fotograbado láser</option><option value="vector">Vector / line art</option><option value="sublimacion">Sublimación</option><option value="dtf">DTF / remera</option><option value="sticker">Sticker / UV</option><option value="redes">Redes sociales</option></select></label>
+  <label class="text-[10px]">Formato<select id="imagenIAFormato" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs"><option value="1:1">Cuadrado 1:1</option><option value="4:5">Vertical 4:5</option><option value="9:16">Historia 9:16</option><option value="16:9">Horizontal 16:9</option><option value="2:3">Vertical 2:3</option></select></label>
+ </div>
+ <div class="grid grid-cols-2 gap-2 mt-2">
+  <label class="text-[10px]">Ancho mm<input id="imagenIAAncho" type="number" min="1" step="0.1" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs" placeholder="Opcional"></label>
+  <label class="text-[10px]">Alto mm<input id="imagenIAAlto" type="number" min="1" step="0.1" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs" placeholder="Opcional"></label>
+ </div>
+ <label class="flex items-center gap-2 text-[10px] mt-2"><input id="imagenIASinFondo" type="checkbox"> Fondo transparente / sin fondo</label>
+ <div class="grid grid-cols-2 gap-2 mt-3"><button id="btnGenerarImagenIA" onclick="generarImagenIADesdePanel()" class="quick text-xs bg-gradient-to-r from-purple-700 to-pink-700">✨ Generar imagen</button><button onclick="mejorarPromptImagenIA()" class="quick text-xs">🪄 Mejorar pedido</button></div>
+ <div id="imagenIAEstado" class="ai-img-status">Lista para crear.</div>
+ <div class="ai-img-preview"><img id="imagenIAPreview" alt="Imagen generada por ÁNGELA" class="hidden"><div id="imagenIAPlaceholder" class="text-xs text-slate-500 p-6 text-center">La imagen generada aparecerá acá.</div></div>
+ <div id="imagenIAAcciones" class="hidden grid grid-cols-2 gap-2 mt-3"><button onclick="pasarImagenIAEditor()" class="quick text-xs">🎨 Pasar al editor</button><button onclick="descargarImagenIA('png')" class="quick text-xs">💾 PNG</button><button onclick="descargarImagenIA('jpg')" class="quick text-xs">💾 JPG</button><button onclick="descargarImagenIA('svg')" class="quick text-xs">💾 SVG</button><button onclick="prepararImagenIAGrabado()" class="quick text-xs">🔥 Preparar láser</button><button onclick="generarOtraImagenIA()" class="quick text-xs">🔄 Otra versión</button></div>`;
+ panel.insertBefore(box,panel.firstChild);
+}
+function instruccionesUso(uso){
+ const m={
+ laser:'blanco y negro puro, alto contraste, líneas limpias y gruesos adecuados para grabado láser, sin sombras innecesarias, detalles legibles a tamaño pequeño',
+ fotograbado:'escala de grises equilibrada, alto detalle, contraste controlado, luces y sombras separadas, textura apta para tramado Jarvis o Stucki',
+ vector:'line art limpio, contornos cerrados, sin degradados, formas simples y definidas, apto para vectorizar a SVG',
+ sublimacion:'color completo, alta definición, bordes limpios, composición lista para sublimación',
+ dtf:'color completo, alta definición, bordes muy limpios, composición para impresión DTF',
+ sticker:'diseño nítido, silueta clara, bordes limpios, apto para sticker o UV',
+ redes:'composición profesional, legible y equilibrada para redes sociales',
+ general:'alta calidad, composición clara, buena definición y detalle'
+ };return m[uso]||m.general;
+}
+window.mejorarPromptImagenIA=function(){
+ const p=$i('imagenIAPrompt');if(!p)return;const uso=$i('imagenIAUso')?.value||'general';const sin=$i('imagenIASinFondo')?.checked;
+ const base=p.value.trim();if(!base){showToast?.('Escribí qué imagen querés crear.');return;}
+ p.value=`${base}. ${instruccionesUso(uso)}.${sin?' Fondo totalmente transparente, sujeto aislado, sin marco ni escenario.':''} Sin texto salvo que se solicite expresamente. Máxima definición y composición completa, sin cortar elementos importantes.`;
+};
+async function blobFromDataUrl(dataUrl){const r=await fetch(dataUrl);return await r.blob();}
+async function interpretarRespuestaImagen(r){
+ const ct=(r.headers.get('content-type')||'').toLowerCase();
+ if(ct.startsWith('image/')) return {blob:await r.blob()};
+ const d=await r.json().catch(()=>null);if(!d)throw new Error('Respuesta de imagen inválida.');
+ if(d.error)throw new Error(typeof d.error==='string'?d.error:(d.error.message||'Error al generar.'));
+ const url=d.url||d.imageUrl||d.image_url||d.output?.url||d.data?.[0]?.url;
+ const b64=d.b64_json||d.base64||d.imageBase64||d.data?.[0]?.b64_json;
+ if(b64)return {blob:await blobFromDataUrl(`data:${d.mime||'image/png'};base64,${b64}`)};
+ if(url)return {url}; throw new Error('El backend respondió, pero no devolvió una imagen.');
+}
+window.generarImagenIA=async function(prompt,opts={}){
+ prompt=String(prompt||'').trim();if(!prompt)throw new Error('Falta describir la imagen.');
+ const uso=opts.uso||$i('imagenIAUso')?.value||'general', ratio=opts.ratio||$i('imagenIAFormato')?.value||'1:1';
+ const transparent=opts.transparent??!!$i('imagenIASinFondo')?.checked;const widthMm=Number(opts.widthMm||$i('imagenIAAncho')?.value||0)||null;const heightMm=Number(opts.heightMm||$i('imagenIAAlto')?.value||0)||null;
+ const finalPrompt=`${prompt}\n\nREQUISITOS DE ÁNGELA: ${instruccionesUso(uso)}. ${transparent?'Fondo transparente, sujeto aislado.':''} Composición completa sin cortar partes importantes. ${widthMm&&heightMm?`Destino físico aproximado: ${widthMm} x ${heightMm} mm.`:''}`;
+ const payload={prompt:finalPrompt,originalPrompt:prompt,mode:'image',task:'generate_image',use:uso,aspectRatio:ratio,transparent,widthMm,heightMm,quality:'high'};
+ const status=$i('imagenIAEstado');if(status)status.textContent='✨ ÁNGELA está creando la imagen…';
+ let last='';
+ for(const endpoint of imageApiEndpoints()){
+  try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json,image/*'},body:JSON.stringify(payload),cache:'no-store'});if(!r.ok){last=`${r.status} ${await r.text().catch(()=>r.statusText)}`;continue;}const got=await interpretarRespuestaImagen(r);
+   if(ultimaImagenIA.url?.startsWith('blob:'))URL.revokeObjectURL(ultimaImagenIA.url);let url=got.url||URL.createObjectURL(got.blob);ultimaImagenIA={url,blob:got.blob||null,prompt,mime:got.blob?.type||'image/png'};
+   const img=$i('imagenIAPreview'),ph=$i('imagenIAPlaceholder');if(img){img.src=url;img.classList.remove('hidden')}ph?.classList.add('hidden');$i('imagenIAAcciones')?.classList.remove('hidden');if(status)status.textContent='✅ Imagen creada. Podés pasarla al editor, prepararla para láser o guardarla.';return ultimaImagenIA;
+  }catch(e){last=e.message||String(e)}
+ }
+ if(status)status.textContent='⚠️ Falta activar el generador de imágenes en el backend.';
+ throw new Error(`No se pudo generar la imagen. ${last||'El endpoint /api/image no está disponible.'}`);
+};
+window.generarImagenIADesdePanel=async function(){const p=$i('imagenIAPrompt')?.value.trim();if(!p){showToast?.('Escribí qué imagen querés crear.');return;}const b=$i('btnGenerarImagenIA');if(b)b.disabled=true;try{await generarImagenIA(p)}catch(e){agregarMensaje?.('angela',`No pude generar la imagen todavía. ${e.message}\n\nEl panel ya quedó instalado; para generar de verdad, el servidor de ÁNGELA debe tener activo /api/image.`);showToast?.('Generador de imágenes no disponible en el backend.')}finally{if(b)b.disabled=false}};
+window.generarOtraImagenIA=()=>generarImagenIADesdePanel();
+async function cargarUrlEnEditor(url){return new Promise((resolve,reject)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{const c=$i('canvasImagen');if(!c)return reject(new Error('Editor no disponible'));c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);if(window.STATE){STATE.image=STATE.image||{};const src=document.createElement('canvas');src.width=c.width;src.height=c.height;src.getContext('2d').drawImage(c,0,0);STATE.image.sourceCanvas=src;}resolve()};im.onerror=()=>reject(new Error('No se pudo cargar la imagen en el editor'));im.src=url;});}
+window.pasarImagenIAEditor=async function(){if(!ultimaImagenIA.url)return;try{await cargarUrlEnEditor(ultimaImagenIA.url);STATE.fileContext={kind:'image',name:'angela-ia.png',text:'Imagen creada por ÁNGELA IA.'};renderContextoArchivo?.();showToast?.('Imagen IA cargada en el editor.')}catch(e){showToast?.(e.message)}};
+window.prepararImagenIAGrabado=async function(){await pasarImagenIAEditor();try{prepararLaserImagen?.();showToast?.('Imagen preparada para láser.')}catch{}};
+window.descargarImagenIA=async function(tipo='png'){
+ if(!ultimaImagenIA.url)return;const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{if(tipo==='svg'){const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${im.naturalWidth}" height="${im.naturalHeight}" viewBox="0 0 ${im.naturalWidth} ${im.naturalHeight}"><image width="100%" height="100%" href="${ultimaImagenIA.url}"/></svg>`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));a.download='angela-imagen.svg';a.click();return;}const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');if(tipo==='jpg'){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)}x.drawImage(im,0,0);const a=document.createElement('a');a.href=c.toDataURL(tipo==='jpg'?'image/jpeg':'image/png',.95);a.download=`angela-imagen.${tipo}`;a.click()};im.src=ultimaImagenIA.url;
+};
+function esPedidoCrearImagen(t){const s=String(t||'').toLowerCase();return /\b(crea|crear|creame|créame|genera|generar|generame|genérame|hace|haceme|diseña|diseñame)\b/.test(s)&&/\b(imagen|dibujo|diseño|logo|medalla|virola|sticker|ilustraci[oó]n|foto)\b/.test(s);}
+function extraerPrompt(t){return String(t||'').replace(/^\s*(ángela|angela)[,:]?\s*/i,'').trim();}
+function instalarVozChatImagen(){if(typeof window.procesarEntrada!=='function'||window.__angelaImageAIHook)return;const original=window.procesarEntrada;window.procesarEntrada=async function(texto){if(esPedidoCrearImagen(texto)){const prompt=extraerPrompt(texto);abrirMenu?.('imagenes');const ta=$i('imagenIAPrompt');if(ta)ta.value=prompt;agregarMensaje?.('angela','✨ Voy a crear la imagen y dejarla también en Imágenes IA.');try{await generarImagenIA(prompt);hablar?.('Imagen creada.');}catch(e){agregarMensaje?.('angela',`El módulo de Imágenes IA está listo, pero el servidor todavía no tiene habilitado el generador: ${e.message}`);}return;}return original(texto)};window.__angelaImageAIHook=true;}
+function boot(){instalarPanelImagenIA();instalarVozChatImagen();try{if(typeof window.ANGELA_MENU_DATA==='object'){} }catch{} }
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,80));else setTimeout(boot,80);
+})();
+</script>
+
+<!-- MOTOR IMAGEN IA FUNCIONAL RECUPERADO 29-09 -->
+<script>
+let ultimaImagenIAGenerada = "";
+
+async function generarImagenIA() {
+  const prompt = document.getElementById("promptImagenIA")?.value?.trim();
+  const uso = document.getElementById("usoImagenIA")?.value || "general";
+  const aspecto = document.getElementById("aspectoImagenIA")?.value || "1:1";
+  const transparente =
+    document.getElementById("fondoTransparenteIA")?.checked || false;
+
+  const estado = document.getElementById("estadoImagenIA");
+  const resultado = document.getElementById("resultadoImagenIA");
+  const imagen = document.getElementById("imagenGeneradaIA");
+  const boton = document.getElementById("btnGenerarImagenIA");
+
+  if (!prompt) {
+    alert("Escribí qué imagen querés que ÁNGELA genere.");
+    return;
+  }
+
+  try {
+    if (estado) {
+      estado.classList.remove("hidden");
+      estado.textContent = "✨ ÁNGELA está generando la imagen...";
+    }
+
+    if (resultado) resultado.classList.add("hidden");
+
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "⏳ Generando...";
+    }
+
+    const respuesta = await fetch("/api/image", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        uso: uso,
+        aspecto: aspecto,
+        transparente: transparente
+      })
+    });
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(
+        datos?.error ||
+        datos?.message ||
+        "No se pudo generar la imagen."
+      );
+    }
+
+    const imagenRecibida =
+      datos.image ||
+      datos.imageUrl ||
+      datos.url ||
+      datos.dataUrl;
+
+    if (!imagenRecibida) {
+      throw new Error("El servidor respondió, pero no devolvió una imagen.");
+    }
+
+    ultimaImagenIAGenerada = imagenRecibida;
+
+    if (imagen) imagen.src = imagenRecibida;
+
+    if (resultado) resultado.classList.remove("hidden");
+
+    if (estado) {
+      estado.textContent = "✅ Imagen generada correctamente.";
+    }
+
+  } catch (error) {
+    console.error("Error generando imagen:", error);
+
+    if (estado) {
+      estado.classList.remove("hidden");
+      estado.textContent =
+        "❌ No se pudo generar la imagen: " +
+        (error?.message || "Error desconocido");
+    }
+  } finally {
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = "✨ Generar imagen";
+    }
+  }
+}
+
+function usarImagenIAGenerada() {
+  if (!ultimaImagenIAGenerada) {
+    alert("Primero generá una imagen.");
+    return;
+  }
+
+  const img = new Image();
+
+  img.onload = function () {
+    const canvas = document.getElementById("canvasImagen");
+
+    if (!canvas) {
+      alert("No encontré el editor de imágenes de ÁNGELA.");
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+
+    canvas.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  };
+
+  img.onerror = function () {
+    alert("No se pudo pasar la imagen al editor.");
+  };
+
+  img.src = ultimaImagenIAGenerada;
+}
+
+function descargarImagenIA() {
+  if (!ultimaImagenIAGenerada) {
+    alert("Primero generá una imagen.");
+    return;
+  }
+
+  const enlace = document.createElement("a");
+  enlace.href = ultimaImagenIAGenerada;
+  enlace.download = "imagen-angela.png";
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+}
+</script>
+
+<script id="angela-imagen-ia-29sep-compat">
+(function(){
+ function pedidoImagen29(t){
+   t=(t||'').trim();
+   if(typeof window.esPedidoGenerarImagen==='function') return window.esPedidoGenerarImagen(t);
+   if(typeof window.esPedidoCrearImagen==='function') return window.esPedidoCrearImagen(t);
+   return /(crea|creame|créame|genera|generame|genérame|haceme|dibuja|diseña).*(imagen|foto|dibujo|diseño|logo|flyer|medalla|virola|láser|laser)/i.test(t);
+ }
+ async function ejecutarImagen29(t){
+   if(typeof window.abrirModuloGrandeAngela==='function') window.abrirModuloGrandeAngela('imagenes');
+   else if(typeof window.abrirMenu==='function') window.abrirMenu('imagenes');
+   const p=document.getElementById('promptImagenIA')||document.getElementById('angelaImageIAPrompt');
+   if(p){p.value=t;p.dispatchEvent(new Event('input',{bubbles:true}))}
+   await new Promise(r=>setTimeout(r,250));
+   if(typeof window.generarImagenIA==='function') return window.generarImagenIA();
+   if(typeof window.angelaGenerarImagenIA==='function') return window.angelaGenerarImagenIA();
+ }
+ const original=window.procesarEntrada;
+ if(typeof original==='function' && !window.__img29Hook){
+   window.procesarEntrada=async function(t){
+     if(pedidoImagen29(t)){await ejecutarImagen29(t);return}
+     return original.apply(this,arguments);
+   };
+   window.__img29Hook=true;
+ }
+ window.pedidoImagen29=pedidoImagen29;
+ window.ejecutarImagen29=ejecutarImagen29;
+})();
+</script>
 
 </body>
 </html>
