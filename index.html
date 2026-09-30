@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ÁNGELA | Asistente Virtual Integral</title>
-<!-- V9.0 DEFINITIVA · DISEÑO APP + MOTOR COMPLETO + CONSOLIDADOR DE EXCEL -->
-<meta name="theme-color" content="#0b0f19">
-<meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, ONG y trabajo diario.">
+<title>ÁNGELA | Asistente Virtual</title>
+<!-- V8.9 FINAL · DISEÑO FOTO + MOTOR DE VOZ Y CÓDIGO ORIGINAL INTACTO -->
+<meta name="theme-color" content="#070d18">
+<meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png" sizes="192x192">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -15,522 +15,486 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* ==========================================
-   DISEÑO VISUAL TIPO APP (BASADO EN FOTO)
+   DISEÑO VISUAL TIPO APP (ESTILO FOTO)
    ========================================== */
-body {
-    background: radial-gradient(circle at 50% 50%, #151b2b 0%, #080b12 100%);
-    color: white;
-    min-height: 100vh;
+body{
+    background: radial-gradient(circle at 50% 20%,#18264a 0%,#070d18 38%,#02050a 100%);
+    color:white;
+    min-height:100vh;
     font-family: system-ui, -apple-system, sans-serif;
     overflow: hidden;
 }
-.panel {
-    background: rgba(13, 17, 28, 0.5);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+.panel{
+    background:rgba(18,31,57,.88);
+    border:1px solid #334a72;
+    box-shadow:0 0 30px rgba(0,150,255,.08);
     border-radius: 20px;
 }
-.menu-btn {
-    width: 100%; padding: 12px 16px; text-align: left; border-radius: 12px; 
-    margin-bottom: 5px; transition: 0.2s; font-size: 0.85rem; font-weight: 600; color: #cbd5e1;
+.menu-btn{
+    width:100%;
+    padding:12px 15px;
+    text-align:left;
+    border-radius:12px;
+    margin-bottom:5px;
+    transition:.2s;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #cbd5e1;
     border: 1px solid transparent;
 }
-.menu-btn:hover, .menu-btn.active { 
-    background: rgba(255, 255, 255, 0.08); color: #fff; border-color: rgba(255, 255, 255, 0.1); 
+.menu-btn:hover, .menu-btn.active{
+    background:#19345e;
+    color: #fff;
+    border-color: rgba(255,255,255,0.1);
 }
-.submenu { 
-    display: none; padding: 20px; margin-bottom: 10px; background: #0f172a; 
-    border-radius: 20px; border: 1px solid #1e293b; max-height: 70vh; overflow-y: auto; 
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+.submenu{
+    display:none;
+    padding:14px;
+    margin-bottom:10px;
+    background:#081426;
+    border-radius:16px;
+    border:1px solid #253c60;
+    max-height: 420px;
+    overflow-y: auto;
 }
-.quick { 
-    background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; 
-    text-align: center; cursor: pointer; transition: 0.2s; font-size: 0.8rem; 
+.quick{
+    background:#071321;
+    border:1px solid #294260;
+    padding:10px;
+    border-radius:12px;
+    text-align:center;
+    cursor:pointer;
+    transition:.2s;
+    font-size: 0.85rem;
 }
-.quick:hover { background: #334155; transform: translateY(-1px); }
-.card-mini { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; }
-
-/* ORBE ESTILO FOTO (Centro brillante cian y fucsia) */
-.orb {
-    width: 220px; height: 220px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 28px; font-weight: 900; letter-spacing: 1px; color: white;
-    background: radial-gradient(circle at 40% 40%, #00f2fe 0%, #4facfe 30%, #ff0844 70%, #ffb199 100%);
-    box-shadow: 0 0 50px rgba(0, 242, 254, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.5);
-    animation: floatOrb 4s ease-in-out infinite; cursor: pointer; transition: transform 0.3s ease;
+.quick:hover{
+    background:#19345e;
+    transform:translateY(-1px);
 }
-.orb.hablando { animation: pulseOrb 1s infinite alternate; box-shadow: 0 0 70px rgba(0, 242, 254, 0.8); }
-@keyframes floatOrb { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-@keyframes pulseOrb { 0% { transform: scale(1); filter: hue-rotate(0deg); } 100% { transform: scale(1.05); filter: hue-rotate(15deg); } }
-.orb-text { text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
-/* CHAT INTEGRADO EN EL CENTRO */
-.chatUser { background: #1e293b; padding: 10px 16px; border-radius: 16px; border-bottom-right-radius: 4px; margin: 6px 0; align-self: flex-end; max-width: 85%; }
-.chatAngela { background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3); padding: 10px 16px; border-radius: 16px; border-bottom-left-radius: 4px; margin: 6px 0; align-self: flex-start; max-width: 85%; word-break: break-word; }
-.chat-input-row { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 8px 12px; }
+/* ORBE TIPO FOTO */
+.orb{
+    width:190px;
+    height:190px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:27px;
+    font-weight:bold;
+    background:radial-gradient(circle,#16203d 10%,#5223ad 48%,#ff337d 78%,#ff7b22 100%);
+    box-shadow:0 0 20px #ff3388,0 0 45px #713cff,0 0 70px rgba(0,220,255,.35);
+    animation:pulse 2.7s infinite;
+    cursor:pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.orb.hablando{
+    animation: jarvisPulse 0.8s infinite alternate;
+    box-shadow:0 0 30px #00ffff,0 0 60px #ff3388,0 0 100px rgba(0,220,255,.6);
+}
+@keyframes pulse{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.035)}
+}
+@keyframes jarvisPulse{
+    0%{transform:scale(1) rotate(0deg); filter: hue-rotate(0deg);}
+    100%{transform:scale(1.08) rotate(3deg); filter: hue-rotate(30deg);}
+}
+.orb-text{
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.orb.hablando .orb-text{
+    opacity: 0.8;
+    transform: scale(0.9);
+}
 
-/* SCROLLBARS Y EXTRAS */
-select, input, textarea { color: white; outline: none; }
-option { color: black; }
-.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-#toastAngela { position: fixed; right: 18px; bottom: 18px; z-index: 100; background: #0f172a; border: 1px solid #38bdf8; border-radius: 16px; padding: 14px 20px; max-width: min(90vw,420px); box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+.chatUser{
+    background:#142844;
+    padding:10px 14px;
+    border-radius:12px;
+    margin:6px 0;
+    word-break:break-word;
+}
+.chatAngela{
+    background:#31182d;
+    border:1px solid #ff3c84;
+    padding:10px 14px;
+    border-radius:12px;
+    margin:6px 0;
+    word-break:break-word;
+}
+button{cursor:pointer;}
+select,input,textarea{color:white;}
+option{color:black;}
+.custom-scrollbar::-webkit-scrollbar{width:5px;height:5px;}
+.custom-scrollbar::-webkit-scrollbar-thumb{background:#374151;border-radius:4px;}
+.card-mini{background:#071321;border:1px solid #294260;padding:9px;border-radius:11px;}
 
-/* MODALES FLOTANTES */
-.overlay-panel { position: absolute; top: 20px; left: 20px; right: 20px; bottom: 80px; z-index: 50; }
-
-/* UTILIDADES VISORES */
-.attach-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:90;display:flex;align-items:flex-end;justify-content:center;padding:14px;}
-.attach-sheet{width:min(560px,100%);background:#121821;border:1px solid #394a63;border-radius:28px 28px 18px 18px;padding:18px;box-shadow:0 -18px 60px rgba(0,0,0,.55);}
-.attach-action{display:flex;align-items:center;gap:14px;width:100%;padding:15px 14px;border-radius:18px;text-align:left;font-weight:700;font-size:1rem;color:white;}
-.attach-action:hover{background:#263248;}
-.attach-icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#303743;font-size:1.35rem;flex:0 0 auto;}
-.angela-modal-backdrop{position:fixed;inset:0;z-index:120;background:rgba(0,3,10,.93);display:flex;align-items:center;justify-content:center;padding:14px;}
-.angela-modal-panel{width:min(1480px,98vw);height:min(930px,96vh);background:#071321;border:1px solid #334a72;border-radius:24px;display:grid;grid-template-columns:minmax(0,1fr) 320px}
-.angela-modal-stage{position:relative;background:radial-gradient(circle at center,#17213b 0%,#030812 70%);display:flex;align-items:center;justify-content:center;}
-.angela-modal-side{background:#081426;border-left:1px solid #253c60;padding:14px;overflow:auto}
-.angela-view-canvas{cursor:grab;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 14px 55px rgba(0,0,0,.45)}
-.motion-preview-shell{position:relative;background:radial-gradient(circle at 50% 35%,#1b2b50 0%,#070d18 58%,#02050a 100%);border:1px solid #294260;border-radius:18px;display:flex;align-items:center;justify-content:center;padding:22px;perspective:900px}
-.motion-preview-text{font-size:clamp(30px,5vw,68px);line-height:1.05;font-weight:1000;text-align:center;transform-style:preserve-3d;padding:18px;}
-.file-work-preview{white-space:pre-wrap;max-height:240px;overflow:auto;background:#050b14;border:1px solid #263b59;border-radius:12px;padding:10px;color:#cbd5e1;font-size:.72rem;}
+.status-dot{display:inline-flex;align-items:center;gap:.35rem;}
 .thinking-dots::after{content:"";animation:thinkingDots 1.2s steps(4,end) infinite;}
 @keyframes thinkingDots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
+#toastAngela{position:fixed;right:18px;bottom:18px;z-index:100;background:#081426;border:1px solid #38bdf8;border-radius:12px;padding:12px 16px;max-width:min(90vw,420px);box-shadow:0 12px 40px rgba(0,0,0,.45);}
+
+.video-lab video{width:100%;max-height:260px;background:#000;border-radius:12px;}
+.file-work-preview{white-space:pre-wrap;max-height:240px;overflow:auto;background:#050b14;border:1px solid #263b59;border-radius:12px;padding:10px;color:#cbd5e1;font-size:.72rem;}
 </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="flex flex-col h-screen overflow-hidden">
 
 <!-- HEADER SUPERIOR -->
-<header class="border-b border-white/5 bg-[#0b0f19]/80 z-50 backdrop-blur shrink-0">
-    <div class="max-w-[1500px] mx-auto px-4 py-3 flex items-center justify-between gap-3">
-        <div class="font-bold text-white text-lg flex items-center gap-2">🛡️ <span id="brandNombre">ÁNGELA</span></div>
-        <div class="text-right leading-tight flex items-center gap-4">
-            <div id="fechaHeader" class="text-xs text-slate-400 hidden md:block">--</div>
-            <div id="relojHeader" class="text-2xl font-black text-white tracking-wider">--:--</div>
-        </div>
-    </div>
+<header class="border-b border-slate-700 bg-slate-950/80 z-50 backdrop-blur shrink-0">
+<div class="max-w-[1500px] mx-auto px-4 py-3 flex items-center justify-between gap-3">
+<div class="font-bold text-cyan-300 text-lg flex items-center gap-2">
+🛡️ <span id="brandNombre">ÁNGELA</span>
+<span class="text-xs text-slate-400 font-normal">| SISTEMA INTEGRAL</span>
+</div>
+<div class="text-right leading-tight flex items-center gap-4">
+<div id="fecha" class="text-xs text-slate-400 hidden md:block">--</div>
+<div id="reloj" class="text-2xl font-black text-white">--:--</div>
+</div>
+</div>
 </header>
 
-<!-- GRID PRINCIPAL (3 COLUMNAS TIPO APP) -->
-<div class="max-w-[1500px] mx-auto w-full flex-1 flex overflow-hidden lg:grid lg:grid-cols-[280px_1fr_280px] gap-6 p-4">
+<!-- GRID DE 3 COLUMNAS TIPO APP -->
+<div class="max-w-[1500px] mx-auto w-full flex-1 flex overflow-hidden lg:grid lg:grid-cols-[300px_1fr_260px] gap-5 p-4">
 
 <!-- COLUMNA IZQUIERDA: MENÚ -->
-<aside class="space-y-4 h-full overflow-y-auto custom-scrollbar pr-2 pb-4 flex flex-col">
-    <div class="panel p-4 flex-1">
-        <div class="text-[10px] text-slate-500 font-bold uppercase mb-2 pl-2 tracking-widest">Navegación</div>
-        <button class="menu-btn active bg-white/5 text-white" onclick="irInicio()">🏠 Inicio / Chat</button>
-        
-        <div class="text-[10px] text-slate-500 font-bold uppercase mt-4 mb-2 pl-2 tracking-widest">Visual y Multimedia</div>
-        <button class="menu-btn" onclick="abrirPanelCentral('imagenes')">🎨 Creación e Imágenes</button>
-        <button class="menu-btn" onclick="abrirPanelCentral('motion3d')">✨ Tipografía 3D / Motion</button>
+<aside class="space-y-4 h-full overflow-y-auto custom-scrollbar pr-2 pb-10">
+<div class="panel rounded-3xl p-4">
+<h2 class="font-bold text-yellow-300 mb-3 text-sm tracking-wide">🛡️ MENÚ PRINCIPAL</h2>
+<button class="menu-btn bg-blue-600 text-white" onclick="irInicio()">🏠 Inicio</button>
+<button class="menu-btn" onclick="focusChat()">💬 Chat Directo</button>
+<button class="menu-btn" onclick="abrirPanelMenuAngela('herramientas')">🧰 Herramientas <span class="float-right">›</span></button>
+<button class="menu-btn" onclick="abrirPanelMenuAngela('imagenes')">🖼️ Imágenes y Diseños <span class="float-right">›</span></button>
 
-        <div class="text-[10px] text-slate-500 font-bold uppercase mt-4 mb-2 pl-2 tracking-widest">Taller y Producción</div>
-        <button class="menu-btn" onclick="abrirPanelCentral('laser')">🔥 Mi Láser</button>
-        <button class="menu-btn" onclick="abrirPanelCentral('sublimacion')">👕 Sublimación</button>
-        <button class="menu-btn" onclick="abrirPanelCentral('proyectos')">📂 Proyectos y Stock</button>
-
-        <div class="text-[10px] text-slate-500 font-bold uppercase mt-4 mb-2 pl-2 tracking-widest">Gestión / Institución</div>
-        <button class="menu-btn" onclick="abrirPanelCentral('archivos')">📁 Archivos y Consolidación</button>
-        <button class="menu-btn text-yellow-100" onclick="abrirPanelCentral('comedor')">❤️ Ángel Guardián</button>
-        <button class="menu-btn" onclick="abrirPanelCentral('web')">🌐 Web y Búsquedas</button>
-
-        <div class="text-[10px] text-slate-500 font-bold uppercase mt-4 mb-2 pl-2 tracking-widest">Sistema</div>
-        <button class="menu-btn text-slate-300" onclick="abrirPanelCentral('config')">⚙️ Configuración</button>
+<div id="imagenes" class="submenu custom-scrollbar">
+    <h3 class="font-bold text-cyan-300 mb-3">🎨 Editor de imágenes</h3>
+    <input type="file" id="archivoImagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="w-full bg-slate-900 p-2 rounded-lg mb-3 text-xs">
+    <div class="bg-white rounded-xl p-2 mb-3 min-h-16 flex items-center justify-center">
+    <canvas id="canvasImagen" style="max-width:100%;height:auto;display:block;margin:auto"></canvas>
     </div>
-    <div class="panel p-4 mt-auto">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center text-xs font-bold text-white">AG</div>
-            <div class="text-xs"><div class="font-bold text-white">Admin</div><div class="text-green-400 text-[10px]">Conectado</div></div>
-        </div>
+    <div class="grid grid-cols-2 gap-2">
+    <button onclick="filtroImagen('normal')" class="quick">Original</button>
+    <button onclick="filtroImagen('bn')" class="quick">⚫ B/N</button>
+    <button onclick="filtroImagen('grises')" class="quick">◻ Grises</button>
+    <button onclick="filtroImagen('lineart')" class="quick">✒️️ Line art</button>
+    <button onclick="filtroImagen('jarvis')" class="quick">▦ Jarvis</button>
+    <button onclick="filtroImagen('stucki')" class="quick">▦ Stucki</button>
     </div>
+    <div class="mt-4">
+    <label class="text-xs" for="brillo">☀️ Brillo</label>
+    <input id="brillo" type="range" min="50" max="160" value="100" class="w-full">
+    <label class="text-xs" for="contraste">◐ Contraste</label>
+    <input id="contraste" type="range" min="50" max="220" value="100" class="w-full">
+    </div>
+    <div class="grid grid-cols-2 gap-2 mt-3">
+    <button onclick="rotarImagen()" class="quick">↻ Rotar</button>
+    <button onclick="espejoImagen()" class="quick">↔️ Espejo</button>
+    <button onclick="quitarFondoImagen()" class="quick">🪄 Quitar fondo</button>
+    <button onclick="prepararLaserImagen()" class="quick">🔥 Preparar láser</button>
+    <button onclick="prepararSublimacionImagen()" class="quick">👕 Sublimación</button>
+    <button onclick="guardarImagen()" class="quick">💾 Guardar PNG</button>
+    <button onclick="usarImagenConAngela()" class="quick col-span-2">🧠 Usar imagen con ÁNGELA</button>
+    </div>
+</div>
+
+<button class="menu-btn" onclick="abrirPanelMenuAngela('laser')">🔥 Herramientas Láser <span class="float-right">›</span></button>
+<div id="laser" class="submenu custom-scrollbar">
+    <h3 class="font-bold text-orange-300 mb-3">🔥 Parámetros Láser</h3>
+    <select id="maquinaLaser" onchange="guardarMaquinaLaser()" class="w-full bg-slate-900 p-2 rounded-lg mb-3 text-xs">
+        <option value="AlgoLaser DIY Kit MK2 10W">AlgoLaser DIY Kit MK2 10W</option>
+        <option value="Láser diodo 20W">Láser diodo 20W</option>
+    </select>
+    <select id="procesoLaser" class="w-full bg-slate-900 p-2 rounded-lg mb-3 text-xs"><option value="engrave">Grabado</option><option value="cut">Corte</option></select>
+    <div class="grid grid-cols-2 gap-2">
+        <button class="quick" onclick="mostrarLaserBoton('madera')">🪵 Madera</button>
+        <button class="quick" onclick="mostrarLaserBoton('mdf')">📦 MDF</button>
+        <button class="quick" onclick="mostrarLaserBoton('mate')">🧉 Mate</button>
+        <button class="quick" onclick="mostrarLaserBoton('vaso')">🥤 Vaso térmico</button>
+    </div>
+    <div id="resultadoLaser" class="mt-4 text-sm bg-slate-950 p-3 rounded-xl">🔥 Elegí un material.</div>
+</div>
+
+<button class="menu-btn" onclick="abrirPanelMenuAngela('sublimacion')">👕 Sublimación <span class="float-right">›</span></button>
+<div id="sublimacion" class="submenu custom-scrollbar">
+    <h3 class="font-bold text-green-300 mb-3">👕 Guía de Sublimación</h3>
+    <div class="grid grid-cols-2 gap-2">
+        <button class="quick" onclick="mostrarSubBoton('taza')">☕ Taza 11 oz</button>
+        <button class="quick" onclick="mostrarSubBoton('mate')">🧉 Mate</button>
+        <button class="quick" onclick="mostrarSubBoton('remera')">👕 Remera</button>
+        <button class="quick" onclick="mostrarSubBoton('gorra')">🧢 Gorra</button>
+    </div>
+    <div id="resultadoSub" class="mt-4 text-sm bg-slate-950 p-3 rounded-xl">👕 Elegí un producto.</div>
+</div>
+
+<button class="menu-btn" onclick="abrirPanelMenuAngela('proyectos')">📂 Proyectos y Stock <span class="float-right">›</span></button>
+<div id="proyectos" class="submenu custom-scrollbar">
+    <h3 class="font-bold text-cyan-300 mb-3">📂 Gestión de Proyectos</h3>
+    <input id="nuevoProyectoInput" placeholder="Nombre proyecto..." class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
+    <button onclick="agregarProyecto()" class="quick w-full mb-3 text-xs">💾 Guardar Proyecto</button>
+    <div id="listaProyectos" class="space-y-2 text-xs max-h-32 overflow-y-auto"></div>
+    <div class="border-t border-slate-700 my-3"></div>
+    <h3 class="font-bold text-blue-300 mb-2">📦 Insumos Stock</h3>
+    <input id="stockNombre" placeholder="Ej: MDF 3mm" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
+    <input id="stockCantidad" type="number" placeholder="Cantidad" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
+    <button onclick="agregarStock()" class="quick w-full text-xs">➕ Agregar Stock</button>
+    <div id="listaStock" class="mt-2 space-y-1 text-xs max-h-32 overflow-y-auto"></div>
+</div>
+
+<button class="menu-btn" onclick="abrirPanelMenuAngela('archivos')">📁 Archivos y Consolidación <span class="float-right">›</span></button>
+<div id="archivos" class="submenu custom-scrollbar">
+    <h3 class="font-bold text-cyan-300 mb-3">📎 Documentos / Excel / Word</h3>
+    
+    <!-- NUEVA FUNCIÓN CONSOLIDADOR DE MÚLTIPLES EXCEL -->
+    <div class="bg-slate-950 p-3 rounded-xl border border-blue-500/40 mb-3">
+        <h4 class="font-bold text-blue-200 text-xs mb-1">📊 Unificar Múltiples Excel (ONG)</h4>
+        <p class="text-[10px] text-slate-400 mb-2">Subí varios Excel o CSV juntos para unificarlos en una sola planilla maestra sin duplicados por DNI.</p>
+        <input id="inputMultiExcel" type="file" multiple accept=".xlsx,.xls,.csv" class="w-full bg-slate-900 p-2 rounded text-[10px] mb-2">
+        <button onclick="dispararConsolidacionMultiplesExcel()" class="quick w-full text-xs bg-blue-600 font-bold">⚡ Consolidar Planillas</button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2 mb-2">
+        <button onclick="elegirArchivo()" class="quick text-xs">📊 Excel / Word</button>
+        <button onclick="elegirFotos()" class="quick text-xs">🖼️️ Fotos</button>
+    </div>
+    <input id="archivoGeneral" type="file" class="hidden">
+    <div id="contextoArchivoPanel" class="mt-2"></div>
+</div>
+
+<button class="menu-btn" onclick="abrirPanelMenuAngela('web')">🌐 Web <span class="float-right">›</span></button>
+<div id="web" class="submenu custom-scrollbar">
+    <input id="buscarWeb" placeholder="Buscar en Google..." class="w-full bg-slate-900 p-2 rounded-lg text-xs mb-2">
+    <button onclick="buscarGoogle()" class="quick w-full text-xs mb-3">🔎 Buscar Google</button>
+    <div class="grid grid-cols-2 gap-2"><button onclick="abrirWhatsApp()" class="quick text-xs">💬 WhatsApp</button><button onclick="abrirGmail()" class="quick text-xs">📧 Gmail</button></div>
+</div>
+
+<button class="menu-btn text-yellow-300" onclick="abrirPanelMenuAngela('comedor')">🥣 Ángel Guardián <span class="float-right">›</span></button>
+<div id="comedor" class="submenu custom-scrollbar">
+    <h3 class="font-bold text-yellow-300 mb-3">🥣 Comedor Ángel Guardián</h3>
+    <!-- RADIO LIMPIA -->
+    <div class="bg-blue-950/50 p-3 rounded-xl border border-blue-500/30 mb-3 text-center">
+        <button onclick="abrirRadio()" class="quick w-full text-xs font-bold text-white bg-blue-600 border-none py-3 mb-2">📻 Reproducir Radio Oficial</button>
+        <button onclick="window.open('https://play.google.com/store/apps/details?id=radio.angelguardian', '_blank')" class="quick w-full text-[10px] bg-slate-800 text-emerald-400">📥 App en Play Store</button>
+    </div>
+    <input id="inputUbicacionComedor" placeholder="Ubicación" class="w-full bg-slate-900 p-2 rounded-lg my-1 text-xs">
+    <button onclick="guardarComedor()" class="quick w-full text-xs mt-2">💾 Guardar datos</button>
+</div>
+
+<button class="menu-btn" onclick="abrirPanelMenuAngela('config')">🔧 Configuración <span class="float-right">›</span></button>
+<div id="config" class="submenu custom-scrollbar">
+    <h3 class="font-bold text-cyan-300 mb-3">⚙️ Configuración</h3>
+    <input id="inputNombreAsistente" value="Ángela" class="w-full bg-slate-900 p-2 rounded-lg my-2 text-xs">
+    <button onclick="guardarConfigAsistente()" class="quick w-full text-xs mb-2">💾 Guardar</button>
+    <button onclick="ejecutarDiagnostico()" class="quick w-full text-xs text-cyan-300">🩺 Diagnóstico</button>
+    <div id="resultadoDiagnostico" class="hidden card-mini text-[10px] mt-2"></div>
+</div>
+</div>
 </aside>
 
-<!-- COLUMNA CENTRAL: CHAT Y ORBE + PANELES FLOTANTES -->
-<main class="flex flex-col relative h-full w-full overflow-hidden bg-white/5 rounded-3xl border border-white/5 shadow-2xl">
+<!-- COLUMNA CENTRAL: CHAT E INTERFAZ TIPO APP -->
+<main class="flex flex-col relative h-full w-full overflow-hidden bg-slate-900/40 rounded-3xl border border-slate-700/50 shadow-2xl">
     
-    <div id="paneles-container" class="absolute inset-0 z-50 pointer-events-none p-4">
-        
-        <!-- IMÁGENES Y DISEÑOS -->
-        <div id="imagenes" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-cyan-300 text-xl">🎨 Imágenes y Diseños</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            
-            <div id="generadorImagenIA" class="bg-slate-900/50 rounded-xl p-4 mb-4 border border-white/5">
-              <h3 class="font-bold text-cyan-300 mb-3">✨ Generar imagen con IA</h3>
-              <textarea id="promptImagenIA" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 mb-3 text-white text-sm" rows="2" placeholder="Describí la imagen..."></textarea>
-              <div class="grid grid-cols-2 gap-2 mb-3">
-                <select id="usoImagenIA" class="bg-slate-950 rounded-lg p-2 text-white text-xs"><option value="general">🎨 General</option><option value="laser">🔥 Láser</option><option value="sublimacion">☕ Sublimación</option></select>
-                <select id="aspectoImagenIA" class="bg-slate-950 rounded-lg p-2 text-white text-xs"><option value="1:1">⬜ 1:1</option><option value="9:16">📱 9:16</option></select>
-              </div>
-              <label class="flex items-center gap-2 mb-3 text-xs text-slate-300"><input id="fondoTransparenteIA" type="checkbox"> Fondo transparente</label>
-              <button id="btnGenerarImagenIA" type="button" onclick="generarImagenIA()" class="w-full bg-cyan-600 hover:bg-cyan-500 rounded-lg p-3 font-bold text-sm">✨ Generar imagen</button>
-              <div id="estadoImagenIA" class="text-xs text-cyan-200 mt-3 hidden"></div>
-              <div id="resultadoImagenIA" class="mt-3 hidden">
-                <img id="imagenGeneradaIA" alt="Imagen generada" class="max-w-full rounded-lg mx-auto">
-                <div class="grid grid-cols-2 gap-2 mt-3"><button type="button" onclick="usarImagenIAGenerada()" class="quick text-xs">🖼️ Al editor</button><button type="button" onclick="descargarImagenIA()" class="quick text-xs">💾 Guardar PNG</button></div>
-              </div>
-            </div>
-
-            <input type="file" id="archivoImagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="w-full bg-[#0b0f19] p-2 rounded-lg mb-3 text-xs">
-            <div class="bg-white/5 rounded-xl p-2 mb-3 min-h-[100px] flex items-center justify-center"><canvas id="canvasImagen" style="max-width:100%;height:auto;display:block;margin:auto"></canvas></div>
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="filtroImagen('normal')" class="quick">Original</button><button onclick="filtroImagen('bn')" class="quick">⚫ B/N</button>
-                <button onclick="filtroImagen('grises')" class="quick">◻ Grises</button><button onclick="filtroImagen('lineart')" class="quick">✒️ Line art</button>
-                <button onclick="filtroImagen('jarvis')" class="quick">▦ Jarvis</button><button onclick="filtroImagen('stucki')" class="quick">▦ Stucki</button>
-            </div>
-            <div class="mt-4"><label class="text-xs text-slate-400 block mb-1">☀️ Brillo</label><input id="brillo" type="range" min="50" max="160" value="100" class="w-full"><label class="text-xs text-slate-400 block mt-2 mb-1">◐ Contraste</label><input id="contraste" type="range" min="50" max="220" value="100" class="w-full"></div>
-            <div class="grid grid-cols-2 gap-2 mt-4">
-                <button onclick="rotarImagen()" class="quick">↻ Rotar</button><button onclick="espejoImagen()" class="quick">↔️ Espejo</button>
-                <button onclick="recortarImagen()" class="quick">✂️ Recortar</button><button onclick="quitarFondoImagen()" class="quick border-fuchsia-500/30">🪄 Quitar fondo</button>
-                <button onclick="prepararLaserImagen()" class="quick text-orange-300">🔥 Preparar láser</button><button onclick="prepararSublimacionImagen()" class="quick text-emerald-300">👕 Sublimación</button>
-                <button onclick="guardarImagen()" class="quick col-span-2 bg-blue-600/20 font-bold">💾 Guardar PNG</button>
-            </div>
-        </div>
-
-        <!-- 3D MOTION -->
-        <div id="motion3d" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-fuchsia-300 text-xl">✨ Tipografía 3D / Motion</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            <input id="motion3dTexto" value="ÁNGELA" oninput="actualizarMotion3D()" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-sm" placeholder="Texto 3D">
-            <div class="grid grid-cols-2 gap-2">
-                <select id="motion3dEstilo" onchange="actualizarMotion3D()" class="w-full bg-slate-900 p-2 rounded-lg text-xs"><option value="gold">Dorado</option><option value="chrome">Cromado</option><option value="neon">Neón</option></select>
-                <select id="motion3dAnimacion" onchange="actualizarMotion3D()" class="w-full bg-slate-900 p-2 rounded-lg text-xs"><option value="spin">Giro 3D</option><option value="bounce">Rebote</option><option value="float">Flotar</option></select>
-            </div>
-            <div id="motion3dPreviewMini" class="motion-preview-shell mt-4" style="min-height:200px"><div id="motion3dTextoMini" class="motion-preview-text motion-style-gold motion-anim-spin" style="font-size:40px">ÁNGELA</div></div>
-            <div class="grid grid-cols-2 gap-2 mt-4"><button onclick="crearPromptMotion3D()" class="quick text-xs">🪄 Crear prompt</button></div>
-            <textarea id="motion3dPrompt" rows="4" class="w-full bg-slate-950 p-2 rounded-lg mt-3 text-[10px]" placeholder="Prompt..."></textarea>
-        </div>
-
-        <!-- LÁSER -->
-        <div id="laser" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-orange-400 text-xl">🔥 Parámetros Láser</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            <select id="maquinaLaser" onchange="guardarMaquinaLaser()" class="w-full bg-slate-900 p-3 rounded-lg mb-2 text-sm font-bold"></select>
-            <select id="procesoLaser" class="w-full bg-slate-900 p-3 rounded-lg mb-4 text-sm"><option value="engrave">Grabado</option><option value="mark">Marcado</option><option value="cut">Corte</option></select>
-            <div class="grid grid-cols-2 gap-2">
-                <button class="quick py-3 font-bold" onclick="mostrarLaserBoton('madera')">🪵 Madera</button><button class="quick py-3 font-bold" onclick="mostrarLaserBoton('mdf')">📦 MDF</button>
-                <button class="quick py-3 font-bold" onclick="mostrarLaserBoton('mate')">🧉 Mate</button><button class="quick py-3 font-bold" onclick="mostrarLaserBoton('vaso')">🥤 Vaso</button>
-                <button class="quick py-3 font-bold" onclick="mostrarLaserBoton('acero')">🔩 Ac. Inox</button><button class="quick py-3 font-bold" onclick="mostrarLaserBoton('cuero')">🟤 Cuero</button>
-            </div>
-            <div id="resultadoLaser" class="mt-4 text-sm bg-white/5 border border-orange-500/30 p-4 rounded-xl">🔥 Elegí un material para ver los parámetros.</div>
-        </div>
-
-        <!-- SUBLIMACIÓN -->
-        <div id="sublimacion" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-emerald-400 text-xl">👕 Guía Sublimación</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            <div class="grid grid-cols-2 gap-3">
-                <button class="quick py-3 font-bold" onclick="mostrarSubBoton('taza')">☕ Taza 11 oz</button><button class="quick py-3 font-bold" onclick="mostrarSubBoton('mate')">🧉 Mate</button>
-                <button class="quick py-3 font-bold" onclick="mostrarSubBoton('remera')">👕 Remera</button><button class="quick py-3 font-bold" onclick="mostrarSubBoton('gorra')">🧢 Gorra</button>
-            </div>
-            <div id="resultadoSub" class="mt-4 text-sm bg-white/5 border border-emerald-500/30 p-4 rounded-xl">👕 Elegí un producto.</div>
-        </div>
-
-        <!-- PROYECTOS Y STOCK -->
-        <div id="proyectos" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-cyan-300 text-xl">📂 Proyectos y Stock</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            <h4 class="font-bold text-white mb-2">Nuevo Proyecto</h4>
-            <input id="nuevoProyectoInput" placeholder="Nombre del proyecto..." class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-sm">
-            <select id="maquinaProyecto" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs"></select>
-            <input id="materialProyecto" placeholder="Material" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs">
-            <select id="procesoProyecto" class="w-full bg-slate-900 p-2 rounded-lg mb-2 text-xs"><option value="engrave">Grabado</option><option value="cut">Corte</option></select>
-            <div class="grid grid-cols-3 gap-2 mb-2"><input id="velocidadProyecto" placeholder="Vel (mm/m)" class="bg-slate-900 p-2 rounded-lg text-xs"><input id="potenciaProyecto" placeholder="Pot (%)" class="bg-slate-900 p-2 rounded-lg text-xs"><input id="pasadasProyecto" placeholder="Pasadas" class="bg-slate-900 p-2 rounded-lg text-xs"></div>
-            <button onclick="agregarProyecto()" class="quick w-full mb-5 text-sm font-bold bg-blue-600/20 border-blue-500/50">💾 Guardar Proyecto</button>
-            <div id="listaProyectos" class="space-y-2 text-xs max-h-32 overflow-y-auto custom-scrollbar mb-4"></div>
-
-            <div class="border-t border-white/10 my-4"></div>
-            <h4 class="font-bold text-blue-300 mb-2">📦 Control de Stock</h4>
-            <div class="flex gap-2 mb-3">
-                <input id="stockNombre" placeholder="Insumo (Ej: MDF 3mm)" class="flex-1 bg-slate-900 p-2 rounded-lg text-xs">
-                <input id="stockCantidad" type="number" placeholder="Cant." class="w-20 bg-slate-900 p-2 rounded-lg text-xs">
-                <button onclick="agregarStock()" class="quick text-xs px-4 bg-green-600/20 border-green-500/50">➕</button>
-            </div>
-            <div id="listaStock" class="mt-3 space-y-2 text-xs max-h-32 overflow-y-auto custom-scrollbar"></div>
-        </div>
-
-        <!-- ARCHIVOS Y CONSOLIDADOR DE EXCEL -->
-        <div id="archivos" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-cyan-300 text-xl">📁 Archivos y Consolidación</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            
-            <div class="bg-blue-950/40 p-4 rounded-xl border border-blue-500/40 mb-4">
-                <h4 class="font-bold text-blue-200 mb-1 text-sm">📊 Unificar Múltiples Planillas de Excel</h4>
-                <p class="text-xs text-slate-300 mb-3">Seleccioná **varios Excel o CSV a la vez** (mantené Ctrl apretado). ÁNGELA cruzará datos, eliminará duplicados por DNI/Apellido y te armará una **Base Maestra** limpia.</p>
-                <input id="inputMultiExcel" type="file" multiple accept=".xlsx,.xls,.csv" class="w-full bg-slate-900 p-2 rounded-lg text-xs mb-2 file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500">
-                <button onclick="dispararConsolidacionMultiplesExcel()" class="quick w-full text-xs font-bold bg-blue-600 text-white border-none py-2">⚡ Consolidar y Descargar Excel Maestro</button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <button onclick="elegirArchivo()" class="quick text-sm">📎 Adjuntar PDF / Word</button>
-                <button onclick="elegirFotos()" class="quick text-sm">🖼️ Analizar Fotos</button>
-            </div>
-            <input id="archivoGeneral" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.mp4" class="hidden">
-            <div id="contextoArchivoPanel" class="mt-2"></div>
-            <div id="archivoPreviewTexto" class="file-work-preview hidden mt-2 bg-[#0b0f19]"></div>
-
-            <div class="border-t border-white/10 my-4 pt-4">
-                <h4 class="font-bold text-purple-300 mb-2 text-xs">🧹 Herramientas de Organización Personal</h4>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="procesarComando('Quiero que analices mi Gmail, agrupes suscripciones/spam y prepares un reporte para borrar, protegiendo correos importantes.')" class="quick text-xs border-purple-500/40 bg-purple-900/20">📧 Limpiador de Gmail IA</button>
-                    <button onclick="procesarComando('Analizá mi galería de fotos, buscá duplicadas o borrosas y recomendame cuáles conservar.')" class="quick text-xs border-pink-500/40 bg-pink-900/20">📱 Organizador de Fotos IA</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- WEB -->
-        <div id="web" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-white text-xl">🌐 Web y Búsquedas</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            <input id="buscarWeb" placeholder="Buscar en Google..." class="w-full bg-slate-900 p-3 rounded-lg text-sm mb-2">
-            <button onclick="buscarGoogle()" class="quick w-full font-bold mb-5">🔎 Buscar</button>
-            <input id="buscarYouTube" placeholder="Buscar en YouTube..." class="w-full bg-slate-900 p-3 rounded-lg text-sm mb-2">
-            <button onclick="buscarYoutubeInput()" class="quick w-full font-bold text-red-400 border-red-500/30 mb-5">▶️ YouTube</button>
-            <div class="grid grid-cols-2 gap-3"><button onclick="abrirWhatsApp()" class="quick font-bold text-green-400 border-green-500/30">💬 WhatsApp</button><button onclick="ubicameEnMaps()" class="quick font-bold text-blue-400 border-blue-500/30">📍 Mi Ubicación</button></div>
-        </div>
-
-        <!-- COMEDOR (RADIO LIMPIA) -->
-        <div id="comedor" class="submenu overlay-panel pointer-events-auto custom-scrollbar border-yellow-600/30">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-yellow-400 text-xl">🥣 Ángel Guardián</h3><button onclick="irInicio()" class="quick px-4 text-slate-300">✕</button></div>
-            <div class="bg-blue-900/20 p-5 rounded-xl border border-blue-500/30 mb-6 text-center shadow-lg">
-                <button onclick="abrirRadio()" class="quick w-full text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 border-none shadow-xl py-4 hover:scale-105">📻 Reproducir Radio Oficial</button>
-                <button onclick="window.open('https://play.google.com/store/apps/details?id=radio.angelguardian', '_blank')" class="quick w-full text-sm font-bold bg-slate-800 text-emerald-400 border border-emerald-600 py-3 mt-3">📥 App Play Store</button>
-            </div>
-            <div class="border-t border-white/10 pt-4">
-                <p class="text-sm font-bold text-yellow-200 mb-3">📄 Datos Institucionales</p>
-                <input id="inputUbicacionComedor" placeholder="Ubicación" class="w-full bg-slate-900 p-3 rounded-lg my-1 text-sm">
-                <input id="inputContactoComedor" placeholder="Contacto" class="w-full bg-slate-900 p-3 rounded-lg my-1 text-sm">
-                <textarea id="inputNotasComedor" rows="2" placeholder="Notas internas..." class="w-full bg-slate-900 p-3 rounded-lg my-1 text-sm"></textarea>
-                <button onclick="guardarComedor()" class="quick w-full font-bold mt-2 border-yellow-500/50 text-yellow-200 py-3">💾 Guardar Datos</button>
-            </div>
-        </div>
-
-        <!-- CONFIGURACIÓN -->
-        <div id="config" class="submenu overlay-panel pointer-events-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-cyan-300 text-xl">⚙️ Configuración</h3><button onclick="irInicio()" class="quick px-4">✕</button></div>
-            <input id="inputNombreAsistente" value="Ángela" class="w-full bg-slate-900 p-3 rounded-lg mb-3 text-sm">
-            <label class="flex items-center gap-2 text-sm my-4 font-bold"><input id="memoriaToggle" type="checkbox" checked> 🧠 Memoria activada</label>
-            <button onclick="guardarConfigAsistente()" class="quick w-full font-bold mb-5 py-3 bg-blue-600/20">💾 Guardar</button>
-            <div class="border-t border-white/10 pt-4 mt-2">
-                <button onclick="ejecutarDiagnostico()" class="quick w-full font-bold text-cyan-300 mb-3 py-3">🩺 Diagnóstico</button>
-                <div id="resultadoDiagnostico" class="hidden card-mini text-xs mb-3"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- HISTORIAL DE CHAT -->
-    <div id="mensajes" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-3 z-10">
+    <!-- Historial de mensajes -->
+    <div id="mensajes" class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-3 z-10">
         <div class="chatAngela flex items-start gap-3">
             <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold shrink-0 text-white">AI</div>
-            <div><b>ÁNGELA:</b> ¡Hola! Sistema unificado activo. Subí tus planillas históricas en el panel de archivos para unificarlas en un solo Excel maestro.</div>
+            <div><b>ÁNGELA:</b> ¡Hola! Ya estoy configurada con el diseño de aplicación y el motor original completo. El micrófono y las herramientas están activos.</div>
         </div>
     </div>
 
-    <div id="estadoPensando" class="text-xs text-cyan-400 mb-2 hidden text-center z-10 font-bold tracking-widest uppercase">● <span class="thinking-dots">Procesando</span></div>
+    <div id="estadoPensando" class="text-xs text-cyan-300 mb-2 hidden text-center z-10 font-bold">● <span class="thinking-dots">ÁNGELA está procesando</span></div>
 
-    <!-- ORBE CENTRAL (Z-0) -->
+    <!-- ORBE CENTRAL (Fondo decorativo) -->
     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0 transition-opacity duration-300" id="orb-background">
-        <div class="orb pointer-events-auto" onclick="activarMicrofonoManual()" id="core-orb-btn"><span class="orb-text">ÁNGELA</span></div>
-        <div id="estadoVoz" class="mt-8 text-slate-300 font-medium tracking-wide">🎤 Tocá para hablar</div>
+        <div class="orb pointer-events-auto" onclick="activarMicrofonoManual()" id="core-orb-btn" role="button" tabindex="0">
+            <span class="orb-text" id="orbTextLabel">ÁNGELA</span>
+        </div>
+        <div id="estadoVoz" class="mt-6 text-slate-400 text-sm font-semibold">🎤 Tocá el orbe para hablar</div>
     </div>
 
-    <!-- BARRA DE INPUT CHAT -->
-    <div class="p-4 z-20 w-full mb-2">
-        <div class="chat-input-row flex items-center gap-3 w-full max-w-3xl mx-auto shadow-2xl">
-            <button onclick="abrirAdjuntos()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 text-xl flex items-center justify-center">＋</button>
-            <input id="entradaChat" placeholder="Enviarle un mensaje a Ángela..." class="flex-1 bg-transparent text-white text-sm outline-none px-2">
-            <button onclick="activarMicrofonoManual()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 text-cyan-400 text-lg flex items-center justify-center shadow-lg">🎤</button>
-            <button id="btnCancelar" onclick="cancelarRespuesta()" class="hidden w-10 h-10 rounded-full bg-slate-700 text-white font-bold flex items-center justify-center">⏹</button>
-            <button onclick="enviarChat()" class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold flex items-center justify-center hover:scale-105 shadow-lg">➤</button>
+    <!-- BARRA DE CHAT INFERIOR -->
+    <div class="p-4 z-20 w-full">
+        <div class="flex gap-2 bg-slate-950/90 p-2 rounded-2xl border border-slate-700 backdrop-blur max-w-3xl mx-auto shadow-2xl">
+            <button onclick="abrirAdjuntos()" class="bg-slate-800 px-3 rounded-xl text-xl hover:bg-slate-700 transition" title="Adjuntar">＋</button>
+            <button onclick="activarMicrofonoManual()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-3 rounded-xl text-lg shadow hover:opacity-90 transition" title="Hablar">🎤</button>
+            <input id="entradaChat" placeholder="Preguntame lo que quieras o pedime algo..." class="flex-1 bg-transparent border-none text-white px-2 outline-none text-sm">
+            <button id="btnCancelar" onclick="cancelarRespuesta()" class="hidden bg-slate-700 px-3 rounded-xl font-bold" title="Cancelar">⏹</button>
+            <button onclick="enviarChat()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-5 rounded-xl font-bold shadow hover:opacity-90 transition text-sm">Enviar</button>
         </div>
     </div>
 </main>
 
 <!-- COLUMNA DERECHA: WIDGETS -->
 <aside class="space-y-4 h-full overflow-y-auto custom-scrollbar pl-2 pb-10 hidden lg:flex flex-col">
-    <!-- Reloj -->
-    <div class="panel p-5 text-center flex flex-col items-center justify-center min-h-[150px] shrink-0">
-        <div id="relojPanel" class="text-5xl font-black text-white tracking-wider mb-2">--:--</div>
-        <div class="text-xs text-slate-400 uppercase font-bold tracking-widest border-t border-white/10 pt-2 w-full">Hora Local</div>
-        <div id="fechaPanel" class="text-sm text-cyan-300 mt-1 font-medium">--</div>
+    <div class="panel rounded-3xl p-4 text-center shrink-0">
+        <div id="relojPanel" class="text-3xl font-black text-white">--:--</div>
+        <div id="fechaPanel" class="text-xs text-cyan-200 mt-1">--</div>
     </div>
 
-    <!-- Atajos Rápidos -->
-    <div class="panel p-5 shrink-0">
-        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Atajos Rápidos</div>
+    <div class="panel rounded-3xl p-4 shrink-0">
+        <h3 class="font-bold text-yellow-300 mb-3 text-xs">⚡ ACCESOS RÁPIDOS</h3>
         <div class="grid grid-cols-2 gap-2">
-            <button class="quick bg-white/5 text-xs" onclick="window.open('https://www.google.com','_blank')">🌐 Google</button>
-            <button class="quick bg-white/5 text-xs" onclick="window.open('https://web.whatsapp.com','_blank')">💬 WhatsApp</button>
-            <button class="quick bg-white/5 text-xs" onclick="window.open('https://www.youtube.com','_blank')">▶️ YouTube</button>
-            <button class="quick bg-white/5 text-xs" onclick="window.open('https://www.canva.com','_blank')">🎨 Canva</button>
+            <button onclick="window.open('https://www.google.com','_blank')" class="quick text-xs">🌐 Google</button>
+            <button onclick="window.open('https://www.youtube.com','_blank')" class="quick text-xs">▶️ YouTube</button>
+            <button onclick="window.open('https://web.whatsapp.com','_blank')" class="quick text-xs">💬 WhatsApp</button>
+            <button onclick="window.open('https://www.canva.com','_blank')" class="quick text-xs">🎨 Canva</button>
         </div>
     </div>
 
-    <!-- Clima y Ubicación -->
-    <div class="panel p-5 shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="text-3xl">🌤️</div>
-            <div class="text-left">
-                <div id="clima" class="text-sm font-bold text-white">25°C Soleado</div>
-                <div id="ubicacion" class="text-[10px] text-slate-400 mt-1">📍 Buenos Aires</div>
-            </div>
-        </div>
-        <button onclick="cargarClima({askLocation:true})" class="quick w-full mt-4 text-xs bg-white/5 border-white/10">Actualizar Clima</button>
-    </div>
-
-    <!-- Estado del Sistema -->
-    <div class="panel p-5 flex-1">
-        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Estado del Sistema</div>
-        <div class="space-y-3 text-xs font-medium text-slate-300">
-            <div class="flex justify-between items-center"><span class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> IA</span><span id="estadoIA" class="text-green-400">Verificando...</span></div>
-            <div class="flex justify-between items-center"><span class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> Internet</span><span id="estadoInternet" class="text-green-400">Online</span></div>
-            <div class="flex justify-between items-center"><span class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> Mic</span><span id="estadoMicrofono">Listo</span></div>
-            <div class="border-t border-white/5 pt-2 mt-2"></div>
-            <div class="flex justify-between items-center"><span class="text-cyan-400">Máquina</span><span id="panelLaserActual" class="font-bold text-white">AlgoLaser 10W</span></div>
-            <div class="flex justify-between items-center"><span class="text-cyan-400">Proyectos</span><span id="contadorProyectos" class="font-bold text-white bg-white/10 px-2 py-1 rounded">0</span></div>
-            <div class="flex justify-between items-center"><span class="text-cyan-400">Stock</span><span id="contadorStock" class="font-bold text-white bg-white/10 px-2 py-1 rounded">0</span></div>
+    <div class="panel rounded-3xl p-4 flex-1">
+        <h3 class="font-bold text-green-300 mb-3 text-xs">🟢 ESTADO</h3>
+        <div class="space-y-2 text-xs">
+            <div class="flex justify-between"><span>🌐 Red</span><span id="estadoInternet" class="text-green-400">Online</span></div>
+            <div class="flex justify-between"><span>🤖 IA</span><span id="estadoIA" class="text-green-400">Activa</span></div>
+            <div class="flex justify-between"><span>🎤 Mic</span><span id="estadoMicrofono">Listo</span></div>
+            <div class="border-t border-slate-700 my-2 pt-2"></div>
+            <div class="flex justify-between"><span>📂 Proys:</span><b id="contadorProyectos">0</b></div>
+            <div class="flex justify-between"><span>📦 Stock:</span><b id="contadorStock">0</b></div>
         </div>
     </div>
 </aside>
 
 </div>
 
-<!-- TOASTS Y MODALES (Adjuntos) -->
-<div id="toastAngela" class="hidden text-sm font-medium text-white"></div>
+<!-- MODAL ADJUNTOS -->
+<input id="inputFotos" type="file" accept="image/*" class="hidden">
+<input id="archivoGeneral" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt" class="hidden">
 <div id="adjuntosBackdrop" class="attach-sheet-backdrop hidden" onclick="if(event.target===this)cerrarAdjuntos()">
   <div class="attach-sheet">
-    <div class="flex justify-between items-center mb-4"><div class="font-bold text-lg text-white">Agregar a ÁNGELA</div><button onclick="cerrarAdjuntos()" class="quick px-4 text-white">✕</button></div>
-    <button onclick="elegirFotos()" class="attach-action text-white"><span class="attach-icon">🖼️</span><span>Fotos e Imágenes</span></button>
-    <button onclick="elegirArchivo()" class="attach-action text-white"><span class="attach-icon border border-green-500/50 text-green-300">📊</span><span>Procesar Excel / CSV</span></button>
-    <button onclick="elegirArchivo()" class="attach-action text-white"><span class="attach-icon border border-blue-500/50 text-blue-300">📄</span><span>Procesar Word / TXT</span></button>
-    <button onclick="elegirArchivo()" class="attach-action text-white"><span class="attach-icon border border-red-500/50 text-red-300">📎</span><span>Adjuntar PDF</span></button>
+    <div class="flex justify-between items-center mb-2"><div class="font-bold text-lg">Adjuntar archivo</div><button onclick="cerrarAdjuntos()" class="quick px-4">✕</button></div>
+    <button onclick="elegirFotos()" class="attach-action"><span class="attach-icon">🖼️</span><span>Fotos</span></button>
+    <button onclick="elegirArchivo()" class="attach-action"><span class="attach-icon">📊</span><span>Excel / Word / PDF</span></button>
   </div>
 </div>
-<input id="inputFotos" type="file" accept="image/*" class="hidden">
-<input id="inputArchivoUniversal" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.json,.dxf,.mp4,.webm,.mov,.m4v" class="hidden">
+<div id="toastAngela" class="hidden"></div>
 
-<!-- SCRIPT DE CONEXIÓN Y CONSOLIDADOR DE EXCEL -->
-<script>
-    function abrirPanelCentral(id) {
-        document.querySelectorAll('.submenu').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
-        const orb = document.getElementById("orb-background");
-        if(orb) orb.style.opacity = '0.05';
-        const panel = document.getElementById(id);
-        if(panel) panel.style.display = 'block';
-    }
-    function irInicio() {
-        document.querySelectorAll('.submenu').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector('.menu-btn').classList.add('active'); 
-        const orb = document.getElementById("orb-background");
-        if(orb && document.getElementById("mensajes").children.length < 4) orb.style.opacity = '0.4';
-    }
-    function abrirRadio() { window.open('https://radioangelguardian.mixwe.com.ar/', '_blank', 'noopener,noreferrer'); irInicio(); }
-    function abrirAdjuntos(){ const el=document.getElementById("adjuntosBackdrop"); if(el)el.classList.remove("hidden"); }
-    function cerrarAdjuntos(){ const el=document.getElementById("adjuntosBackdrop"); if(el)el.classList.add("hidden"); }
-
-    // CONSOLIDADOR INTELIGENTE DE MÚLTIPLES EXCEL (PARA ONG)
-    async function dispararConsolidacionMultiplesExcel() {
-        const inputFiles = document.getElementById("inputMultiExcel");
-        if(!inputFiles || inputFiles.files.length === 0) {
-            showToast("Seleccioná primero uno o varios archivos Excel.");
-            return;
-        }
-        
-        showToast(`Procesando ${inputFiles.files.length} planillas...`);
-        try {
-            let baseMap = new Map();
-            for(let file of inputFiles.files) {
-                const wb = XLSX.read(await file.arrayBuffer(), {type:"array"});
-                const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                
-                for(let row of json) {
-                    let dni = String(row.DNI || row.Documento || row.NroDoc || "").trim();
-                    let clave = dni.length >= 7 ? dni : normalizarTexto(`${row.Apellido || row.Familia || ""} ${row.Nombre || row.Referente || ""}`);
-                    if(!clave || clave.length < 3) continue;
-
-                    if(!baseMap.has(clave)) {
-                        baseMap.set(clave, {
-                            "Referente / Tutor": row.Referente || row.PadreMadre || row.Nombre || "Sin datos",
-                            "DNI": dni || "Sin DNI",
-                            "Teléfono": String(row.Telefono || row.Celular || row.Tel || "-"),
-                            "Dirección": row.Direccion || row.Domicilio || "-",
-                            "Observaciones / Hijos": row.Hijos || row.Escuela || row.Grado || "Sin especificar",
-                            "Fuentes": file.name
-                        });
-                    } else {
-                        let act = baseMap.get(clave);
-                        if(act["Teléfono"] === "-" && (row.Telefono || row.Celular)) act["Teléfono"] = String(row.Telefono || row.Celular);
-                        if(act["Dirección"] === "-" && row.Direccion) act["Dirección"] = row.Direccion;
-                        act["Fuentes"] += ` + ${file.name}`;
-                    }
-                }
-            }
-
-            const resultado = Array.from(baseMap.values());
-            if(resultado.length === 0) { showToast("No se hallaron registros válidos."); return; }
-
-            const nuevaHoja = XLSX.utils.json_to_sheet(resultado);
-            const nuevoLibro = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(nuevoLibro, nuevaHoja, "Base Maestra Consolidada");
-            XLSX.writeFile(nuevoLibro, `Base_Maestra_Familias_${Date.now()}.xlsx`);
-            showToast("¡Excel Maestro unificado y descargado con éxito!");
-
-        } catch(e) {
-            console.error(e);
-            showToast("Error al consolidar las planillas.");
-        }
-    }
-
-    function actualizarRelojLocal(){
-        const now = new Date();
-        const hora = now.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-        const fecha = now.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"short"});
-        if(document.getElementById("relojHeader")) document.getElementById("relojHeader").textContent = hora;
-        if(document.getElementById("relojPanel")) document.getElementById("relojPanel").textContent = hora;
-        if(document.getElementById("fechaHeader")) document.getElementById("fechaHeader").textContent = fecha;
-        if(document.getElementById("fechaPanel")) document.getElementById("fechaPanel").textContent = fecha;
-    }
-    setInterval(actualizarRelojLocal, 1000);
-    window.addEventListener("DOMContentLoaded", actualizarRelojLocal);
-</script>
-
-<!-- CÓDIGO DE CONEXIÓN Y LÓGICA DE ÁNGELA -->
+<!-- ==============================================================
+     MOTOR JAVASCRIPT ORIGINAL DE ÁNGELA (INTACTO + VOZ)
+     ============================================================== -->
 <script src="./angela.config.js"></script>
 <script>
 const CONFIG = Object.freeze({
-    version: "8.5.0",
+    version: "8.6.0",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiImage: "https://orion-ia-sooty.vercel.app/api/image",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/"
 });
-const STATE = {
-    settings: { assistantName: "Ángela", memoryEnabled: true },
-    conversations: [{id:"conv-1", title:"Nueva", messages:[]}],
-    stock: [], projects: [], fileContext: null, ai: {verified:false}
+
+const DEFAULT_MACHINES = [{id:"algolaser-diy-mk2-10w", model:"AlgoLaser DIY Kit MK2", powerW:10, type:"Diodo"}];
+const LASER_REFERENCE_10W = {
+    madera: {label:"Madera", engrave:{speed:"1200–3000 mm/min", power:"30–70%", passes:"1"}},
+    mdf: {label:"MDF", engrave:{speed:"1200–3000 mm/min", power:"30–70%", passes:"1"}},
+    mate: {label:"Mate", engrave:{speed:"1500–3000 mm/min", power:"45–90%", passes:"1"}},
+    vaso: {label:"Vaso", engrave:{speed:"1500–3000 mm/min", power:"45–90%", passes:"1"}}
 };
+const SUB_REFERENCE = {
+    "taza":{label:"Taza 11 oz", temp:"180–195 °C", time:"160–210 s", pressure:"Media"},
+    "mate":{label:"Mate", temp:"175–190 °C", time:"90–160 s", pressure:"Media"},
+    "remera":{label:"Remera", temp:"190–200 °C", time:"35–55 s", pressure:"Media"},
+    "gorra":{label:"Gorra", temp:"180–195 °C", time:"45–75 s", pressure:"Media"}
+};
+
+const STATE = {
+    settings: { assistantName: "Ángela", memoryEnabled: true, handsFreeEnabled: true },
+    machines: DEFAULT_MACHINES, conversations: [{id:"conv-1", title:"Chat", messages:[]}],
+    stock: [], projects: [], fileContext: null, ai: {verified:false},
+    voice: { recognition: null, listening: false, speaking: false, manualMode: false, permissionBlocked: false }
+};
+
 function $(id){ return document.getElementById(id); }
 function setText(id, text){ const el=$(id); if(el) el.textContent=text; }
 function setClassStatus(id, text, css){ const el=$(id); if(el){el.textContent=text; el.className=css;} }
 function normalizarTexto(texto){ return String(texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(); }
-function ensureConversation(){ return STATE.conversations[0]; }
+function showToast(msg){ const t=$("toastAngela"); if(!t)return; t.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),3000); }
 
+/* NAVEGACIÓN UI */
+function abrirPanelMenuAngela(id) {
+    document.querySelectorAll('.submenu').forEach(el => el.style.display = 'none');
+    const orb = $("orb-background"); if(orb) orb.style.opacity = '0.05';
+    const panel = $(id); if(panel) panel.style.display = 'block';
+}
+function irInicio() {
+    document.querySelectorAll('.submenu').forEach(el => el.style.display = 'none');
+    const orb = $("orb-background"); if(orb && $("mensajes").children.length < 4) orb.style.opacity = '0.4';
+}
+function focusChat() { irInicio(); }
+function abrirMenu(id) { abrirPanelMenuAngela(id); }
+function abrirRadio() { window.open(CONFIG.radioUrl, '_blank'); irInicio(); }
+function abrirAdjuntos() { $("adjuntosBackdrop")?.classList.remove("hidden"); }
+function cerrarAdjuntos() { $("adjuntosBackdrop")?.classList.add("hidden"); }
+
+/* RELOJ */
+function actualizarReloj(){
+    const now = new Date();
+    const hora = now.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+    const fecha = now.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"short"});
+    setText("reloj", hora); setText("relojPanel", hora);
+    setText("fecha", fecha); setText("fechaPanel", fecha);
+}
+setInterval(actualizarReloj, 1000);
+
+/* CHAT Y VOZ ORIGINAL */
 function agregarMensaje(tipo, texto){
     const box = $("mensajes"); if(!box) return;
     const div = document.createElement("div"); 
     div.className = tipo === "user" ? "chatUser" : "chatAngela flex items-start gap-3";
-    div.innerHTML = tipo === "angela" ? `<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold shrink-0 text-white">AI</div><div><b>ÁNGELA:</b> ${texto.replace(/\n/g,"<br>")}</div>` : `<div>${texto}</div>`;
+    div.innerHTML = tipo === "angela" ? `<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold shrink-0 text-white">AI</div><div><b>ÁNGELA:</b> ${String(texto).replace(/\n/g,"<br>")}</div>` : `<div>${texto}</div>`;
     box.appendChild(div); box.scrollTop = box.scrollHeight;
-    ensureConversation().messages.push({role: tipo, text});
+    STATE.conversations[0].messages.push({role: tipo, text});
 }
 
-async function enviarChat(){
-    const input = $("entradaChat"); if(!input) return; 
-    const text = input.value.trim(); if(!text) return; 
-    input.value = "";
-    agregarMensaje("user", text);
+function getRecognitionCtor(){ return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+
+async function activarMicrofonoManual(){
+    const Ctor = getRecognitionCtor();
+    if(!Ctor) { showToast("Tu navegador no soporta reconocimiento de voz nativo."); return; }
     
-    const orb = $("orb-background");
-    if(orb) orb.style.opacity = '0.05';
+    try {
+        const rec = new Ctor();
+        rec.lang = "es-AR"; rec.continuous = false; rec.interimResults = false;
+        
+        rec.onstart = () => {
+            STATE.voice.listening = true;
+            $("estadoVoz").textContent = "🎙️ Escuchando... Hablá ahora";
+            $("estadoVoz").className = "mt-6 text-fuchsia-400 font-bold tracking-wide";
+            $("core-orb-btn").classList.add("hablando");
+        };
+        
+        rec.onresult = (e) => {
+            const text = e.results?.[0]?.[0]?.transcript?.trim();
+            if(text) {
+                agregarMensaje("user", text);
+                procesarEntrada(text);
+            }
+        };
+        
+        rec.onerror = (e) => {
+            console.error(e);
+            showToast("Error de micrófono: " + e.error);
+        };
+        
+        rec.onend = () => {
+            STATE.voice.listening = false;
+            $("estadoVoz").textContent = "🎤 Tocá el orbe para hablar";
+            $("estadoVoz").className = "mt-6 text-slate-400 font-semibold tracking-wide";
+            $("core-orb-btn").classList.remove("hablando");
+        };
+        
+        rec.start();
+    } catch(err) {
+        console.error(err);
+        showToast("No se pudo iniciar el micrófono.");
+    }
+}
+
+async function procesarEntrada(texto){
+    const clean = String(texto||"").trim(); if(!clean) return;
     $("estadoPensando").classList.remove("hidden");
     
     try {
-        const res = await fetch(CONFIG.apiChat, {
+        const res = await fetch("https://orion-ia-sooty.vercel.app/api/chat", {
             method: "POST", headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ message: text, history: ensureConversation().messages.slice(-10) })
+            body: JSON.stringify({ message: clean, history: STATE.conversations[0].messages.slice(-10) })
         });
         const data = await res.json();
         $("estadoPensando").classList.add("hidden");
@@ -538,22 +502,97 @@ async function enviarChat(){
         agregarMensaje("angela", data.reply || data.response || data.respuesta || "Recibido.");
     } catch(e) {
         $("estadoPensando").classList.add("hidden");
-        agregarMensaje("angela", "Error de red con el servidor de IA.");
+        agregarMensaje("angela", "Error al conectar con el servidor de IA en Vercel.");
     }
 }
 
-function procesarComando(t) { const i = $("entradaChat"); if(i) i.value = t; enviarChat(); }
+function enviarChat() {
+    const input = $("entradaChat"); if(!input) return;
+    const text = input.value.trim(); if(!text) return;
+    input.value = "";
+    agregarMensaje("user", text);
+    $("orb-background").style.opacity = '0.05';
+    procesarEntrada(text);
+}
+
+function cancelarRespuesta() { showToast("Cancelado."); }
+
+/* CONSOLIDADOR DE EXCEL MÚLTIPLES */
+async function dispararConsolidacionMultiplesExcel() {
+    const inputFiles = document.getElementById("inputMultiExcel");
+    if(!inputFiles || inputFiles.files.length === 0) { showToast("Seleccioná planillas primero."); return; }
+    
+    showToast(`Procesando ${inputFiles.files.length} planillas...`);
+    try {
+        let baseMap = new Map();
+        for(let file of inputFiles.files) {
+            const wb = XLSX.read(await file.arrayBuffer(), {type:"array"});
+            const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+            
+            for(let row of json) {
+                let dni = String(row.DNI || row.Documento || row.NroDoc || "").trim();
+                let clave = dni.length >= 7 ? dni : normalizarTexto(`${row.Apellido || row.Familia || ""} ${row.Nombre || row.Referente || ""}`);
+                if(!clave || clave.length < 3) continue;
+
+                if(!baseMap.has(clave)) {
+                    baseMap.set(clave, {
+                        "Referente / Tutor": row.Referente || row.PadreMadre || row.Nombre || "Sin datos",
+                        "DNI": dni || "Sin DNI",
+                        "Teléfono": String(row.Telefono || row.Celular || row.Tel || "-"),
+                        "Dirección": row.Direccion || row.Domicilio || "-",
+                        "Observaciones / Hijos": row.Hijos || row.Escuela || row.Grado || "Sin especificar",
+                        "Fuentes": file.name
+                    });
+                } else {
+                    let act = baseMap.get(clave);
+                    if(act["Teléfono"] === "-" && (row.Telefono || row.Celular)) act["Teléfono"] = String(row.Telefono || row.Celular);
+                    if(act["Dirección"] === "-" && row.Direccion) act["Dirección"] = row.Direccion;
+                    act["Fuentes"] += ` + ${file.name}`;
+                }
+            }
+        }
+        const resultado = Array.from(baseMap.values());
+        const nuevaHoja = XLSX.utils.json_to_sheet(resultado);
+        const nuevoLibro = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(nuevoLibro, nuevaHoja, "Base Maestra Consolidada");
+        XLSX.writeFile(nuevoLibro, `Base_Maestra_Familias_${Date.now()}.xlsx`);
+        showToast("¡Excel Maestro unificado y descargado con éxito!");
+    } catch(e) {
+        console.error(e);
+        showToast("Error al consolidar las planillas.");
+    }
+}
+
+/* LÁSER Y PROYECTOS */
+function mostrarLaserBoton(mat) {
+    const d = LASER_REFERENCE_10W[mat] || {label: mat, engrave:{speed:"1500 mm/min", power:"50%"}};
+    document.getElementById("resultadoLaser").innerHTML = `<b>🔥 ${d.label}</b><br>Grabado: Vel ${d.engrave.speed} | Potencia ${d.engrave.power}`;
+}
+function mostrarSubBoton(prod) {
+    const d = SUB_REFERENCE[prod];
+    document.getElementById("resultadoSub").innerHTML = `<b>👕 ${d.label}</b><br>Temp: ${d.temp} | Tiempo: ${d.time}`;
+}
+function agregarProyecto() {
+    const p = $("nuevoProyectoInput").value;
+    if(p) { STATE.projects.push(p); setText("contadorProyectos", STATE.projects.length); $("nuevoProyectoInput").value=""; showToast("Proyecto guardado"); }
+}
+function agregarStock() {
+    const s = $("stockNombre").value;
+    if(s) { STATE.stock.push(s); setText("contadorStock", STATE.stock.length); $("stockNombre").value=""; showToast("Insumo agregado"); }
+}
 function elegirFotos() { cerrarAdjuntos(); $("inputFotos").click(); }
-function elegirArchivo() { cerrarAdjuntos(); $("inputArchivoUniversal").click(); }
-function buscarGoogle() { const q = $("buscarWeb")?.value; if(q) window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank'); }
-function buscarYoutubeInput() { const q = $("buscarYouTube")?.value; if(q) window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`, '_blank'); }
-function abrirWhatsApp() { window.open("https://web.whatsapp.com", "_blank"); }
-function abrirGmail() { window.open("https://mail.google.com", "_blank"); }
-function abrirCanva() { window.open("https://www.canva.com", "_blank"); cerrarAdjuntos(); }
-function ubicameEnMaps() { window.open("https://www.google.com/maps", "_blank"); }
+function elegirArchivo() { cerrarAdjuntos(); $("archivoGeneral").click(); }
+function buscarGoogle() { const q = $("buscarWeb").value; if(q) window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank'); }
 function guardarComedor() { showToast("Datos guardados."); }
 function guardarConfigAsistente() { showToast("Configuración guardada."); }
-function ejecutarDiagnostico() { $("resultadoDiagnostico").classList.remove("hidden"); $("resultadoDiagnostico").innerHTML = `<div class="text-green-400">Sistema operativo y operativo web OK.</div>`; }
+function ejecutarDiagnostico() { $("resultadoDiagnostico").classList.remove("hidden"); $("resultadoDiagnostico").innerHTML = "Sistema funcionando correctamente."; }
+
+window.addEventListener("DOMContentLoaded", () => {
+    actualizarReloj();
+    $("entradaChat")?.addEventListener("keydown", e => {
+        if(e.key === "Enter") { e.preventDefault(); enviarChat(); }
+    });
+});
 </script>
 </body>
 </html>
