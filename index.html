@@ -5272,5 +5272,68 @@ new MutationObserver(inject).observe(document.documentElement,{childList:true,su
 })();
 </script>
 
+
+<script id="angela-dni-direccion-fix-v5">
+(()=>{
+const n=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const oldVal=window.__angela_val_original||null;
+
+/* Reconocimiento ampliado para Documento y Dirección */
+const DOC_WORDS=["dni","documento","nrodocumento","numerodocumento","documentonro","documentonumero","dninro","dninumero","nrodni","numerodni","doc","nrodoc","numdoc","documentodeidentidad","nrodocumentodeidentidad"];
+const DIR_WORDS=["domicilio","direccion","calle","direccioncompleta","domiciliocompleto","calleyaltura","calleynumero","calleynro","direccionparticular","domicilioparticular","residencia"];
+
+/* Repara registros ya guardados si contienen variantes de campos provenientes de cargas anteriores */
+function repairExisting(){
+ let db;try{db=JSON.parse(localStorage.getItem("ANGELA_MASTER_LOCAL_V1")||"{}")}catch(e){return}
+ if(!Array.isArray(db.familias))return;
+ let changed=false;
+ for(const p of db.familias){
+   if(!p.dni){
+     for(const [k,v] of Object.entries(p)){
+       if(DOC_WORDS.some(a=>n(k)===a||n(k).includes(a)) && String(v??"").trim()){
+         p.dni=String(v).replace(/\D/g,""); changed=true; break;
+       }
+     }
+   }
+   if(!p.domicilio){
+     for(const [k,v] of Object.entries(p)){
+       if(DIR_WORDS.some(a=>n(k)===a||n(k).includes(a)) && String(v??"").trim()){
+         p.domicilio=String(v).trim(); changed=true; break;
+       }
+     }
+   }
+ }
+ if(changed)localStorage.setItem("ANGELA_MASTER_LOCAL_V1",JSON.stringify(db));
+}
+repairExisting();
+
+/* Exportador maestro reforzado: Documento y Dirección siempre tienen columnas propias */
+window.angelaDescargarBaseMaestra=()=>{
+ if(!window.XLSX)return alert("No está disponible el lector Excel.");
+ let db;try{db=JSON.parse(localStorage.getItem("ANGELA_MASTER_LOCAL_V1")||"{}")}catch(e){db={}}
+ let a=Array.isArray(db.familias)?db.familias:[];if(!a.length)return alert("La Base Maestra todavía está vacía.");
+ const get=(x,words,canonical)=>{
+   if(String(x[canonical]??"").trim())return String(x[canonical]).trim();
+   for(const [k,v] of Object.entries(x)){if(words.some(w=>n(k)===w||n(k).includes(w))&&String(v??"").trim())return String(v).trim()}
+   return "";
+ };
+ let data=a.map((x,i)=>({
+   "N°":i+1,
+   "Familia / Grupo":x.familia||"",
+   "Apellido y Nombre":x.nombre||"",
+   "DNI / Documento":get(x,DOC_WORDS,"dni").replace(/\D/g,""),
+   "Fecha de nacimiento":x.nacimiento||"",
+   "Edad":window.angelaEdad?angelaEdad(x.nacimiento):"",
+   "Teléfono":x.telefono||"",
+   "Dirección / Domicilio":get(x,DIR_WORDS,"domicilio")
+ }));
+ let ws=XLSX.utils.json_to_sheet(data),wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Base Maestra");
+ ws["!cols"]=[{wch:6},{wch:22},{wch:35},{wch:20},{wch:20},{wch:8},{wch:20},{wch:45}];
+ XLSX.writeFile(wb,`ANGELA_BASE_MAESTRA_COMPLETA_${new Date().toISOString().slice(0,10)}.xlsx`);
+};
+})();
+</script>
+
 </body>
 </html>
