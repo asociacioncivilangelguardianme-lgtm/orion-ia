@@ -5352,5 +5352,35 @@ window.angelaDescargarBaseMaestra=()=>{
 })();
 </script>
 
+
+<script id="angela-columna-documentos-a-direccion-v7">
+(()=>{
+ function aplicar(){
+   const root=document.getElementById("familia_vista_v2")||document;
+   const tables=[...root.querySelectorAll("table")];
+   for(const table of tables){
+     const heads=[...table.querySelectorAll("thead th")];
+     let idx=heads.findIndex(h=>h.textContent.trim().toLowerCase()==="documentos");
+     if(idx<0) continue;
+     heads[idx].textContent="Dirección";
+     [...table.querySelectorAll("tbody tr")].forEach(tr=>{
+       const cells=[...tr.children];
+       if(!cells[idx]) return;
+       const nameCell=cells.find((c,i)=>i!==idx && c.textContent.trim());
+       let db={}; try{db=JSON.parse(localStorage.getItem("ANGELA_MASTER_LOCAL_V1")||"{}")}catch(e){}
+       const people=Array.isArray(db.familias)?db.familias:[];
+       const rowText=tr.textContent.toLowerCase();
+       let p=people.find(x=>x.dni && rowText.includes(String(x.dni))) ||
+             people.find(x=>x.nombre && rowText.includes(String(x.nombre).toLowerCase()));
+       cells[idx].textContent=p?.domicilio||p?.direccion||"";
+     });
+   }
+ }
+ new MutationObserver(aplicar).observe(document.documentElement,{childList:true,subtree:true});
+ document.addEventListener("DOMContentLoaded",aplicar);
+ setTimeout(aplicar,100); setTimeout(aplicar,500);
+})();
+</script>
+
 </body>
 </html>
