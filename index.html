@@ -4947,5 +4947,148 @@ window.angelaAbrirGestion=function(m){if(m==="familias")return abrir();return pr
 })();
 </script>
 
+
+<script id="angela-finanzas-donantes-difusion-arca-v1">
+(()=>{
+const KEY="ANGELA_MASTER_LOCAL_V1", ARCA_FACT="https://facturador.afip.gob.ar/", ARCA_FE="https://www.arca.gob.ar/fe/";
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+const save=db=>localStorage.setItem(KEY,JSON.stringify(db));
+const ensure=db=>{["finanzas","donantes","colaboradores","movimientos","campanias"].forEach(k=>db[k]=Array.isArray(db[k])?db[k]:[]);return db};
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const money=n=>new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:2}).format(+n||0);
+const norm=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const pick=(r,names)=>{for(const [k,v] of Object.entries(r||{})){let nk=norm(k);if(names.some(n=>nk===norm(n)||nk.includes(norm(n))))if(String(v??"").trim())return String(v).trim()}return ""};
+function box(title,buttons,body){let b=document.getElementById("angelaGestionContenido");b.classList.remove("hidden");b.innerHTML=`<div class="border border-slate-700 rounded-2xl p-4 bg-slate-950/40"><div class="flex justify-between"><h3 class="font-bold text-cyan-300">${title}</h3><button class="text-xs bg-slate-700 px-3 rounded-lg" onclick="document.getElementById('angelaGestionContenido').classList.add('hidden')">Cerrar</button></div><div class="flex flex-wrap gap-2 mt-3">${buttons}</div><div id="fin_body" class="mt-4">${body}</div></div>`}
+const nav=()=>`<button class="quick text-xs" onclick="angelaFinanzasAG()">💰 Finanzas</button><button class="quick text-xs" onclick="angelaMovimientosDonantes()">💳 Mercado Pago / Banco</button><button class="quick text-xs" onclick="angelaColaboradores()">📱 Colaboradores</button><button class="quick text-xs" onclick="angelaArca()">🧾 ARCA</button>`;
+window.angelaFinanzasAG=()=>{
+ let db=ensure(load()),ing=db.finanzas.filter(x=>x.tipo==="Ingreso").reduce((a,x)=>a+(+x.monto||0),0),gas=db.finanzas.filter(x=>x.tipo==="Gasto").reduce((a,x)=>a+(+x.monto||0),0);
+ box("💰 Finanzas Ángel Guardián",nav(),`<div class="grid md:grid-cols-6 gap-2"><select id="f_tipo" class="bg-slate-900 rounded-lg p-2 text-xs"><option>Ingreso</option><option>Gasto</option></select><select id="f_cat" class="bg-slate-900 rounded-lg p-2 text-xs"><option>Donación</option><option>Compra</option><option>Campaña</option><option>Alimentos</option><option>Insumos</option><option>Servicios</option><option>Otro</option></select><input id="f_con" placeholder="Concepto" class="bg-slate-900 rounded-lg p-2 text-xs"><input id="f_mon" type="number" step="0.01" placeholder="Monto" class="bg-slate-900 rounded-lg p-2 text-xs"><input id="f_fecha" type="date" class="bg-slate-900 rounded-lg p-2 text-xs"><button class="quick text-xs" onclick="angelaGuardarFin()">Guardar</button></div><div class="card-mini mt-3">Ingresos <b>${money(ing)}</b> · Gastos <b>${money(gas)}</b> · Saldo <b>${money(ing-gas)}</b></div>${tablaFin(db.finanzas)}`);
+};
+function tablaFin(a){return `<div class="overflow-auto mt-3"><table class="w-full text-xs"><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Concepto</th><th>Monto</th></tr>${a.map(x=>`<tr class="border-t border-slate-800"><td class="p-2">${esc(x.fecha)}</td><td>${esc(x.tipo)}</td><td>${esc(x.categoria||"")}</td><td>${esc(x.concepto)}</td><td>${money(x.monto)}</td></tr>`).join("")}</table></div>`}
+window.angelaGuardarFin=()=>{let db=ensure(load());db.finanzas.unshift({id:uid(),tipo:f_tipo.value,categoria:f_cat.value,concepto:f_con.value.trim(),monto:f_mon.value,fecha:f_fecha.value||new Date().toISOString().slice(0,10)});save(db);angelaFinanzasAG()};
+window.angelaMovimientosDonantes=()=>{
+ let db=ensure(load());
+ box("💳 Movimientos y Donantes — Mercado Pago / Banco",nav(),`<p class="text-xs text-slate-400">Importá XLSX/XLS/CSV. ÁNGELA toma únicamente los datos que realmente existan en el archivo: nombre, monto, fecha, referencia, email y teléfono cuando estén disponibles.</p><div class="flex flex-wrap gap-2 mt-3"><input id="mov_files" type="file" multiple accept=".xlsx,.xls,.csv" class="text-xs"><button class="quick text-xs" onclick="angelaImportarMovimientos()">🧠 Leer movimientos</button><button class="quick text-xs" onclick="angelaExportarColaboradores()">💾 Exportar colaboradores CSV</button></div><div id="mov_result" class="mt-3"></div>${tablaMov(db.movimientos)}`);
+};
+function tablaMov(a){return `<div class="overflow-auto mt-3"><table class="w-full text-xs"><tr><th>Fecha</th><th>Origen</th><th>Nombre</th><th>Monto</th><th>Referencia</th></tr>${a.slice(0,300).map(x=>`<tr class="border-t border-slate-800"><td class="p-2">${esc(x.fecha)}</td><td>${esc(x.origen)}</td><td>${esc(x.nombre)}</td><td>${money(x.monto)}</td><td>${esc(x.referencia)}</td></tr>`).join("")}</table></div>`}
+window.angelaImportarMovimientos=async()=>{
+ if(!window.XLSX)return alert("No está disponible el lector Excel.");
+ let fs=[...(document.getElementById("mov_files").files||[])];if(!fs.length)return alert("Seleccioná uno o más archivos.");
+ let temp=[];
+ for(const f of fs){let wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true});for(const sn of wb.SheetNames){for(const r of XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:"",raw:false})){let nombre=pick(r,["nombre","nombre y apellido","titular","remitente","pagador","cliente","contraparte"]);let monto=pick(r,["monto","importe","total","importe neto","dinero recibido","valor"]);let fecha=pick(r,["fecha","fecha de operacion","fecha operacion","date"]);let email=pick(r,["email","correo","e-mail"]);let telefono=pick(r,["telefono","celular","whatsapp"]);let ref=pick(r,["referencia","detalle","concepto","descripcion","id operacion","numero operacion"]);if(nombre||monto||ref)temp.push({id:uid(),origen:f.name,nombre,monto:String(monto).replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".")||0,fecha,email,telefono,referencia:ref})}}}
+ let db=ensure(load()), existentes=new Set(db.movimientos.map(x=>norm(x.origen+"|"+x.fecha+"|"+x.nombre+"|"+x.monto+"|"+x.referencia))), nuevos=temp.filter(x=>!existentes.has(norm(x.origen+"|"+x.fecha+"|"+x.nombre+"|"+x.monto+"|"+x.referencia)));
+ db.movimientos.push(...nuevos);
+ for(const x of nuevos){let key=x.email?`e:${norm(x.email)}`:x.telefono?`t:${x.telefono.replace(/\D/g,"")}`:x.nombre?`n:${norm(x.nombre)}`:"";if(!key)continue;let c=db.colaboradores.find(y=>y.key===key);if(!c){c={id:uid(),key,nombre:x.nombre,email:x.email,telefono:x.telefono,total:0,aportes:0,ultima:""};db.colaboradores.push(c)}c.total=(+c.total||0)+(+x.monto||0);c.aportes=(+c.aportes||0)+1;c.ultima=x.fecha||c.ultima;c.nombre=c.nombre||x.nombre;c.email=c.email||x.email;c.telefono=c.telefono||x.telefono}
+ save(db);document.getElementById("mov_result").innerHTML=`✅ Leídos: <b>${temp.length}</b> · Nuevos guardados: <b>${nuevos.length}</b> · Base de colaboradores: <b>${db.colaboradores.length}</b><br><span class="text-[10px] text-slate-400">No se inventaron emails ni teléfonos ausentes.</span>`;
+};
+window.angelaColaboradores=()=>{
+ let db=ensure(load());
+ box("📱 Colaboradores y Difusión",nav(),`<p class="text-xs text-slate-400">Base maestra construida desde los movimientos importados. Podés segmentar por cantidad de aportes o datos de contacto disponibles.</p><div class="grid md:grid-cols-3 gap-2 mt-3"><select id="col_filtro" onchange="angelaFiltrarCols()" class="bg-slate-900 rounded-lg p-2 text-xs"><option value="todos">Todos</option><option value="telefono">Con teléfono</option><option value="email">Con email</option><option value="recurrente">Recurrentes (2+ aportes)</option></select><button class="quick text-xs" onclick="angelaPrepararMensaje()">✍️ Preparar mensaje</button><button class="quick text-xs" onclick="angelaExportarColaboradores()">💾 Exportar lista</button></div><div id="col_msg" class="mt-3"></div><div id="col_tabla"></div>`);
+ angelaFiltrarCols();
+};
+window.angelaFiltrarCols=()=>{let db=ensure(load()),f=document.getElementById("col_filtro")?.value||"todos",a=db.colaboradores.filter(x=>f==="todos"||(f==="telefono"&&x.telefono)||(f==="email"&&x.email)||(f==="recurrente"&&+x.aportes>=2));document.getElementById("col_tabla").innerHTML=`<div class="overflow-auto mt-3"><table class="w-full text-xs"><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Aportes</th><th>Total</th><th>Último</th></tr>${a.map(x=>`<tr class="border-t border-slate-800"><td class="p-2">${esc(x.nombre)}</td><td>${esc(x.telefono)}</td><td>${esc(x.email)}</td><td>${x.aportes}</td><td>${money(x.total)}</td><td>${esc(x.ultima)}</td></tr>`).join("")}</table></div>`};
+window.angelaPrepararMensaje=()=>{document.getElementById("col_msg").innerHTML=`<textarea id="dif_txt" class="w-full min-h-32 bg-slate-900 rounded-xl p-3 text-xs" placeholder="Escribí o prepará aquí el mensaje para colaboradores. No se enviará automáticamente."></textarea><div class="text-[10px] text-amber-300 mt-1">⚠️ Vista previa solamente. Los envíos requerirán confirmación y una conexión autorizada.</div>`};
+window.angelaExportarColaboradores=()=>{let a=ensure(load()).colaboradores;if(!a.length)return alert("Todavía no hay colaboradores.");let keys=["nombre","telefono","email","aportes","total","ultima"],q=x=>`"${String(x??"").replaceAll('"','""')}"`,csv="\ufeff"+keys.join(";")+"\n"+a.map(r=>keys.map(k=>q(r[k])).join(";")).join("\n"),b=new Blob([csv],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),z=document.createElement("a");z.href=u;z.download="ANGELA_colaboradores.csv";z.click();URL.revokeObjectURL(u)};
+window.angelaArca=()=>{
+ box("🧾 ARCA / Facturación",nav(),`<div class="grid md:grid-cols-2 gap-3"><div class="card-mini"><b>Preparar datos de comprobante</b><div class="grid gap-2 mt-2"><input id="ar_cliente" placeholder="Cliente / receptor" class="bg-slate-900 rounded-lg p-2 text-xs"><input id="ar_doc" placeholder="CUIT/CUIL/DNI si corresponde" class="bg-slate-900 rounded-lg p-2 text-xs"><input id="ar_con" placeholder="Concepto" class="bg-slate-900 rounded-lg p-2 text-xs"><input id="ar_monto" type="number" step="0.01" placeholder="Importe" class="bg-slate-900 rounded-lg p-2 text-xs"><button class="quick text-xs" onclick="angelaPrepararFactura()">📋 Preparar para copiar</button></div></div><div class="card-mini"><b>Accesos oficiales</b><p class="text-xs mt-2">ÁNGELA no guarda CUIT ni clave fiscal.</p><button class="quick text-xs mt-2" onclick="window.open('${ARCA_FACT}','_blank','noopener')">🧾 Abrir Facturador ARCA</button><button class="quick text-xs mt-2" onclick="window.open('${ARCA_FE}','_blank','noopener')">🌐 Comprobantes en línea / Factura electrónica</button></div></div><div id="arca_prev" class="mt-3"></div>`);
+};
+window.angelaPrepararFactura=()=>{let t=`Cliente/Receptor: ${ar_cliente.value}\nDocumento: ${ar_doc.value}\nConcepto: ${ar_con.value}\nImporte: ${ar_monto.value}`;document.getElementById("arca_prev").innerHTML=`<textarea id="arca_txt" class="w-full min-h-28 bg-slate-900 rounded-xl p-3 text-xs">${esc(t)}</textarea><button class="quick text-xs mt-2" onclick="navigator.clipboard.writeText(document.getElementById('arca_txt').value)">📋 Copiar datos</button><p class="text-[10px] text-slate-400 mt-1">La emisión fiscal se completa en el servicio oficial de ARCA.</p>`};
+
+const prev=window.angelaAbrirGestion;
+window.angelaAbrirGestion=function(m){if(m==="finanzas")return angelaFinanzasAG();if(m==="donantes")return angelaMovimientosDonantes();return prev?.(m)};
+})();
+</script>
+
+
+<script id="angela-adjunto-chat-a-familias-auto-v2">
+(()=>{
+const KEY="ANGELA_MASTER_LOCAL_V1";
+const norm=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const cleanDNI=s=>String(s||"").replace(/\D/g,"");
+const cleanTel=s=>String(s||"").replace(/[^\d+]/g,"");
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+const save=db=>localStorage.setItem(KEY,JSON.stringify(db));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pick=(r,names)=>{
+ const es=Object.entries(r||{});
+ for(const n of names){let nn=norm(n),h=es.find(([k])=>norm(k)===nn)||es.find(([k])=>norm(k).includes(nn)||nn.includes(norm(k)));if(h&&String(h[1]??"").trim())return String(h[1]).trim()}
+ return "";
+};
+const toISO=v=>{
+ if(!v)return ""; let s=String(v).trim();
+ if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+ let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+ if(m){let y=m[3];if(y.length===2)y=(+y>30?"19":"20")+y;return `${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`}
+ let d=new Date(s);return isNaN(d)?"":d.toISOString().slice(0,10);
+};
+function rowToPerson(r){
+ let nombre=pick(r,["apellido y nombre","apellidos y nombres","nombre y apellido","nombre completo","integrante","beneficiario"]);
+ if(!nombre){let ap=pick(r,["apellido","apellidos"]),no=pick(r,["nombre","nombres"]);nombre=[ap,no].filter(Boolean).join(" ").trim()}
+ return {familia:pick(r,["familia","grupo familiar","nro familia","numero familia","titular","responsable"]),nombre,dni:cleanDNI(pick(r,["dni","documento","nro documento","numero documento","doc"])),nacimiento:toISO(pick(r,["fecha de nacimiento","fecha nacimiento","nacimiento","fec nac","f nac"])),telefono:cleanTel(pick(r,["telefono","celular","whatsapp","tel","contacto"])),domicilio:pick(r,["domicilio","direccion","dirección","calle","domicilio completo"])};
+}
+function duplicateIndex(arr,p){
+ const nd=cleanDNI(p.dni), nn=norm(p.nombre);
+ return arr.findIndex(x=>{
+   if(nd && cleanDNI(x.dni)===nd)return true;
+   // Pedido del usuario: si el nombre ya existe, no volver a agregarlo.
+   if(nn && norm(x.nombre)===nn)return true;
+   return false;
+ });
+}
+async function importFile(file){
+ if(!window.XLSX)throw new Error("No está disponible el lector de Excel.");
+ if(!/\.(xlsx|xls|csv)$/i.test(file.name))return null;
+ const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true});
+ let people=[];
+ for(const sn of wb.SheetNames){
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:"",raw:false});
+   people.push(...rows.map(rowToPerson).filter(p=>p.nombre||p.dni));
+ }
+ let db=load();db.familias=Array.isArray(db.familias)?db.familias:[];
+ let nuevos=0,duplicados=0,completados=0;
+ for(const p of people){
+   let i=duplicateIndex(db.familias,p);
+   if(i>=0){
+     duplicados++;
+     // No crea otra persona; solo completa campos vacíos del registro existente.
+     let old=db.familias[i],changed=false;
+     ["familia","dni","nacimiento","telefono","domicilio"].forEach(k=>{if(!String(old[k]??"").trim()&&String(p[k]??"").trim()){old[k]=p[k];changed=true}});
+     if(changed){old.actualizado=new Date().toISOString();completados++}
+   }else{
+     db.familias.push({id:uid(),creado:new Date().toISOString(),...p});nuevos++;
+   }
+ }
+ save(db);
+ return {leidos:people.length,nuevos,duplicados,completados,total:db.familias.length};
+}
+function status(file,r){
+ const txt=`👨‍👩‍👧 ${file.name}: cargado en Familias y Personas · ${r.nuevos} nuevos · ${r.duplicados} duplicados omitidos${r.completados?` · ${r.completados} registros existentes completados`:""} · total ${r.total}`;
+ let old=document.getElementById("angelaAutoFamiliasEstado");if(old)old.remove();
+ let d=document.createElement("div");d.id="angelaAutoFamiliasEstado";d.className="text-xs mt-2 p-2 rounded-xl border border-cyan-700 bg-cyan-950/30";d.textContent=txt;
+ const input=findChatFileInput(); if(input?.parentElement)input.parentElement.parentElement?.appendChild(d);
+ if(typeof window.agregarMensaje==="function")try{window.agregarMensaje("angela",txt)}catch(e){}
+}
+function findChatFileInput(){
+ const candidates=[...document.querySelectorAll('input[type="file"]')];
+ return candidates.find(i=>!i.id?.includes("archivosMultiples")&&!i.id?.includes("mov_files")&&!i.id?.includes("doc_")&&!i.id?.includes("dp_")&&i.closest("form, .chat, #chat, [class*='chat'], [id*='chat']")) ||
+ candidates.find(i=>!i.id?.includes("archivosMultiples")&&!i.id?.includes("mov_files")&&!i.id?.includes("doc_")&&!i.id?.includes("dp_"));
+}
+async function onChange(e){
+ const files=[...(e.target.files||[])].filter(f=>/\.(xlsx|xls|csv)$/i.test(f.name));
+ for(const f of files){
+   try{let r=await importFile(f);if(r)status(f,r)}
+   catch(err){alert("No pude cargar "+f.name+" en Familias: "+(err.message||err))}
+ }
+}
+function install(){
+ const inp=findChatFileInput();if(!inp||inp.dataset.autoFamilias==="1")return;
+ inp.dataset.autoFamilias="1";inp.addEventListener("change",onChange);
+}
+document.addEventListener("DOMContentLoaded",()=>{install();setTimeout(install,800);setTimeout(install,2500)});
+new MutationObserver(install).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
 </body>
 </html>
