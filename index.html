@@ -5335,5 +5335,22 @@ window.angelaDescargarBaseMaestra=()=>{
 })();
 </script>
 
+
+<script id="angela-etiqueta-documento-a-direccion-v6">
+(()=>{
+ function corregir(){
+   const root=document.getElementById("familia_vista_v2")||document;
+   root.querySelectorAll("th,label,span,div,p").forEach(el=>{
+     if(el.children.length===0 && el.textContent.trim().toLowerCase()==="documento"){
+       el.textContent="Dirección";
+     }
+   });
+ }
+ new MutationObserver(corregir).observe(document.documentElement,{childList:true,subtree:true});
+ document.addEventListener("DOMContentLoaded",corregir);
+ setTimeout(corregir,100); setTimeout(corregir,500);
+})();
+</script>
+
 </body>
 </html>
