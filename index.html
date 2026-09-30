@@ -769,6 +769,36 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 <button onclick="enviarChat()" class="bg-gradient-to-r from-pink-600 to-orange-500 px-6 rounded-xl font-bold" aria-label="Enviar mensaje">Enviar</button>
 </div>
 </section>
+
+<section id="centroGestionAngela" class="panel rounded-3xl p-5 mt-5">
+  <div class="flex flex-wrap justify-between items-center gap-2">
+    <div>
+      <h2 class="font-bold text-lg">🧩 Centro de Gestión ÁNGELA</h2>
+      <p class="text-xs text-slate-400 mt-1">Funciones locales listas para usar. Guardado automático en este navegador.</p>
+    </div>
+    <div class="flex gap-2">
+      <button class="quick text-xs" onclick="angelaExportarBackup()">💾 Backup</button>
+      <label class="quick text-xs cursor-pointer">📥 Restaurar<input id="angelaBackupInput" type="file" accept=".json" class="hidden"></label>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-3 mt-4">
+    <button class="quick" onclick="angelaAbrirGestion('costos')">🧮 Costos y Presupuestos</button>
+    <button class="quick" onclick="angelaAbrirGestion('stock')">📦 Inventario y Stock</button>
+    <button class="quick" onclick="angelaAbrirGestion('pedidos')">📋 Pedidos y Clientes</button>
+    <button class="quick" onclick="angelaAbrirGestion('parametros')">🔥 Biblioteca de Parámetros</button>
+    <button class="quick" onclick="angelaAbrirGestion('familias')">👨‍👩‍👧 Familias y Personas</button>
+    <button class="quick" onclick="angelaAbrirGestion('documentos')">📁 Documentación</button>
+    <button class="quick" onclick="angelaAbrirGestion('finanzas')">💰 Gastos e Ingresos</button>
+    <button class="quick" onclick="angelaAbrirGestion('donantes')">💳 Donantes</button>
+    <button class="quick" onclick="angelaAbrirGestion('empresas')">🏢 Empresas / RSE</button>
+    <button class="quick" onclick="angelaAbrirGestion('recordatorios')">📅 Recordatorios</button>
+    <button class="quick" onclick="angelaAbrirGestion('memoria')">🧠 Memoria local</button>
+    <button class="quick" onclick="angelaAbrirGestion('estado')">🟢 Estado de conexiones</button>
+  </div>
+  <div id="angelaGestionContenido" class="mt-4 hidden"></div>
+</section>
+
 </main>
 <aside class="space-y-4 h-fit">
 <div class="panel rounded-3xl p-4">
@@ -4500,6 +4530,259 @@ function descargarImagenIA() {
       show(M.files.length?`📎 ${M.files.length} archivos seleccionados. Elegí “Leer varios”, “Cruzar Excel” o “Unificar Excel”.`:"");
     });
   });
+})();
+</script>
+
+
+<script id="angela-centro-gestion-local-v1">
+(()=>{
+const KEY="ANGELA_MASTER_LOCAL_V1";
+const schema={
+ costos:[],stock:[],pedidos:[],parametros:[],familias:[],documentos:[],
+ finanzas:[],donantes:[],empresas:[],recordatorios:[],memoria:[]
+};
+let DB;
+try{ DB=Object.assign({},schema,JSON.parse(localStorage.getItem(KEY)||"{}")); }catch(e){DB=structuredClone(schema)}
+const save=()=>localStorage.setItem(KEY,JSON.stringify(DB));
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const box=()=>document.getElementById("angelaGestionContenido");
+const money=n=>new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0}).format(Number(n)||0);
+const today=()=>new Date().toISOString().slice(0,10);
+const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function render(title,form,table,extra=""){
+ const b=box(); b.classList.remove("hidden");
+ b.innerHTML=`<div class="border border-slate-700 rounded-2xl p-4 bg-slate-950/40">
+ <div class="flex justify-between gap-2"><h3 class="font-bold text-cyan-300">${title}</h3><button class="text-xs bg-slate-700 px-3 py-1 rounded-lg" onclick="document.getElementById('angelaGestionContenido').classList.add('hidden')">Cerrar</button></div>
+ ${extra}<div class="mt-3">${form}</div><div class="mt-4 overflow-auto">${table}</div></div>`;
+}
+const inp=(n,p,t="text")=>`<input id="ag_${n}" type="${t}" placeholder="${p}" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs w-full">`;
+const btn=(txt,fn)=>`<button onclick="${fn}" class="quick text-xs">${txt}</button>`;
+const del=(mod,x)=>`<button onclick="angelaBorrarRegistro('${mod}','${x}')" class="text-red-300 text-xs">Eliminar</button>`;
+function rows(mod,cols){
+ return `<table class="w-full text-xs"><thead><tr>${cols.map(c=>`<th class="text-left p-2">${c[1]}</th>`).join("")}<th></th></tr></thead><tbody>`+
+ DB[mod].map(r=>`<tr class="border-t border-slate-800">${cols.map(c=>`<td class="p-2">${esc(typeof c[0]==="function"?c[0](r):r[c[0]])}</td>`).join("")}<td>${del(mod,r.id)}</td></tr>`).join("")+"</tbody></table>";
+}
+window.angelaBorrarRegistro=(m,i)=>{if(!confirm("¿Eliminar este registro?"))return;DB[m]=DB[m].filter(x=>x.id!==i);save();angelaAbrirGestion(m)};
+function add(mod,obj){DB[mod].unshift({id:id(),creado:new Date().toISOString(),...obj});save();angelaAbrirGestion(mod)}
+window.angelaAbrirGestion=(m)=>{
+ if(m==="costos"){
+  const total=r=>(+r.materiales||0)+(+r.mano||0)+(+r.gastos||0), final=r=>total(r)*(1+(+r.ganancia||0)/100);
+  render("🧮 Costos y Presupuestos",
+   `<div class="grid md:grid-cols-6 gap-2">${inp("cliente","Cliente / trabajo")}${inp("materiales","Materiales","number")}${inp("mano","Mano de obra","number")}${inp("gastos","Otros gastos","number")}${inp("ganancia","Ganancia %","number")}${btn("Guardar","angelaAddCostos()")}</div>`,
+   rows(m,[["cliente","Trabajo"],[r=>money(total(r)),"Costo"],[r=>r.ganancia+"%","Ganancia"],[r=>money(final(r)),"Precio final"]]));
+ } else if(m==="stock"){
+  render("📦 Inventario y Stock",
+   `<div class="grid md:grid-cols-5 gap-2">${inp("producto","Insumo / producto")}${inp("cantidad","Cantidad","number")}${inp("minimo","Stock mínimo","number")}${inp("unidad","Unidad")}${btn("Guardar","angelaAddStock()")}</div>`,
+   rows(m,[["producto","Producto"],["cantidad","Cantidad"],["unidad","Unidad"],[r=>(+r.cantidad<=+r.minimo?"⚠️ BAJO":"✅ OK"),"Estado"]]),
+   `<div class="text-xs mt-2 text-amber-300">⚠️ Stock crítico: ${DB.stock.filter(x=>+x.cantidad<=+x.minimo).length}</div>`);
+ } else if(m==="pedidos"){
+  render("📋 Pedidos y Clientes",
+   `<div class="grid md:grid-cols-4 gap-2">${inp("cliente","Cliente")}${inp("producto","Producto")}${inp("cantidad","Cantidad","number")}${inp("precio","Precio","number")}${inp("adelanto","Adelanto","number")}${inp("entrega","Entrega","date")}${inp("estado","Estado")}${btn("Guardar","angelaAddPedido()")}</div>`,
+   rows(m,[["cliente","Cliente"],["producto","Producto"],["cantidad","Cant."],[r=>money(r.precio),"Precio"],[r=>money((+r.precio||0)-(+r.adelanto||0)),"Saldo"],["entrega","Entrega"],["estado","Estado"]]));
+ } else if(m==="parametros"){
+  render("🔥 Biblioteca de Parámetros",
+   `<div class="grid md:grid-cols-4 gap-2">${inp("maquina","Máquina")}${inp("material","Material")}${inp("velocidad","Velocidad")}${inp("potencia","Potencia %")}${inp("intervalo","Intervalo")}${inp("pasadas","Pasadas")}${inp("resultado","Resultado / notas")}${btn("Guardar resultado","angelaAddParametro()")}</div>`,
+   rows(m,[["maquina","Máquina"],["material","Material"],["velocidad","Vel."],["potencia","Pot."],["intervalo","Intervalo"],["pasadas","Pasadas"],["resultado","Resultado"]]));
+ } else if(m==="familias"){
+  render("👨‍👩‍👧 Familias y Personas",
+   `<div class="grid md:grid-cols-4 gap-2">${inp("familia","Familia / grupo")}${inp("nombre","Apellido y nombre")}${inp("dni","DNI")}${inp("nacimiento","Nacimiento","date")}${inp("telefono","Teléfono")}${inp("domicilio","Domicilio")}${btn("Guardar","angelaAddFamilia()")}</div>`,
+   rows(m,[["familia","Familia"],["nombre","Nombre"],["dni","DNI"],[r=>angelaEdad(r.nacimiento),"Edad"],["telefono","Teléfono"],["domicilio","Domicilio"]]),
+   `<div class="text-xs mt-2">Personas: <b>${DB.familias.length}</b> · Niños: <b>${DB.familias.filter(x=>angelaEdad(x.nacimiento)<18).length}</b> · Adultos: <b>${DB.familias.filter(x=>angelaEdad(x.nacimiento)>=18).length}</b> · Familias: <b>${new Set(DB.familias.map(x=>x.familia).filter(Boolean)).size}</b></div>`);
+ } else if(m==="documentos"){
+  render("📁 Documentación Institucional",
+   `<div class="grid md:grid-cols-5 gap-2">${inp("tipo","Tipo: DPPJ, ARCA...")}${inp("nombre","Documento")}${inp("vencimiento","Vencimiento","date")}${inp("estado","Estado / nota")}${btn("Guardar","angelaAddDocumento()")}</div>`,
+   rows(m,[["tipo","Tipo"],["nombre","Documento"],["vencimiento","Vencimiento"],[r=>r.vencimiento&&r.vencimiento<today()?"⚠️ Vencido":r.estado||"✅ Registrado","Control"]]));
+ } else if(m==="finanzas"){
+  const ing=DB.finanzas.filter(x=>x.tipo==="Ingreso").reduce((a,x)=>a+(+x.monto||0),0), gas=DB.finanzas.filter(x=>x.tipo==="Gasto").reduce((a,x)=>a+(+x.monto||0),0);
+  render("💰 Gastos e Ingresos",
+   `<div class="grid md:grid-cols-5 gap-2"><select id="ag_tipo" class="bg-slate-900 rounded-lg p-2 text-xs"><option>Ingreso</option><option>Gasto</option></select>${inp("concepto","Concepto")}${inp("monto","Monto","number")}${inp("fecha","Fecha","date")}${btn("Guardar","angelaAddFinanza()")}</div>`,
+   rows(m,[["fecha","Fecha"],["tipo","Tipo"],["concepto","Concepto"],[r=>money(r.monto),"Monto"]]),
+   `<div class="text-xs mt-2">Ingresos: <b>${money(ing)}</b> · Gastos: <b>${money(gas)}</b> · Saldo: <b>${money(ing-gas)}</b></div>`);
+ } else if(m==="donantes"){
+  render("💳 Gestión de Donantes",
+   `<div class="grid md:grid-cols-6 gap-2">${inp("nombre","Nombre")}${inp("email","Email","email")}${inp("telefono","Teléfono")}${inp("monto","Monto","number")}${inp("fecha","Fecha","date")}${btn("Guardar","angelaAddDonante()")}</div>`,
+   rows(m,[["nombre","Nombre"],["email","Email"],["telefono","Teléfono"],[r=>money(r.monto),"Monto"],["fecha","Fecha"]]),
+   `<div class="flex gap-2 mt-2">${btn("Exportar CSV","angelaExportarCSV('donantes')")}</div>`);
+ } else if(m==="empresas"){
+  render("🏢 Empresas / RSE",
+   `<div class="grid md:grid-cols-5 gap-2">${inp("empresa","Empresa")}${inp("contacto","Contacto")}${inp("email","Email","email")}${inp("estado","Seguimiento")}${btn("Guardar","angelaAddEmpresa()")}</div>`,
+   rows(m,[["empresa","Empresa"],["contacto","Contacto"],["email","Email"],["estado","Seguimiento"]]));
+ } else if(m==="recordatorios"){
+  render("📅 Calendario y Recordatorios",
+   `<div class="grid md:grid-cols-4 gap-2">${inp("titulo","Recordatorio")}${inp("fecha","Fecha","datetime-local")}${inp("categoria","Categoría")}${btn("Guardar","angelaAddRecordatorio()")}</div>`,
+   rows(m,[["titulo","Recordatorio"],["fecha","Fecha"],["categoria","Categoría"]]));
+ } else if(m==="memoria"){
+  render("🧠 Memoria local de ÁNGELA",
+   `<div class="grid md:grid-cols-4 gap-2"><select id="ag_area" class="bg-slate-900 rounded-lg p-2 text-xs"><option>General</option><option>Personal</option><option>Taller</option><option>Máquinas</option><option>Proyectos</option><option>Ángel Guardián</option></select>${inp("titulo","Título")}${inp("detalle","Dato / nota")}${btn("Guardar","angelaAddMemoria()")}</div>`,
+   rows(m,[["area","Área"],["titulo","Título"],["detalle","Detalle"]]));
+ } else if(m==="estado"){
+  render("🟢 Estado de conexiones","",
+   `<div class="grid md:grid-cols-2 gap-2 text-sm">
+    <div class="card-mini">💾 Datos locales: ✅ funcionando</div>
+    <div class="card-mini">📊 Excel/Word múltiples: ✅ instalado</div>
+    <div class="card-mini">🤖 IA / imágenes: usa la conexión actual</div>
+    <div class="card-mini">☁️ Supabase: ⏳ falta conectar</div>
+    <div class="card-mini">📧 Gmail: ⏳ falta OAuth</div>
+    <div class="card-mini">🖼️ Google Photos: ⏳ falta conexión/permisos</div>
+    <div class="card-mini">🖥️ Bridge PC: ⏳ falta instalar/conectar</div>
+    <div class="card-mini">📱 WhatsApp: ⏳ falta conexión autorizada</div>
+   </div>`);
+ }
+};
+const v=n=>document.getElementById("ag_"+n)?.value?.trim()||"";
+window.angelaAddCostos=()=>add("costos",{cliente:v("cliente"),materiales:v("materiales"),mano:v("mano"),gastos:v("gastos"),ganancia:v("ganancia")});
+window.angelaAddStock=()=>add("stock",{producto:v("producto"),cantidad:v("cantidad"),minimo:v("minimo"),unidad:v("unidad")});
+window.angelaAddPedido=()=>add("pedidos",{cliente:v("cliente"),producto:v("producto"),cantidad:v("cantidad"),precio:v("precio"),adelanto:v("adelanto"),entrega:v("entrega"),estado:v("estado")});
+window.angelaAddParametro=()=>add("parametros",{maquina:v("maquina"),material:v("material"),velocidad:v("velocidad"),potencia:v("potencia"),intervalo:v("intervalo"),pasadas:v("pasadas"),resultado:v("resultado")});
+window.angelaAddFamilia=()=>add("familias",{familia:v("familia"),nombre:v("nombre"),dni:v("dni"),nacimiento:v("nacimiento"),telefono:v("telefono"),domicilio:v("domicilio")});
+window.angelaAddDocumento=()=>add("documentos",{tipo:v("tipo"),nombre:v("nombre"),vencimiento:v("vencimiento"),estado:v("estado")});
+window.angelaAddFinanza=()=>add("finanzas",{tipo:v("tipo"),concepto:v("concepto"),monto:v("monto"),fecha:v("fecha")||today()});
+window.angelaAddDonante=()=>add("donantes",{nombre:v("nombre"),email:v("email"),telefono:v("telefono"),monto:v("monto"),fecha:v("fecha")||today()});
+window.angelaAddEmpresa=()=>add("empresas",{empresa:v("empresa"),contacto:v("contacto"),email:v("email"),estado:v("estado")});
+window.angelaAddRecordatorio=()=>add("recordatorios",{titulo:v("titulo"),fecha:v("fecha"),categoria:v("categoria")});
+window.angelaAddMemoria=()=>add("memoria",{area:v("area"),titulo:v("titulo"),detalle:v("detalle")});
+window.angelaEdad=(f)=>{if(!f)return "";let d=new Date(f),n=new Date(),e=n.getFullYear()-d.getFullYear(),m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))e--;return e};
+window.angelaExportarCSV=(m)=>{
+ const a=DB[m]||[]; if(!a.length)return alert("No hay datos para exportar.");
+ const keys=[...new Set(a.flatMap(Object.keys))].filter(k=>!["id","creado"].includes(k));
+ const q=x=>'"'+String(x??"").replaceAll('"','""')+'"';
+ const csv="\ufeff"+keys.map(q).join(";")+"\n"+a.map(r=>keys.map(k=>q(r[k])).join(";")).join("\n");
+ const b=new Blob([csv],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),x=document.createElement("a");x.href=u;x.download=`ANGELA_${m}.csv`;x.click();URL.revokeObjectURL(u);
+};
+window.angelaExportarBackup=()=>{
+ save();const b=new Blob([JSON.stringify({version:1,fecha:new Date().toISOString(),data:DB},null,2)],{type:"application/json"});
+ const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=`ANGELA_BACKUP_${today()}.json`;a.click();URL.revokeObjectURL(u);
+};
+document.addEventListener("DOMContentLoaded",()=>{
+ document.getElementById("angelaBackupInput")?.addEventListener("change",async e=>{
+  const f=e.target.files?.[0];if(!f)return;
+  try{const o=JSON.parse(await f.text());if(!o.data)throw 0;if(!confirm("¿Restaurar este backup? Reemplazará los datos locales de gestión."))return;DB=Object.assign({},schema,o.data);save();alert("Backup restaurado.");}
+  catch(err){alert("El archivo no es un backup válido de ÁNGELA.");}
+ });
+});
+})();
+</script>
+
+
+<script id="angela-excel-a-familias-v1">
+(()=>{
+let PREVIEW_FAMILIAS=[];
+const norm=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const pick=(r,names)=>{
+ const es=Object.entries(r||{});
+ for(const n of names){
+  const nn=norm(n);
+  let h=es.find(([k])=>norm(k)===nn);
+  if(!h) h=es.find(([k])=>norm(k).includes(nn)||nn.includes(norm(k)));
+  if(h && String(h[1]??"").trim()) return String(h[1]).trim();
+ }
+ return "";
+};
+const cleanDNI=s=>String(s||"").replace(/\D/g,"");
+const cleanTel=s=>String(s||"").replace(/[^\d+]/g,"");
+const toISO=v=>{
+ if(!v)return "";
+ const s=String(v).trim();
+ if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+ let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+ if(m){let y=m[3];if(y.length===2)y=(+y>30?"19":"20")+y;return `${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;}
+ const d=new Date(s); return isNaN(d)?"":d.toISOString().slice(0,10);
+};
+function mapRow(r){
+ let nombre=pick(r,["apellido y nombre","apellidos y nombres","nombre y apellido","nombre completo","integrante","beneficiario"]);
+ if(!nombre){
+   const ap=pick(r,["apellido","apellidos"]), no=pick(r,["nombre","nombres"]);
+   nombre=[ap,no].filter(Boolean).join(", ");
+ }
+ return {
+  familia:pick(r,["familia","grupo familiar","nro familia","numero familia","titular","responsable"]),
+  nombre,
+  dni:cleanDNI(pick(r,["dni","documento","nro documento","numero documento","n° documento","doc"])),
+  nacimiento:toISO(pick(r,["fecha de nacimiento","fecha nacimiento","nacimiento","fec nac","f nac"])),
+  telefono:cleanTel(pick(r,["telefono","teléfono","celular","whatsapp","tel","contacto"])),
+  domicilio:pick(r,["domicilio","direccion","dirección","calle","domicilio completo"]),
+  __archivo:r.__archivo||"", __hoja:r.__hoja||""
+ };
+}
+function fkey(x){
+ if(x.dni)return "dni:"+x.dni;
+ if(x.telefono)return "tel:"+x.telefono;
+ if(x.nombre)return "nom:"+norm(x.nombre)+"|"+x.nacimiento;
+ return "";
+}
+function getLocalDB(){
+ try{return Object.assign({},JSON.parse(localStorage.getItem("ANGELA_MASTER_LOCAL_V1")||"{}"))}catch(e){return {}}
+}
+function saveLocalDB(db){localStorage.setItem("ANGELA_MASTER_LOCAL_V1",JSON.stringify(db))}
+async function librosSeleccionados(){
+ if(!window.XLSX)throw new Error("No está disponible el lector Excel.");
+ const files=window.ANGELA_MULTI?.files?.filter(f=>/\.(xlsx|xls|csv)$/i.test(f.name))||[];
+ if(!files.length)throw new Error("Primero seleccioná uno o más Excel/CSV en Archivos.");
+ let rows=[];
+ for(const f of files){
+   const wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true});
+   wb.SheetNames.forEach(sn=>{
+    XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:"",raw:false}).forEach((r,i)=>rows.push({...r,__archivo:f.name,__hoja:sn,__fila:i+2}));
+   });
+ }
+ return rows;
+}
+window.angelaPrepararExcelFamilias=async function(){
+ const out=document.getElementById("multiArchivosResultado");
+ try{
+  const rows=await librosSeleccionados();
+  PREVIEW_FAMILIAS=rows.map(mapRow).filter(x=>x.nombre||x.dni||x.telefono);
+  const db=getLocalDB(), actuales=db.familias||[], keys=new Set(actuales.map(fkey).filter(Boolean));
+  const nuevos=PREVIEW_FAMILIAS.filter(x=>!keys.has(fkey(x))).length;
+  const coincid=PREVIEW_FAMILIAS.length-nuevos;
+  if(out){
+   out.classList.remove("hidden");
+   out.innerHTML=`<b>👨‍👩‍👧 Vista previa para Familias</b><br>
+   Registros reconocidos: <b>${PREVIEW_FAMILIAS.length}</b><br>
+   Nuevos aproximados: <b>${nuevos}</b><br>
+   Coincidencias para actualizar/completar: <b>${coincid}</b><br><br>
+   <button class="quick text-xs" onclick="angelaConfirmarExcelFamilias()">✅ Confirmar carga en Familias</button>
+   <button class="quick text-xs" onclick="angelaCancelarExcelFamilias()">Cancelar</button><br>
+   <span class="text-[10px] text-slate-400">No se modificó nada todavía. ÁNGELA compara primero por DNI, después teléfono y luego nombre + nacimiento.</span>`;
+  }
+ }catch(e){if(out){out.classList.remove("hidden");out.textContent="❌ "+(e.message||e)}}
+};
+window.angelaCancelarExcelFamilias=()=>{PREVIEW_FAMILIAS=[];const o=document.getElementById("multiArchivosResultado");if(o)o.textContent="Carga cancelada. No se modificaron Familias."};
+window.angelaConfirmarExcelFamilias=()=>{
+ if(!PREVIEW_FAMILIAS.length)return alert("Primero prepará la vista previa.");
+ const db=getLocalDB(); db.familias=Array.isArray(db.familias)?db.familias:[];
+ const map=new Map(db.familias.map((x,i)=>[fkey(x),i]).filter(x=>x[0]));
+ let nuevos=0,actualizados=0,omitidos=0;
+ for(const x of PREVIEW_FAMILIAS){
+  const k=fkey(x);
+  if(!k){omitidos++;continue}
+  if(map.has(k)){
+   const i=map.get(k), old=db.familias[i], merged={...old};
+   ["familia","nombre","dni","nacimiento","telefono","domicilio"].forEach(c=>{if(x[c] && (!old[c] || String(old[c]).trim()===""))merged[c]=x[c]});
+   merged.actualizado=new Date().toISOString();db.familias[i]=merged;actualizados++;
+  }else{
+   const n={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),creado:new Date().toISOString(),...x};
+   delete n.__archivo;delete n.__hoja;db.familias.push(n);map.set(k,db.familias.length-1);nuevos++;
+  }
+ }
+ saveLocalDB(db);PREVIEW_FAMILIAS=[];
+ const o=document.getElementById("multiArchivosResultado");
+ if(o)o.innerHTML=`✅ <b>Familias actualizada.</b><br>Nuevos: ${nuevos}<br>Coincidencias revisadas/completadas: ${actualizados}<br>Omitidos sin datos suficientes: ${omitidos}<br><span class="text-[10px] text-slate-400">No se borró ningún registro existente.</span>`;
+};
+function instalarBoton(){
+ const input=document.getElementById("archivosMultiplesAngela");
+ if(!input)return;
+ const root=input.closest(".mt-4");
+ if(!root||document.getElementById("btnExcelFamilias"))return;
+ const b=document.createElement("button");
+ b.id="btnExcelFamilias";b.className="quick text-xs mt-2 w-full";
+ b.innerHTML="👨‍👩‍👧 Cargar / actualizar Familias desde Excel";
+ b.onclick=window.angelaPrepararExcelFamilias;
+ const grid=root.querySelector(".grid");
+ if(grid)grid.insertAdjacentElement("afterend",b);else root.appendChild(b);
+}
+document.addEventListener("DOMContentLoaded",instalarBoton);
+setTimeout(instalarBoton,500);
 })();
 </script>
 
