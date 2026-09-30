@@ -5090,5 +5090,76 @@ new MutationObserver(install).observe(document.documentElement,{childList:true,s
 })();
 </script>
 
+
+<script id="angela-importador-familias-robusto-v3">
+(()=>{
+const KEY="ANGELA_MASTER_LOCAL_V1";
+const norm=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+const save=db=>localStorage.setItem(KEY,JSON.stringify(db));
+const cleanDNI=s=>String(s||"").replace(/\D/g,"");
+const cleanTel=s=>String(s||"").replace(/[^\d+]/g,"");
+const aliases={
+ nombre:["apellido y nombre","apellidos y nombres","nombre y apellido","nombre completo","nombres y apellidos","beneficiario","integrante","persona","nombre"],
+ apellido:["apellido","apellidos"], soloNombre:["nombres","nombre"],
+ dni:["dni","documento","nro documento","numero documento","n° documento","nro dni","numero dni"],
+ nacimiento:["fecha de nacimiento","fecha nacimiento","nacimiento","fec nac","f nac","fecha nac"],
+ telefono:["telefono","teléfono","celular","whatsapp","tel","contacto"],
+ domicilio:["domicilio","direccion","dirección","calle","domicilio completo"],
+ familia:["familia","grupo familiar","nro familia","numero familia","titular","responsable","grupo"]
+};
+const pick=(r,list)=>{for(const [k,v] of Object.entries(r||{})){let nk=norm(k);if(list.some(a=>nk===norm(a)||nk.includes(norm(a)))){let s=String(v??"").trim();if(s)return s}}return ""};
+const iso=v=>{if(!v)return "";let s=String(v).trim();if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);if(m){let y=m[3];if(y.length===2)y=(+y>30?"19":"20")+y;return `${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`};let d=new Date(s);return isNaN(d)?"":d.toISOString().slice(0,10)};
+function detectHeader(matrix){
+ const keys=Object.values(aliases).flat().map(norm);
+ let best=0,score=-1;
+ for(let i=0;i<Math.min(matrix.length,25);i++){let sc=(matrix[i]||[]).reduce((a,c)=>a+(keys.some(k=>norm(c)===k||norm(c).includes(k))?1:0),0);if(sc>score){score=sc;best=i}}
+ return {row:best,score};
+}
+function sheetRows(ws){
+ const matrix=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:false});
+ if(!matrix.length)return [];
+ let h=detectHeader(matrix);
+ if(h.score<1)return [];
+ const headers=matrix[h.row].map((x,i)=>String(x||`columna_${i+1}`).trim());
+ return matrix.slice(h.row+1).filter(row=>row.some(v=>String(v??"").trim())).map(row=>Object.fromEntries(headers.map((k,i)=>[k,row[i]??""])));
+}
+function person(r){
+ let nombre=pick(r,aliases.nombre);
+ if(!nombre){let a=pick(r,aliases.apellido),n=pick(r,aliases.soloNombre);nombre=[a,n].filter(Boolean).join(" ").trim()}
+ return {familia:pick(r,aliases.familia),nombre,dni:cleanDNI(pick(r,aliases.dni)),nacimiento:iso(pick(r,aliases.nacimiento)),telefono:cleanTel(pick(r,aliases.telefono)),domicilio:pick(r,aliases.domicilio)};
+}
+function dup(arr,p){let d=cleanDNI(p.dni),n=norm(p.nombre);return arr.findIndex(x=>(d&&cleanDNI(x.dni)===d)||(n&&norm(x.nombre)===n))}
+async function importar(file){
+ if(!window.XLSX)throw new Error("El lector XLSX no cargó. Revisá que la página tenga Internet al abrirla.");
+ const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true});
+ let raw=[];for(const sn of wb.SheetNames)raw.push(...sheetRows(wb.Sheets[sn]));
+ if(!raw.length)throw new Error("No pude detectar la fila de títulos/columnas del archivo.");
+ let ps=raw.map(person).filter(p=>p.nombre||p.dni);
+ if(!ps.length)throw new Error("Leí la planilla, pero no encontré columnas reconocibles de Nombre/Apellido o DNI.");
+ let db=load();db.familias=Array.isArray(db.familias)?db.familias:[];
+ let nuevos=0,dups=0,comp=0;
+ for(const p of ps){let i=dup(db.familias,p);if(i>=0){dups++;let x=db.familias[i],ch=false;["familia","dni","nacimiento","telefono","domicilio"].forEach(k=>{if(!String(x[k]??"").trim()&&String(p[k]??"").trim()){x[k]=p[k];ch=true}});if(ch)comp++}else{db.familias.push({id:uid(),creado:new Date().toISOString(),...p});nuevos++}}
+ save(db);return {hojas:wb.SheetNames.length,filas:raw.length,reconocidas:ps.length,nuevos,dups,comp,total:db.familias.length};
+}
+window.angelaImportarFamiliasDirecto=async input=>{
+ const f=input.files?.[0];if(!f)return;
+ const st=document.getElementById("familia_import_estado");if(st)st.textContent="⏳ Leyendo "+f.name+"...";
+ try{let r=await importar(f);if(st)st.innerHTML=`✅ <b>${f.name}</b> leído correctamente.<br>Hojas: ${r.hojas} · Filas leídas: ${r.filas} · Personas reconocidas: ${r.reconocidas}<br><b>Nuevas: ${r.nuevos}</b> · Duplicadas omitidas: ${r.dups} · Existentes completadas: ${r.comp}<br>Total en Familias: <b>${r.total}</b><br><button class="quick text-xs mt-2" onclick="angelaAbrirGestion('familias')">🔄 Ver Familias actualizadas</button>`}
+ catch(e){if(st)st.innerHTML=`❌ <b>No se pudo importar.</b><br>${String(e.message||e)}<br><span class="text-[10px]">Si me pasás esa planilla acá en el chat, puedo adaptar ÁNGELA exactamente a sus columnas.</span>`}
+};
+function inject(){
+ const b=document.getElementById("familia_vista_v2");if(!b||document.getElementById("familia_import_directo"))return;
+ const d=document.createElement("div");d.id="familia_import_directo";d.className="mb-4 p-3 rounded-xl border border-cyan-800 bg-cyan-950/20";
+ d.innerHTML=`<b class="text-sm">📊 Importar Excel directamente a Familias</b><p class="text-[10px] text-slate-400 mt-1">Acepta XLSX, XLS y CSV. Busca automáticamente la fila de encabezados aunque haya títulos arriba. DNI o nombre repetido = no crea duplicado.</p><input type="file" accept=".xlsx,.xls,.csv" class="text-xs mt-2" onchange="angelaImportarFamiliasDirecto(this)"><div id="familia_import_estado" class="text-xs mt-2"></div>`;
+ b.prepend(d);
+}
+const prev=window.angelaAbrirGestion;
+window.angelaAbrirGestion=function(m){let r=prev?.(m);if(m==="familias"){setTimeout(inject,50);setTimeout(inject,300)}return r};
+new MutationObserver(inject).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
 </body>
 </html>
