@@ -4969,7 +4969,21 @@ function tablaFin(a){return `<div class="overflow-auto mt-3"><table class="w-ful
 window.angelaGuardarFin=()=>{let db=ensure(load());db.finanzas.unshift({id:uid(),tipo:f_tipo.value,categoria:f_cat.value,concepto:f_con.value.trim(),monto:f_mon.value,fecha:f_fecha.value||new Date().toISOString().slice(0,10)});save(db);angelaFinanzasAG()};
 window.angelaMovimientosDonantes=()=>{
  let db=ensure(load());
- box("💳 Movimientos y Donantes — Mercado Pago / Banco",nav(),`<p class="text-xs text-slate-400">Importá XLSX/XLS/CSV. ÁNGELA toma únicamente los datos que realmente existan en el archivo: nombre, monto, fecha, referencia, email y teléfono cuando estén disponibles.</p><div class="flex flex-wrap gap-2 mt-3"><input id="mov_files" type="file" multiple accept=".xlsx,.xls,.csv" class="text-xs"><button class="quick text-xs" onclick="angelaImportarMovimientos()">🧠 Leer movimientos</button><button class="quick text-xs" onclick="angelaExportarColaboradores()">💾 Exportar colaboradores CSV</button></div><div id="mov_result" class="mt-3"></div>${tablaMov(db.movimientos)}`);
+ box("💳 Movimientos y Donantes — Mercado Pago / Banco",nav(),`
+ <div class="card-mini mb-3" style="border-color:#36537b">
+   <div class="font-bold text-cyan-300">📧 Gmail · Donaciones de Mercado Pago</div>
+   <p class="text-xs text-slate-400 mt-1">Conectá el Gmail que recibe los avisos de Mercado Pago. ÁNGELA buscará únicamente ingresos confirmados/acreditados y no contará pagos enviados, compras, rechazos ni movimientos pendientes.</p>
+   <div id="gmailMpEstado" class="text-xs text-amber-300 mt-2">Gmail: sin comprobar</div>
+   <div class="flex flex-wrap gap-2 mt-3">
+     <button class="quick text-xs" onclick="angelaConectarGmailMP()">🔐 Conectar Gmail</button>
+     <button class="quick text-xs" onclick="angelaBuscarIngresosGmailMP()">💳 Buscar ingresos de Mercado Pago</button>
+     <button class="quick text-xs" onclick="angelaExportarIngresosGmailMP()">📊 Descargar ingresos Excel</button>
+   </div>
+   <div id="gmailMpResultado" class="mt-3 text-xs"></div>
+ </div>
+ <p class="text-xs text-slate-400">También podés importar XLSX/XLS/CSV. ÁNGELA toma únicamente los datos que realmente existan en el archivo: nombre, monto, fecha, referencia, email y teléfono cuando estén disponibles.</p>
+ <div class="flex flex-wrap gap-2 mt-3"><input id="mov_files" type="file" multiple accept=".xlsx,.xls,.csv" class="text-xs"><button class="quick text-xs" onclick="angelaImportarMovimientos()">🧠 Leer movimientos</button><button class="quick text-xs" onclick="angelaExportarColaboradores()">💾 Exportar colaboradores CSV</button></div>
+ <div id="mov_result" class="mt-3"></div>${tablaMov(db.movimientos)}`);
 };
 function tablaMov(a){return `<div class="overflow-auto mt-3"><table class="w-full text-xs"><tr><th>Fecha</th><th>Origen</th><th>Nombre</th><th>Monto</th><th>Referencia</th></tr>${a.slice(0,300).map(x=>`<tr class="border-t border-slate-800"><td class="p-2">${esc(x.fecha)}</td><td>${esc(x.origen)}</td><td>${esc(x.nombre)}</td><td>${money(x.monto)}</td><td>${esc(x.referencia)}</td></tr>`).join("")}</table></div>`}
 window.angelaImportarMovimientos=async()=>{
@@ -5379,6 +5393,113 @@ window.angelaDescargarBaseMaestra=()=>{
  new MutationObserver(aplicar).observe(document.documentElement,{childList:true,subtree:true});
  document.addEventListener("DOMContentLoaded",aplicar);
  setTimeout(aplicar,100); setTimeout(aplicar,500);
+})();
+</script>
+
+
+<script id="angela-gmail-mp-integrado-v2">
+(()=>{
+let ANGELA_GMAIL_INGRESOS=[];
+
+const estado=(txt,ok)=>{
+ const e=document.getElementById("gmailMpEstado");
+ if(e){e.textContent=txt;e.className="text-xs mt-2 "+(ok?"text-green-400":"text-amber-300");}
+};
+
+window.angelaComprobarGmailMP=async()=>{
+ try{
+  const r=await fetch("/api/gmail/status",{credentials:"include"});
+  if(!r.ok) throw new Error();
+  const d=await r.json();
+  estado(d.connected?"Gmail: 🟢 conectado":"Gmail: pendiente de conectar",!!d.connected);
+ }catch(e){ estado("Gmail: backend seguro pendiente de instalar",false); }
+};
+
+window.angelaConectarGmailMP=()=>{ location.href="/api/gmail/auth"; };
+
+window.angelaBuscarIngresosGmailMP=async()=>{
+ const out=document.getElementById("gmailMpResultado");
+ if(out) out.innerHTML="⏳ Buscando únicamente ingresos confirmados…";
+ try{
+  const r=await fetch("/api/gmail/mercadopago-ingresos",{credentials:"include"});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||"Todavía falta instalar la conexión segura de Gmail en Vercel.");
+  ANGELA_GMAIL_INGRESOS=Array.isArray(d.ingresos)?d.ingresos:[];
+
+  // Guardar automáticamente los ingresos confirmados en la base local de Donantes/Movimientos.
+  let guardados=0;
+  try{
+    const KEY="ANGELA_MASTER_LOCAL_V1";
+    const db=JSON.parse(localStorage.getItem(KEY)||"{}");
+    db.movimientos=Array.isArray(db.movimientos)?db.movimientos:[];
+    db.colaboradores=Array.isArray(db.colaboradores)?db.colaboradores:[];
+    const normalizar=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+    const montoNumero=v=>{
+      let t=String(v??"").replace(/[^\d,.-]/g,"");
+      if(t.includes(",")) t=t.replace(/\./g,"").replace(",",".");
+      return Number(t)||0;
+    };
+    const existentes=new Set(db.movimientos.map(x=>String(x.gmailMessageId||x.referencia||"").trim()).filter(Boolean));
+    for(const x of ANGELA_GMAIL_INGRESOS){
+      const clave=String(x.id||x.referencia||"").trim();
+      if(clave && existentes.has(clave)) continue;
+      const mov={
+        id:"gmail_"+(x.id||Date.now()+"_"+guardados),
+        origen:"Gmail · Mercado Pago",
+        nombre:x.nombre||"",
+        monto:montoNumero(x.monto),
+        fecha:x.fecha||"",
+        email:x.email||"",
+        telefono:"",
+        referencia:x.referencia||"",
+        gmailMessageId:x.id||""
+      };
+      db.movimientos.push(mov);
+      if(clave) existentes.add(clave);
+      guardados++;
+
+      const key=mov.email?`e:${normalizar(mov.email)}`:mov.nombre?`n:${normalizar(mov.nombre)}`:"";
+      if(key){
+        let c=db.colaboradores.find(y=>y.key===key);
+        if(!c){c={id:"gmail_col_"+Date.now()+"_"+guardados,key,nombre:mov.nombre,email:mov.email,telefono:"",total:0,aportes:0,ultima:""};db.colaboradores.push(c)}
+        c.total=(+c.total||0)+(+mov.monto||0);
+        c.aportes=(+c.aportes||0)+1;
+        c.ultima=mov.fecha||c.ultima;
+        c.nombre=c.nombre||mov.nombre;
+        c.email=c.email||mov.email;
+      }
+    }
+    localStorage.setItem(KEY,JSON.stringify(db));
+  }catch(err){ console.error("No se pudieron guardar los ingresos en la base local:",err); }
+
+  if(out) out.innerHTML=ANGELA_GMAIL_INGRESOS.length
+    ?`✅ Encontrados: <b>${ANGELA_GMAIL_INGRESOS.length}</b> ingresos confirmados · Nuevos guardados: <b>${guardados}</b>.`
+    :"No se encontraron ingresos confirmados.";
+  estado("Gmail: 🟢 conectado",true);
+ }catch(e){
+  if(out) out.textContent=e.message;
+  estado("Gmail: falta completar backend seguro",false);
+ }
+};
+
+window.angelaExportarIngresosGmailMP=()=>{
+ if(!ANGELA_GMAIL_INGRESOS.length) return alert("Primero buscá los ingresos de Mercado Pago.");
+ if(typeof XLSX==="undefined") return alert("No está disponible el exportador Excel.");
+ const filas=ANGELA_GMAIL_INGRESOS.map(x=>({
+  Fecha:x.fecha||"",Nombre:x.nombre||"",Importe:x.monto||"",
+  Email:x.email||"",Referencia:x.referencia||"",Mensaje_ID:x.id||""
+ }));
+ const wb=XLSX.utils.book_new(),ws=XLSX.utils.json_to_sheet(filas);
+ XLSX.utils.book_append_sheet(wb,ws,"Ingresos MP");
+ XLSX.writeFile(wb,"ANGELA_Ingresos_Mercado_Pago.xlsx");
+};
+
+const prev=window.angelaMovimientosDonantes;
+window.angelaMovimientosDonantes=function(){
+ const r=prev.apply(this,arguments);
+ setTimeout(window.angelaComprobarGmailMP,50);
+ return r;
+};
 })();
 </script>
 
