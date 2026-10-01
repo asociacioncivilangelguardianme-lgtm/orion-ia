@@ -1,9 +1,37 @@
-function cookie(nombre, valor, maxAge) {
+function leerCookies(req) {
+  const header = req.headers.cookie || "";
+
+  return header.split(";").reduce((cookies, parte) => {
+    const [nombre, ...resto] = parte.trim().split("=");
+
+    if (nombre) {
+      cookies[nombre] = decodeURIComponent(resto.join("="));
+    }
+
+    return cookies;
+  }, {});
+}
+
+function crearCookie(nombre, valor, maxAge) {
   return `${nombre}=${encodeURIComponent(valor)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 }
 
+function borrarCookie(nombre) {
+  return `${nombre}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+}
+
 export default async function handler(req, res) {
-  const { code } = req.query;
+  const { code, state } = req.query;
+
+  const cookies = leerCookies(req);
+  const stateGuardado = cookies.angela_gmail_state;
+
+  // Comprobación de seguridad OAuth
+  if (!state || !stateGuardado || state !== stateGuardado) {
+    return res.status(403).send(
+      "La verificación de seguridad de Gmail no es válida. Volvé a conectar Gmail desde ÁNGELA."
+    );
+  }
 
   if (!code) {
     return res.status(400).send(
@@ -46,45 +74,39 @@ export default async function handler(req, res) {
       console.error("Error OAuth Gmail:", tokens);
 
       return res.status(500).send(
-        "No se pudo completar la conexión con Gmail."
+        "Google no pudo completar la conexión con Gmail."
       );
     }
 
     if (!tokens.refresh_token) {
       return res.status(400).send(
-        "Google no entregó una autorización permanente. Volvé a conectar Gmail."
+        "Google no entregó la autorización permanente. Volvé a conectar Gmail desde ÁNGELA."
       );
     }
 
-    /*
-      Guardamos el refresh token solamente en una cookie
-      HttpOnly y Secure. El JavaScript del navegador
-      no puede leer esta cookie.
-    */
-
     res.setHeader("Set-Cookie", [
-      cookie(
+      crearCookie(
         "angela_gmail_refresh_token",
         tokens.refresh_token,
         60 * 60 * 24 * 30
       ),
-      cookie(
+
+      crearCookie(
         "angela_gmail_connected",
         "1",
         60 * 60 * 24 * 30
-      )
+      ),
+
+      borrarCookie("angela_gmail_state")
     ]);
 
     return res.redirect("/?gmail=conectado");
 
   } catch (error) {
-    console.error(
-      "Error Gmail callback:",
-      error
-    );
+    console.error("Error Gmail callback:", error);
 
     return res.status(500).send(
-      "Error al conectar Gmail con ÁNGELA."
+      "Ocurrió un error al conectar Gmail con ÁNGELA."
     );
   }
 }
