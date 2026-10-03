@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ÁNGELA V8.1 | Agentic Harness Visible</title>
-<!-- V8.1 · AGENTIC HARNESS VISIBLE Y ACCESO DIRECTO · 2026-10-03 -->
+<title>ÁNGELA V8.4 | Agentic + Planilla Visible</title>
+<!-- V8.4 · AGENTIC + PLANILLA VISIBLE + CLIMA/UBICACIÓN · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
@@ -6213,6 +6213,216 @@ function hookChat(){
 function boot(){inject();hookChat();log('Sistema','Agentic Harness '+VERSION+' cargado');}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,120));else setTimeout(boot,120);
 setTimeout(()=>{inject();hookChat();},1200);
+})();
+</script>
+
+
+
+<!-- =========================================================
+     ÁNGELA V8.4 · PLANILLA VISIBLE EN MODO AGENTE
+     Muestra tablas reales debajo del resultado del Agentic Harness.
+     ========================================================= -->
+<style id="angela-agentic-sheet-v84-style">
+#agenticSheetView{margin-top:8px;border:1px solid #2563eb;border-radius:14px;overflow:hidden;background:#020817;min-height:72px}
+#agenticSheetView .as-empty{padding:16px;color:#94a3b8;font-size:11px;text-align:center}
+#agenticSheetView .as-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:linear-gradient(180deg,#0b1b36,#071321);border-bottom:1px solid #27466d}
+#agenticSheetView .as-title{font-size:12px;font-weight:900;color:#bfdbfe}
+#agenticSheetView .as-meta{font-size:10px;color:#94a3b8;margin-top:2px}
+#agenticSheetView .as-scroll{overflow:auto;max-height:52vh;max-width:100%;-webkit-overflow-scrolling:touch}
+#agenticSheetView table{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;white-space:nowrap}
+#agenticSheetView thead{position:sticky;top:0;z-index:2;background:#0b1220}
+#agenticSheetView th{padding:9px 10px;text-align:left;color:#93c5fd;border-right:1px solid #233653;border-bottom:1px solid #36537b;font-weight:900}
+#agenticSheetView td{padding:8px 10px;border-right:1px solid #1e293b;border-bottom:1px solid #172033;color:#e2e8f0;max-width:330px;overflow:hidden;text-overflow:ellipsis}
+#agenticSheetView tr:hover td{background:#0a1728}
+#agenticSheetView .as-num{text-align:center;color:#94a3b8;position:sticky;left:0;background:#071321;z-index:1}
+.agentic-sheet-titlebar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;margin-bottom:6px;color:#93c5fd;font-size:11px;font-weight:900}
+.agentic-sheet-actions{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:640px){#agenticSheetView .as-scroll{max-height:56vh}#agenticSheetView table{font-size:10px}#agenticSheetView th,#agenticSheetView td{padding:7px 8px}}
+</style>
+<script id="angela-agentic-sheet-v84">
+(function(){
+'use strict';
+let CURRENT_SHEET=null;
+let LAST_DONE_ID='';
+const MASTER_KEY='ANGELA_MASTER_LOCAL_V1';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
+const objectiveWantsSheet=()=>/planilla|excel|padr[oó]n|lista limpia|tabla|filas|columnas|familias|registros/i.test(String(window.ANGELA_AGENTIC?.current?.objective||''));
+
+function ensureSheetPanel(){
+  const panel=document.getElementById('angelaAgenticPanel');
+  if(!panel)return false;
+  if(document.getElementById('agenticSheetView'))return true;
+  const output=document.getElementById('agenticOutput');
+  if(!output)return false;
+  const title=document.createElement('div');
+  title.className='agentic-sheet-titlebar';
+  title.innerHTML=`<span>📊 VISTA DE PLANILLA</span><span class="agentic-sheet-actions"><button type="button" class="quick text-[10px] py-1 px-2" onclick="angelaAgenteMostrarPlanilla('auto')">👁️ Ver</button><button type="button" class="quick text-[10px] py-1 px-2" onclick="angelaAgenteDescargarPlanilla()">⬇️ Excel</button></span>`;
+  const box=document.createElement('div');
+  box.id='agenticSheetView';
+  box.innerHTML='<div class="as-empty">Cuando ÁNGELA trabaje con una planilla, la vas a ver acá en filas y columnas.</div>';
+  output.insertAdjacentElement('afterend',title);
+  title.insertAdjacentElement('afterend',box);
+  return true;
+}
+
+function masterSheet(){
+  try{
+    const db=JSON.parse(localStorage.getItem(MASTER_KEY)||'{}');
+    const a=Array.isArray(db.familias)?db.familias:[];
+    if(!a.length)return null;
+    const headers=['Nombre','Apellido','DNI / Documento','Dirección','Teléfono','Cantidad familia'];
+    const rows=a.map(x=>[
+      clean(x.nombre||x.nombres||''),clean(x.apellido||''),clean(x.dni||''),
+      clean(x.domicilio||x.direccion||''),clean(x.telefono||''),clean(x.cantidadFamilia||'')
+    ]);
+    return {title:'Lista limpia / Base Maestra',headers,rows,source:'master'};
+  }catch(e){return null;}
+}
+
+function multiSheet(){
+  try{
+    const M=window.ANGELA_MULTI;
+    const arr=(Array.isArray(M?.resultRows)&&M.resultRows.length?M.resultRows:(Array.isArray(M?.rows)?M.rows:[]));
+    if(!arr.length)return null;
+    const headers=[...new Set(arr.slice(0,100).flatMap(r=>Object.keys(r||{})).filter(k=>!String(k).startsWith('__')))];
+    if(!headers.length)return null;
+    const rows=arr.map(r=>headers.map(h=>clean(r?.[h]??'')));
+    return {title:'Resultado de cruce de archivos',headers,rows,source:'multi'};
+  }catch(e){return null;}
+}
+
+function activeSheet(){
+  try{
+    const f=window.STATE?.fileContext;
+    if(!f||!['xlsx','xls','csv'].includes(String(f.kind||'').toLowerCase())||!f.text)return null;
+    let raw=String(f.text||'').trim();
+    const parts=raw.split(/\n\s*---\s*Hoja:[^\n]*---\s*\n/i).filter(x=>x.trim());
+    if(parts.length>1)raw=parts[0].length<50?parts[1]:parts[0];
+    if(!window.XLSX)return null;
+    const wb=XLSX.read(raw,{type:'string'});
+    const sn=wb.SheetNames?.[0]; if(!sn)return null;
+    const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:false});
+    const useful=matrix.filter(r=>Array.isArray(r)&&r.some(v=>clean(v)));
+    if(!useful.length)return null;
+    const width=Math.max(...useful.slice(0,80).map(r=>r.length));
+    let headers=(useful[0]||[]).slice(0,width).map((x,i)=>clean(x)||`Columna ${i+1}`);
+    const seen={};headers=headers.map((h,i)=>{const k=h||`Columna ${i+1}`;seen[k]=(seen[k]||0)+1;return seen[k]>1?`${k} ${seen[k]}`:k});
+    const rows=useful.slice(1).map(r=>Array.from({length:width},(_,i)=>clean(r?.[i]??'')));
+    return {title:`Archivo activo: ${f.name||'planilla'}`,headers,rows,source:'active'};
+  }catch(e){console.warn('Planilla activa:',e);return null;}
+}
+
+function parseMarkdownTable(text){
+  const lines=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  for(let i=0;i<lines.length-2;i++){
+    if(!lines[i].includes('|')||!/^\|?\s*:?-{3,}/.test(lines[i+1]))continue;
+    const split=line=>line.replace(/^\||\|$/g,'').split('|').map(x=>clean(x));
+    const headers=split(lines[i]);
+    const rows=[];
+    for(let j=i+2;j<lines.length&&lines[j].includes('|');j++)rows.push(split(lines[j]));
+    if(headers.length>=2&&rows.length)return {title:'Planilla creada por ÁNGELA',headers,rows,source:'ai'};
+  }
+  return null;
+}
+
+function chooseSheet(source='auto',text=''){
+  if(source==='master')return masterSheet();
+  if(source==='active')return activeSheet();
+  if(source==='multi')return multiSheet();
+  const md=parseMarkdownTable(text); if(md)return md;
+  const obj=String(window.ANGELA_AGENTIC?.current?.objective||'');
+  if(/lista limpia|base maestra|familias|padr[oó]n/i.test(obj)){const m=masterSheet();if(m)return m;}
+  return activeSheet()||multiSheet()||masterSheet()||null;
+}
+
+function renderSheet(sheet){
+  ensureSheetPanel();
+  const box=document.getElementById('agenticSheetView');if(!box)return false;
+  if(!sheet||!Array.isArray(sheet.headers)||!Array.isArray(sheet.rows)){
+    box.innerHTML='<div class="as-empty">No encontré filas para mostrar todavía. Cargá o cruzá la planilla y volvé a tocar <b>👁️ Ver</b>.</div>';
+    return false;
+  }
+  CURRENT_SHEET=sheet;
+  const maxRows=400;
+  const rows=sheet.rows.slice(0,maxRows);
+  box.innerHTML=`<div class="as-head"><div><div class="as-title">${esc(sheet.title||'Planilla')}</div><div class="as-meta">${sheet.rows.length} registro(s) · ${sheet.headers.length} columna(s)${sheet.rows.length>maxRows?` · mostrando los primeros ${maxRows}`:''}</div></div></div><div class="as-scroll"><table><thead><tr><th class="as-num">N°</th>${sheet.headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="as-num">${i+1}</td>${sheet.headers.map((_,j)=>`<td title="${esc(r?.[j]??'')}">${esc(r?.[j]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+  return true;
+}
+
+window.angelaAgenteMostrarPlanilla=function(source='auto'){
+  const s=chooseSheet(source,window.ANGELA_AGENTIC?.current?.result||'');
+  const ok=renderSheet(s);
+  if(!ok&&typeof showToast==='function')showToast('Todavía no encontré una planilla con filas para mostrar.');
+  return ok;
+};
+
+window.angelaAgenteDescargarPlanilla=function(){
+  const s=CURRENT_SHEET||chooseSheet('auto',window.ANGELA_AGENTIC?.current?.result||'');
+  if(!s){alert('Todavía no hay una planilla visible para descargar.');return;}
+  if(!window.XLSX){alert('No está disponible el generador Excel.');return;}
+  const aoa=[s.headers,...s.rows];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=s.headers.map((h,i)=>({wch:Math.min(38,Math.max(12,String(h).length+3,...s.rows.slice(0,80).map(r=>String(r?.[i]??'').length+2)))}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Planilla');
+  XLSX.writeFile(wb,`ANGELA_PLANILLA_${new Date().toISOString().slice(0,10)}.xlsx`);
+};
+
+function patchTools(){
+  const T=window.ANGELA_AGENTIC_TOOLS;if(!T)return false;
+  if(!T.sheet_view){
+    T.sheet_view={label:'Mostrar planilla',risk:'read',run:async args=>{
+      const s=chooseSheet(String(args?.source||'auto'),String(args?.text||''));
+      const ok=renderSheet(s);
+      return ok?{ok:true,message:`Planilla visible en pantalla: ${s.rows.length} registro(s) y ${s.headers.length} columna(s).`}:{ok:false,message:'No encontré una planilla con filas para mostrar.'};
+    }};
+  }
+  if(T.file_info&&!T.file_info.__v84){
+    const old=T.file_info.run;
+    T.file_info.run=async function(args){const r=await old(args);if(objectiveWantsSheet())setTimeout(()=>window.angelaAgenteMostrarPlanilla('auto'),100);return r;};
+    T.file_info.__v84=true;
+  }
+  if(T.ai_answer&&!T.ai_answer.__v84){
+    const old=T.ai_answer.run;
+    T.ai_answer.run=async function(args){
+      const r=await old(args);
+      const md=parseMarkdownTable(r?.message||'');
+      if(md)renderSheet(md); else if(objectiveWantsSheet())setTimeout(()=>window.angelaAgenteMostrarPlanilla('auto'),100);
+      return r;
+    };
+    T.ai_answer.__v84=true;
+  }
+  return true;
+}
+
+function patchRunUI(){
+  if(window.__ANGELA_SHEET_RUN_PATCH)return;
+  const old=window.angelaAgenteEjecutarUI;
+  if(typeof old!=='function')return;
+  window.angelaAgenteEjecutarUI=function(){
+    CURRENT_SHEET=null;ensureSheetPanel();const box=document.getElementById('agenticSheetView');if(box)box.innerHTML='<div class="as-empty">⏳ Esperando los datos de la planilla…</div>';
+    return old.apply(this,arguments);
+  };
+  window.__ANGELA_SHEET_RUN_PATCH=true;
+}
+
+function watchDone(){
+  const A=window.ANGELA_AGENTIC;
+  if(!A?.current||A.running)return;
+  if(!['done','stopped','error'].includes(A.current.status))return;
+  if(A.current.id===LAST_DONE_ID)return;
+  LAST_DONE_ID=A.current.id;
+  if(objectiveWantsSheet()){
+    const aiText=(A.current.steps||[]).map(s=>s.result||'').join('\n');
+    const md=parseMarkdownTable(aiText);
+    if(md)renderSheet(md);else window.angelaAgenteMostrarPlanilla('auto');
+  }
+}
+
+function boot(){ensureSheetPanel();patchTools();patchRunUI();watchDone();}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,450));else setTimeout(boot,450);
+setInterval(()=>{ensureSheetPanel();patchTools();patchRunUI();watchDone();},900);
 })();
 </script>
 
