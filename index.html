@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ÁNGELA V8.4 | Agentic + Planilla Visible</title>
-<!-- V8.4 · AGENTIC + PLANILLA VISIBLE + CLIMA/UBICACIÓN · 2026-10-03 -->
+<title>ÁNGELA V8.5.2 | Vista previa de tabla siempre visible</title>
+<!-- V8.5.2 · VISTA PREVIA PERMANENTE + EXCEL + DICTADO AUTOMÁTICO · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
@@ -388,6 +388,26 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 .ai-img-status{font-size:11px;color:#94a3b8;text-align:center;padding:12px}
 .ai-img-chip{border:1px solid #36537b;background:#071321;border-radius:999px;padding:6px 9px;font-size:10px}
 </style>
+
+<style id="angela-sheet-inline-v852-style">
+#angelaSheetInlinePanel{border:1px solid #2563eb;background:linear-gradient(180deg,rgba(8,22,42,.98),rgba(3,11,25,.98));box-shadow:0 14px 38px rgba(0,0,0,.28)}
+#angelaSheetInlinePanel .asi-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+#angelaSheetInlinePanel .asi-title{font-weight:900;color:#7dd3fc;font-size:16px}
+#angelaSheetInlinePanel .asi-meta{font-size:11px;color:#94a3b8;margin-top:3px}
+#angelaSheetInlinePanel .asi-actions{display:flex;flex-wrap:wrap;gap:7px}
+#angelaSheetInlinePanel .asi-btn{border:1px solid #31527c;background:#0b1729;color:#e2e8f0;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:800;cursor:pointer}
+#angelaSheetInlinePanel .asi-btn.primary{background:#075985;border-color:#38bdf8;color:white}
+#angelaSheetInlineBody{margin-top:10px;border:1px solid #1e3a5f;border-radius:12px;overflow:auto;max-height:330px;background:#020817}
+#angelaSheetInlineBody .asi-empty{padding:18px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.55}
+#angelaSheetInlineTable{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;white-space:nowrap}
+#angelaSheetInlineTable thead{position:sticky;top:0;z-index:4;background:#101b2e}
+#angelaSheetInlineTable th{padding:9px 10px;text-align:left;color:#93c5fd;border-right:1px solid #2a3e5d;border-bottom:1px solid #42628d;font-weight:900}
+#angelaSheetInlineTable td{padding:8px 10px;color:#e2e8f0;border-right:1px solid #17243a;border-bottom:1px solid #142033;max-width:330px;overflow:hidden;text-overflow:ellipsis}
+#angelaSheetInlineTable tr:hover td{background:#0a1728}
+#angelaSheetInlineFoot{font-size:10px;color:#64748b;margin-top:7px}
+@media(max-width:700px){#angelaSheetInlinePanel{padding:12px!important}#angelaSheetInlineTable{font-size:10px}#angelaSheetInlineTable th,#angelaSheetInlineTable td{padding:7px 8px}.asi-actions{width:100%}.asi-btn{flex:1}}
+</style>
+
 </head>
 <body>
 <header class="border-b border-slate-700 bg-slate-950/80 sticky top-0 z-50 backdrop-blur">
@@ -774,6 +794,22 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 </div>
 </section>
 
+<section id="angelaSheetInlinePanel" class="panel rounded-3xl p-5 mt-5">
+  <div class="asi-top">
+    <div>
+      <div class="asi-title">📊 Vista previa de la planilla que está armando ÁNGELA</div>
+      <div id="angelaSheetInlineMeta" class="asi-meta">Todavía no hay filas para mostrar.</div>
+    </div>
+    <div class="asi-actions">
+      <button class="asi-btn" type="button" onclick="angelaVistaPreviaActualizar()">↻ Actualizar</button>
+      <button class="asi-btn" type="button" onclick="angelaVistaPreviaAbrirGrande()">👁️ Ver grande</button>
+      <button class="asi-btn primary" type="button" onclick="angelaAgenteDescargarPlanilla()">⬇️ Descargar Excel</button>
+    </div>
+  </div>
+  <div id="angelaSheetInlineBody"><div class="asi-empty">Cuando dictes un registro, cargues una planilla o ÁNGELA genere filas, la tabla va a aparecer acá antes de descargarla.</div></div>
+  <div id="angelaSheetInlineFoot">La descarga de Excel usa exactamente las filas que ves en esta vista previa.</div>
+</section>
+
 <section id="centroGestionAngela" class="panel rounded-3xl p-5 mt-5">
   <div class="flex flex-wrap justify-between items-center gap-2">
     <div>
@@ -899,7 +935,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "8.2.0-agentic-texto-visible",
+    version: "8.5.2-vista-previa-tabla-siempre-visible",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -2068,6 +2104,17 @@ function respuestaLocalComedor(texto){
 
 async function procesarEntrada(texto){
     const clean=corregirDictadoPorContexto(String(texto||"").trim()); if(!clean)return;
+
+    // V8.5.2 · captura directa en el núcleo: funciona tanto al escribir como al hablar.
+    // No depende del Modo Agente ni de un parche externo para mostrar la tabla.
+    try{
+        if(typeof window.angelaRegistrarDictadoEnTabla==='function' && window.angelaRegistrarDictadoEnTabla(clean)){
+            const aviso='📊 Registro agregado. La vista previa de la tabla quedó actualizada abajo y el Excel ya está listo para revisar/descargar.';
+            try{agregarMensaje("angela",aviso)}catch(e){}
+            try{hablar(aviso)}catch(e){}
+            return;
+        }
+    }catch(e){console.warn('V8.5.2 captura directa de tabla:',e)}
 
     // Datos públicos básicos del Comedor: respuesta local y estable incluso si Gemini está ocupado.
     const comedor=respuestaLocalComedor(clean);
@@ -6247,7 +6294,7 @@ let LAST_DONE_ID='';
 const MASTER_KEY='ANGELA_MASTER_LOCAL_V1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
-const objectiveWantsSheet=()=>/planilla|excel|padr[oó]n|lista limpia|tabla|filas|columnas|familias|registros/i.test(String(window.ANGELA_AGENTIC?.current?.objective||''));
+const objectiveWantsSheet=()=>/planilla|excel|padr[oó]n|lista limpia|tabla|filas|columnas|familias|registros|registro|empresa|donaci[oó]n|aporte|monto|pendiente|recibido/i.test(String(window.ANGELA_AGENTIC?.current?.objective||''));
 
 function ensureSheetPanel(){
   const panel=document.getElementById('angelaAgenticPanel');
@@ -6423,6 +6470,227 @@ function watchDone(){
 function boot(){ensureSheetPanel();patchTools();patchRunUI();watchDone();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,450));else setTimeout(boot,450);
 setInterval(()=>{ensureSheetPanel();patchTools();patchRunUI();watchDone();},900);
+})();
+</script>
+
+
+
+<!-- =========================================================
+     ÁNGELA V8.5 · PLANILLA REAL VISIBLE DEL MODO AGENTE
+     - Abre una vista grande automáticamente cuando la tarea usa planillas
+     - No confunde un resumen hablado con una planilla realmente creada
+     - Permite revisar filas/columnas antes de descargar
+     ========================================================= -->
+<style id="angela-agent-sheet-v85-style">
+#angelaSheetModalBack{position:fixed;inset:0;z-index:12050;background:rgba(0,0,0,.82);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:10px}
+#angelaSheetModalBack.open{display:flex}
+#angelaSheetModal{width:min(1500px,99vw);height:min(940px,96vh);background:#06101e;border:1px solid #3867a8;border-radius:20px;box-shadow:0 30px 110px rgba(0,0,0,.75);display:flex;flex-direction:column;overflow:hidden}
+.angela-sheet85-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:13px 15px;border-bottom:1px solid #294260;background:linear-gradient(180deg,#10284b,#081426)}
+.angela-sheet85-title{font-size:16px;font-weight:950;color:#bae6fd}.angela-sheet85-meta{font-size:10px;color:#94a3b8;margin-top:3px}
+.angela-sheet85-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end}.angela-sheet85-btn{border:1px solid #3a5a83;background:#0d1d33;color:#fff;border-radius:10px;padding:8px 11px;font-size:11px;font-weight:850}
+.angela-sheet85-btn:hover{filter:brightness(1.16)}.angela-sheet85-btn.primary{border-color:#22d3ee;background:linear-gradient(135deg,#0e7490,#4338ca)}
+.angela-sheet85-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;border-bottom:1px solid #243b59;background:#071321}
+.angela-sheet85-search{min-width:220px;flex:1;background:#020817;border:1px solid #36537b;color:#fff;border-radius:10px;padding:8px 10px;font-size:11px}
+.angela-sheet85-body{flex:1;min-height:0;overflow:auto;background:#02050a;-webkit-overflow-scrolling:touch}
+#angelaSheet85Table{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;white-space:nowrap}
+#angelaSheet85Table thead{position:sticky;top:0;z-index:5;background:#101b2e}
+#angelaSheet85Table th{padding:9px 10px;text-align:left;color:#93c5fd;border-right:1px solid #2a3e5d;border-bottom:1px solid #42628d;font-weight:900}
+#angelaSheet85Table td{padding:8px 10px;color:#e2e8f0;border-right:1px solid #17243a;border-bottom:1px solid #142033;max-width:380px;overflow:hidden;text-overflow:ellipsis}
+#angelaSheet85Table tr:hover td{background:#0a1728}.angela-sheet85-num{position:sticky;left:0;background:#071321!important;text-align:center!important;color:#94a3b8!important;z-index:2}
+.angela-sheet85-empty{padding:34px 18px;text-align:center;color:#cbd5e1;font-size:12px;line-height:1.6}.angela-sheet85-empty b{color:#fcd34d}
+.angela-sheet85-foot{padding:8px 12px;border-top:1px solid #243b59;background:#071321;font-size:10px;color:#94a3b8}
+#agenticOpenRealSheet{margin-top:10px;width:100%;border:1px solid #22d3ee;background:linear-gradient(90deg,#0e7490,#4338ca);padding:10px;border-radius:12px;font-size:12px;font-weight:950;color:white}
+@media(max-width:700px){#angelaSheetModalBack{padding:2px}#angelaSheetModal{width:100vw;height:100dvh;border-radius:0}.angela-sheet85-head{padding:10px}.angela-sheet85-title{font-size:14px}.angela-sheet85-btn{padding:7px 8px;font-size:10px}.angela-sheet85-tools{padding:7px}.angela-sheet85-search{min-width:150px}#angelaSheet85Table{font-size:10px}#angelaSheet85Table th,#angelaSheet85Table td{padding:7px 8px}}
+</style>
+<script id="angela-agent-sheet-v85">
+(function(){
+'use strict';
+const KEY='ANGELA_MASTER_LOCAL_V1';
+const DICT_KEY='ANGELA_REGISTROS_DICTADOS_V1';
+let CURRENT=null,MODE='detail',LAST_AGENT_DONE='';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
+const wantsSheet=t=>/planilla|excel|padr[oó]n|lista|tabla|filas|columnas|familias|registros|registro|calle|domicilio|direcci[oó]n|empresa|donaci[oó]n|aporte|monto|pendiente|recibido/i.test(String(t||''));
+const wantsDictated=t=>/empresa|donaci[oó]n|aporte|colaboraci[oó]n|monto|pendiente|recibido|registro|registr[aá]|anot[aá]|comedor/i.test(String(t||''));
+
+function normWords(s){return clean(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function smallSpanishNumber(s){
+ const t=normWords(s).replace(/\s+y\s+/g,' ').trim();if(/^\d+$/.test(t))return Number(t);
+ const units={cero:0,uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiuno:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,veintiseis:26,veintisiete:27,veintiocho:28,veintinueve:29,treinta:30};
+ if(Object.prototype.hasOwnProperty.call(units,t))return units[t];
+ if(t==='treinta uno')return 31;
+ const digitMap={cero:'0',uno:'1',una:'1',dos:'2',tres:'3',cuatro:'4',cinco:'5',seis:'6',siete:'7',ocho:'8',nueve:'9'};
+ const parts=t.split(/\s+/).filter(Boolean);if(parts.length>1&&parts.every(x=>digitMap[x]!=null))return Number(parts.map(x=>digitMap[x]).join(''));
+ if(t.startsWith('dos mil')){const rest=t.slice(7).trim();return 2000+(rest?smallSpanishNumber(rest):0)}
+ if(t.startsWith('mil')){const rest=t.slice(3).trim();return 1000+(rest?smallSpanishNumber(rest):0)}
+ return NaN;
+}
+function normalizeSpokenDate(raw){
+ const t=String(raw||'').replace(/\b(?:diagonal|barra)\b/gi,'/');
+ const num='(?:\\d{1,4}|(?:(?:cero|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|trece|catorce|quince|diecis[eé]is|diecisiete|dieciocho|diecinueve|veinte|veintiuno|veintid[oó]s|veintitr[eé]s|veinticuatro|veinticinco|veintis[eé]is|veintisiete|veintiocho|veintinueve|treinta|mil|y)\\s*){1,6})';
+ const re=new RegExp('('+num+')\\s*\\/\\s*('+num+')\\s*\\/\\s*('+num+')','i');
+ const m=t.match(re);if(!m)return{date:'',text:t};
+ const cv=v=>/^\d+$/.test(clean(v))?Number(clean(v)):smallSpanishNumber(v);
+ const d=cv(m[1]),mo=cv(m[2]),y=cv(m[3]);if(!Number.isFinite(d)||!Number.isFinite(mo)||!Number.isFinite(y))return{date:'',text:t};
+ const yy=y<100?2000+y:y;const date=`${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${yy}`;
+ return{date,text:t.replace(m[0],' '+date+' ')};
+}
+function loadDictatedRows(){try{const a=JSON.parse(localStorage.getItem(DICT_KEY)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
+function saveDictatedRows(a){try{localStorage.setItem(DICT_KEY,JSON.stringify(a.slice(-500)))}catch(e){}}
+function looksLikeDictatedRecord(raw){
+ const t=normalizeSpokenDate(raw).text;const q=normWords(t);let score=0;
+ if(/\b\d{1,2}\s*[\/-]\s*\d{1,2}\s*[\/-]\s*\d{2,4}\b/.test(t))score+=2;
+ if(/\bempresa\b|\bdonante\b|\bcomercio\b|\bfundaci[oó]n\b/.test(q))score++;
+ if(/\bdonaci[oó]n\b|\baporte\b|\bcolaboraci[oó]n\b|\bmonto\b/.test(q))score++;
+ if(/(?:\$|u\$s|usd)\s*\d|\b\d[\d.,]*\s*(?:mil|mill[oó]n(?:es)?|d[oó]lares?|pesos?|usd|ars)\b/i.test(t))score++;
+ if(/\bpendiente\b|\brecibido\b|\bconfirmado\b|\bentregado\b|\bcontactar\b/.test(q))score++;
+ if(/\bregistr|\banot|\bcarg|\bagreg|\btabla\b|\bplanilla\b/.test(q))score++;
+ return score>=4;
+}
+function parseDictatedRecord(raw){
+ const original=clean(raw);const nd=normalizeSpokenDate(original);const t=clean(nd.text);const q=normWords(t);
+ const dateMatch=t.match(/\b\d{1,2}\s*[\/-]\s*\d{1,2}\s*[\/-]\s*\d{2,4}\b/);const fecha=nd.date||(dateMatch?dateMatch[0].replace(/\s/g,''):new Date().toLocaleDateString('es-AR'));
+ let empresa='';let m=t.match(/\b(?:empresa|donante|comercio|fundaci[oó]n)\s+(.+?)(?=\s+(?:donaci[oó]n|aporte|colaboraci[oó]n|monto|pendiente|recibido|confirmado|entregado)\b|\s+(?:\$|u\$s|usd|\d+[\d.,]*\s*(?:mil|mill[oó]n|d[oó]lares?|pesos?))|[,.]|$)/i);if(m)empresa=clean(m[1]);
+ let concepto='';m=t.match(/\b(donaci[oó]n|aporte|colaboraci[oó]n)(?:\s+(mensual|semanal|quincenal|anual|[uú]nica|unica))?/i);if(m)concepto=clean(`${m[1]}${m[2]?' '+m[2]:''}`);else if(/\brecibido\s+en\s+el\s+comedor\b/i.test(t))concepto='Recibido en el comedor';else concepto='Registro dictado';
+ let monto='',moneda='';m=t.match(/((?:\d[\d.,]*\s*(?:mil|mill[oó]n(?:es)?)\s*(?:d[oó]lares?|pesos?|usd|ars)?|(?:u\$s|usd|\$)\s*\d[\d.,]*(?:\s*(?:mil|mill[oó]n(?:es)?))?|\d[\d.,]*\s*(?:d[oó]lares?|pesos?|usd|ars)))/i);if(m){const full=clean(m[1]);monto=clean(full.replace(/\b(d[oó]lares?|pesos?|usd|ars)\b/ig,'').replace(/u\$s/ig,'').replace(/^\$/,'').trim());if(/d[oó]lares?|usd|u\$s/i.test(full))moneda='USD';else if(/pesos?|ars|^\$/i.test(full))moneda='ARS';}
+ let estado='';m=t.match(/\bpendiente(?:\s+de)?\s*([^.,;]*)/i);if(m)estado=clean('Pendiente'+(m[1]?` de ${m[1]}`:''));else if(/\brecibido\b/i.test(t))estado='Recibido';else if(/\bconfirmado\b/i.test(t))estado='Confirmado';else if(/\bentregado\b/i.test(t))estado='Entregado';else estado='A revisar';
+ return{id:'dict_'+Date.now(),createdAt:Date.now(),fecha,empresa,concepto,monto,moneda,estado,detalle:original};
+}
+function dictated(){
+ const a=loadDictatedRows();if(!a.length)return null;
+ const headers=['Fecha','Empresa / Donante','Concepto','Monto','Moneda','Estado','Detalle'];
+ const rows=a.map(x=>[clean(x.fecha),clean(x.empresa),clean(x.concepto),clean(x.monto),clean(x.moneda),clean(x.estado),clean(x.detalle)]);
+ return{title:'Registro dictado · Comedor / Empresas / Donaciones',headers,rows,source:'dictated',raw:a};
+}
+function renderInlinePreview(sheet){
+ const body=document.getElementById('angelaSheetInlineBody'),meta=document.getElementById('angelaSheetInlineMeta'),foot=document.getElementById('angelaSheetInlineFoot');
+ if(!body||!meta||!foot)return false;
+ if(!sheet||!Array.isArray(sheet.headers)||!Array.isArray(sheet.rows)||!sheet.rows.length){
+   meta.textContent='Todavía no hay filas para mostrar.';
+   body.innerHTML='<div class="asi-empty">Cuando dictes un registro, cargues una planilla o ÁNGELA genere filas, la tabla va a aparecer acá antes de descargarla.</div>';
+   foot.textContent='La descarga de Excel se habilita cuando existen filas reales.';return false;
+ }
+ const rows=sheet.rows.slice(-80);
+ meta.textContent=`${sheet.title||'Planilla'} · ${sheet.rows.length} registro(s) · ${sheet.headers.length} columna(s)`;
+ body.innerHTML=`<table id="angelaSheetInlineTable"><thead><tr><th>N°</th>${sheet.headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${sheet.rows.length-rows.length+i+1}</td>${sheet.headers.map((_,j)=>`<td title="${esc(r?.[j]??'')}">${esc(r?.[j]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+ foot.textContent=`Vista previa real: mostrando ${rows.length}${sheet.rows.length>rows.length?` de ${sheet.rows.length}`:''} fila(s). El Excel descarga esta misma planilla completa.`;
+ try{document.getElementById('angelaSheetInlinePanel')?.scrollIntoView({behavior:'smooth',block:'nearest'})}catch(e){}
+ return true;
+}
+window.angelaVistaPreviaActualizar=function(){CURRENT=choose();return renderInlinePreview(CURRENT)};
+window.angelaVistaPreviaAbrirGrande=function(){CURRENT=CURRENT||choose();renderInlinePreview(CURRENT);modal().classList.add('open');render();return!!CURRENT};
+window.angelaRegistrarDictadoEnTabla=function(raw){
+ if(!looksLikeDictatedRecord(raw))return false;
+ const rec=parseDictatedRecord(raw),a=loadDictatedRows(),last=a[a.length-1];
+ if(!(last&&clean(last.detalle)===clean(rec.detalle)&&Date.now()-Number(last.createdAt||0)<5000)){a.push(rec);saveDictatedRows(a)}
+ MODE='detail';CURRENT=dictated();renderInlinePreview(CURRENT);
+ // La vista previa queda SIEMPRE visible. Además intentamos abrir la vista grande.
+ try{modal().classList.add('open');render()}catch(e){console.warn('Vista grande de planilla:',e)}
+ return true;
+};
+window.angelaAbrirTablaDictada=function(){const s=dictated();if(!s)return false;MODE='detail';CURRENT=s;renderInlinePreview(CURRENT);modal().classList.add('open');render();return true;};
+
+function age(v){try{if(!v)return'';const d=new Date(v+'T12:00:00'),n=new Date();if(isNaN(d))return'';let a=n.getFullYear()-d.getFullYear();const m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a>=0&&a<120?a:''}catch{return''}}
+function db(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{}}}
+function master(){
+ const a=Array.isArray(db().familias)?db().familias:[];if(!a.length)return null;
+ const headers=['Familia / Grupo','Nombre','Apellido','DNI / Documento','Nacimiento','Edad','Teléfono','Domicilio / Dirección','Cantidad familia'];
+ const rows=a.map(x=>[clean(x.familia),clean(x.nombre||x.nombres),clean(x.apellido),clean(x.dni),clean(x.nacimiento),age(clean(x.nacimiento)),clean(x.telefono),clean(x.domicilio||x.direccion),clean(x.cantidadFamilia)]);
+ return{title:'Base Maestra / Lista para revisar',headers,rows,source:'master',raw:a};
+}
+function splitCsvLine(line,sep){
+ let out=[],cur='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(c===sep&&!q){out.push(cur);cur='';}else cur+=c;}out.push(cur);return out.map(clean);
+}
+function active(){
+ try{
+  const f=window.STATE?.fileContext;if(!f||!['xlsx','xls','csv'].includes(String(f.kind||'').toLowerCase())||!f.text)return null;
+  let raw=String(f.text||'').trim();let sections=raw.split(/\n\s*---\s*Hoja:[^\n]*---\s*\n/i).map(x=>x.trim()).filter(x=>x&&x.length>10);if(sections.length)raw=sections.sort((a,b)=>b.length-a.length)[0];
+  let matrix=[];
+  if(window.XLSX){try{const wb=XLSX.read(raw,{type:'string'}),sn=wb.SheetNames?.[0];if(sn)matrix=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:false});}catch(e){}}
+  if(!matrix.length){const ls=raw.split(/\r?\n/).filter(x=>x.trim());const first=ls[0]||'';const sep=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';matrix=ls.map(x=>splitCsvLine(x,sep));}
+  matrix=matrix.filter(r=>Array.isArray(r)&&r.some(v=>clean(v)));if(matrix.length<1)return null;
+  const width=Math.max(...matrix.slice(0,100).map(r=>r.length));let headers=Array.from({length:width},(_,i)=>clean(matrix[0]?.[i])||`Columna ${i+1}`);const seen={};headers=headers.map(h=>{seen[h]=(seen[h]||0)+1;return seen[h]>1?`${h} ${seen[h]}`:h});
+  const rows=matrix.slice(1).map(r=>Array.from({length:width},(_,i)=>clean(r?.[i]))).filter(r=>r.some(Boolean));
+  return{title:`Archivo cargado: ${f.name||'planilla'}`,headers,rows,source:'active'};
+ }catch(e){console.warn('V8.5 active sheet',e);return null;}
+}
+function multi(){try{const M=window.ANGELA_MULTI;const a=Array.isArray(M?.resultRows)&&M.resultRows.length?M.resultRows:(Array.isArray(M?.rows)?M.rows:[]);if(!a.length)return null;const headers=[...new Set(a.slice(0,120).flatMap(r=>Object.keys(r||{})).filter(k=>!String(k).startsWith('__')))];if(!headers.length)return null;return{title:'Resultado de cruce de planillas',headers,rows:a.map(r=>headers.map(h=>clean(r?.[h]))),source:'multi'};}catch{return null}}
+function mdTable(text){const ls=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);for(let i=0;i<ls.length-2;i++){if(!ls[i].includes('|')||!/^\|?\s*:?-{3,}/.test(ls[i+1]))continue;const sp=x=>x.replace(/^\||\|$/g,'').split('|').map(clean);const h=sp(ls[i]),r=[];for(let j=i+2;j<ls.length&&ls[j].includes('|');j++)r.push(sp(ls[j]));if(h.length>1&&r.length)return{title:'Planilla creada por ÁNGELA',headers:h,rows:r,source:'ai'};}return null}
+function choose(){
+ const A=window.ANGELA_AGENTIC;const objective=A?.current?.objective||'';const result=[A?.current?.result||'',...(A?.current?.steps||[]).map(s=>s.result||'')].join('\n');
+ const md=mdTable(result);if(md)return md;
+ if(wantsDictated(objective)){const d=dictated();if(d)return d;}
+ if(/padr[oó]n|familias|calle|domicilio|direcci[oó]n|lista limpia|base maestra/i.test(objective)){const m=master();if(m)return m;}
+ return active()||multi()||master()||dictated()||null;
+}
+function streetName(addr){let s=clean(addr).replace(/\b(nro|n°|nº|numero|número)\b\.?/ig,' ');s=s.replace(/\s+\d+[a-z]?\s*$/i,'').replace(/\s+(?:entre|e\/|y)\s+.+$/i,'');return clean(s)||clean(addr)||'Sin domicilio';}
+function summary(sheet){
+ if(!sheet)return null;const idx=sheet.headers.findIndex(h=>/domicilio|direcci[oó]n|calle/i.test(h));if(idx<0)return null;const m=new Map();for(const r of sheet.rows){const k=streetName(r[idx]);m.set(k,(m.get(k)||0)+1)};const rows=[...m.entries()].sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k,v]);return{title:'Resumen por calle / domicilio',headers:['Calle / Domicilio','Registros'],rows,source:'summary'};
+}
+function modal(){
+ let back=document.getElementById('angelaSheetModalBack');if(back)return back;
+ back=document.createElement('div');back.id='angelaSheetModalBack';back.innerHTML=`<div id="angelaSheetModal" role="dialog" aria-modal="true" aria-label="Planilla de ÁNGELA"><div class="angela-sheet85-head"><div><div class="angela-sheet85-title">📊 PLANILLA QUE ESTÁ ARMANDO ÁNGELA</div><div id="angelaSheet85Meta" class="angela-sheet85-meta">Preparando vista…</div></div><div class="angela-sheet85-actions"><button class="angela-sheet85-btn" onclick="angelaSheet85Mode('detail')">📋 Detalle</button><button class="angela-sheet85-btn" onclick="angelaSheet85Mode('street')">🛣️ Por calles</button><button class="angela-sheet85-btn primary" onclick="angelaAgenteDescargarPlanilla()">⬇️ Descargar Excel</button><button class="angela-sheet85-btn" onclick="angelaSheet85Close()">✕ Cerrar</button></div></div><div class="angela-sheet85-tools"><input id="angelaSheet85Search" class="angela-sheet85-search" placeholder="🔎 Buscar cualquier dato en la tabla…"><button class="angela-sheet85-btn" onclick="angelaSheet85Refresh()">↻ Actualizar</button></div><div id="angelaSheet85Body" class="angela-sheet85-body"></div><div id="angelaSheet85Foot" class="angela-sheet85-foot"></div></div>`;document.body.appendChild(back);back.addEventListener('click',e=>{if(e.target===back)window.angelaSheet85Close()});document.getElementById('angelaSheet85Search')?.addEventListener('input',render);return back;
+}
+function currentForMode(){if(!CURRENT)return null;if(MODE==='street')return summary(CURRENT)||CURRENT;return CURRENT}
+function render(){
+ modal();const body=document.getElementById('angelaSheet85Body'),meta=document.getElementById('angelaSheet85Meta'),foot=document.getElementById('angelaSheet85Foot');const s=currentForMode();
+ if(!s){meta.textContent='No hay filas reales disponibles';body.innerHTML=`<div class="angela-sheet85-empty">ÁNGELA pudo <b>analizar y explicar</b> los datos, pero en este momento <b>no existe una planilla real con filas para mostrar</b>.<br><br>Dictá un registro, cargá o cruzá una planilla, o pedile a ÁNGELA que cree una tabla. La descarga solo se habilita cuando hay filas reales para mostrar.</div>`;foot.textContent='Sin planilla descargable.';return false;}
+ const q=clean(document.getElementById('angelaSheet85Search')?.value).toLowerCase();let rows=s.rows;if(q)rows=rows.filter(r=>r.some(v=>String(v??'').toLowerCase().includes(q)));const max=1200,shown=rows.slice(0,max);
+ meta.textContent=`${s.title} · ${s.rows.length} registros · ${s.headers.length} columnas`;
+ body.innerHTML=`<table id="angelaSheet85Table"><thead><tr><th class="angela-sheet85-num">N°</th>${s.headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${shown.map((r,i)=>`<tr><td class="angela-sheet85-num">${i+1}</td>${s.headers.map((_,j)=>`<td title="${esc(r?.[j]??'')}">${esc(r?.[j]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+ foot.textContent=`Mostrando ${shown.length}${q?` de ${rows.length} coincidencias`:''} · Deslizá hacia los costados para ver todas las columnas.${rows.length>max?` Se muestran las primeras ${max} filas.`:''}`;return true;
+}
+window.angelaSheet85Open=function(){CURRENT=choose();modal().classList.add('open');render();return!!CURRENT};
+window.angelaSheet85Close=function(){document.getElementById('angelaSheetModalBack')?.classList.remove('open')};
+window.angelaSheet85Refresh=function(){CURRENT=choose();render()};
+window.angelaSheet85Mode=function(m){MODE=m==='street'?'street':'detail';render()};
+window.angelaAgenteMostrarPlanilla=function(){return window.angelaSheet85Open()};
+window.angelaAgenteDescargarPlanilla=function(){
+ const s=currentForMode()||choose();if(!s){alert('No hay una planilla real con filas para descargar todavía.');return}if(!window.XLSX){alert('No está disponible el generador Excel.');return}
+ const ws=XLSX.utils.aoa_to_sheet([s.headers,...s.rows]);ws['!cols']=s.headers.map((h,i)=>({wch:Math.min(42,Math.max(12,String(h).length+3,...s.rows.slice(0,100).map(r=>String(r?.[i]??'').length+2)))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,MODE==='street'?'Por calles':'Planilla');XLSX.writeFile(wb,`ANGELA_${MODE==='street'?'RESUMEN_CALLES':'PLANILLA'}_${new Date().toISOString().slice(0,10)}.xlsx`);
+};
+function addOpenButton(){const p=document.getElementById('angelaAgenticPanel');if(!p||document.getElementById('agenticOpenRealSheet'))return;const out=document.getElementById('agenticOutput');if(!out)return;const b=document.createElement('button');b.id='agenticOpenRealSheet';b.type='button';b.textContent='📊 VER LA PLANILLA EN PANTALLA';b.onclick=()=>window.angelaSheet85Open();out.insertAdjacentElement('afterend',b);}
+function watchAgent(){
+ addOpenButton();const A=window.ANGELA_AGENTIC;if(!A?.current||A.running)return;if(!['done','stopped','error'].includes(A.current.status))return;if(A.current.id===LAST_AGENT_DONE)return;LAST_AGENT_DONE=A.current.id;if(!wantsSheet(A.current.objective))return;setTimeout(()=>{CURRENT=choose();renderInlinePreview(CURRENT);window.angelaSheet85Open();const o=document.getElementById('agenticOutput');if(o&&!CURRENT&&!/NO existe una planilla real/i.test(o.textContent||''))o.textContent+=(o.textContent?'\n\n':'')+'⚠️ IMPORTANTE: se hizo el análisis, pero NO existe todavía una planilla real visible/descargable. Cargá o cruzá los datos y volvé a pedir “mostrar planilla”.';},250);
+}
+function boot(){modal();addOpenButton();watchAgent();setTimeout(()=>{CURRENT=choose();renderInlinePreview(CURRENT)},120)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,600));else setTimeout(boot,600);setInterval(watchAgent,900);
+})();
+</script>
+
+
+<!-- =========================================================
+     ÁNGELA V8.5.2 · DICTADO → TABLA + VISTA PREVIA PERMANENTE
+     Detecta registros estructurados dictados sin exigir “modo agente”.
+     ========================================================= -->
+<script id="angela-dictado-tabla-auto-v852">
+(function(){
+ 'use strict';
+ function instalar(){
+   const prev=window.procesarEntrada;
+   if(typeof prev!=='function'||prev.__angelaDictadoTabla852)return;
+   const wrapped=async function(texto){
+     const raw=String(texto||'').trim();
+     try{
+       if(raw&&typeof window.angelaRegistrarDictadoEnTabla==='function'&&window.angelaRegistrarDictadoEnTabla(raw)){
+         const msg='📊 Listo. Agregué el dato como una fila. La vista previa quedó visible abajo y también podés descargar el Excel.';
+         try{if(typeof agregarMensaje==='function')agregarMensaje('angela',msg)}catch(e){}
+         try{if(typeof hablar==='function')hablar(msg)}catch(e){}
+         return;
+       }
+       if(/^(?:mostr[aá]|mostrar|ver|abrir)\s+(?:la\s+)?(?:tabla|planilla)\s+(?:dictada|de\s+registros|de\s+donaciones?)$/i.test(raw)&&typeof window.angelaAbrirTablaDictada==='function'){
+         if(window.angelaAbrirTablaDictada())return;
+       }
+     }catch(e){console.warn('Dictado → tabla:',e)}
+     return prev.apply(this,arguments);
+   };
+   wrapped.__angelaDictadoTabla852=true;
+   wrapped.__angelaDictadoTablaPrev=prev;
+   window.procesarEntrada=wrapped;
+ }
+ instalar();
+ setTimeout(instalar,800);
+ setTimeout(instalar,1800);
 })();
 </script>
 
