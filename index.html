@@ -372,6 +372,9 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 #angelaRightUtilities .aru-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #angelaRightUtilities button{border:1px solid #38527a;background:#101d31;color:#eaf6ff;border-radius:9px;padding:8px 5px;font-size:10px;font-weight:800;cursor:pointer}
 #angelaRightUtilities .aru-weather{margin:9px 0;padding:8px;border-radius:10px;background:#0c1728;font-size:11px}
+#angelaRightUtilities .aru-place{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px}
+#angelaRightUtilities .aru-place input{min-width:0;background:#081426;border:1px solid #38527a;color:#fff;border-radius:9px;padding:8px;font-size:10px}
+#angelaRightUtilities .aru-place button{white-space:nowrap}
 @media(max-width:1100px){#angelaRightUtilities{position:relative;right:auto;top:auto;width:auto;margin:10px}}
 </style>
 
@@ -1526,7 +1529,11 @@ function setThinking(active){
 /* ==========================================
    GEOLOCATION + WEATHER
    ========================================== */
-function hasFreshLocation(){ return STATE.location && Date.now()-Number(STATE.location.timestamp||0)<10*60*1000; }
+function hasFreshLocation(){
+    if(!STATE.location)return false;
+    if(STATE.location.source==="manual")return Number.isFinite(Number(STATE.location.lat))&&Number.isFinite(Number(STATE.location.lon));
+    return Date.now()-Number(STATE.location.timestamp||0)<10*60*1000;
+}
 function guardarUbicacionGPS(pos){
     const accuracy=Math.round(Number(pos.coords.accuracy||0));
     STATE.location={
@@ -1537,6 +1544,7 @@ function guardarUbicacionGPS(pos){
         heading:pos.coords.heading ?? null,
         speed:pos.coords.speed ?? null,
         zona:"Ubicación GPS actual",
+        source:"gps",
         timestamp:Date.now()
     };
     STORAGE.set("angela_location_v2",STATE.location);
@@ -1610,6 +1618,43 @@ async function solicitarUbicacion({silent=false,fresh=true}={}){
         }
     });
 }
+
+async function geocodificarLugarAngela(texto){
+    const q=String(texto||"").trim();
+    if(!q)return null;
+    const url=`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=es&format=json`;
+    const r=await fetch(url,{headers:{Accept:"application/json"},cache:"no-store"});
+    if(!r.ok)throw new Error(`Geocodificación HTTP ${r.status}`);
+    const data=await r.json();
+    const lista=Array.isArray(data?.results)?data.results:[];
+    if(!lista.length)return null;
+    // Open-Meteo ya ordena por relevancia. Si el texto menciona Argentina, priorizamos ese país.
+    const pideAR=/\b(argentina|buenos aires|merlo|mor[oó]n|mariano acosta)\b/i.test(q);
+    const x=(pideAR?lista.find(v=>String(v.country_code||"").toUpperCase()==="AR"):null)||lista[0];
+    const partes=[x.name,x.admin1,x.country].filter(Boolean);
+    const zona=[...new Set(partes)].join(", ");
+    return {lat:Number(x.latitude),lon:Number(x.longitude),zona:zona||q,query:q,source:"manual",timestamp:Date.now()};
+}
+function guardarUbicacionManual(loc){
+    if(!loc||!Number.isFinite(Number(loc.lat))||!Number.isFinite(Number(loc.lon)))return null;
+    STATE.location={...loc,source:"manual",timestamp:Date.now()};
+    STORAGE.set("angela_location_v2",STATE.location);
+    setText("ubicacion",`📍 ${STATE.location.zona||"Ubicación escrita"}`);
+    setClassStatus("estadoUbicacion","🟢 Ubicación escrita","text-green-400");
+    logActivity("Ubicación",`Lugar escrito: ${STATE.location.zona||STATE.location.query||""}`);
+    return STATE.location;
+}
+function resumenPronosticoAngela(daily,limite=4){
+    if(!daily?.time?.length)return "";
+    return daily.time.slice(0,limite).map((date,i)=>{
+        const d=new Date(date+"T12:00:00");
+        const dia=i===0?"Hoy":d.toLocaleDateString("es-AR",{weekday:"short",day:"numeric"});
+        const [ico,desc]=descripcionCodigoClima(daily.weather_code?.[i]);
+        const max=daily.temperature_2m_max?.[i]??"-",min=daily.temperature_2m_min?.[i]??"-";
+        const lluvia=daily.precipitation_probability_max?.[i]??0;
+        return `${dia}: ${ico} ${desc}, ${max}°/${min}°, lluvia ${lluvia}%`;
+    }).join(" · ");
+}
 function descripcionCodigoClima(code){
     const c=Number(code);
     if(c===0)return["☀️","Despejado"];
@@ -1641,17 +1686,37 @@ function renderPronostico7Dias(data){
         return `<div class="angela-forecast-day"><b class="text-cyan-200">${dia}</b><br>${ico} ${desc}<br>🌡️ ${max}° / ${min}°<br>☔ ${lluvia}%</div>`;
     }).join("");
 }
-async function cargarClima({askLocation=true}={}){
-    let loc=hasFreshLocation()?STATE.location:null;
-    if(!loc && askLocation) loc=await solicitarUbicacion({fresh:true});
-    if(!loc){
-        setText("clima","🌤️ Clima: requiere ubicación");
-        setText("climaDetalles","Permití la ubicación para ver temperatura, humedad, viento, amanecer, atardecer y pronóstico.");
-        return null;
-    }
+async function cargarClima({askLocation=true,locationText=""}={}){
+    let loc=null;
+    const lugarEscrito=String(locationText||"").trim();
     try{
+        if(lugarEscrito){
+            setText("clima",`🌤️ Buscando ${lugarEscrito}…`);
+            setText("climaDetalles","Localizando la ciudad o localidad escrita…");
+            const encontrada=await geocodificarLugarAngela(lugarEscrito);
+            if(!encontrada){
+                setText("clima",`🌤️ No encontré “${lugarEscrito}”`);
+                setText("climaDetalles","Probá escribiendo localidad + provincia, por ejemplo: Merlo, Buenos Aires.");
+                const aru=document.getElementById("aruWeather");if(aru)aru.textContent=`⚠️ No encontré ${lugarEscrito}`;
+                return null;
+            }
+            loc=guardarUbicacionManual(encontrada);
+        }else{
+            loc=hasFreshLocation()?STATE.location:null;
+            if(!loc && askLocation) loc=await solicitarUbicacion({fresh:true});
+        }
+        if(!loc){
+            setText("clima","🌤️ Clima: requiere ubicación");
+            setText("climaDetalles","Permití la ubicación o escribí una ciudad/localidad para consultar el pronóstico.");
+            const aru=document.getElementById("aruWeather");if(aru)aru.textContent="🌤️ Clima · falta ubicación";
+            return null;
+        }
+
+        setText("ubicacion",`📍 ${loc.zona||"Ubicación actual"}`);
         setText("clima","🌤️ Consultando clima…");
         setText("climaDetalles","Actualizando datos meteorológicos…");
+        const aruLoading=document.getElementById("aruWeather");if(aruLoading)aruLoading.textContent=`🌤️ Consultando · ${loc.zona||"ubicación"}`;
+
         const params=new URLSearchParams({
             latitude:String(loc.lat),
             longitude:String(loc.lon),
@@ -1673,22 +1738,33 @@ async function cargarClima({askLocation=true}={}){
         setText("clima",`${ico} ${desc} · ${c.temperature_2m??"-"} °C · sensación ${c.apparent_temperature??"-"} °C`);
         const sunrise=data.daily?.sunrise?.[0],sunset=data.daily?.sunset?.[0];
         setText("climaDetalles",
-            `💧 Humedad ${c.relative_humidity_2m??"-"}% · ☔ Precipitación ${c.precipitation??0} mm · `+
+            `📍 ${loc.zona||"Ubicación actual"} · 💧 Humedad ${c.relative_humidity_2m??"-"}% · ☔ Precipitación ${c.precipitation??0} mm · `+
             `💨 Viento ${c.wind_speed_10m??"-"} km/h (ráfagas ${c.wind_gusts_10m??"-"}) · ☁️ Nubes ${c.cloud_cover??"-"}% · `+
             `🌅 ${fmtHoraClima(sunrise)} · 🌇 ${fmtHoraClima(sunset)}`
         );
         renderPronostico7Dias(data);
-        logActivity("Clima","Actualizado · pronóstico 7 días");
+        const aru=document.getElementById("aruWeather");if(aru)aru.textContent=`${ico} ${c.temperature_2m??"-"}° · ${loc.zona||"Ubicación"}`;
+        logActivity("Clima",`Actualizado · ${loc.zona||"ubicación"} · pronóstico 7 días`);
         return c;
     }catch(error){
         console.error(error);
         setText("clima","🌤️ No pude consultar el clima");
-        setText("climaDetalles",navigator.onLine?"El servicio meteorológico no respondió. Probá Actualizar nuevamente.":"No hay conexión a Internet.");
+        setText("climaDetalles",navigator.onLine?"El servicio meteorológico no respondió. Probá nuevamente.":"No hay conexión a Internet.");
+        const aru=document.getElementById("aruWeather");if(aru)aru.textContent="⚠️ Clima no disponible";
         const box=$("pronostico7dias");if(box)box.innerHTML="";
         logActivity("Clima",`Error: ${error?.message||"desconocido"}`);
         return null;
     }
 }
+window.angelaClimaLugarManual=async function(textoForzado=""){
+    const input=document.getElementById("aruPlace");
+    const q=String(textoForzado||input?.value||"").trim();
+    if(!q){if(typeof showToast==="function")showToast("Escribí una ciudad o localidad.");return null;}
+    const c=await cargarClima({askLocation:false,locationText:q});
+    if(c&&input)input.value=STATE.location?.zona||q;
+    return c;
+};
+
 async function ubicameEnMaps(){
     const pestaña=window.open("about:blank","_blank");
     if(pestaña){
@@ -1764,7 +1840,7 @@ const TOOLS = {
         },
         locate:async()=>{const ok=await ubicameEnMaps();return{ok,message:ok?"Abrí Maps usando una ubicación GPS nueva.":"No pude obtener tu ubicación. Revisá el permiso de ubicación."};}
     },
-    weather:{ current:async()=>{const c=await cargarClima({askLocation:true}); if(!c)return{ok:false,message:"Necesito permiso de ubicación para darte el clima local."}; const rain=(c.precipitation??0)>0?`Está lloviendo: ${c.precipitation} mm.`:"Ahora no registra lluvia.";return{ok:true,message:`${rain} Temperatura ${c.temperature_2m} °C, sensación ${c.apparent_temperature} °C.`};}},
+    weather:{ current:async({location=""}={})=>{const q=String(location||"").trim();const c=await cargarClima({askLocation:!q,locationText:q}); if(!c)return{ok:false,message:q?`No pude encontrar o consultar el clima de “${q}”. Probá con localidad y provincia.`:"No pude obtener tu ubicación. Podés habilitar el permiso GPS o decirme una ciudad, por ejemplo: “clima en Merlo, Buenos Aires”."}; const rain=(c.precipitation??0)>0?`Está lloviendo: ${c.precipitation} mm.`:"Ahora no registra lluvia.";const lugar=STATE.location?.zona||"tu ubicación";const pron=resumenPronosticoAngela(STATE.weatherForecast,4);return{ok:true,message:`📍 ${lugar}. ${rain} Temperatura ${c.temperature_2m} °C, sensación ${c.apparent_temperature} °C.${pron?` Pronóstico: ${pron}.`:""}`};}},
     radio:{open:()=>{abrirRadio();return{ok:true,message:"Abrí la página oficial de Radio Ángel Guardián."};}},
     whatsapp:{open:()=>({ok:safeOpen("https://web.whatsapp.com","Abrir WhatsApp"),message:"Abrí WhatsApp Web. No envié ningún mensaje."})},
     gmail:{open:()=>({ok:safeOpen("https://mail.google.com","Abrir Gmail"),message:"Abrí Gmail. No tengo acceso a tus correos sin una integración OAuth/API."})},
@@ -1904,7 +1980,17 @@ function localCommand(text){
     m=p.match(/(?:busca|buscá|buscame|buscáme)\s+(?:en\s+google\s+)?(.+)/); if(m && !/cerca|maps|mapa/.test(p))return{tool:"google_search",args:{query:m[1]}};
     if(/donde estoy|dónde estoy|ubicame|ubicáme/.test(p))return{tool:"locate",args:{}};
     if(/^(abri|abrir|abrime)\s+(maps|mapas|google maps)/.test(p))return{tool:"maps",args:{query:""}};
-    if(/^(que|qué)\s+(clima|tiempo)|temperatura|esta lloviendo|está lloviendo/.test(p))return{tool:"weather",args:{}};
+
+    // V8.3 · clima por GPS o por ubicación escrita.
+    let wm=raw.match(/(?:clima|tiempo|pron[oó]stico|temperatura)\s+(?:en|para)\s+(.+?)(?:\?|$)/i);
+    if(wm)return{tool:"weather",args:{location:wm[1].trim()}};
+    if(/(clima|tiempo|pron[oó]stico|temperatura|lloviendo|lluvia)/i.test(raw)){
+        const en=raw.match(/(?:estoy|me encuentro|ando)\s+en\s+(.+?)(?=\s+(?:y\s+)?(?:dame|decime|quiero|que|qué|como|cómo|cual|cuál)|[,.;!?]|$)/i);
+        if(en?.[1])return{tool:"weather",args:{location:en[1].trim()}};
+        return{tool:"weather",args:{}};
+    }
+    const lugar=raw.match(/^(?:mi\s+ubicaci[oó]n\s+es|estoy|me\s+encuentro|ando)\s+en\s+(.+?)[.!?]?$/i);
+    if(lugar?.[1])return{tool:"location_text",args:{location:lugar[1].trim()}};
     return null;
 }
 async function executeLocalCommand(cmd){
@@ -1918,7 +2004,8 @@ async function executeLocalCommand(cmd){
         calendar_local:()=>{calendarioHoyAngela();$("calendarioAngela")?.scrollIntoView({behavior:"smooth",block:"center"});return{ok:true,message:`Abrí el calendario. Hoy es ${obtenerFechaHoraAngela().fecha}.`};},
         calculator:()=>TOOLS.calculator.calculate(cmd.args), remember:()=>TOOLS.memory.remember(cmd.args), radio:()=>TOOLS.radio.open(),
         youtube_open:()=>TOOLS.youtube.open(), google_open:()=>TOOLS.google.open(), whatsapp:()=>TOOLS.whatsapp.open(), gmail:()=>TOOLS.gmail.open(),
-        youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(),
+        youtube_search:()=>TOOLS.youtube.search(cmd.args), google_search:()=>TOOLS.google.search(cmd.args), locate:()=>TOOLS.maps.locate(), maps:()=>TOOLS.maps.open(cmd.args), weather:()=>TOOLS.weather.current(cmd.args||{}),
+        location_text:async()=>{const q=String(cmd.args?.location||"").trim();const c=await cargarClima({askLocation:false,locationText:q});if(!c)return{ok:false,message:`No pude ubicar “${q}”. Probá con localidad y provincia.`};const pron=resumenPronosticoAngela(STATE.weatherForecast,3);return{ok:true,message:`📍 Ubicación establecida en ${STATE.location?.zona||q}. ${c.temperature_2m??"-"} °C ahora.${pron?` Pronóstico: ${pron}.`:""}`};},
         desktop_app:()=>abrirAppDesktop(cmd.args?.app),
         image_edit:()=>ejecutarComandoImagen(cmd.args||{}),
         image_fullscreen:()=>{if(!imagenActiva())return{ok:false,message:"Primero cargá una foto con ＋ → Fotos. Después puedo abrirla en vista grande."};abrirVisorImagenGrande();return{ok:true,message:"Listo. Abrí la imagen en vista grande para trabajar los detalles con zoom, arrastre y comparación antes/después."};},
@@ -2611,7 +2698,7 @@ async function executeAIAction(action){
         case "google_search": return TOOLS.google.search(args);
         case "maps": return TOOLS.maps.open(args);
         case "locate": return TOOLS.maps.locate();
-        case "weather": return TOOLS.weather.current();
+        case "weather": return TOOLS.weather.current(args);
         case "radio": return TOOLS.radio.open();
         case "whatsapp": return TOOLS.whatsapp.open();
         case "gmail": return TOOLS.gmail.open();
@@ -4089,9 +4176,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <button onclick="window.open('https://web.whatsapp.com','_blank')">💬 WhatsApp</button>
     <button onclick="window.open('https://www.canva.com','_blank')">🎨 Canva</button>
     <button onclick="if(typeof ubicameEnMaps==='function')ubicameEnMaps();else if(navigator.geolocation)navigator.geolocation.getCurrentPosition(()=>{},()=>{});">📍 Ubicación</button>
-    <button onclick="if(typeof actualizarClima==='function')actualizarClima();else if(typeof obtenerClima==='function')obtenerClima();">🌤️ Clima</button>
+    <button onclick="if(typeof cargarClima==='function')cargarClima({askLocation:true});">🌤️ Clima GPS</button>
     <button onclick="if(typeof abrirRadioAngelGuardian==='function')abrirRadioAngelGuardian();else if(typeof toggleRadio==='function')toggleRadio();">📻 Radio Ángel G.</button>
     <button onclick="if(typeof abrirCalendario==='function')abrirCalendario();else document.querySelector('[data-view*=calendario],#calendario')?.scrollIntoView({behavior:'smooth'});">📅 Calendario</button>
+  </div>
+  <div class="aru-place">
+    <input id="aruPlace" placeholder="Ciudad o localidad" onkeydown="if(event.key==='Enter')angelaClimaLugarManual()">
+    <button onclick="angelaClimaLugarManual()">Ver clima</button>
   </div>
   <div style="margin-top:10px;border-top:1px solid #263b5c;padding-top:8px;font-size:10px">
     <div>🟢 IA <span style="float:right">Estado</span></div>
