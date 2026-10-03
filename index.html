@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ÁNGELA V7.8 | Interfaz Foto Corregida</title>
-<!-- V7.8 ESTABLE · SOLO TONO PROFESIONAL + LIMPIEZA DE VOZ · 2026-08-18 -->
+<title>ÁNGELA V8.0 | Agentic Harness</title>
+<!-- V8.0 · BASE ESTABLE + AGENTIC HARNESS · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
@@ -895,7 +895,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "7.7.0-pantalla-grande-universal",
+    version: "8.0.0-agentic-harness-base",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -5829,6 +5829,262 @@ window.angelaAbrirGestion=function(m){
  return r;
 };
 document.addEventListener("DOMContentLoaded",()=>setTimeout(agregarVista,800));
+})();
+</script>
+
+
+<!-- =========================================================
+     ÁNGELA V8.0 · AGENTIC HARNESS BASE
+     Capa aditiva: objetivo → plan → herramientas → verificación.
+     No elimina ni reemplaza funciones existentes.
+     ========================================================= -->
+<style id="angela-agentic-v1-style">
+#angelaAgenticPanel .agentic-status{background:#050d19;border:1px solid #2f4f74;border-radius:12px;padding:9px;font-size:10px;line-height:1.5}
+#angelaAgenticPanel .agentic-step{background:#071321;border:1px solid #294260;border-radius:10px;padding:8px;font-size:10px;display:flex;gap:8px;align-items:flex-start}
+#angelaAgenticPanel .agentic-step.running{border-color:#22d3ee;box-shadow:0 0 0 1px rgba(34,211,238,.12)}
+#angelaAgenticPanel .agentic-step.ok{border-color:#16a34a}
+#angelaAgenticPanel .agentic-step.error{border-color:#dc2626}
+#angelaAgenticPanel .agentic-step.skip{opacity:.6}
+#angelaAgenticPanel .agentic-log{max-height:180px;overflow:auto;white-space:pre-wrap;background:#02050a;border:1px solid #253c60;border-radius:10px;padding:8px;font-size:10px;color:#cbd5e1}
+#btnAngelaAgenticQuick{border-color:#7c3aed!important;background:linear-gradient(135deg,#4338ca,#7c3aed)!important}
+</style>
+<script id="angela-agentic-harness-v1">
+(function(){
+'use strict';
+const KEY='ANGELA_AGENTIC_HARNESS_V1';
+const VERSION='1.0';
+const MAX_HARD_STEPS=7;
+const MODULES_PERMITIDOS=['herramientas','imagenes','motion3d','laser','sublimacion','proyectos','stock','archivos','web','comedor','config'];
+
+function load(){
+  try{
+    const x=JSON.parse(localStorage.getItem(KEY)||'{}');
+    return Object.assign({enabled:true,maxSteps:5,running:false,stop:false,current:null,history:[]},x,{running:false,stop:false});
+  }catch(e){return {enabled:true,maxSteps:5,running:false,stop:false,current:null,history:[]};}
+}
+const A=load();
+window.ANGELA_AGENTIC=A;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify({...A,running:false,stop:false,history:(A.history||[]).slice(-30)}));}catch(e){}
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function norm(s){try{return typeof normalizarTexto==='function'?normalizarTexto(s):String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}catch(e){return String(s||'').toLowerCase().trim();}}
+function clip(s,n=900){s=String(s??'');return s.length>n?s.slice(0,n)+'…':s;}
+function log(type,detail){try{if(typeof logActivity==='function')logActivity('Agente · '+type,clip(detail,220));}catch(e){} render();}
+function sayInChat(text,speak=false){try{if(typeof agregarMensaje==='function')agregarMensaje('angela',text);}catch(e){} if(speak){try{if(typeof hablar==='function')hablar(text);}catch(e){}}}
+function setStatus(text){A.status=String(text||'');render();}
+
+const TOOLS={
+  system_status:{label:'Estado del sistema',risk:'read',run:async()=>typeof skillEstadoSistema==='function'?skillEstadoSistema():{ok:false,message:'Estado del sistema no disponible.'}},
+  tasks_list:{label:'Pendientes',risk:'read',run:async()=>({ok:true,message:typeof textoTareasPendientes==='function'?textoTareasPendientes(15):'Agenda no disponible.'})},
+  daily_metrics:{label:'Métricas',risk:'read',run:async()=>typeof skillMetricas==='function'?skillMetricas():{ok:false,message:'Métricas no disponibles.'}},
+  knowledge_search:{label:'Buscar en memoria',risk:'read',run:async args=>({ok:true,message:typeof conocimientoLocal==='function'?conocimientoLocal(args?.query||''):'Memoria local no disponible.'})},
+  vault_search:{label:'Buscar en bóveda',risk:'read',run:async args=>({ok:true,message:(typeof buscarBoveda==='function'&&typeof formatearItemsBoveda==='function')?formatearItemsBoveda(buscarBoveda(args?.query||'',8)):'Bóveda no disponible.'})},
+  file_info:{label:'Archivo activo',risk:'read',run:async()=>{
+    const f=window.STATE?.fileContext || (typeof STATE!=='undefined'?STATE.fileContext:null);
+    if(!f)return {ok:true,message:'No hay un archivo activo en el contexto.'};
+    return {ok:true,message:`Archivo activo: ${f.name||'archivo'} · tipo ${f.kind||'desconocido'}${f.text?` · texto extraído: ${String(f.text).length} caracteres`:''}.`};
+  }},
+  open_module:{label:'Abrir módulo',risk:'ui',run:async args=>{
+    const id=String(args?.module||'').toLowerCase();
+    if(!MODULES_PERMITIDOS.includes(id))return {ok:false,message:'Ese módulo no está habilitado para el modo agente.'};
+    try{
+      if(typeof window.abrirPanelMenuAngela==='function')window.abrirPanelMenuAngela(id);
+      else if(typeof window.abrirMenu==='function')window.abrirMenu(id);
+      else throw new Error('No existe abridor de módulos');
+      return {ok:true,message:`Módulo ${id} abierto.`};
+    }catch(e){return {ok:false,message:'No pude abrir el módulo '+id+'.'};}
+  }},
+  local_command:{label:'Comando local',risk:'controlled',run:async args=>{
+    const text=String(args?.text||'').trim();
+    if(!text)return {ok:false,message:'Falta el comando local.'};
+    if(typeof localCommand!=='function'||typeof executeLocalCommand!=='function')return {ok:false,message:'Motor de comandos locales no disponible.'};
+    const cmd=localCommand(text);
+    if(!cmd)return {ok:false,message:'No reconocí ese comando local.'};
+    const sensitive=['task_done','routine_off','desktop_app'];
+    if(sensitive.includes(cmd.tool)){
+      const ok=confirm(`ÁNGELA quiere ejecutar: ${cmd.tool}. ¿Confirmás?`);
+      if(!ok)return {ok:false,cancelled:true,message:'Acción cancelada por el usuario.'};
+    }
+    return await executeLocalCommand(cmd) || {ok:true,message:'Comando ejecutado.'};
+  }},
+  ai_answer:{label:'Consultar cerebro IA',risk:'read',run:async args=>{
+    const prompt=String(args?.prompt||args?.question||A.current?.objective||'').trim();
+    if(!prompt)return {ok:false,message:'Falta la consulta para la IA.'};
+    if(typeof buildCompatiblePayload!=='function'||typeof requestAiWithFallback!=='function'||typeof extractAiReply!=='function')return {ok:false,message:'Backend de IA no disponible.'};
+    const ctl=new AbortController();A.controller=ctl;
+    try{
+      const payload=buildCompatiblePayload(prompt,{agenticStep:true,agenticObjective:A.current?.objective||prompt,answerStyle:'concise'});
+      const packet=await requestAiWithFallback(payload,ctl.signal);
+      const raw=extractAiReply(packet?.data);
+      const text=typeof limpiarRespuestaTecnicaAI==='function'?limpiarRespuestaTecnicaAI(typeof limpiarFormatoIA==='function'?limpiarFormatoIA(raw):raw):raw;
+      return text?{ok:true,message:text}:{ok:false,message:'La IA no devolvió una respuesta útil.'};
+    }finally{A.controller=null;}
+  }}
+};
+window.ANGELA_AGENTIC_TOOLS=TOOLS;
+
+function parseJsonLoose(text){
+  const raw=String(text||'').trim();
+  if(!raw)return null;
+  const tries=[raw,raw.replace(/^```(?:json)?/i,'').replace(/```$/,'').trim()];
+  const a=raw.indexOf('{'),b=raw.lastIndexOf('}');if(a>=0&&b>a)tries.push(raw.slice(a,b+1));
+  for(const t of tries){try{return JSON.parse(t);}catch(e){}}
+  return null;
+}
+function sanitizePlan(plan,objective){
+  const src=Array.isArray(plan?.steps)?plan.steps:Array.isArray(plan)?plan:[];
+  const max=Math.max(1,Math.min(MAX_HARD_STEPS,Number(A.maxSteps)||5));
+  const out=[];
+  for(const s of src){
+    const tool=String(s?.tool||'').trim();if(!TOOLS[tool])continue;
+    out.push({id:'step_'+(out.length+1),tool,args:(s?.args&&typeof s.args==='object')?s.args:{},reason:String(s?.reason||s?.label||TOOLS[tool].label).slice(0,180),status:'pending',result:''});
+    if(out.length>=max)break;
+  }
+  if(!out.length)out.push({id:'step_1',tool:'ai_answer',args:{prompt:objective},reason:'Resolver el objetivo con el cerebro de ÁNGELA',status:'pending',result:''});
+  return out;
+}
+function localPlan(objective){
+  const p=norm(objective),steps=[];
+  const add=(tool,args={},reason='')=>{if(!steps.some(x=>x.tool===tool&&JSON.stringify(x.args)===JSON.stringify(args)))steps.push({tool,args,reason});};
+  if(/estado|funciona|conexion|conexión|sistema/.test(p))add('system_status',{},'Comprobar el estado general');
+  if(/pendient|tarea|agenda/.test(p))add('tasks_list',{},'Revisar tareas pendientes');
+  if(/metrica|métrica|resumen del dia|resumen del día|actividad de hoy/.test(p))add('daily_metrics',{},'Consultar métricas locales');
+  if(/archivo|excel|pdf|word|planilla|foto cargada|imagen cargada/.test(p))add('file_info',{},'Comprobar el archivo activo');
+  if(/memoria|boveda|bóveda|que sabes|qué sabes|recordas|recordás/.test(p))add('knowledge_search',{query:objective},'Buscar información local relacionada');
+  const modules={laser:'laser',láser:'laser',imagenes:'imagenes',imágenes:'imagenes',archivos:'archivos',comedor:'comedor',configuracion:'config',configuración:'config',stock:'stock',proyectos:'proyectos',sublimacion:'sublimacion',sublimación:'sublimacion',web:'web'};
+  if(/abrir|abri|abrí|mostra|mostrá/.test(p))for(const [k,v] of Object.entries(modules))if(p.includes(norm(k))){add('open_module',{module:v},'Abrir el módulo solicitado');break;}
+  if(steps.length && /analiza|analizá|revisa|revisá|explica|explicá|decime|dime|prepara|prepará|crea|crear|redacta|redactá|compara|compará/.test(p))add('ai_answer',{prompt:objective},'Analizar y preparar la respuesta final');
+  return steps;
+}
+async function aiPlan(objective){
+  if(typeof buildCompatiblePayload!=='function'||typeof requestAiWithFallback!=='function'||typeof extractAiReply!=='function')return null;
+  const allowed=Object.keys(TOOLS).join(', ');
+  const prompt=`MODO PLANIFICADOR DE ÁNGELA. Convertí el objetivo en un plan corto de hasta ${Math.max(1,Math.min(MAX_HARD_STEPS,Number(A.maxSteps)||5))} pasos. Usá SOLAMENTE estas herramientas: ${allowed}.\n\nReglas:\n- Preferí herramientas locales de lectura antes de ai_answer.\n- No inventes herramientas.\n- No borres datos ni hagas acciones irreversibles.\n- Si el objetivo se resuelve con una sola consulta, usá ai_answer.\n- open_module args: {"module":"laser|imagenes|archivos|comedor|config|stock|proyectos|sublimacion|web|motion3d|herramientas"}.\n- knowledge_search/vault_search args: {"query":"..."}.\n- local_command args: {"text":"..."}.\n- ai_answer args: {"prompt":"..."}.\n\nDevolvé SOLO JSON válido con esta forma exacta:\n{"steps":[{"tool":"system_status","args":{},"reason":"..."}]}\n\nOBJETIVO: ${objective}`;
+  try{
+    const ctl=new AbortController();A.controller=ctl;
+    const payload=buildCompatiblePayload(prompt,{agenticPlanner:true,useWeb:false,fresh:false,wantsSources:false,answerStyle:'concise'});
+    const packet=await requestAiWithFallback(payload,ctl.signal);
+    A.controller=null;
+    return parseJsonLoose(extractAiReply(packet?.data));
+  }catch(e){A.controller=null;log('Planificador',e?.message||'falló');return null;}
+}
+async function createPlan(objective){
+  const local=localPlan(objective);
+  if(local.length>=2)return sanitizePlan({steps:local},objective);
+  const ai=await aiPlan(objective);
+  if(ai)return sanitizePlan(ai,objective);
+  if(local.length)return sanitizePlan({steps:local},objective);
+  return sanitizePlan({steps:[{tool:'ai_answer',args:{prompt:objective},reason:'Resolver el objetivo'}]},objective);
+}
+function confirmStep(step){
+  if(step.tool!=='local_command')return true;
+  const p=norm(step.args?.text||'');
+  if(/borrar|eliminar|enviar|mandar|publicar|sobrescribir|restaurar|formatear|apagar|reiniciar/.test(p))return confirm(`⚠️ El modo agente quiere ejecutar: “${step.args.text}”. ¿Confirmás?`);
+  return true;
+}
+async function runTool(step){
+  const tool=TOOLS[step.tool];if(!tool)return {ok:false,message:'Herramienta no disponible: '+step.tool};
+  if(!confirmStep(step))return {ok:false,cancelled:true,message:'Paso cancelado por el usuario.'};
+  return await tool.run(step.args||{});
+}
+function finalText(cur){
+  const ok=cur.steps.filter(s=>s.status==='ok').length,err=cur.steps.filter(s=>s.status==='error').length;
+  const useful=cur.steps.filter(s=>s.result).map((s,i)=>`${i+1}. ${TOOLS[s.tool]?.label||s.tool}: ${clip(s.result,650)}`);
+  if(useful.length===1 && cur.steps[cur.steps.length-1]?.tool==='ai_answer')return useful[0].replace(/^1\. Consultar cerebro IA:\s*/,'');
+  return `${err?'⚠️':'✅'} Modo Agente ${err?'terminó con observaciones':'completó la tarea'}.\nPasos correctos: ${ok}/${cur.steps.length}.${useful.length?'\n\n'+useful.join('\n\n'):''}`;
+}
+async function run(objective){
+  objective=String(objective||'').trim();
+  if(!objective){alert('Escribí qué querés que haga ÁNGELA.');return;}
+  if(!A.enabled){sayInChat('El Agentic Harness está desactivado en Configuración.');return;}
+  if(A.running){sayInChat('Ya hay una tarea del modo agente en ejecución.');return;}
+  A.running=true;A.stop=false;A.current={id:'agent_'+Date.now(),objective,startedAt:Date.now(),status:'planning',steps:[],result:''};save();render();
+  log('Inicio',objective);setStatus('🧠 Armando el plan…');
+  sayInChat('🧠 Modo Agente: voy a organizar la tarea por pasos y usar solamente herramientas habilitadas.');
+  try{
+    A.current.steps=await createPlan(objective);A.current.status='running';setStatus(`▶ Ejecutando ${A.current.steps.length} paso(s)…`);render();
+    for(let i=0;i<A.current.steps.length;i++){
+      if(A.stop){A.current.steps[i].status='skip';continue;}
+      const step=A.current.steps[i];step.status='running';setStatus(`Paso ${i+1}/${A.current.steps.length}: ${TOOLS[step.tool]?.label||step.tool}`);render();
+      try{
+        const r=await runTool(step);step.result=String(r?.message||'').trim();
+        if(r?.cancelled){step.status='skip';}
+        else step.status=r?.ok===false?'error':'ok';
+        log(step.status==='ok'?'Paso OK':'Paso',`${step.tool}: ${step.result||step.status}`);
+        if(step.status==='error'&&!r?.cancelled)break;
+      }catch(e){step.status='error';step.result=String(e?.message||e||'Error');log('Error',step.result);break;}
+      render();
+    }
+    A.current.status=A.stop?'stopped':'done';A.current.finishedAt=Date.now();A.current.result=finalText(A.current);
+    if(A.stop)A.current.result='⏹ Tarea del modo agente detenida.';
+    A.history=(A.history||[]).concat([{id:A.current.id,objective:A.current.objective,startedAt:A.current.startedAt,finishedAt:A.current.finishedAt,status:A.current.status,steps:A.current.steps.map(s=>({tool:s.tool,status:s.status,result:clip(s.result,300)}))}]).slice(-30);
+    sayInChat(A.current.result,true);setStatus(A.stop?'⏹ Detenido':'✅ Tarea terminada');log('Fin',A.current.status);
+  }catch(e){
+    A.current.status='error';A.current.result='No pude completar la tarea: '+String(e?.message||e);setStatus('❌ '+A.current.result);sayInChat('❌ '+A.current.result);log('Error general',A.current.result);
+  }finally{A.running=false;A.stop=false;save();render();}
+}
+function stop(){A.stop=true;try{A.controller?.abort();}catch(e){} setStatus('⏹ Deteniendo…');render();}
+function clearHistory(){if(!confirm('¿Limpiar el historial del modo agente?'))return;A.history=[];A.current=null;save();render();}
+
+function render(){
+  const status=document.getElementById('agenticStatus');if(status)status.textContent=A.status||'Listo para recibir un objetivo.';
+  const badge=document.getElementById('estadoAgentic');if(badge){badge.textContent=A.enabled?(A.running?'🟣 Trabajando':'🟢 Listo'):'⚪ Desactivado';badge.className=A.enabled?(A.running?'text-fuchsia-300':'text-green-400'):'text-slate-400';}
+  const max=document.getElementById('agenticMaxSteps');if(max&&document.activeElement!==max)max.value=String(A.maxSteps||5);
+  const tog=document.getElementById('agenticEnabled');if(tog)tog.checked=!!A.enabled;
+  const list=document.getElementById('agenticSteps');if(list){
+    const steps=A.current?.steps||[];
+    list.innerHTML=steps.length?steps.map((s,i)=>`<div class="agentic-step ${esc(s.status)}"><span>${s.status==='ok'?'✅':s.status==='running'?'⏳':s.status==='error'?'❌':s.status==='skip'?'⏭️':'•'}</span><div><b>${i+1}. ${esc(TOOLS[s.tool]?.label||s.tool)}</b><div class="text-slate-400">${esc(s.reason||'')}</div>${s.result?`<div class="mt-1 text-slate-300">${esc(clip(s.result,260))}</div>`:''}</div></div>`).join(''):'<div class="text-[10px] text-slate-500">Todavía no hay un plan activo.</div>';
+  }
+  const hist=document.getElementById('agenticHistory');if(hist){const h=(A.history||[]).slice(-6).reverse();hist.textContent=h.length?h.map(x=>`${new Date(x.startedAt).toLocaleString('es-AR')} · ${x.status}\n${x.objective}`).join('\n\n'):'Sin tareas anteriores.';}
+}
+function inject(){
+  if(document.getElementById('angelaAgenticPanel')){render();return;}
+  const config=document.getElementById('config');if(!config)return;
+  const panel=document.createElement('details');panel.id='angelaAgenticPanel';panel.className='card-mini mb-2';panel.open=true;
+  panel.innerHTML=`<summary class="cursor-pointer text-xs font-bold">🧠 Agentic Harness · modo agente</summary>
+    <div class="mt-2 text-[10px] text-slate-400">ÁNGELA convierte un objetivo en pasos, elige herramientas permitidas, ejecuta con límite y verifica el resultado. Las acciones sensibles requieren confirmación.</div>
+    <label class="flex items-center gap-2 text-xs my-2"><input id="agenticEnabled" type="checkbox"> Activar modo agente</label>
+    <label class="text-[10px] text-cyan-300">Objetivo</label>
+    <textarea id="agenticObjective" rows="3" class="w-full bg-slate-950 border border-slate-700 p-2 rounded-lg mt-1 text-xs" placeholder="Ej: revisá el estado del sistema y decime qué tareas tengo pendientes"></textarea>
+    <div class="grid grid-cols-3 gap-2 mt-2"><button class="quick text-xs" onclick="angelaAgenteEjecutarUI()">▶ Ejecutar</button><button class="quick text-xs text-yellow-300" onclick="angelaAgenteDetener()">⏹ Detener</button><button class="quick text-xs text-red-300" onclick="angelaAgenteLimpiarHistorial()">🧹 Historial</button></div>
+    <label class="text-[10px] text-slate-400 mt-2 block">Máximo de pasos<input id="agenticMaxSteps" type="number" min="1" max="7" value="5" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs"></label>
+    <div id="agenticStatus" class="agentic-status mt-2">Listo.</div>
+    <div id="agenticSteps" class="space-y-2 mt-2"></div>
+    <details class="mt-2"><summary class="cursor-pointer text-[10px] text-cyan-300">Historial del agente</summary><div id="agenticHistory" class="agentic-log mt-2"></div></details>`;
+  const anchor=document.getElementById('estadoBovedaResumen')?.closest('details') || config.querySelector('details');
+  if(anchor)anchor.insertAdjacentElement('afterend',panel);else config.appendChild(panel);
+  document.getElementById('agenticEnabled')?.addEventListener('change',e=>{A.enabled=!!e.target.checked;save();render();});
+  document.getElementById('agenticMaxSteps')?.addEventListener('change',e=>{A.maxSteps=Math.max(1,Math.min(MAX_HARD_STEPS,Number(e.target.value)||5));save();render();});
+  const sys=document.getElementById('estadoSistema')?.parentElement || document.getElementById('estadoInternet')?.parentElement?.parentElement;
+  const box=document.getElementById('estadoInternet')?.closest('.space-y-2');
+  if(box&&!document.getElementById('estadoAgentic')){const row=document.createElement('div');row.className='flex justify-between gap-2';row.innerHTML='<span>🧠 Modo agente</span><span id="estadoAgentic" class="text-green-400">🟢 Listo</span>';box.appendChild(row);}
+  const chatHead=document.querySelector('#chat .chat-controls > div:last-child');
+  if(chatHead&&!document.getElementById('btnAngelaAgenticQuick')){const b=document.createElement('button');b.id='btnAngelaAgenticQuick';b.className='text-xs bg-violet-700 px-3 py-1 rounded-lg';b.textContent='🧠 Agente';b.onclick=()=>{const t=prompt('¿Qué querés que haga ÁNGELA en modo agente?');if(t)run(t);};chatHead.prepend(b);}
+  render();
+}
+window.angelaAgenteEjecutar=run;
+window.angelaAgenteDetener=stop;
+window.angelaAgenteLimpiarHistorial=clearHistory;
+window.angelaAgenteEjecutarUI=function(){const t=document.getElementById('agenticObjective')?.value||'';run(t);};
+window.angelaAgenteEstado=function(){return {version:VERSION,enabled:A.enabled,running:A.running,maxSteps:A.maxSteps,current:A.current,tools:Object.keys(TOOLS)};};
+
+function hookChat(){
+  if(window.__ANGELA_AGENTIC_CHAT_HOOK)return;
+  const prev=window.procesarEntrada;
+  if(typeof prev!=='function')return;
+  window.procesarEntrada=async function(texto){
+    const raw=String(texto||'').trim();
+    const m=raw.match(/^(?:ángela\s+)?(?:agente|modo\s+agente)\s*[:,-]?\s*(.*)$/i);
+    if(m){const obj=(m[1]||'').trim();if(!obj){sayInChat('Decime el objetivo después de “modo agente”. Ejemplo: “modo agente: revisá el sistema y mis pendientes”.');return;}return run(obj);}
+    if(/^(?:estado|diagnostico|diagnóstico)\s+(?:del\s+)?(?:agente|modo\s+agente)$/i.test(raw)){const e=window.angelaAgenteEstado();sayInChat(`🧠 Agentic Harness ${e.version}: ${e.enabled?'activado':'desactivado'} · ${e.running?'trabajando':'en espera'} · máximo ${e.maxSteps} pasos.`);return;}
+    return prev.apply(this,arguments);
+  };
+  window.__ANGELA_AGENTIC_CHAT_HOOK=true;
+}
+function boot(){inject();hookChat();log('Sistema','Agentic Harness '+VERSION+' cargado');}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,120));else setTimeout(boot,120);
+setTimeout(()=>{inject();hookChat();},1200);
 })();
 </script>
 
