@@ -896,7 +896,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "8.1.0-agentic-harness-visible",
+    version: "8.2.0-agentic-texto-visible",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -5849,6 +5849,8 @@ document.addEventListener("DOMContentLoaded",()=>setTimeout(agregarVista,800));
 #angelaAgenticPanel .agentic-step.error{border-color:#dc2626}
 #angelaAgenticPanel .agentic-step.skip{opacity:.6}
 #angelaAgenticPanel .agentic-log{max-height:180px;overflow:auto;white-space:pre-wrap;background:#02050a;border:1px solid #253c60;border-radius:10px;padding:8px;font-size:10px;color:#cbd5e1}
+#angelaAgenticPanel .agentic-output{min-height:150px;max-height:42vh;overflow:auto;white-space:pre-wrap;word-break:break-word;background:linear-gradient(180deg,#06111f,#02050a);border:1px solid #7c3aed;border-radius:14px;padding:12px;font-size:12px;line-height:1.55;color:#f8fafc;box-shadow:inset 0 0 24px rgba(124,58,237,.08)}
+#angelaAgenticPanel .agentic-output-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;margin-bottom:6px;color:#d8b4fe;font-size:11px;font-weight:900}
 #btnAngelaAgenticQuick{border-color:#7c3aed!important;background:linear-gradient(135deg,#4338ca,#7c3aed)!important}
 </style>
 <script id="angela-agentic-harness-v1">
@@ -5862,8 +5864,8 @@ const MODULES_PERMITIDOS=['herramientas','imagenes','motion3d','laser','sublimac
 function load(){
   try{
     const x=JSON.parse(localStorage.getItem(KEY)||'{}');
-    return Object.assign({enabled:true,maxSteps:5,running:false,stop:false,current:null,history:[]},x,{running:false,stop:false});
-  }catch(e){return {enabled:true,maxSteps:5,running:false,stop:false,current:null,history:[]};}
+    return Object.assign({enabled:true,maxSteps:5,running:false,stop:false,current:null,history:[],visualText:''},x,{running:false,stop:false});
+  }catch(e){return {enabled:true,maxSteps:5,running:false,stop:false,current:null,history:[],visualText:''};}
 }
 const A=load();
 window.ANGELA_AGENTIC=A;
@@ -5876,6 +5878,17 @@ function clip(s,n=900){s=String(s??'');return s.length>n?s.slice(0,n)+'…':s;}
 function log(type,detail){try{if(typeof logActivity==='function')logActivity('Agente · '+type,clip(detail,220));}catch(e){} render();}
 function sayInChat(text,speak=false){try{if(typeof agregarMensaje==='function')agregarMensaje('angela',text);}catch(e){} if(speak){try{if(typeof hablar==='function')hablar(text);}catch(e){}}}
 function setStatus(text){A.status=String(text||'');render();}
+function setVisual(text,append=false){
+  const t=String(text||'').trim();
+  if(append){A.visualText=(A.visualText?A.visualText+'\n\n':'')+t;}else{A.visualText=t;}
+  render();
+  setTimeout(()=>{const el=document.getElementById('agenticOutput');if(el)el.scrollTop=el.scrollHeight;},0);
+}
+function planText(steps){
+  const arr=Array.isArray(steps)?steps:[];
+  if(!arr.length)return 'No se generaron pasos.';
+  return arr.map((st,i)=>`${i+1}. ${TOOLS[st.tool]?.label||st.tool}${st.reason?' — '+st.reason:''}`).join('\n');
+}
 
 const TOOLS={
   system_status:{label:'Estado del sistema',risk:'read',run:async()=>typeof skillEstadoSistema==='function'?skillEstadoSistema():{ok:false,message:'Estado del sistema no disponible.'}},
@@ -6004,9 +6017,11 @@ async function run(objective){
   if(A.running){sayInChat('Ya hay una tarea del modo agente en ejecución.');return;}
   A.running=true;A.stop=false;A.current={id:'agent_'+Date.now(),objective,startedAt:Date.now(),status:'planning',steps:[],result:''};save();render();
   log('Inicio',objective);setStatus('🧠 Armando el plan…');
+  setVisual(`🎯 OBJETIVO\n${objective}\n\n🧠 ÁNGELA está armando el plan…`);
   sayInChat('🧠 Modo Agente: voy a organizar la tarea por pasos y usar solamente herramientas habilitadas.');
   try{
-    A.current.steps=await createPlan(objective);A.current.status='running';setStatus(`▶ Ejecutando ${A.current.steps.length} paso(s)…`);render();
+    A.current.steps=await createPlan(objective);A.current.status='running';setStatus(`▶ Ejecutando ${A.current.steps.length} paso(s)…`);
+    setVisual(`📋 PLAN DE TRABAJO\n${planText(A.current.steps)}`,true);render();
     for(let i=0;i<A.current.steps.length;i++){
       if(A.stop){A.current.steps[i].status='skip';continue;}
       const step=A.current.steps[i];step.status='running';setStatus(`Paso ${i+1}/${A.current.steps.length}: ${TOOLS[step.tool]?.label||step.tool}`);render();
@@ -6014,6 +6029,7 @@ async function run(objective){
         const r=await runTool(step);step.result=String(r?.message||'').trim();
         if(r?.cancelled){step.status='skip';}
         else step.status=r?.ok===false?'error':'ok';
+        setVisual(`${step.status==='ok'?'✅':step.status==='skip'?'⏭️':'❌'} PASO ${i+1}: ${TOOLS[step.tool]?.label||step.tool}\n${step.result||'Sin texto de resultado.'}`,true);
         log(step.status==='ok'?'Paso OK':'Paso',`${step.tool}: ${step.result||step.status}`);
         if(step.status==='error'&&!r?.cancelled)break;
       }catch(e){step.status='error';step.result=String(e?.message||e||'Error');log('Error',step.result);break;}
@@ -6022,9 +6038,9 @@ async function run(objective){
     A.current.status=A.stop?'stopped':'done';A.current.finishedAt=Date.now();A.current.result=finalText(A.current);
     if(A.stop)A.current.result='⏹ Tarea del modo agente detenida.';
     A.history=(A.history||[]).concat([{id:A.current.id,objective:A.current.objective,startedAt:A.current.startedAt,finishedAt:A.current.finishedAt,status:A.current.status,steps:A.current.steps.map(s=>({tool:s.tool,status:s.status,result:clip(s.result,300)}))}]).slice(-30);
-    sayInChat(A.current.result,true);setStatus(A.stop?'⏹ Detenido':'✅ Tarea terminada');log('Fin',A.current.status);
+    setVisual(`${A.stop?'⏹':'✅'} RESULTADO FINAL\n${A.current.result}`,true);sayInChat(A.current.result,true);setStatus(A.stop?'⏹ Detenido':'✅ Tarea terminada');log('Fin',A.current.status);
   }catch(e){
-    A.current.status='error';A.current.result='No pude completar la tarea: '+String(e?.message||e);setStatus('❌ '+A.current.result);sayInChat('❌ '+A.current.result);log('Error general',A.current.result);
+    A.current.status='error';A.current.result='No pude completar la tarea: '+String(e?.message||e);setStatus('❌ '+A.current.result);setVisual(`❌ ERROR\n${A.current.result}`,true);sayInChat('❌ '+A.current.result);log('Error general',A.current.result);
   }finally{A.running=false;A.stop=false;save();render();}
 }
 function stop(){A.stop=true;try{A.controller?.abort();}catch(e){} setStatus('⏹ Deteniendo…');render();}
@@ -6039,6 +6055,7 @@ function render(){
     const steps=A.current?.steps||[];
     list.innerHTML=steps.length?steps.map((s,i)=>`<div class="agentic-step ${esc(s.status)}"><span>${s.status==='ok'?'✅':s.status==='running'?'⏳':s.status==='error'?'❌':s.status==='skip'?'⏭️':'•'}</span><div><b>${i+1}. ${esc(TOOLS[s.tool]?.label||s.tool)}</b><div class="text-slate-400">${esc(s.reason||'')}</div>${s.result?`<div class="mt-1 text-slate-300">${esc(clip(s.result,260))}</div>`:''}</div></div>`).join(''):'<div class="text-[10px] text-slate-500">Todavía no hay un plan activo.</div>';
   }
+  const output=document.getElementById('agenticOutput');if(output){output.textContent=A.visualText||A.current?.result||'Acá vas a ver escrito todo lo que ÁNGELA vaya armando y el resultado final.';}
   const hist=document.getElementById('agenticHistory');if(hist){const h=(A.history||[]).slice(-6).reverse();hist.textContent=h.length?h.map(x=>`${new Date(x.startedAt).toLocaleString('es-AR')} · ${x.status}\n${x.objective}`).join('\n\n'):'Sin tareas anteriores.';}
 }
 function inject(){
@@ -6055,6 +6072,8 @@ function inject(){
     <label class="text-[10px] text-slate-400 mt-2 block">Máximo de pasos<input id="agenticMaxSteps" type="number" min="1" max="7" value="5" class="w-full bg-slate-900 p-2 rounded-lg mt-1 text-xs"></label>
     <div id="agenticStatus" class="agentic-status mt-2">Listo.</div>
     <div id="agenticSteps" class="space-y-2 mt-2"></div>
+    <div class="agentic-output-title"><span>📝 RESULTADO DE ÁNGELA</span><button type="button" class="quick text-[10px] py-1 px-2" onclick="angelaAgenteCopiarResultado()">📋 Copiar</button></div>
+    <div id="agenticOutput" class="agentic-output">Acá vas a ver escrito todo lo que ÁNGELA vaya armando y el resultado final.</div>
     <details class="mt-2"><summary class="cursor-pointer text-[10px] text-cyan-300">Historial del agente</summary><div id="agenticHistory" class="agentic-log mt-2"></div></details>`;
   const anchor=document.getElementById('estadoBovedaResumen')?.closest('details') || config.querySelector('details');
   if(anchor)anchor.insertAdjacentElement('afterend',panel);else config.appendChild(panel);
@@ -6071,6 +6090,7 @@ window.angelaAgenteEjecutar=run;
 window.angelaAgenteDetener=stop;
 window.angelaAgenteLimpiarHistorial=clearHistory;
 window.angelaAgenteEjecutarUI=function(){const t=document.getElementById('agenticObjective')?.value||'';run(t);};
+window.angelaAgenteCopiarResultado=async function(){const t=String(A.visualText||A.current?.result||'').trim();if(!t){alert('Todavía no hay un resultado para copiar.');return;}try{await navigator.clipboard.writeText(t);if(typeof showToast==='function')showToast('Resultado copiado.');else alert('Resultado copiado.');}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();alert('Resultado copiado.');}};
 window.angelaAgenticAbrirPanel=function(){
   inject();
   try{
