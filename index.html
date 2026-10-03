@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ÁNGELA V8.0 | Agentic Harness</title>
-<!-- V8.0 · BASE ESTABLE + AGENTIC HARNESS · 2026-10-03 -->
+<title>ÁNGELA V8.1 | Agentic Harness Visible</title>
+<!-- V8.1 · AGENTIC HARNESS VISIBLE Y ACCESO DIRECTO · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
@@ -406,6 +406,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 <h2 class="font-bold text-yellow-300 mb-4">🛡️ MENÚ PRINCIPAL</h2>
 <button class="menu-btn bg-blue-600" onclick="irInicio()">🏠 Inicio</button>
 <button class="menu-btn" onclick="focusChat()">💬 Chat Directo</button>
+<button id="btnAgenticMenuPrincipal" class="menu-btn bg-violet-700 border border-violet-400" onclick="angelaAgenticAbrirPanel()">🧠 MODO AGENTE <span class="float-right">›</span></button>
 <button class="menu-btn" onclick="abrirPanelMenuAngela('herramientas')">🧰 Herramientas <span class="float-right">›</span></button>
 <button class="menu-btn" onclick="abrirPanelMenuAngela('imagenes')">🖼️ Imágenes y Diseños <span class="float-right">›</span></button>
 <div id="imagenes" class="submenu custom-scrollbar">
@@ -895,7 +896,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "8.0.0-agentic-harness-base",
+    version: "8.1.0-agentic-harness-visible",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -3611,6 +3612,7 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
     ]},
     config:{title:'⚙️ Configuración de ÁNGELA',desc:'Voz, memoria, historial, diagnóstico, respaldo y preferencias.',cards:[
       card('⛶','Configuración a pantalla completa','Abrir voz, memoria, historial y diagnóstico en área grande.','Pantalla grande','legacyBig','config','⛶ Trabajar grande'),
+      card('🧠','Agentic Harness · Modo Agente','Dar un objetivo a ÁNGELA para que lo organice en pasos, use herramientas permitidas y verifique el resultado.','IA Agente','agentic','open','Abrir agente'),
       card('⚙️','Configuración completa','Abrir el panel clásico con todos los ajustes.','Sistema','legacyBig','config','⛶ Abrir grande'),
       card('🔊','Voz y accesibilidad','Abrir configuración y ubicar controles de voz.','Voz','config','voice','Abrir'),
       card('🧠','Memoria','Abrir configuración para revisar o borrar memoria del perfil.','Memoria','config','memory','Abrir'),
@@ -3702,6 +3704,7 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
       case 'file': closeThen(()=>{if(c.value==='camera')elegirCamara();else if(c.value==='photos')elegirFotos();else if(c.value==='video')elegirVideo();else if(c.value==='file')elegirArchivo();else if(c.value==='drive')elegirDesdeDrive();else if(c.value==='canva')abrirCanva();else if(c.value==='analyzeVideo')prepararVideoParaAngela();else if(c.value==='clear')limpiarContextoArchivo();});break;
       case 'web': closeThen(()=>{if(c.value==='googleSearch'){abrirMenu('web');setTimeout(()=>$a('buscarWeb')?.focus(),120);}else if(c.value==='youtubeSearch'){abrirMenu('web');setTimeout(()=>$a('buscarYouTube')?.focus(),120);}else if(c.value==='whatsapp')abrirWhatsApp();else if(c.value==='gmail')abrirGmail();else if(c.value==='maps')ubicameEnMaps();});break;
       case 'comedor': closeThen(()=>{if(c.value==='radioOpen')abrirRadio();else if(c.value==='radioPlay')reproducirRadio();else if(c.value==='radioPause')pausarRadio();else if(c.value==='save')guardarComedor();});break;
+      case 'agentic': closeThen(()=>{setTimeout(()=>window.angelaAgenticAbrirPanel?.(),60)});break;
       case 'config': closeThen(()=>{if(c.value==='diagnostic')ejecutarDiagnostico();else if(c.value==='export')exportarConfig();else if(c.value==='import')importarConfig();else if(c.value==='install')instalarAngela();else {abrirMenu('config');setTimeout(()=>{const cfg=$a('config');if(!cfg)return;const labels={voice:'Voz, idiomas',memory:'Ver / editar memoria',history:'Historial'};const needle=labels[c.value];if(needle){const details=[...cfg.querySelectorAll('details')].find(d=>d.textContent.includes(needle));if(details){details.open=true;details.scrollIntoView({behavior:'smooth',block:'center'});}}},120);}});break;
     }
   };
@@ -6044,6 +6047,7 @@ function inject(){
   const panel=document.createElement('details');panel.id='angelaAgenticPanel';panel.className='card-mini mb-2';panel.open=true;
   panel.innerHTML=`<summary class="cursor-pointer text-xs font-bold">🧠 Agentic Harness · modo agente</summary>
     <div class="mt-2 text-[10px] text-slate-400">ÁNGELA convierte un objetivo en pasos, elige herramientas permitidas, ejecuta con límite y verifica el resultado. Las acciones sensibles requieren confirmación.</div>
+    <div class="mt-2 p-2 rounded-lg border border-violet-500 bg-violet-950/40 text-[10px] text-violet-100"><b>PRUEBA RÁPIDA:</b> escribí “revisá el estado del sistema y decime qué tareas tengo pendientes” y tocá <b>▶ Ejecutar</b>.</div>
     <label class="flex items-center gap-2 text-xs my-2"><input id="agenticEnabled" type="checkbox"> Activar modo agente</label>
     <label class="text-[10px] text-cyan-300">Objetivo</label>
     <textarea id="agenticObjective" rows="3" class="w-full bg-slate-950 border border-slate-700 p-2 rounded-lg mt-1 text-xs" placeholder="Ej: revisá el estado del sistema y decime qué tareas tengo pendientes"></textarea>
@@ -6067,6 +6071,19 @@ window.angelaAgenteEjecutar=run;
 window.angelaAgenteDetener=stop;
 window.angelaAgenteLimpiarHistorial=clearHistory;
 window.angelaAgenteEjecutarUI=function(){const t=document.getElementById('agenticObjective')?.value||'';run(t);};
+window.angelaAgenticAbrirPanel=function(){
+  inject();
+  try{
+    if(typeof cerrarPanelMenuAngela==='function')cerrarPanelMenuAngela();
+    if(typeof abrirModuloGrandeAngela==='function')abrirModuloGrandeAngela('config');
+    else if(typeof abrirMenu==='function')abrirMenu('config');
+  }catch(e){try{if(typeof abrirMenu==='function')abrirMenu('config');}catch(_){} }
+  setTimeout(()=>{
+    const p=document.getElementById('angelaAgenticPanel');
+    if(p){p.open=true;p.scrollIntoView({behavior:'smooth',block:'center'});}
+    const o=document.getElementById('agenticObjective');if(o)o.focus();
+  },220);
+};
 window.angelaAgenteEstado=function(){return {version:VERSION,enabled:A.enabled,running:A.running,maxSteps:A.maxSteps,current:A.current,tools:Object.keys(TOOLS)};};
 
 function hookChat(){
