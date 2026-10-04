@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ÁNGELA V8.5.2 | Vista previa de tabla siempre visible</title>
-<!-- V8.5.2 · VISTA PREVIA PERMANENTE + EXCEL + DICTADO AUTOMÁTICO · 2026-10-03 -->
+<!-- ÁNGELA V8.6 · Google Fotos: fotos/videos duplicados, vista grande y varias cuentas -->
+<title>ÁNGELA V8.4 | Agentic + Planilla Visible</title>
+<!-- V8.4 · AGENTIC + PLANILLA VISIBLE + CLIMA/UBICACIÓN · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
 <link rel="manifest" href="./manifest.json">
@@ -389,23 +390,22 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 .ai-img-chip{border:1px solid #36537b;background:#071321;border-radius:999px;padding:6px 9px;font-size:10px}
 </style>
 
-<style id="angela-sheet-inline-v852-style">
-#angelaSheetInlinePanel{border:1px solid #2563eb;background:linear-gradient(180deg,rgba(8,22,42,.98),rgba(3,11,25,.98));box-shadow:0 14px 38px rgba(0,0,0,.28)}
-#angelaSheetInlinePanel .asi-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
-#angelaSheetInlinePanel .asi-title{font-weight:900;color:#7dd3fc;font-size:16px}
-#angelaSheetInlinePanel .asi-meta{font-size:11px;color:#94a3b8;margin-top:3px}
-#angelaSheetInlinePanel .asi-actions{display:flex;flex-wrap:wrap;gap:7px}
-#angelaSheetInlinePanel .asi-btn{border:1px solid #31527c;background:#0b1729;color:#e2e8f0;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:800;cursor:pointer}
-#angelaSheetInlinePanel .asi-btn.primary{background:#075985;border-color:#38bdf8;color:white}
-#angelaSheetInlineBody{margin-top:10px;border:1px solid #1e3a5f;border-radius:12px;overflow:auto;max-height:330px;background:#020817}
-#angelaSheetInlineBody .asi-empty{padding:18px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.55}
-#angelaSheetInlineTable{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;white-space:nowrap}
-#angelaSheetInlineTable thead{position:sticky;top:0;z-index:4;background:#101b2e}
-#angelaSheetInlineTable th{padding:9px 10px;text-align:left;color:#93c5fd;border-right:1px solid #2a3e5d;border-bottom:1px solid #42628d;font-weight:900}
-#angelaSheetInlineTable td{padding:8px 10px;color:#e2e8f0;border-right:1px solid #17243a;border-bottom:1px solid #142033;max-width:330px;overflow:hidden;text-overflow:ellipsis}
-#angelaSheetInlineTable tr:hover td{background:#0a1728}
-#angelaSheetInlineFoot{font-size:10px;color:#64748b;margin-top:7px}
-@media(max-width:700px){#angelaSheetInlinePanel{padding:12px!important}#angelaSheetInlineTable{font-size:10px}#angelaSheetInlineTable th,#angelaSheetInlineTable td{padding:7px 8px}.asi-actions{width:100%}.asi-btn{flex:1}}
+<style id="angela-google-photos-duplicados-style-v1">
+.ag-gp-wrap{border:1px solid #334155;border-radius:18px;padding:15px;background:rgba(2,6,23,.72)}
+.ag-gp-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.ag-gp-title{font-size:18px;font-weight:900;color:#67e8f9}.ag-gp-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.ag-gp-security{margin:12px 0;padding:11px 12px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(6,78,59,.18);font-size:12px;color:#d1fae5}
+.ag-gp-toolbar,.ag-gp-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:end}.ag-gp-toolbar .quick,.ag-gp-actions .quick{min-height:38px}.ag-gp-field{display:flex;flex-direction:column;gap:4px;font-size:10px;color:#a5f3fc;min-width:min(320px,100%)}.ag-gp-field select{background:#071321;border:1px solid #36537b;border-radius:10px;padding:10px;color:#fff}
+.ag-gp-accounts{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.ag-gp-account{border:1px solid #334155;background:#081426;border-radius:999px;padding:6px 9px;font-size:10px}.ag-gp-account.ok{color:#a7f3d0}.ag-gp-account.pending{color:#fde68a}
+.ag-gp-status{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid #263b59;background:#050b14;border-radius:10px;padding:9px 10px;font-size:10px;color:#cbd5e1;margin-bottom:10px}
+.ag-gp-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:10px 0}.ag-gp-summary>div{border:1px solid #253c60;background:#071321;border-radius:12px;padding:10px;text-align:center}.ag-gp-summary b{display:block;font-size:19px;color:#fff}.ag-gp-summary span{display:block;font-size:9px;color:#94a3b8;margin-top:2px}
+.ag-gp-actions{margin:10px 0 14px}.ag-gp-groups{display:flex;flex-direction:column;gap:14px}.ag-gp-group{border:1px solid #243b5a;background:rgba(8,20,38,.75);border-radius:16px;padding:12px}.ag-gp-group-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px;color:#e2e8f0;margin-bottom:10px}.ag-gp-group-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.ag-gp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.ag-gp-card{border:2px solid #334155;background:#050b14;border-radius:16px;overflow:hidden;min-width:0}.ag-gp-card.keep{border-color:rgba(16,185,129,.58)}.ag-gp-card.marked{border-color:rgba(248,113,113,.78);box-shadow:inset 0 0 0 1px rgba(248,113,113,.12)}
+.ag-gp-media{position:relative;width:100%;height:260px;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}.ag-gp-media img,.ag-gp-media video{width:100%;height:100%;object-fit:contain;background:#000}.ag-gp-play{position:absolute;inset:auto auto 12px 12px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 10px;color:#fff}
+.ag-gp-card-body{padding:10px}.ag-gp-name{font-size:12px;font-weight:800;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ag-gp-meta{font-size:9px;color:#94a3b8;line-height:1.45;min-height:28px;margin:4px 0 8px}.ag-gp-card-actions{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap}.ag-gp-check{font-size:11px;font-weight:800;cursor:pointer}.ag-gp-check input{width:18px;height:18px;vertical-align:middle;margin-right:5px;accent-color:#ef4444}
+.ag-gp-empty{padding:30px 14px;text-align:center;border:1px dashed #36537b;border-radius:14px;color:#cbd5e1;font-size:12px}.ag-gp-note{margin-top:14px;padding:11px;border:1px solid #334155;border-radius:12px;background:#07101f;color:#94a3b8;font-size:10px;line-height:1.5}
+.ag-gp-viewer{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;padding:12px}.ag-gp-viewer.hidden{display:none!important}.ag-gp-viewer-card{position:relative;width:min(1500px,98vw);height:min(950px,96vh);border:1px solid #334155;border-radius:18px;background:#02050a;display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}.ag-gp-viewer-media{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}.ag-gp-viewer-media img,.ag-gp-viewer-media video{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}.ag-gp-viewer-info{padding:11px 14px;border-top:1px solid #1e293b;color:#e2e8f0;font-size:11px;background:#071321}.ag-gp-close{position:absolute;right:12px;top:12px;z-index:3;background:rgba(15,23,42,.9);border:1px solid #64748b;color:#fff;border-radius:10px;padding:9px 12px;font-weight:900}
+@media(max-width:900px){.ag-gp-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.ag-gp-grid{grid-template-columns:1fr}.ag-gp-media{height:340px}.ag-gp-group-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:540px){.ag-gp-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.ag-gp-media{height:62vh;max-height:520px}.ag-gp-toolbar>*{width:100%}.ag-gp-actions .quick{flex:1 1 46%}.ag-gp-viewer-card{width:100vw;height:100dvh;border-radius:0}.ag-gp-head{align-items:center}}
 </style>
 
 </head>
@@ -794,22 +794,6 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 </div>
 </section>
 
-<section id="angelaSheetInlinePanel" class="panel rounded-3xl p-5 mt-5">
-  <div class="asi-top">
-    <div>
-      <div class="asi-title">📊 Vista previa de la planilla que está armando ÁNGELA</div>
-      <div id="angelaSheetInlineMeta" class="asi-meta">Todavía no hay filas para mostrar.</div>
-    </div>
-    <div class="asi-actions">
-      <button class="asi-btn" type="button" onclick="angelaVistaPreviaActualizar()">↻ Actualizar</button>
-      <button class="asi-btn" type="button" onclick="angelaVistaPreviaAbrirGrande()">👁️ Ver grande</button>
-      <button class="asi-btn primary" type="button" onclick="angelaAgenteDescargarPlanilla()">⬇️ Descargar Excel</button>
-    </div>
-  </div>
-  <div id="angelaSheetInlineBody"><div class="asi-empty">Cuando dictes un registro, cargues una planilla o ÁNGELA genere filas, la tabla va a aparecer acá antes de descargarla.</div></div>
-  <div id="angelaSheetInlineFoot">La descarga de Excel usa exactamente las filas que ves en esta vista previa.</div>
-</section>
-
 <section id="centroGestionAngela" class="panel rounded-3xl p-5 mt-5">
   <div class="flex flex-wrap justify-between items-center gap-2">
     <div>
@@ -834,6 +818,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
     <button class="quick" onclick="angelaAbrirGestion('empresas')">🏢 Empresas / RSE</button>
     <button class="quick" onclick="angelaAbrirGestion('recordatorios')">📅 Recordatorios</button>
     <button class="quick" onclick="angelaAbrirGestion('memoria')">🧠 Memoria local</button>
+    <button class="quick" onclick="angelaAbrirGestion('googlephotos')">📸 Google Fotos · Duplicados</button>
     <button class="quick" onclick="angelaAbrirGestion('estado')">🟢 Estado de conexiones</button>
   </div>
   <div id="angelaGestionContenido" class="mt-4 hidden"></div>
@@ -935,7 +920,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
    CONFIG
    ========================================== */
 const CONFIG = Object.freeze({
-    version: "8.5.2-vista-previa-tabla-siempre-visible",
+    version: "8.5.0-agentic-planilla-visible",
     apiChat: "https://orion-ia-sooty.vercel.app/api/chat",
     apiChatLocal: "/api/chat",
     radioUrl: "https://radioangelguardian.mixwe.com.ar/",
@@ -2104,17 +2089,6 @@ function respuestaLocalComedor(texto){
 
 async function procesarEntrada(texto){
     const clean=corregirDictadoPorContexto(String(texto||"").trim()); if(!clean)return;
-
-    // V8.5.2 · captura directa en el núcleo: funciona tanto al escribir como al hablar.
-    // No depende del Modo Agente ni de un parche externo para mostrar la tabla.
-    try{
-        if(typeof window.angelaRegistrarDictadoEnTabla==='function' && window.angelaRegistrarDictadoEnTabla(clean)){
-            const aviso='📊 Registro agregado. La vista previa de la tabla quedó actualizada abajo y el Excel ya está listo para revisar/descargar.';
-            try{agregarMensaje("angela",aviso)}catch(e){}
-            try{hablar(aviso)}catch(e){}
-            return;
-        }
-    }catch(e){console.warn('V8.5.2 captura directa de tabla:',e)}
 
     // Datos públicos básicos del Comedor: respuesta local y estable incluso si Gemini está ocupado.
     const comedor=respuestaLocalComedor(clean);
@@ -4764,7 +4738,7 @@ window.angelaAbrirGestion=(m)=>{
     <div class="card-mini">🤖 IA / imágenes: usa la conexión actual</div>
     <div class="card-mini">☁️ Supabase: ⏳ falta conectar</div>
     <div class="card-mini">📧 Gmail: ⏳ falta OAuth</div>
-    <div class="card-mini">🖼️ Google Photos: ⏳ falta conexión/permisos</div>
+    <div class="card-mini">📸 Google Fotos: 🧩 duplicados instalado · ⏳ falta OAuth/Picker</div>
     <div class="card-mini">🖥️ Bridge PC: ⏳ falta instalar/conectar</div>
     <div class="card-mini">📱 WhatsApp: ⏳ falta conexión autorizada</div>
    </div>`);
@@ -4801,6 +4775,195 @@ document.addEventListener("DOMContentLoaded",()=>{
   catch(err){alert("El archivo no es un backup válido de ÁNGELA.");}
  });
 });
+})();
+</script>
+
+<script id="angela-google-photos-duplicados-v1">
+(()=>{
+'use strict';
+const ACC_KEY='ANGELA_GP_ACCOUNTS_V1';
+const IGN_KEY='ANGELA_GP_IGNORE_V1';
+const API_BASE='/api/google-photos';
+const GP={items:[],groups:[],marked:new Set(),filter:'all',reviewOnly:false,accounts:[],activeAccount:'local',busy:false,status:'Listo para revisar fotos y videos.'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtBytes=n=>{n=Number(n)||0;if(n<1024)return n+' B';const u=['KB','MB','GB','TB'];let i=-1;do{n/=1024;i++;}while(n>=1024&&i<u.length-1);return n.toLocaleString('es-AR',{maximumFractionDigits:n<10?2:1})+' '+u[i]};
+const fmtDur=s=>{s=Math.round(Number(s)||0);const m=Math.floor(s/60),r=s%60;return `${m}:${String(r).padStart(2,'0')}`};
+const wait=()=>new Promise(r=>requestAnimationFrame(r));
+function loadAccounts(){
+ try{GP.accounts=JSON.parse(localStorage.getItem(ACC_KEY)||'[]')}catch{GP.accounts=[]}
+ if(!Array.isArray(GP.accounts))GP.accounts=[];
+ if(!GP.accounts.some(a=>a.id==='local'))GP.accounts.unshift({id:'local',email:'Selección del equipo / celular',connected:true,local:true});
+ if(!GP.accounts.some(a=>a.id===GP.activeAccount))GP.activeAccount=GP.accounts[0].id;
+}
+function saveAccounts(){localStorage.setItem(ACC_KEY,JSON.stringify(GP.accounts.filter(a=>!a.local)))}
+function ignoredSet(){try{return new Set(JSON.parse(localStorage.getItem(IGN_KEY)||'[]'))}catch{return new Set()}}
+function saveIgnored(set){localStorage.setItem(IGN_KEY,JSON.stringify([...set].slice(-1000)))}
+function activeAccount(){return GP.accounts.find(a=>a.id===GP.activeAccount)||GP.accounts[0]}
+function setStatus(t){GP.status=t;const e=$('agGPStatus');if(e)e.textContent=t}
+function accountOptions(){return GP.accounts.map(a=>`<option value="${esc(a.id)}" ${a.id===GP.activeAccount?'selected':''}>${esc(a.email)}${a.connected?' · conectada':' · pendiente'}</option>`).join('')}
+function baseHTML(){
+ const connected=GP.accounts.filter(a=>!a.local&&a.connected).length;
+ return `<div class="ag-gp-wrap">
+  <div class="ag-gp-head">
+   <div><div class="ag-gp-title">📸 Google Fotos · Duplicados</div><div class="ag-gp-sub">Fotos y videos · varias cuentas · revisión grande antes de borrar</div></div>
+   <button class="quick text-xs" onclick="document.getElementById('angelaGestionContenido').classList.add('hidden')">Cerrar</button>
+  </div>
+  <div class="ag-gp-security">🛡️ <b>Modo seguro:</b> ÁNGELA nunca borra sola. Primero detecta, después vos revisás en grande y recién al final decidís.</div>
+  <div class="ag-gp-toolbar">
+   <label class="ag-gp-field"><span>Cuenta / origen</span><select id="agGPAccount" onchange="angelaGPCambiarCuenta(this.value)">${accountOptions()}</select></label>
+   <button class="quick" onclick="angelaGPConectarCuenta()">➕ Conectar otra cuenta Google</button>
+   <button class="quick" onclick="angelaGPSeleccionarGoogle()">🖼️ Seleccionar de Google Fotos</button>
+   <button class="quick" onclick="angelaGPImportarLocal()">📁 Elegir fotos/videos</button>
+   <input id="agGPFiles" class="hidden" type="file" accept="image/*,video/*" multiple onchange="angelaGPProcesarArchivos(this.files)">
+  </div>
+  <div class="ag-gp-accounts">${GP.accounts.map(a=>`<span class="ag-gp-account ${a.connected?'ok':'pending'}">${a.connected?'🟢':'🟡'} ${esc(a.email)}${a.local?'':' · '+(a.connected?'conectada':'falta OAuth')}</span>`).join('')}</div>
+  <div class="ag-gp-status"><span id="agGPStatus">${esc(GP.status)}</span><span>${connected} cuenta(s) Google conectada(s)</span></div>
+  <div id="agGPSummary"></div>
+  <div class="ag-gp-actions">
+   <button class="quick" onclick="angelaGPAnalizar()" ${GP.busy?'disabled':''}>🔎 Buscar duplicados</button>
+   <button class="quick" onclick="angelaGPFiltro('exact')">🧬 Duplicados exactos</button>
+   <button class="quick" onclick="angelaGPFiltro('similar')">👯 Fotos/videos similares</button>
+   <button class="quick" onclick="angelaGPFiltro('all')">🗂️ Ver todos</button>
+   <button class="quick" onclick="angelaGPRevisionFinal()">✅ Revisar marcadas</button>
+   <button class="quick" onclick="angelaGPPrepararEliminacion()">🗑️ Preparar eliminación</button>
+  </div>
+  <div id="agGPGroups" class="ag-gp-groups"></div>
+  <div class="ag-gp-note"><b>Importante:</b> Google Fotos actualmente no permite que una página externa borre libremente toda tu biblioteca. ÁNGELA puede detectar, comparar y dejar marcada tu selección; la eliminación final se confirma dentro de Google Fotos. Para analizar tu biblioteca de Google, la cuenta debe estar conectada por OAuth/Google Photos Picker.</div>
+ </div>
+ <div id="agGPViewer" class="ag-gp-viewer hidden" onclick="if(event.target===this)angelaGPCerrarVista()"><div class="ag-gp-viewer-card"><button class="ag-gp-close" onclick="angelaGPCerrarVista()">✕</button><div id="agGPViewerMedia" class="ag-gp-viewer-media"></div><div id="agGPViewerInfo" class="ag-gp-viewer-info"></div></div></div>`;
+}
+function renderModule(){
+ const b=$('angelaGestionContenido'); if(!b)return;
+ b.classList.remove('hidden'); b.innerHTML=baseHTML(); renderSummary(); renderGroups();
+}
+function renderSummary(){
+ const s=$('agGPSummary'); if(!s)return;
+ const photos=GP.items.filter(x=>x.kind==='photo').length, videos=GP.items.length-photos;
+ const exact=GP.groups.filter(g=>g.type==='exact').reduce((n,g)=>n+Math.max(0,g.items.length-1),0);
+ const similar=GP.groups.filter(g=>g.type==='similar').reduce((n,g)=>n+Math.max(0,g.items.length-1),0);
+ const selected=[...GP.marked].map(id=>GP.items.find(x=>x.id===id)).filter(Boolean);
+ const reclaim=selected.reduce((n,x)=>n+(x.size||0),0);
+ s.innerHTML=`<div class="ag-gp-summary">
+  <div><b>${GP.items.length}</b><span>archivos cargados</span></div><div><b>${photos}</b><span>fotos</span></div><div><b>${videos}</b><span>videos</span></div><div><b>${exact}</b><span>duplicados exactos</span></div><div><b>${similar}</b><span>similares</span></div><div><b>${GP.marked.size}</b><span>marcados · ${fmtBytes(reclaim)}</span></div>
+ </div>`;
+}
+function groupSignature(g){return g.items.map(x=>`${x.name}:${x.size}`).sort().join('|')}
+function shownGroups(){
+ let gs=GP.groups.filter(g=>GP.filter==='all'||g.type===GP.filter);
+ const ign=ignoredSet(); gs=gs.filter(g=>!ign.has(groupSignature(g)));
+ if(GP.reviewOnly)gs=gs.filter(g=>g.items.some(x=>GP.marked.has(x.id)));
+ return gs;
+}
+function itemCard(item,g){
+ const marked=GP.marked.has(item.id), keep=!marked;
+ const meta=[item.accountEmail,item.date?new Date(item.date).toLocaleString('es-AR'):'',fmtBytes(item.size),item.kind==='photo'&&item.width?`${item.width}×${item.height}`:'',item.kind==='video'&&item.duration?fmtDur(item.duration):''].filter(Boolean).join(' · ');
+ const media=item.kind==='video'?`<video src="${item.url}" muted preload="metadata" playsinline></video><div class="ag-gp-play">▶</div>`:`<img src="${item.url}" alt="${esc(item.name)}">`;
+ return `<article class="ag-gp-card ${marked?'marked':'keep'}">
+  <button class="ag-gp-media" onclick="angelaGPVer('${item.id}')">${media}</button>
+  <div class="ag-gp-card-body"><div class="ag-gp-name">${esc(item.name)}</div><div class="ag-gp-meta">${esc(meta)}</div>
+   <div class="ag-gp-card-actions"><label class="ag-gp-check"><input type="checkbox" ${marked?'checked':''} onchange="angelaGPToggle('${item.id}',this.checked)"> ${marked?'🗑️ Marcada para eliminar':'✅ Conservar'}</label><button class="quick text-xs" onclick="angelaGPVer('${item.id}')">🔍 Ver grande</button></div>
+  </div></article>`;
+}
+function renderGroups(){
+ const root=$('agGPGroups'); if(!root)return;
+ if(GP.busy){root.innerHTML='<div class="ag-gp-empty">⏳ Analizando fotos y videos… no cierres esta pantalla.</div>';return}
+ if(!GP.items.length){root.innerHTML='<div class="ag-gp-empty">Todavía no hay fotos o videos cargados. Usá <b>Seleccionar de Google Fotos</b> o <b>Elegir fotos/videos</b>.</div>';return}
+ if(!GP.groups.length){root.innerHTML='<div class="ag-gp-empty">Los archivos están cargados. Tocá <b>🔎 Buscar duplicados</b> para comenzar el análisis.</div>';return}
+ const gs=shownGroups();
+ if(!gs.length){root.innerHTML='<div class="ag-gp-empty">No hay grupos para este filtro.</div>';return}
+ root.innerHTML=gs.map((g,idx)=>`<section class="ag-gp-group">
+  <div class="ag-gp-group-head"><div><b>${g.type==='exact'?'🧬 Duplicado exacto':'👯 Posibles similares'}</b> · Grupo ${idx+1} · ${g.items.length} archivos</div><div class="ag-gp-group-buttons"><button class="quick text-xs" onclick="angelaGPConservarMejor('${g.id}')">⭐ Conservar mejor calidad</button><button class="quick text-xs" onclick="angelaGPIgnorarGrupo('${g.id}')">🙈 No volver a mostrar</button></div></div>
+  <div class="ag-gp-grid">${g.items.map(x=>itemCard(x,g)).join('')}</div>
+ </section>`).join('');
+}
+async function sha256(buf){const h=await crypto.subtle.digest('SHA-256',buf);return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function fingerprint(file){
+ const CH=1024*1024;
+ if(file.size<=12*CH)return sha256(await file.arrayBuffer());
+ const points=[0,Math.max(0,Math.floor(file.size/2)-CH/2),Math.max(0,file.size-CH)];
+ const blobs=await Promise.all(points.map(p=>file.slice(p,p+CH).arrayBuffer()));
+ const total=blobs.reduce((n,b)=>n+b.byteLength,0)+16, all=new Uint8Array(total);let off=0;
+ for(const b of blobs){all.set(new Uint8Array(b),off);off+=b.byteLength}
+ new DataView(all.buffer).setBigUint64(off,BigInt(file.size));
+ return sha256(all.buffer);
+}
+async function imageHash(file){
+ let bmp;try{bmp=await createImageBitmap(file)}catch{return {hash:null,width:0,height:0}}
+ const c=document.createElement('canvas');c.width=8;c.height=8;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bmp,0,0,8,8);const d=x.getImageData(0,0,8,8).data;let vals=[];for(let i=0;i<d.length;i+=4)vals.push((d[i]*299+d[i+1]*587+d[i+2]*114)/1000);const avg=vals.reduce((a,b)=>a+b,0)/vals.length;let bits='';for(const v of vals)bits+=v>=avg?'1':'0';let hex='';for(let i=0;i<64;i+=4)hex+=parseInt(bits.slice(i,i+4),2).toString(16);const out={hash:hex,width:bmp.width,height:bmp.height};bmp.close?.();return out;
+}
+function videoMeta(url){return new Promise(res=>{const v=document.createElement('video');let done=false;const finish=()=>{if(done)return;done=true;res({duration:Number.isFinite(v.duration)?v.duration:0,width:v.videoWidth||0,height:v.videoHeight||0})};v.preload='metadata';v.onloadedmetadata=finish;v.onerror=finish;v.src=url;setTimeout(finish,6000)})}
+function ham(a,b){if(!a||!b||a.length!==b.length)return 99;let n=0;for(let i=0;i<a.length;i++){let x=parseInt(a[i],16)^parseInt(b[i],16);n+=((x&1)+((x>>1)&1)+((x>>2)&1)+((x>>3)&1));}return n}
+function normName(n){return String(n||'').toLowerCase().replace(/\.[^.]+$/,'').replace(/\b(copy|copia|duplicado|download|descarga|whatsapp|instagram|facebook|img|vid)[-_ ]*\d*\b/g,'').replace(/[^a-z0-9]/g,'')}
+function chooseKeep(arr){return [...arr].sort((a,b)=>((b.width||0)*(b.height||0)-(a.width||0)*(a.height||0))||(b.size-a.size)||(a.date-b.date))[0]}
+function unionGroups(items,pairs){
+ const p=new Map(items.map(x=>[x.id,x.id]));
+ const find=x=>{let y=p.get(x);while(y!==p.get(y)){p.set(y,p.get(p.get(y)));y=p.get(y)}return y};
+ const un=(a,b)=>{a=find(a);b=find(b);if(a!==b)p.set(b,a)};pairs.forEach(([a,b])=>un(a.id,b.id));
+ const m=new Map();items.forEach(x=>{const r=find(x.id);if(!m.has(r))m.set(r,[]);m.get(r).push(x)});return [...m.values()].filter(a=>a.length>1)
+}
+async function analyze(){
+ if(GP.busy||!GP.items.length){if(!GP.items.length)alert('Primero cargá fotos o videos.');return}
+ GP.busy=true;GP.groups=[];GP.marked.clear();setStatus('Preparando análisis…');renderSummary();renderGroups();
+ const sizeMap=new Map();for(const x of GP.items){const k=`${x.kind}:${x.size}`;if(!sizeMap.has(k))sizeMap.set(k,[]);sizeMap.get(k).push(x)}
+ const hashCandidates=[...sizeMap.values()].filter(a=>a.length>1).flat();
+ for(let i=0;i<hashCandidates.length;i++){const x=hashCandidates[i];if(!x.contentHash)x.contentHash=await fingerprint(x.file);if(i%3===0){setStatus(`Huella exacta ${i+1}/${hashCandidates.length}…`);await wait()}}
+ const hm=new Map();for(const x of hashCandidates){const k=x.kind+':'+x.contentHash;if(!hm.has(k))hm.set(k,[]);hm.get(k).push(x)}
+ const exactArrays=[...hm.values()].filter(a=>a.length>1);const exactIds=new Set(exactArrays.flat().map(x=>x.id));
+ const photos=GP.items.filter(x=>x.kind==='photo');
+ for(let i=0;i<photos.length;i++){const x=photos[i];if(!x.visualHash){const h=await imageHash(x.file);x.visualHash=h.hash;x.width=h.width;x.height=h.height}if(i%3===0){setStatus(`Comparando fotos ${i+1}/${photos.length}…`);await wait()}}
+ const videos=GP.items.filter(x=>x.kind==='video');
+ for(let i=0;i<videos.length;i++){const x=videos[i];if(!x.duration){const m=await videoMeta(x.url);x.duration=m.duration;x.width=m.width;x.height=m.height}if(i%5===0){setStatus(`Revisando videos ${i+1}/${videos.length}…`);await wait()}}
+ const pairs=[];
+ const buckets=new Map();
+ for(const x of photos.filter(x=>x.visualHash)){
+  const sigs=[0,4,8,12].map(o=>`${o}:${x.visualHash.slice(o,o+4)}`);let cand=new Set();for(const s of sigs){for(const y of buckets.get(s)||[])cand.add(y)}
+  for(const y of cand){if(exactIds.has(x.id)&&exactIds.has(y.id)&&x.contentHash===y.contentHash)continue;const ar1=x.width/x.height,ar2=y.width/y.height;if(Math.abs(ar1-ar2)>0.12)continue;if(ham(x.visualHash,y.visualHash)<=8)pairs.push([x,y])}
+  for(const s of sigs){if(!buckets.has(s))buckets.set(s,[]);buckets.get(s).push(x)}
+ }
+ const vBuckets=new Map();for(const x of videos){const k=Math.round((x.duration||0)*2)/2;if(!vBuckets.has(k))vBuckets.set(k,[]);vBuckets.get(k).push(x)}
+ for(const arr of vBuckets.values())for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length;j++){const a=arr[i],b=arr[j];if(exactIds.has(a.id)&&exactIds.has(b.id)&&a.contentHash===b.contentHash)continue;const sizeRatio=Math.min(a.size,b.size)/Math.max(a.size,b.size);if(sizeRatio>.92||normName(a.name)===normName(b.name))pairs.push([a,b])}
+ const similarArrays=unionGroups(GP.items,pairs).filter(a=>!a.every(x=>exactIds.has(x.id)));
+ let gi=0;GP.groups=[...exactArrays.map(items=>({id:'e'+(++gi),type:'exact',items})),...similarArrays.map(items=>({id:'s'+(++gi),type:'similar',items}))];
+ for(const g of GP.groups){const keep=chooseKeep(g.items);for(const x of g.items)if(x.id!==keep.id)GP.marked.add(x.id)}
+ GP.busy=false;GP.reviewOnly=false;setStatus(`Análisis terminado: ${GP.groups.length} grupo(s) encontrado(s). Revisá antes de eliminar.`);renderModule();
+}
+window.angelaGPAbrir=()=>renderModule();
+window.angelaGPCambiarCuenta=v=>{GP.activeAccount=v;renderModule()};
+window.angelaGPImportarLocal=()=>$('agGPFiles')?.click();
+window.angelaGPProcesarArchivos=async files=>{
+ const list=[...(files||[])];if(!list.length)return;const acct=activeAccount();setStatus(`Cargando ${list.length} archivo(s)…`);
+ let start=GP.items.length;
+ for(let i=0;i<list.length;i++){const f=list[i];if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;GP.items.push({id:'gp'+Date.now().toString(36)+(start+i)+Math.random().toString(36).slice(2,5),file:f,url:URL.createObjectURL(f),name:f.name,size:f.size,date:f.lastModified||Date.now(),kind:f.type.startsWith('video/')?'video':'photo',accountId:acct.id,accountEmail:acct.email,width:0,height:0,duration:0,contentHash:null,visualHash:null});if(i%20===0)await wait()}
+ GP.groups=[];GP.marked.clear();setStatus(`${list.length} archivo(s) cargados. Tocá “Buscar duplicados”.`);renderModule();
+};
+window.angelaGPAnalizar=analyze;
+window.angelaGPFiltro=f=>{GP.filter=f;GP.reviewOnly=false;renderGroups()};
+window.angelaGPToggle=(id,on)=>{on?GP.marked.add(id):GP.marked.delete(id);renderSummary();renderGroups()};
+window.angelaGPConservarMejor=gid=>{const g=GP.groups.find(x=>x.id===gid);if(!g)return;const keep=chooseKeep(g.items);g.items.forEach(x=>x.id===keep.id?GP.marked.delete(x.id):GP.marked.add(x.id));renderSummary();renderGroups()};
+window.angelaGPIgnorarGrupo=gid=>{const g=GP.groups.find(x=>x.id===gid);if(!g)return;if(!confirm('¿Ocultar este grupo para que ÁNGELA no vuelva a mostrarlo como duplicado en esta instalación?'))return;const s=ignoredSet();s.add(groupSignature(g));saveIgnored(s);g.items.forEach(x=>GP.marked.delete(x.id));renderSummary();renderGroups()};
+window.angelaGPRevisionFinal=()=>{GP.reviewOnly=true;GP.filter='all';setStatus(`Revisión final: ${GP.marked.size} archivo(s) marcados. Abrí cada imagen o video en grande si tenés dudas.`);renderSummary();renderGroups()};
+window.angelaGPVer=id=>{const x=GP.items.find(a=>a.id===id);if(!x)return;const v=$('agGPViewer'),m=$('agGPViewerMedia'),info=$('agGPViewerInfo');if(!v||!m)return;m.innerHTML=x.kind==='video'?`<video src="${x.url}" controls autoplay playsinline></video>`:`<img src="${x.url}" alt="${esc(x.name)}">`;info.innerHTML=`<b>${esc(x.name)}</b><br>${esc(x.accountEmail)} · ${fmtBytes(x.size)}${x.width?' · '+x.width+'×'+x.height:''}${x.duration?' · '+fmtDur(x.duration):''}<br><span class="${GP.marked.has(x.id)?'text-red-300':'text-emerald-300'}">${GP.marked.has(x.id)?'🗑️ Marcada para eliminar':'✅ Conservar'}</span>`;v.classList.remove('hidden')};
+window.angelaGPCerrarVista=()=>{$('agGPViewer')?.classList.add('hidden');const m=$('agGPViewerMedia');if(m)m.innerHTML=''};
+window.angelaGPPrepararEliminacion=()=>{if(!GP.marked.size){alert('No hay fotos ni videos marcados para eliminar.');return}GP.reviewOnly=true;renderGroups();const n=GP.marked.size;if(!confirm(`Revisión de seguridad: hay ${n} archivo(s) marcados. ÁNGELA NO los borrará automáticamente. ¿Querés preparar la lista y abrir Google Fotos para eliminarlos manualmente?`))return;const rows=[...GP.marked].map(id=>GP.items.find(x=>x.id===id)).filter(Boolean);const txt='ÁNGELA · ARCHIVOS MARCADOS PARA ELIMINAR\n\n'+rows.map((x,i)=>`${i+1}. ${x.name} | ${x.accountEmail} | ${fmtBytes(x.size)}`).join('\n');const b=new Blob([txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='ANGELA_FOTOS_VIDEOS_MARCADOS.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);window.open('https://photos.google.com/','_blank','noopener');setStatus('Lista descargada. Google Fotos se abrió para que hagas la eliminación final de forma manual y segura.')};
+window.angelaGPConectarCuenta=async()=>{
+ setStatus('Buscando conexión segura con Google…');
+ try{const r=await fetch(`${API_BASE}/auth/start?returnTo=${encodeURIComponent(location.href)}`,{credentials:'include'});if(!r.ok)throw new Error('oauth');const j=await r.json();if(!j?.url)throw new Error('url');location.href=j.url;return}catch(e){}
+ const email=prompt('La parte visual para varias cuentas ya está instalada. Para registrar una cuenta mientras configuramos OAuth, escribí el Gmail (no se guarda ninguna contraseña):');if(!email)return;const clean=email.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)){alert('Escribí un correo Gmail/Google válido.');return}const id='pending_'+clean.toLowerCase();if(!GP.accounts.some(a=>a.id===id))GP.accounts.push({id,email:clean,connected:false});saveAccounts();GP.activeAccount=id;setStatus('Cuenta registrada como pendiente. Falta activar OAuth en Vercel para leer Google Fotos.');renderModule();
+};
+window.angelaGPSeleccionarGoogle=async()=>{
+ const acct=activeAccount();
+ if(acct.local){setStatus('En celular, “Elegir fotos/videos” puede mostrar Google Fotos como proveedor. Para conexión directa, conectá una cuenta Google.');$('agGPFiles')?.click();return}
+ if(!acct.connected){alert('Esta cuenta todavía figura pendiente de OAuth. Primero hay que completar la conexión de Google Fotos.');return}
+ try{const r=await fetch(`${API_BASE}/picker/session?account=${encodeURIComponent(acct.id)}`,{method:'POST',credentials:'include'});if(!r.ok)throw 0;const j=await r.json();if(j?.pickerUri){window.open(j.pickerUri,'_blank','noopener');setStatus('Selector de Google Fotos abierto. Cuando termines la selección, volvé a ÁNGELA.');return}}catch(e){}
+ alert('No se pudo abrir el selector de Google Fotos. La interfaz está lista, pero falta terminar el backend OAuth/Picker en Vercel.');
+};
+async function syncAccountsFromBackend(){
+ try{const r=await fetch(`${API_BASE}/accounts`,{credentials:'include'});if(!r.ok)return;const j=await r.json();const list=Array.isArray(j?.accounts)?j.accounts:[];for(const a of list){if(!a?.id||!a?.email)continue;const old=GP.accounts.find(x=>x.id===a.id||x.email===a.email);if(old){old.id=a.id;old.email=a.email;old.connected=true}else GP.accounts.push({id:a.id,email:a.email,connected:true})}saveAccounts()}catch(e){}
+}
+loadAccounts();syncAccountsFromBackend();
+const oldOpen=window.angelaAbrirGestion;
+window.angelaAbrirGestion=function(m){if(m==='googlephotos')return renderModule();return oldOpen?.(m)};
 })();
 </script>
 
@@ -6294,7 +6457,7 @@ let LAST_DONE_ID='';
 const MASTER_KEY='ANGELA_MASTER_LOCAL_V1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
-const objectiveWantsSheet=()=>/planilla|excel|padr[oó]n|lista limpia|tabla|filas|columnas|familias|registros|registro|empresa|donaci[oó]n|aporte|monto|pendiente|recibido/i.test(String(window.ANGELA_AGENTIC?.current?.objective||''));
+const objectiveWantsSheet=()=>/planilla|excel|padr[oó]n|lista limpia|tabla|filas|columnas|familias|registros/i.test(String(window.ANGELA_AGENTIC?.current?.objective||''));
 
 function ensureSheetPanel(){
   const panel=document.getElementById('angelaAgenticPanel');
@@ -6506,90 +6669,10 @@ setInterval(()=>{ensureSheetPanel();patchTools();patchRunUI();watchDone();},900)
 (function(){
 'use strict';
 const KEY='ANGELA_MASTER_LOCAL_V1';
-const DICT_KEY='ANGELA_REGISTROS_DICTADOS_V1';
 let CURRENT=null,MODE='detail',LAST_AGENT_DONE='';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
-const wantsSheet=t=>/planilla|excel|padr[oó]n|lista|tabla|filas|columnas|familias|registros|registro|calle|domicilio|direcci[oó]n|empresa|donaci[oó]n|aporte|monto|pendiente|recibido/i.test(String(t||''));
-const wantsDictated=t=>/empresa|donaci[oó]n|aporte|colaboraci[oó]n|monto|pendiente|recibido|registro|registr[aá]|anot[aá]|comedor/i.test(String(t||''));
-
-function normWords(s){return clean(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
-function smallSpanishNumber(s){
- const t=normWords(s).replace(/\s+y\s+/g,' ').trim();if(/^\d+$/.test(t))return Number(t);
- const units={cero:0,uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiuno:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,veintiseis:26,veintisiete:27,veintiocho:28,veintinueve:29,treinta:30};
- if(Object.prototype.hasOwnProperty.call(units,t))return units[t];
- if(t==='treinta uno')return 31;
- const digitMap={cero:'0',uno:'1',una:'1',dos:'2',tres:'3',cuatro:'4',cinco:'5',seis:'6',siete:'7',ocho:'8',nueve:'9'};
- const parts=t.split(/\s+/).filter(Boolean);if(parts.length>1&&parts.every(x=>digitMap[x]!=null))return Number(parts.map(x=>digitMap[x]).join(''));
- if(t.startsWith('dos mil')){const rest=t.slice(7).trim();return 2000+(rest?smallSpanishNumber(rest):0)}
- if(t.startsWith('mil')){const rest=t.slice(3).trim();return 1000+(rest?smallSpanishNumber(rest):0)}
- return NaN;
-}
-function normalizeSpokenDate(raw){
- const t=String(raw||'').replace(/\b(?:diagonal|barra)\b/gi,'/');
- const num='(?:\\d{1,4}|(?:(?:cero|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|trece|catorce|quince|diecis[eé]is|diecisiete|dieciocho|diecinueve|veinte|veintiuno|veintid[oó]s|veintitr[eé]s|veinticuatro|veinticinco|veintis[eé]is|veintisiete|veintiocho|veintinueve|treinta|mil|y)\\s*){1,6})';
- const re=new RegExp('('+num+')\\s*\\/\\s*('+num+')\\s*\\/\\s*('+num+')','i');
- const m=t.match(re);if(!m)return{date:'',text:t};
- const cv=v=>/^\d+$/.test(clean(v))?Number(clean(v)):smallSpanishNumber(v);
- const d=cv(m[1]),mo=cv(m[2]),y=cv(m[3]);if(!Number.isFinite(d)||!Number.isFinite(mo)||!Number.isFinite(y))return{date:'',text:t};
- const yy=y<100?2000+y:y;const date=`${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${yy}`;
- return{date,text:t.replace(m[0],' '+date+' ')};
-}
-function loadDictatedRows(){try{const a=JSON.parse(localStorage.getItem(DICT_KEY)||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
-function saveDictatedRows(a){try{localStorage.setItem(DICT_KEY,JSON.stringify(a.slice(-500)))}catch(e){}}
-function looksLikeDictatedRecord(raw){
- const t=normalizeSpokenDate(raw).text;const q=normWords(t);let score=0;
- if(/\b\d{1,2}\s*[\/-]\s*\d{1,2}\s*[\/-]\s*\d{2,4}\b/.test(t))score+=2;
- if(/\bempresa\b|\bdonante\b|\bcomercio\b|\bfundaci[oó]n\b/.test(q))score++;
- if(/\bdonaci[oó]n\b|\baporte\b|\bcolaboraci[oó]n\b|\bmonto\b/.test(q))score++;
- if(/(?:\$|u\$s|usd)\s*\d|\b\d[\d.,]*\s*(?:mil|mill[oó]n(?:es)?|d[oó]lares?|pesos?|usd|ars)\b/i.test(t))score++;
- if(/\bpendiente\b|\brecibido\b|\bconfirmado\b|\bentregado\b|\bcontactar\b/.test(q))score++;
- if(/\bregistr|\banot|\bcarg|\bagreg|\btabla\b|\bplanilla\b/.test(q))score++;
- return score>=4;
-}
-function parseDictatedRecord(raw){
- const original=clean(raw);const nd=normalizeSpokenDate(original);const t=clean(nd.text);const q=normWords(t);
- const dateMatch=t.match(/\b\d{1,2}\s*[\/-]\s*\d{1,2}\s*[\/-]\s*\d{2,4}\b/);const fecha=nd.date||(dateMatch?dateMatch[0].replace(/\s/g,''):new Date().toLocaleDateString('es-AR'));
- let empresa='';let m=t.match(/\b(?:empresa|donante|comercio|fundaci[oó]n)\s+(.+?)(?=\s+(?:donaci[oó]n|aporte|colaboraci[oó]n|monto|pendiente|recibido|confirmado|entregado)\b|\s+(?:\$|u\$s|usd|\d+[\d.,]*\s*(?:mil|mill[oó]n|d[oó]lares?|pesos?))|[,.]|$)/i);if(m)empresa=clean(m[1]);
- let concepto='';m=t.match(/\b(donaci[oó]n|aporte|colaboraci[oó]n)(?:\s+(mensual|semanal|quincenal|anual|[uú]nica|unica))?/i);if(m)concepto=clean(`${m[1]}${m[2]?' '+m[2]:''}`);else if(/\brecibido\s+en\s+el\s+comedor\b/i.test(t))concepto='Recibido en el comedor';else concepto='Registro dictado';
- let monto='',moneda='';m=t.match(/((?:\d[\d.,]*\s*(?:mil|mill[oó]n(?:es)?)\s*(?:d[oó]lares?|pesos?|usd|ars)?|(?:u\$s|usd|\$)\s*\d[\d.,]*(?:\s*(?:mil|mill[oó]n(?:es)?))?|\d[\d.,]*\s*(?:d[oó]lares?|pesos?|usd|ars)))/i);if(m){const full=clean(m[1]);monto=clean(full.replace(/\b(d[oó]lares?|pesos?|usd|ars)\b/ig,'').replace(/u\$s/ig,'').replace(/^\$/,'').trim());if(/d[oó]lares?|usd|u\$s/i.test(full))moneda='USD';else if(/pesos?|ars|^\$/i.test(full))moneda='ARS';}
- let estado='';m=t.match(/\bpendiente(?:\s+de)?\s*([^.,;]*)/i);if(m)estado=clean('Pendiente'+(m[1]?` de ${m[1]}`:''));else if(/\brecibido\b/i.test(t))estado='Recibido';else if(/\bconfirmado\b/i.test(t))estado='Confirmado';else if(/\bentregado\b/i.test(t))estado='Entregado';else estado='A revisar';
- return{id:'dict_'+Date.now(),createdAt:Date.now(),fecha,empresa,concepto,monto,moneda,estado,detalle:original};
-}
-function dictated(){
- const a=loadDictatedRows();if(!a.length)return null;
- const headers=['Fecha','Empresa / Donante','Concepto','Monto','Moneda','Estado','Detalle'];
- const rows=a.map(x=>[clean(x.fecha),clean(x.empresa),clean(x.concepto),clean(x.monto),clean(x.moneda),clean(x.estado),clean(x.detalle)]);
- return{title:'Registro dictado · Comedor / Empresas / Donaciones',headers,rows,source:'dictated',raw:a};
-}
-function renderInlinePreview(sheet){
- const body=document.getElementById('angelaSheetInlineBody'),meta=document.getElementById('angelaSheetInlineMeta'),foot=document.getElementById('angelaSheetInlineFoot');
- if(!body||!meta||!foot)return false;
- if(!sheet||!Array.isArray(sheet.headers)||!Array.isArray(sheet.rows)||!sheet.rows.length){
-   meta.textContent='Todavía no hay filas para mostrar.';
-   body.innerHTML='<div class="asi-empty">Cuando dictes un registro, cargues una planilla o ÁNGELA genere filas, la tabla va a aparecer acá antes de descargarla.</div>';
-   foot.textContent='La descarga de Excel se habilita cuando existen filas reales.';return false;
- }
- const rows=sheet.rows.slice(-80);
- meta.textContent=`${sheet.title||'Planilla'} · ${sheet.rows.length} registro(s) · ${sheet.headers.length} columna(s)`;
- body.innerHTML=`<table id="angelaSheetInlineTable"><thead><tr><th>N°</th>${sheet.headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${sheet.rows.length-rows.length+i+1}</td>${sheet.headers.map((_,j)=>`<td title="${esc(r?.[j]??'')}">${esc(r?.[j]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
- foot.textContent=`Vista previa real: mostrando ${rows.length}${sheet.rows.length>rows.length?` de ${sheet.rows.length}`:''} fila(s). El Excel descarga esta misma planilla completa.`;
- try{document.getElementById('angelaSheetInlinePanel')?.scrollIntoView({behavior:'smooth',block:'nearest'})}catch(e){}
- return true;
-}
-window.angelaVistaPreviaActualizar=function(){CURRENT=choose();return renderInlinePreview(CURRENT)};
-window.angelaVistaPreviaAbrirGrande=function(){CURRENT=CURRENT||choose();renderInlinePreview(CURRENT);modal().classList.add('open');render();return!!CURRENT};
-window.angelaRegistrarDictadoEnTabla=function(raw){
- if(!looksLikeDictatedRecord(raw))return false;
- const rec=parseDictatedRecord(raw),a=loadDictatedRows(),last=a[a.length-1];
- if(!(last&&clean(last.detalle)===clean(rec.detalle)&&Date.now()-Number(last.createdAt||0)<5000)){a.push(rec);saveDictatedRows(a)}
- MODE='detail';CURRENT=dictated();renderInlinePreview(CURRENT);
- // La vista previa queda SIEMPRE visible. Además intentamos abrir la vista grande.
- try{modal().classList.add('open');render()}catch(e){console.warn('Vista grande de planilla:',e)}
- return true;
-};
-window.angelaAbrirTablaDictada=function(){const s=dictated();if(!s)return false;MODE='detail';CURRENT=s;renderInlinePreview(CURRENT);modal().classList.add('open');render();return true;};
-
+const wantsSheet=t=>/planilla|excel|padr[oó]n|lista|tabla|filas|columnas|familias|registros|calle|domicilio|direcci[oó]n/i.test(String(t||''));
 function age(v){try{if(!v)return'';const d=new Date(v+'T12:00:00'),n=new Date();if(isNaN(d))return'';let a=n.getFullYear()-d.getFullYear();const m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a>=0&&a<120?a:''}catch{return''}}
 function db(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return{}}}
 function master(){
@@ -6619,9 +6702,8 @@ function mdTable(text){const ls=String(text||'').split(/\r?\n/).map(x=>x.trim())
 function choose(){
  const A=window.ANGELA_AGENTIC;const objective=A?.current?.objective||'';const result=[A?.current?.result||'',...(A?.current?.steps||[]).map(s=>s.result||'')].join('\n');
  const md=mdTable(result);if(md)return md;
- if(wantsDictated(objective)){const d=dictated();if(d)return d;}
  if(/padr[oó]n|familias|calle|domicilio|direcci[oó]n|lista limpia|base maestra/i.test(objective)){const m=master();if(m)return m;}
- return active()||multi()||master()||dictated()||null;
+ return active()||multi()||master()||null;
 }
 function streetName(addr){let s=clean(addr).replace(/\b(nro|n°|nº|numero|número)\b\.?/ig,' ');s=s.replace(/\s+\d+[a-z]?\s*$/i,'').replace(/\s+(?:entre|e\/|y)\s+.+$/i,'');return clean(s)||clean(addr)||'Sin domicilio';}
 function summary(sheet){
@@ -6629,12 +6711,12 @@ function summary(sheet){
 }
 function modal(){
  let back=document.getElementById('angelaSheetModalBack');if(back)return back;
- back=document.createElement('div');back.id='angelaSheetModalBack';back.innerHTML=`<div id="angelaSheetModal" role="dialog" aria-modal="true" aria-label="Planilla de ÁNGELA"><div class="angela-sheet85-head"><div><div class="angela-sheet85-title">📊 PLANILLA QUE ESTÁ ARMANDO ÁNGELA</div><div id="angelaSheet85Meta" class="angela-sheet85-meta">Preparando vista…</div></div><div class="angela-sheet85-actions"><button class="angela-sheet85-btn" onclick="angelaSheet85Mode('detail')">📋 Detalle</button><button class="angela-sheet85-btn" onclick="angelaSheet85Mode('street')">🛣️ Por calles</button><button class="angela-sheet85-btn primary" onclick="angelaAgenteDescargarPlanilla()">⬇️ Descargar Excel</button><button class="angela-sheet85-btn" onclick="angelaSheet85Close()">✕ Cerrar</button></div></div><div class="angela-sheet85-tools"><input id="angelaSheet85Search" class="angela-sheet85-search" placeholder="🔎 Buscar cualquier dato en la tabla…"><button class="angela-sheet85-btn" onclick="angelaSheet85Refresh()">↻ Actualizar</button></div><div id="angelaSheet85Body" class="angela-sheet85-body"></div><div id="angelaSheet85Foot" class="angela-sheet85-foot"></div></div>`;document.body.appendChild(back);back.addEventListener('click',e=>{if(e.target===back)window.angelaSheet85Close()});document.getElementById('angelaSheet85Search')?.addEventListener('input',render);return back;
+ back=document.createElement('div');back.id='angelaSheetModalBack';back.innerHTML=`<div id="angelaSheetModal" role="dialog" aria-modal="true" aria-label="Planilla de ÁNGELA"><div class="angela-sheet85-head"><div><div class="angela-sheet85-title">📊 PLANILLA QUE ESTÁ ARMANDO ÁNGELA</div><div id="angelaSheet85Meta" class="angela-sheet85-meta">Preparando vista…</div></div><div class="angela-sheet85-actions"><button class="angela-sheet85-btn" onclick="angelaSheet85Mode('detail')">📋 Detalle</button><button class="angela-sheet85-btn" onclick="angelaSheet85Mode('street')">🛣️ Por calles</button><button class="angela-sheet85-btn primary" onclick="angelaAgenteDescargarPlanilla()">⬇️ Descargar Excel</button><button class="angela-sheet85-btn" onclick="angelaSheet85Close()">✕ Cerrar</button></div></div><div class="angela-sheet85-tools"><input id="angelaSheet85Search" class="angela-sheet85-search" placeholder="🔎 Buscar nombre, DNI, calle, teléfono…"><button class="angela-sheet85-btn" onclick="angelaSheet85Refresh()">↻ Actualizar</button></div><div id="angelaSheet85Body" class="angela-sheet85-body"></div><div id="angelaSheet85Foot" class="angela-sheet85-foot"></div></div>`;document.body.appendChild(back);back.addEventListener('click',e=>{if(e.target===back)window.angelaSheet85Close()});document.getElementById('angelaSheet85Search')?.addEventListener('input',render);return back;
 }
 function currentForMode(){if(!CURRENT)return null;if(MODE==='street')return summary(CURRENT)||CURRENT;return CURRENT}
 function render(){
  modal();const body=document.getElementById('angelaSheet85Body'),meta=document.getElementById('angelaSheet85Meta'),foot=document.getElementById('angelaSheet85Foot');const s=currentForMode();
- if(!s){meta.textContent='No hay filas reales disponibles';body.innerHTML=`<div class="angela-sheet85-empty">ÁNGELA pudo <b>analizar y explicar</b> los datos, pero en este momento <b>no existe una planilla real con filas para mostrar</b>.<br><br>Dictá un registro, cargá o cruzá una planilla, o pedile a ÁNGELA que cree una tabla. La descarga solo se habilita cuando hay filas reales para mostrar.</div>`;foot.textContent='Sin planilla descargable.';return false;}
+ if(!s){meta.textContent='No hay filas reales disponibles';body.innerHTML=`<div class="angela-sheet85-empty">ÁNGELA pudo <b>analizar y explicar</b> los datos, pero en este momento <b>no existe una planilla real con filas para mostrar</b>.<br><br>Cargá o cruzá el Excel/padrón primero. A partir de ahora ÁNGELA no debería decir que una planilla está lista para descargar si esta pantalla no tiene filas.</div>`;foot.textContent='Sin planilla descargable.';return false;}
  const q=clean(document.getElementById('angelaSheet85Search')?.value).toLowerCase();let rows=s.rows;if(q)rows=rows.filter(r=>r.some(v=>String(v??'').toLowerCase().includes(q)));const max=1200,shown=rows.slice(0,max);
  meta.textContent=`${s.title} · ${s.rows.length} registros · ${s.headers.length} columnas`;
  body.innerHTML=`<table id="angelaSheet85Table"><thead><tr><th class="angela-sheet85-num">N°</th>${s.headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${shown.map((r,i)=>`<tr><td class="angela-sheet85-num">${i+1}</td>${s.headers.map((_,j)=>`<td title="${esc(r?.[j]??'')}">${esc(r?.[j]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
@@ -6651,46 +6733,10 @@ window.angelaAgenteDescargarPlanilla=function(){
 };
 function addOpenButton(){const p=document.getElementById('angelaAgenticPanel');if(!p||document.getElementById('agenticOpenRealSheet'))return;const out=document.getElementById('agenticOutput');if(!out)return;const b=document.createElement('button');b.id='agenticOpenRealSheet';b.type='button';b.textContent='📊 VER LA PLANILLA EN PANTALLA';b.onclick=()=>window.angelaSheet85Open();out.insertAdjacentElement('afterend',b);}
 function watchAgent(){
- addOpenButton();const A=window.ANGELA_AGENTIC;if(!A?.current||A.running)return;if(!['done','stopped','error'].includes(A.current.status))return;if(A.current.id===LAST_AGENT_DONE)return;LAST_AGENT_DONE=A.current.id;if(!wantsSheet(A.current.objective))return;setTimeout(()=>{CURRENT=choose();renderInlinePreview(CURRENT);window.angelaSheet85Open();const o=document.getElementById('agenticOutput');if(o&&!CURRENT&&!/NO existe una planilla real/i.test(o.textContent||''))o.textContent+=(o.textContent?'\n\n':'')+'⚠️ IMPORTANTE: se hizo el análisis, pero NO existe todavía una planilla real visible/descargable. Cargá o cruzá los datos y volvé a pedir “mostrar planilla”.';},250);
+ addOpenButton();const A=window.ANGELA_AGENTIC;if(!A?.current||A.running)return;if(!['done','stopped','error'].includes(A.current.status))return;if(A.current.id===LAST_AGENT_DONE)return;LAST_AGENT_DONE=A.current.id;if(!wantsSheet(A.current.objective))return;setTimeout(()=>{CURRENT=choose();window.angelaSheet85Open();const o=document.getElementById('agenticOutput');if(o&&!CURRENT&&!/NO existe una planilla real/i.test(o.textContent||''))o.textContent+=(o.textContent?'\n\n':'')+'⚠️ IMPORTANTE: se hizo el análisis, pero NO existe todavía una planilla real visible/descargable. Cargá o cruzá los datos y volvé a pedir “mostrar planilla”.';},250);
 }
-function boot(){modal();addOpenButton();watchAgent();setTimeout(()=>{CURRENT=choose();renderInlinePreview(CURRENT)},120)}
+function boot(){modal();addOpenButton();watchAgent()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,600));else setTimeout(boot,600);setInterval(watchAgent,900);
-})();
-</script>
-
-
-<!-- =========================================================
-     ÁNGELA V8.5.2 · DICTADO → TABLA + VISTA PREVIA PERMANENTE
-     Detecta registros estructurados dictados sin exigir “modo agente”.
-     ========================================================= -->
-<script id="angela-dictado-tabla-auto-v852">
-(function(){
- 'use strict';
- function instalar(){
-   const prev=window.procesarEntrada;
-   if(typeof prev!=='function'||prev.__angelaDictadoTabla852)return;
-   const wrapped=async function(texto){
-     const raw=String(texto||'').trim();
-     try{
-       if(raw&&typeof window.angelaRegistrarDictadoEnTabla==='function'&&window.angelaRegistrarDictadoEnTabla(raw)){
-         const msg='📊 Listo. Agregué el dato como una fila. La vista previa quedó visible abajo y también podés descargar el Excel.';
-         try{if(typeof agregarMensaje==='function')agregarMensaje('angela',msg)}catch(e){}
-         try{if(typeof hablar==='function')hablar(msg)}catch(e){}
-         return;
-       }
-       if(/^(?:mostr[aá]|mostrar|ver|abrir)\s+(?:la\s+)?(?:tabla|planilla)\s+(?:dictada|de\s+registros|de\s+donaciones?)$/i.test(raw)&&typeof window.angelaAbrirTablaDictada==='function'){
-         if(window.angelaAbrirTablaDictada())return;
-       }
-     }catch(e){console.warn('Dictado → tabla:',e)}
-     return prev.apply(this,arguments);
-   };
-   wrapped.__angelaDictadoTabla852=true;
-   wrapped.__angelaDictadoTablaPrev=prev;
-   window.procesarEntrada=wrapped;
- }
- instalar();
- setTimeout(instalar,800);
- setTimeout(instalar,1800);
 })();
 </script>
 
