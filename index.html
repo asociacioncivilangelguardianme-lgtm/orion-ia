@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- ÁNGELA V8.7 · Google Fotos OAuth real + Picker + duplicados + varias cuentas -->
+<!-- ÁNGELA V8.8 · Google Fotos OAuth + Picker + vista inmediata + duplicados + varias cuentas -->
 <title>ÁNGELA V8.4 | Agentic + Planilla Visible</title>
 <!-- V8.4 · AGENTIC + PLANILLA VISIBLE + CLIMA/UBICACIÓN · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
@@ -397,15 +397,15 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 .ag-gp-toolbar,.ag-gp-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:end}.ag-gp-toolbar .quick,.ag-gp-actions .quick{min-height:38px}.ag-gp-field{display:flex;flex-direction:column;gap:4px;font-size:10px;color:#a5f3fc;min-width:min(320px,100%)}.ag-gp-field select{background:#071321;border:1px solid #36537b;border-radius:10px;padding:10px;color:#fff}
 .ag-gp-accounts{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.ag-gp-account{border:1px solid #334155;background:#081426;border-radius:999px;padding:6px 9px;font-size:10px}.ag-gp-account.ok{color:#a7f3d0}.ag-gp-account.pending{color:#fde68a}
 .ag-gp-status{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px solid #263b59;background:#050b14;border-radius:10px;padding:9px 10px;font-size:10px;color:#cbd5e1;margin-bottom:10px}
-.ag-gp-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:10px 0}.ag-gp-summary>div{border:1px solid #253c60;background:#071321;border-radius:12px;padding:10px;text-align:center}.ag-gp-summary b{display:block;font-size:19px;color:#fff}.ag-gp-summary span{display:block;font-size:9px;color:#94a3b8;margin-top:2px}
+.ag-gp-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:12px 0}.ag-gp-summary>div{border:1px solid #253c60;background:#071321;border-radius:14px;padding:14px 10px;min-height:88px;text-align:center;display:flex;flex-direction:column;justify-content:center}.ag-gp-summary b{display:block;font-size:26px;line-height:1;color:#fff}.ag-gp-summary span{display:block;font-size:13px;font-weight:700;line-height:1.25;color:#dbeafe;margin-top:8px}
 .ag-gp-actions{margin:10px 0 14px}.ag-gp-groups{display:flex;flex-direction:column;gap:14px}.ag-gp-group{border:1px solid #243b5a;background:rgba(8,20,38,.75);border-radius:16px;padding:12px}.ag-gp-group-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px;color:#e2e8f0;margin-bottom:10px}.ag-gp-group-buttons{display:flex;gap:6px;flex-wrap:wrap}
 .ag-gp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.ag-gp-card{border:2px solid #334155;background:#050b14;border-radius:16px;overflow:hidden;min-width:0}.ag-gp-card.keep{border-color:rgba(16,185,129,.58)}.ag-gp-card.marked{border-color:rgba(248,113,113,.78);box-shadow:inset 0 0 0 1px rgba(248,113,113,.12)}
 .ag-gp-media{position:relative;width:100%;height:260px;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}.ag-gp-media img,.ag-gp-media video{width:100%;height:100%;object-fit:contain;background:#000}.ag-gp-play{position:absolute;inset:auto auto 12px 12px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 10px;color:#fff}
 .ag-gp-card-body{padding:10px}.ag-gp-name{font-size:12px;font-weight:800;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ag-gp-meta{font-size:9px;color:#94a3b8;line-height:1.45;min-height:28px;margin:4px 0 8px}.ag-gp-card-actions{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap}.ag-gp-check{font-size:11px;font-weight:800;cursor:pointer}.ag-gp-check input{width:18px;height:18px;vertical-align:middle;margin-right:5px;accent-color:#ef4444}
 .ag-gp-empty{padding:30px 14px;text-align:center;border:1px dashed #36537b;border-radius:14px;color:#cbd5e1;font-size:12px}.ag-gp-note{margin-top:14px;padding:11px;border:1px solid #334155;border-radius:12px;background:#07101f;color:#94a3b8;font-size:10px;line-height:1.5}
 .ag-gp-viewer{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;padding:12px}.ag-gp-viewer.hidden{display:none!important}.ag-gp-viewer-card{position:relative;width:min(1500px,98vw);height:min(950px,96vh);border:1px solid #334155;border-radius:18px;background:#02050a;display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}.ag-gp-viewer-media{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}.ag-gp-viewer-media img,.ag-gp-viewer-media video{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}.ag-gp-viewer-info{padding:11px 14px;border-top:1px solid #1e293b;color:#e2e8f0;font-size:11px;background:#071321}.ag-gp-close{position:absolute;right:12px;top:12px;z-index:3;background:rgba(15,23,42,.9);border:1px solid #64748b;color:#fff;border-radius:10px;padding:9px 12px;font-weight:900}
-@media(max-width:900px){.ag-gp-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.ag-gp-grid{grid-template-columns:1fr}.ag-gp-media{height:340px}.ag-gp-group-head{align-items:flex-start;flex-direction:column}}
-@media(max-width:540px){.ag-gp-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.ag-gp-media{height:62vh;max-height:520px}.ag-gp-toolbar>*{width:100%}.ag-gp-actions .quick{flex:1 1 46%}.ag-gp-viewer-card{width:100vw;height:100dvh;border-radius:0}.ag-gp-head{align-items:center}}
+@media(max-width:1100px){.ag-gp-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.ag-gp-grid{grid-template-columns:1fr}.ag-gp-media{height:340px}.ag-gp-group-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:640px){.ag-gp-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.ag-gp-media{height:62vh;max-height:520px}.ag-gp-toolbar>*{width:100%}.ag-gp-actions .quick{flex:1 1 46%}.ag-gp-viewer-card{width:100vw;height:100dvh;border-radius:0}.ag-gp-head{align-items:center}}
 </style>
 
 </head>
@@ -4862,8 +4862,25 @@ function renderGroups(){
  const root=$('agGPGroups');if(!root)return;
  if(GP.busy){root.innerHTML='<div class="ag-gp-empty">⏳ Analizando fotos y videos… no cierres esta pantalla.</div>';return}
  if(!GP.items.length){root.innerHTML='<div class="ag-gp-empty">Todavía no hay fotos o videos cargados. Usá <b>Seleccionar de Google Fotos</b> o <b>Elegir fotos/videos</b>.</div>';return}
- if(!GP.groups.length){root.innerHTML='<div class="ag-gp-empty">Los archivos están cargados. Tocá <b>🔎 Buscar duplicados</b> para comenzar el análisis.</div>';return}
- const gs=shownGroups();if(!gs.length){root.innerHTML='<div class="ag-gp-empty">No hay grupos para este filtro.</div>';return}
+
+ // V8.8: todo lo seleccionado se ve inmediatamente, incluso antes de buscar duplicados.
+ if(GP.reviewOnly){
+  const selected=GP.items.filter(x=>GP.marked.has(x.id));
+  if(!selected.length){root.innerHTML='<div class="ag-gp-empty">No hay archivos marcados para eliminar.</div>';return}
+  root.innerHTML=`<section class="ag-gp-group"><div class="ag-gp-group-head"><div><b>✅ Revisión final</b> · ${selected.length} archivo(s) marcado(s)</div><div>🔍 Abrí cada foto/video en grande si tenés dudas</div></div><div class="ag-gp-grid">${selected.map(itemCard).join('')}</div></section>`;
+  return;
+ }
+
+ if(GP.filter==='all'){
+  root.innerHTML=`<section class="ag-gp-group"><div class="ag-gp-group-head"><div><b>📥 Fotos y videos seleccionados</b> · ${GP.items.length} archivo(s)</div><div>Ya están dentro de ÁNGELA · tocá una imagen para verla grande</div></div><div class="ag-gp-grid">${GP.items.map(itemCard).join('')}</div></section>`;
+  return;
+ }
+
+ if(!GP.groups.length){
+  root.innerHTML='<div class="ag-gp-empty">Todavía no hay resultados de duplicados. Tocá <b>🔎 Buscar duplicados</b>. Para volver a ver lo que seleccionaste, tocá <b>🗂️ Ver todos</b>.</div>';
+  return;
+ }
+ const gs=shownGroups();if(!gs.length){root.innerHTML='<div class="ag-gp-empty">No hay grupos para este filtro. Podés tocar <b>🗂️ Ver todos</b> para ver todos los archivos seleccionados.</div>';return}
  root.innerHTML=gs.map((g,idx)=>`<section class="ag-gp-group"><div class="ag-gp-group-head"><div><b>${g.type==='exact'?'🧬 Duplicado exacto':'👯 Posibles similares'}</b> · Grupo ${idx+1} · ${g.items.length} archivos</div><div class="ag-gp-group-buttons"><button class="quick text-xs" onclick="angelaGPConservarMejor('${g.id}')">⭐ Conservar mejor calidad</button><button class="quick text-xs" onclick="angelaGPIgnorarGrupo('${g.id}')">🙈 No volver a mostrar</button></div></div><div class="ag-gp-grid">${g.items.map(itemCard).join('')}</div></section>`).join('');
 }
 async function sha256(buf){const h=await crypto.subtle.digest('SHA-256',buf);return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
@@ -4893,7 +4910,12 @@ async function analyze(){
  const similarArrays=unionGroups(GP.items,pairs).filter(a=>!a.every(x=>exactIds.has(x.id)));
  let gi=0;GP.groups=[...exactArrays.map(items=>({id:'e'+(++gi),type:'exact',items})),...similarArrays.map(items=>({id:'s'+(++gi),type:'similar',items}))];
  for(const g of GP.groups){const keep=chooseKeep(g.items);for(const x of g.items)if(x.id!==keep.id)GP.marked.add(x.id)}
- GP.busy=false;GP.reviewOnly=false;setStatus(`Análisis terminado: ${GP.groups.length} grupo(s) encontrado(s). Revisá en grande antes de eliminar.`);renderModule();
+ GP.busy=false;GP.reviewOnly=false;
+ if(GP.groups.some(g=>g.type==='exact'))GP.filter='exact';
+ else if(GP.groups.some(g=>g.type==='similar'))GP.filter='similar';
+ else GP.filter='all';
+ setStatus(GP.groups.length?`✅ Análisis terminado: ${GP.groups.length} grupo(s) encontrado(s). Revisá en grande antes de eliminar.`:'✅ Análisis terminado: no se encontraron duplicados entre los archivos seleccionados.');
+ renderModule();
 }
 function loadGIS(){
  if(window.google?.accounts?.oauth2)return Promise.resolve();
@@ -4911,7 +4933,7 @@ async function listPickedItems(sessionId,token){let out=[],page='';do{const u=ne
 async function deletePickerSession(id,token){try{await authFetch(`${PICKER_API}/sessions/${encodeURIComponent(id)}`,token,{method:'DELETE'})}catch{}}
 async function fetchMediaBlob(baseUrl,type,token,large=false){const suffix=type==='VIDEO'?(large?'=dv':'=w1280-h720-no'):(large?'=w3200-h3200':'=w1200-h1200');const r=await authFetch(baseUrl+suffix,token);return r.blob()}
 async function importPickedMedia(media,acct,token){
- const existing=new Set(GP.items.map(x=>`${x.accountId}:${x.googleId||''}`));let added=0;
+ const existing=new Set(GP.items.map(x=>`${x.accountId}:${x.googleId||''}`));let added=0,failed=0,lastError='';
  for(let i=0;i<media.length;i++){
   const m=media[i],mf=m.mediaFile||{},gId=m.id||'';if(existing.has(`${acct.id}:${gId}`))continue;
   const kind=m.type==='VIDEO'?'video':'photo';setStatus(`Preparando vista previa ${i+1}/${media.length}…`);
@@ -4920,11 +4942,16 @@ async function importPickedMedia(media,acct,token){
    const name=mf.filename||`${kind}_${i+1}`;const file=kind==='photo'?new File([blob],name,{type:mf.mimeType||blob.type||'image/jpeg',lastModified:m.createTime?Date.parse(m.createTime):Date.now()}):null;
    const previewFile=new File([blob],name,{type:blob.type||'image/jpeg',lastModified:Date.now()});
    const md=mf.mediaFileMetadata||{};
-   GP.items.push({id:'ggp_'+acct.id.replace(/[^a-z0-9]/gi,'').slice(-10)+'_'+gId,name,size:0,analysisSize:file?.size||0,date:m.createTime?Date.parse(m.createTime):Date.now(),kind,accountId:acct.id,accountEmail:acct.email,width:Number(md.width)||0,height:Number(md.height)||0,duration:0,contentHash:null,visualHash:null,file,previewFile,url:URL.createObjectURL(blob),remoteBaseUrl:mf.baseUrl,remoteMime:mf.mimeType||'',googleId:gId,tokenAccountId:acct.id,videoUrl:null,largeUrl:null});added++;
-  }catch(e){console.warn('ÁNGELA Google Fotos preview',e)}
+   GP.items.push({id:'ggp_'+acct.id.replace(/[^a-z0-9]/gi,'').slice(-10)+'_'+gId,name,size:blob.size||0,analysisSize:file?.size||blob.size||0,date:m.createTime?Date.parse(m.createTime):Date.now(),kind,accountId:acct.id,accountEmail:acct.email,width:Number(md.width)||0,height:Number(md.height)||0,duration:0,contentHash:null,visualHash:null,file,previewFile,url:URL.createObjectURL(blob),remoteBaseUrl:mf.baseUrl,remoteMime:mf.mimeType||'',googleId:gId,tokenAccountId:acct.id,videoUrl:null,largeUrl:null});added++;
+  }catch(e){failed++;lastError=e?.message||String(e);console.warn('ÁNGELA Google Fotos preview',e)}
   if(i%8===0)await wait();
  }
- GP.groups=[];GP.marked.clear();setStatus(`${added} archivo(s) nuevos cargados desde ${acct.email}. Tocá “Buscar duplicados”.`);renderModule();
+ GP.groups=[];GP.marked.clear();GP.filter='all';GP.reviewOnly=false;
+ if(added){setStatus(`✅ ${added} archivo(s) cargado(s) desde ${acct.email}${failed?` · ${failed} no se pudieron abrir`:''}. Ya los ves abajo.`)}
+ else if(media.length){setStatus(`⚠️ Google confirmó ${media.length} archivo(s), pero ÁNGELA no pudo cargar la vista previa.`);alert('Google confirmó tu selección, pero ÁNGELA no pudo mostrar la foto/video.\n\n'+(lastError||'Sin detalle del error')+'\n\nNo selecciones más por ahora; revisamos esta conexión.');}
+ else setStatus('⚠️ Google no devolvió archivos en esta selección.');
+ renderModule();
+ if(added)setTimeout(()=>$('agGPGroups')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
 }
 async function runPicker(acct,token){
  let pop=null;try{pop=window.open('about:blank','angela_google_photos_picker','width=1100,height=820');if(pop)pop.document.write('<title>ÁNGELA · Google Fotos</title><div style="font-family:sans-serif;padding:24px">Preparando Google Fotos…</div>')}catch{}
@@ -4938,7 +4965,7 @@ async function runPicker(acct,token){
  const started=Date.now();let current=session;
  while(Date.now()-started<20*60*1000){if(current.mediaItemsSet)break;const interval=Math.max(1500,Math.min(10000,parseSeconds(current.pollingConfig?.pollInterval,3)*1000));await sleep(interval);try{current=await getPickerSession(session.id,token)}catch(e){if(/401|403/.test(e.message))throw e;await sleep(1500)}}
  if(!current.mediaItemsSet){await deletePickerSession(session.id,token);throw new Error('Se agotó el tiempo de selección. Volvé a intentarlo.')}
- setStatus('Selección terminada. Cargando fotos y videos en ÁNGELA…');const media=await listPickedItems(session.id,token);await importPickedMedia(media,acct,token);await deletePickerSession(session.id,token);
+ setStatus('Selección terminada. Cargando fotos y videos en ÁNGELA…');const media=await listPickedItems(session.id,token);if(!media.length){await deletePickerSession(session.id,token);throw new Error('Google confirmó que terminaste la selección, pero no devolvió ningún archivo. Volvé a seleccionar una foto y tocá Hecho.')}await importPickedMedia(media,acct,token);await deletePickerSession(session.id,token);
 }
 window.angelaGPAbrir=()=>renderModule();
 window.angelaGPCambiarCuenta=v=>{GP.activeAccount=v;renderModule()};
