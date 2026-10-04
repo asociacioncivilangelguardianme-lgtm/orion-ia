@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- ÁNGELA V8.6 · Google Fotos: fotos/videos duplicados, vista grande y varias cuentas -->
+<!-- ÁNGELA V8.7 · Google Fotos OAuth real + Picker + duplicados + varias cuentas -->
 <title>ÁNGELA V8.4 | Agentic + Planilla Visible</title>
 <!-- V8.4 · AGENTIC + PLANILLA VISIBLE + CLIMA/UBICACIÓN · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
@@ -4738,7 +4738,7 @@ window.angelaAbrirGestion=(m)=>{
     <div class="card-mini">🤖 IA / imágenes: usa la conexión actual</div>
     <div class="card-mini">☁️ Supabase: ⏳ falta conectar</div>
     <div class="card-mini">📧 Gmail: ⏳ falta OAuth</div>
-    <div class="card-mini">📸 Google Fotos: 🧩 duplicados instalado · ⏳ falta OAuth/Picker</div>
+    <div class="card-mini">📸 Google Fotos: ✅ OAuth + Picker configurado · varias cuentas</div>
     <div class="card-mini">🖥️ Bridge PC: ⏳ falta instalar/conectar</div>
     <div class="card-mini">📱 WhatsApp: ⏳ falta conexión autorizada</div>
    </div>`);
@@ -4778,32 +4778,36 @@ document.addEventListener("DOMContentLoaded",()=>{
 })();
 </script>
 
-<script id="angela-google-photos-duplicados-v1">
+<script id="angela-google-photos-duplicados-v2">
 (()=>{
 'use strict';
-const ACC_KEY='ANGELA_GP_ACCOUNTS_V1';
+const ACC_KEY='ANGELA_GP_ACCOUNTS_V2';
 const IGN_KEY='ANGELA_GP_IGNORE_V1';
-const API_BASE='/api/google-photos';
-const GP={items:[],groups:[],marked:new Set(),filter:'all',reviewOnly:false,accounts:[],activeAccount:'local',busy:false,status:'Listo para revisar fotos y videos.'};
+const GOOGLE_CLIENT_ID='348072341152-192k894siml3mdkoai2jnjk5i1a1dfvs.apps.googleusercontent.com';
+const GOOGLE_SCOPE='https://www.googleapis.com/auth/photospicker.mediaitems.readonly';
+const PICKER_API='https://photospicker.googleapis.com/v1';
+const GP={items:[],groups:[],marked:new Set(),filter:'all',reviewOnly:false,accounts:[],activeAccount:'local',busy:false,status:'Google Fotos listo para conectar.',tokens:new Map(),gisPromise:null};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const fmtBytes=n=>{n=Number(n)||0;if(n<1024)return n+' B';const u=['KB','MB','GB','TB'];let i=-1;do{n/=1024;i++;}while(n>=1024&&i<u.length-1);return n.toLocaleString('es-AR',{maximumFractionDigits:n<10?2:1})+' '+u[i]};
+const fmtBytes=n=>{n=Number(n)||0;if(!n)return '';if(n<1024)return n+' B';const u=['KB','MB','GB','TB'];let i=-1;do{n/=1024;i++;}while(n>=1024&&i<u.length-1);return n.toLocaleString('es-AR',{maximumFractionDigits:n<10?2:1})+' '+u[i]};
 const fmtDur=s=>{s=Math.round(Number(s)||0);const m=Math.floor(s/60),r=s%60;return `${m}:${String(r).padStart(2,'0')}`};
 const wait=()=>new Promise(r=>requestAnimationFrame(r));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function isConnected(a){return !!a?.local || GP.tokens.has(a?.id)}
 function loadAccounts(){
- try{GP.accounts=JSON.parse(localStorage.getItem(ACC_KEY)||'[]')}catch{GP.accounts=[]}
- if(!Array.isArray(GP.accounts))GP.accounts=[];
- if(!GP.accounts.some(a=>a.id==='local'))GP.accounts.unshift({id:'local',email:'Selección del equipo / celular',connected:true,local:true});
- if(!GP.accounts.some(a=>a.id===GP.activeAccount))GP.activeAccount=GP.accounts[0].id;
+ let saved=[];try{saved=JSON.parse(localStorage.getItem(ACC_KEY)||'[]')}catch{}
+ if(!Array.isArray(saved))saved=[];
+ GP.accounts=[{id:'local',email:'Selección del equipo / celular',local:true},...saved.filter(a=>a&&a.id&&a.email).map(a=>({id:a.id,email:a.email}))];
+ if(!GP.accounts.some(a=>a.id===GP.activeAccount))GP.activeAccount='local';
 }
-function saveAccounts(){localStorage.setItem(ACC_KEY,JSON.stringify(GP.accounts.filter(a=>!a.local)))}
+function saveAccounts(){localStorage.setItem(ACC_KEY,JSON.stringify(GP.accounts.filter(a=>!a.local).map(a=>({id:a.id,email:a.email}))))}
 function ignoredSet(){try{return new Set(JSON.parse(localStorage.getItem(IGN_KEY)||'[]'))}catch{return new Set()}}
 function saveIgnored(set){localStorage.setItem(IGN_KEY,JSON.stringify([...set].slice(-1000)))}
 function activeAccount(){return GP.accounts.find(a=>a.id===GP.activeAccount)||GP.accounts[0]}
 function setStatus(t){GP.status=t;const e=$('agGPStatus');if(e)e.textContent=t}
-function accountOptions(){return GP.accounts.map(a=>`<option value="${esc(a.id)}" ${a.id===GP.activeAccount?'selected':''}>${esc(a.email)}${a.connected?' · conectada':' · pendiente'}</option>`).join('')}
+function accountOptions(){return GP.accounts.map(a=>`<option value="${esc(a.id)}" ${a.id===GP.activeAccount?'selected':''}>${esc(a.email)}${a.local?'':isConnected(a)?' · conectada':' · reconectar'}</option>`).join('')}
 function baseHTML(){
- const connected=GP.accounts.filter(a=>!a.local&&a.connected).length;
+ const connected=GP.accounts.filter(a=>!a.local&&isConnected(a)).length;
  return `<div class="ag-gp-wrap">
   <div class="ag-gp-head">
    <div><div class="ag-gp-title">📸 Google Fotos · Duplicados</div><div class="ag-gp-sub">Fotos y videos · varias cuentas · revisión grande antes de borrar</div></div>
@@ -4817,7 +4821,7 @@ function baseHTML(){
    <button class="quick" onclick="angelaGPImportarLocal()">📁 Elegir fotos/videos</button>
    <input id="agGPFiles" class="hidden" type="file" accept="image/*,video/*" multiple onchange="angelaGPProcesarArchivos(this.files)">
   </div>
-  <div class="ag-gp-accounts">${GP.accounts.map(a=>`<span class="ag-gp-account ${a.connected?'ok':'pending'}">${a.connected?'🟢':'🟡'} ${esc(a.email)}${a.local?'':' · '+(a.connected?'conectada':'falta OAuth')}</span>`).join('')}</div>
+  <div class="ag-gp-accounts">${GP.accounts.map(a=>`<span class="ag-gp-account ${isConnected(a)?'ok':'pending'}">${isConnected(a)?'🟢':'🟡'} ${esc(a.email)}${a.local?'':isConnected(a)?' · conectada':' · reconectar'}</span>`).join('')}</div>
   <div class="ag-gp-status"><span id="agGPStatus">${esc(GP.status)}</span><span>${connected} cuenta(s) Google conectada(s)</span></div>
   <div id="agGPSummary"></div>
   <div class="ag-gp-actions">
@@ -4829,142 +4833,146 @@ function baseHTML(){
    <button class="quick" onclick="angelaGPPrepararEliminacion()">🗑️ Preparar eliminación</button>
   </div>
   <div id="agGPGroups" class="ag-gp-groups"></div>
-  <div class="ag-gp-note"><b>Importante:</b> Google Fotos actualmente no permite que una página externa borre libremente toda tu biblioteca. ÁNGELA puede detectar, comparar y dejar marcada tu selección; la eliminación final se confirma dentro de Google Fotos. Para analizar tu biblioteca de Google, la cuenta debe estar conectada por OAuth/Google Photos Picker.</div>
+  <div class="ag-gp-note"><b>Google Fotos:</b> cada vez que conectás una cuenta, Google te deja elegir hasta 2.000 fotos/videos para compartir con ÁNGELA. Podés repetirlo y también conectar varias cuentas. ÁNGELA compara lo cargado de todas las cuentas, pero <b>no borra automáticamente</b>: la eliminación final se hace en Google Fotos después de tu revisión.</div>
  </div>
  <div id="agGPViewer" class="ag-gp-viewer hidden" onclick="if(event.target===this)angelaGPCerrarVista()"><div class="ag-gp-viewer-card"><button class="ag-gp-close" onclick="angelaGPCerrarVista()">✕</button><div id="agGPViewerMedia" class="ag-gp-viewer-media"></div><div id="agGPViewerInfo" class="ag-gp-viewer-info"></div></div></div>`;
 }
-function renderModule(){
- const b=$('angelaGestionContenido'); if(!b)return;
- b.classList.remove('hidden'); b.innerHTML=baseHTML(); renderSummary(); renderGroups();
-}
+function renderModule(){const b=$('angelaGestionContenido');if(!b)return;b.classList.remove('hidden');b.innerHTML=baseHTML();renderSummary();renderGroups()}
 function renderSummary(){
- const s=$('agGPSummary'); if(!s)return;
- const photos=GP.items.filter(x=>x.kind==='photo').length, videos=GP.items.length-photos;
+ const s=$('agGPSummary');if(!s)return;
+ const photos=GP.items.filter(x=>x.kind==='photo').length,videos=GP.items.length-photos;
  const exact=GP.groups.filter(g=>g.type==='exact').reduce((n,g)=>n+Math.max(0,g.items.length-1),0);
  const similar=GP.groups.filter(g=>g.type==='similar').reduce((n,g)=>n+Math.max(0,g.items.length-1),0);
  const selected=[...GP.marked].map(id=>GP.items.find(x=>x.id===id)).filter(Boolean);
  const reclaim=selected.reduce((n,x)=>n+(x.size||0),0);
- s.innerHTML=`<div class="ag-gp-summary">
-  <div><b>${GP.items.length}</b><span>archivos cargados</span></div><div><b>${photos}</b><span>fotos</span></div><div><b>${videos}</b><span>videos</span></div><div><b>${exact}</b><span>duplicados exactos</span></div><div><b>${similar}</b><span>similares</span></div><div><b>${GP.marked.size}</b><span>marcados · ${fmtBytes(reclaim)}</span></div>
- </div>`;
+ s.innerHTML=`<div class="ag-gp-summary"><div><b>${GP.items.length}</b><span>archivos cargados</span></div><div><b>${photos}</b><span>fotos</span></div><div><b>${videos}</b><span>videos</span></div><div><b>${exact}</b><span>duplicados exactos</span></div><div><b>${similar}</b><span>similares</span></div><div><b>${GP.marked.size}</b><span>marcados${reclaim?' · '+fmtBytes(reclaim):''}</span></div></div>`;
 }
-function groupSignature(g){return g.items.map(x=>`${x.name}:${x.size}`).sort().join('|')}
-function shownGroups(){
- let gs=GP.groups.filter(g=>GP.filter==='all'||g.type===GP.filter);
- const ign=ignoredSet(); gs=gs.filter(g=>!ign.has(groupSignature(g)));
- if(GP.reviewOnly)gs=gs.filter(g=>g.items.some(x=>GP.marked.has(x.id)));
- return gs;
-}
-function itemCard(item,g){
- const marked=GP.marked.has(item.id), keep=!marked;
- const meta=[item.accountEmail,item.date?new Date(item.date).toLocaleString('es-AR'):'',fmtBytes(item.size),item.kind==='photo'&&item.width?`${item.width}×${item.height}`:'',item.kind==='video'&&item.duration?fmtDur(item.duration):''].filter(Boolean).join(' · ');
- const media=item.kind==='video'?`<video src="${item.url}" muted preload="metadata" playsinline></video><div class="ag-gp-play">▶</div>`:`<img src="${item.url}" alt="${esc(item.name)}">`;
- return `<article class="ag-gp-card ${marked?'marked':'keep'}">
-  <button class="ag-gp-media" onclick="angelaGPVer('${item.id}')">${media}</button>
-  <div class="ag-gp-card-body"><div class="ag-gp-name">${esc(item.name)}</div><div class="ag-gp-meta">${esc(meta)}</div>
-   <div class="ag-gp-card-actions"><label class="ag-gp-check"><input type="checkbox" ${marked?'checked':''} onchange="angelaGPToggle('${item.id}',this.checked)"> ${marked?'🗑️ Marcada para eliminar':'✅ Conservar'}</label><button class="quick text-xs" onclick="angelaGPVer('${item.id}')">🔍 Ver grande</button></div>
-  </div></article>`;
+function groupSignature(g){return g.items.map(x=>`${x.accountId}:${x.googleId||x.name}:${x.size||x.analysisSize||0}`).sort().join('|')}
+function shownGroups(){let gs=GP.groups.filter(g=>GP.filter==='all'||g.type===GP.filter);const ign=ignoredSet();gs=gs.filter(g=>!ign.has(groupSignature(g)));if(GP.reviewOnly)gs=gs.filter(g=>g.items.some(x=>GP.marked.has(x.id)));return gs}
+function metaText(item){const a=[item.accountEmail,item.date?new Date(item.date).toLocaleString('es-AR'):'',item.size?fmtBytes(item.size):'',item.width&&item.height?`${item.width}×${item.height}`:'',item.kind==='video'&&item.duration?fmtDur(item.duration):''].filter(Boolean);return a.join(' · ')}
+function itemCard(item){
+ const marked=GP.marked.has(item.id);
+ let media;
+ if(item.kind==='video'&&item.remoteBaseUrl) media=`<img src="${item.url}" alt="${esc(item.name)}"><div class="ag-gp-play">▶</div>`;
+ else if(item.kind==='video') media=`<video src="${item.url}" muted preload="metadata" playsinline></video><div class="ag-gp-play">▶</div>`;
+ else media=`<img src="${item.url}" alt="${esc(item.name)}">`;
+ return `<article class="ag-gp-card ${marked?'marked':'keep'}"><button class="ag-gp-media" onclick="angelaGPVer('${item.id}')">${media}</button><div class="ag-gp-card-body"><div class="ag-gp-name">${esc(item.name)}</div><div class="ag-gp-meta">${esc(metaText(item))}</div><div class="ag-gp-card-actions"><label class="ag-gp-check"><input type="checkbox" ${marked?'checked':''} onchange="angelaGPToggle('${item.id}',this.checked)"> ${marked?'🗑️ Marcada para eliminar':'✅ Conservar'}</label><button class="quick text-xs" onclick="angelaGPVer('${item.id}')">🔍 Ver grande</button></div></div></article>`;
 }
 function renderGroups(){
- const root=$('agGPGroups'); if(!root)return;
+ const root=$('agGPGroups');if(!root)return;
  if(GP.busy){root.innerHTML='<div class="ag-gp-empty">⏳ Analizando fotos y videos… no cierres esta pantalla.</div>';return}
  if(!GP.items.length){root.innerHTML='<div class="ag-gp-empty">Todavía no hay fotos o videos cargados. Usá <b>Seleccionar de Google Fotos</b> o <b>Elegir fotos/videos</b>.</div>';return}
  if(!GP.groups.length){root.innerHTML='<div class="ag-gp-empty">Los archivos están cargados. Tocá <b>🔎 Buscar duplicados</b> para comenzar el análisis.</div>';return}
- const gs=shownGroups();
- if(!gs.length){root.innerHTML='<div class="ag-gp-empty">No hay grupos para este filtro.</div>';return}
- root.innerHTML=gs.map((g,idx)=>`<section class="ag-gp-group">
-  <div class="ag-gp-group-head"><div><b>${g.type==='exact'?'🧬 Duplicado exacto':'👯 Posibles similares'}</b> · Grupo ${idx+1} · ${g.items.length} archivos</div><div class="ag-gp-group-buttons"><button class="quick text-xs" onclick="angelaGPConservarMejor('${g.id}')">⭐ Conservar mejor calidad</button><button class="quick text-xs" onclick="angelaGPIgnorarGrupo('${g.id}')">🙈 No volver a mostrar</button></div></div>
-  <div class="ag-gp-grid">${g.items.map(x=>itemCard(x,g)).join('')}</div>
- </section>`).join('');
+ const gs=shownGroups();if(!gs.length){root.innerHTML='<div class="ag-gp-empty">No hay grupos para este filtro.</div>';return}
+ root.innerHTML=gs.map((g,idx)=>`<section class="ag-gp-group"><div class="ag-gp-group-head"><div><b>${g.type==='exact'?'🧬 Duplicado exacto':'👯 Posibles similares'}</b> · Grupo ${idx+1} · ${g.items.length} archivos</div><div class="ag-gp-group-buttons"><button class="quick text-xs" onclick="angelaGPConservarMejor('${g.id}')">⭐ Conservar mejor calidad</button><button class="quick text-xs" onclick="angelaGPIgnorarGrupo('${g.id}')">🙈 No volver a mostrar</button></div></div><div class="ag-gp-grid">${g.items.map(itemCard).join('')}</div></section>`).join('');
 }
 async function sha256(buf){const h=await crypto.subtle.digest('SHA-256',buf);return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function fingerprint(file){
- const CH=1024*1024;
- if(file.size<=12*CH)return sha256(await file.arrayBuffer());
- const points=[0,Math.max(0,Math.floor(file.size/2)-CH/2),Math.max(0,file.size-CH)];
- const blobs=await Promise.all(points.map(p=>file.slice(p,p+CH).arrayBuffer()));
- const total=blobs.reduce((n,b)=>n+b.byteLength,0)+16, all=new Uint8Array(total);let off=0;
- for(const b of blobs){all.set(new Uint8Array(b),off);off+=b.byteLength}
- new DataView(all.buffer).setBigUint64(off,BigInt(file.size));
- return sha256(all.buffer);
-}
-async function imageHash(file){
- let bmp;try{bmp=await createImageBitmap(file)}catch{return {hash:null,width:0,height:0}}
- const c=document.createElement('canvas');c.width=8;c.height=8;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bmp,0,0,8,8);const d=x.getImageData(0,0,8,8).data;let vals=[];for(let i=0;i<d.length;i+=4)vals.push((d[i]*299+d[i+1]*587+d[i+2]*114)/1000);const avg=vals.reduce((a,b)=>a+b,0)/vals.length;let bits='';for(const v of vals)bits+=v>=avg?'1':'0';let hex='';for(let i=0;i<64;i+=4)hex+=parseInt(bits.slice(i,i+4),2).toString(16);const out={hash:hex,width:bmp.width,height:bmp.height};bmp.close?.();return out;
-}
+async function fingerprint(file){if(!file)return null;const CH=1024*1024;if(file.size<=12*CH)return sha256(await file.arrayBuffer());const points=[0,Math.max(0,Math.floor(file.size/2)-CH/2),Math.max(0,file.size-CH)];const blobs=await Promise.all(points.map(p=>file.slice(p,p+CH).arrayBuffer()));const total=blobs.reduce((n,b)=>n+b.byteLength,0)+16,all=new Uint8Array(total);let off=0;for(const b of blobs){all.set(new Uint8Array(b),off);off+=b.byteLength}new DataView(all.buffer).setBigUint64(off,BigInt(file.size));return sha256(all.buffer)}
+async function imageHash(file){let bmp;try{bmp=await createImageBitmap(file)}catch{return {hash:null,width:0,height:0}}const c=document.createElement('canvas');c.width=8;c.height=8;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bmp,0,0,8,8);const d=x.getImageData(0,0,8,8).data;let vals=[];for(let i=0;i<d.length;i+=4)vals.push((d[i]*299+d[i+1]*587+d[i+2]*114)/1000);const avg=vals.reduce((a,b)=>a+b,0)/vals.length;let bits='';for(const v of vals)bits+=v>=avg?'1':'0';let hex='';for(let i=0;i<64;i+=4)hex+=parseInt(bits.slice(i,i+4),2).toString(16);const out={hash:hex,width:bmp.width,height:bmp.height};bmp.close?.();return out}
 function videoMeta(url){return new Promise(res=>{const v=document.createElement('video');let done=false;const finish=()=>{if(done)return;done=true;res({duration:Number.isFinite(v.duration)?v.duration:0,width:v.videoWidth||0,height:v.videoHeight||0})};v.preload='metadata';v.onloadedmetadata=finish;v.onerror=finish;v.src=url;setTimeout(finish,6000)})}
-function ham(a,b){if(!a||!b||a.length!==b.length)return 99;let n=0;for(let i=0;i<a.length;i++){let x=parseInt(a[i],16)^parseInt(b[i],16);n+=((x&1)+((x>>1)&1)+((x>>2)&1)+((x>>3)&1));}return n}
-function normName(n){return String(n||'').toLowerCase().replace(/\.[^.]+$/,'').replace(/\b(copy|copia|duplicado|download|descarga|whatsapp|instagram|facebook|img|vid)[-_ ]*\d*\b/g,'').replace(/[^a-z0-9]/g,'')}
-function chooseKeep(arr){return [...arr].sort((a,b)=>((b.width||0)*(b.height||0)-(a.width||0)*(a.height||0))||(b.size-a.size)||(a.date-b.date))[0]}
-function unionGroups(items,pairs){
- const p=new Map(items.map(x=>[x.id,x.id]));
- const find=x=>{let y=p.get(x);while(y!==p.get(y)){p.set(y,p.get(p.get(y)));y=p.get(y)}return y};
- const un=(a,b)=>{a=find(a);b=find(b);if(a!==b)p.set(b,a)};pairs.forEach(([a,b])=>un(a.id,b.id));
- const m=new Map();items.forEach(x=>{const r=find(x.id);if(!m.has(r))m.set(r,[]);m.get(r).push(x)});return [...m.values()].filter(a=>a.length>1)
-}
+function ham(a,b){if(!a||!b||a.length!==b.length)return 99;let n=0;for(let i=0;i<a.length;i++){let x=parseInt(a[i],16)^parseInt(b[i],16);n+=((x&1)+((x>>1)&1)+((x>>2)&1)+((x>>3)&1))}return n}
+function normName(n){return String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\.[^.]+$/,'').replace(/\b(copy|copia|duplicado|download|descarga|whatsapp|instagram|facebook|img|vid)[-_ ]*\d*\b/g,'').replace(/[^a-z0-9]/g,'')}
+function chooseKeep(arr){return [...arr].sort((a,b)=>((b.width||0)*(b.height||0)-(a.width||0)*(a.height||0))||((b.size||0)-(a.size||0))||((a.date||0)-(b.date||0)))[0]}
+function unionGroups(items,pairs){const p=new Map(items.map(x=>[x.id,x.id]));const find=x=>{let y=p.get(x);while(y!==p.get(y)){p.set(y,p.get(p.get(y)));y=p.get(y)}return y};const un=(a,b)=>{a=find(a);b=find(b);if(a!==b)p.set(b,a)};pairs.forEach(([a,b])=>un(a.id,b.id));const m=new Map();items.forEach(x=>{const r=find(x.id);if(!m.has(r))m.set(r,[]);m.get(r).push(x)});return [...m.values()].filter(a=>a.length>1)}
 async function analyze(){
  if(GP.busy||!GP.items.length){if(!GP.items.length)alert('Primero cargá fotos o videos.');return}
  GP.busy=true;GP.groups=[];GP.marked.clear();setStatus('Preparando análisis…');renderSummary();renderGroups();
- const sizeMap=new Map();for(const x of GP.items){const k=`${x.kind}:${x.size}`;if(!sizeMap.has(k))sizeMap.set(k,[]);sizeMap.get(k).push(x)}
+ const exactEligible=GP.items.filter(x=>x.file);
+ const sizeMap=new Map();for(const x of exactEligible){const sz=x.analysisSize||x.file?.size||x.size||0;const k=`${x.kind}:${sz}`;if(!sizeMap.has(k))sizeMap.set(k,[]);sizeMap.get(k).push(x)}
  const hashCandidates=[...sizeMap.values()].filter(a=>a.length>1).flat();
  for(let i=0;i<hashCandidates.length;i++){const x=hashCandidates[i];if(!x.contentHash)x.contentHash=await fingerprint(x.file);if(i%3===0){setStatus(`Huella exacta ${i+1}/${hashCandidates.length}…`);await wait()}}
- const hm=new Map();for(const x of hashCandidates){const k=x.kind+':'+x.contentHash;if(!hm.has(k))hm.set(k,[]);hm.get(k).push(x)}
- const exactArrays=[...hm.values()].filter(a=>a.length>1);const exactIds=new Set(exactArrays.flat().map(x=>x.id));
+ const hm=new Map();for(const x of hashCandidates){if(!x.contentHash)continue;const k=x.kind+':'+x.contentHash;if(!hm.has(k))hm.set(k,[]);hm.get(k).push(x)}
+ const exactArrays=[...hm.values()].filter(a=>a.length>1),exactIds=new Set(exactArrays.flat().map(x=>x.id));
  const photos=GP.items.filter(x=>x.kind==='photo');
- for(let i=0;i<photos.length;i++){const x=photos[i];if(!x.visualHash){const h=await imageHash(x.file);x.visualHash=h.hash;x.width=h.width;x.height=h.height}if(i%3===0){setStatus(`Comparando fotos ${i+1}/${photos.length}…`);await wait()}}
+ for(let i=0;i<photos.length;i++){const x=photos[i];if(!x.visualHash&&x.file){const h=await imageHash(x.file);x.visualHash=h.hash;if(!x.width)x.width=h.width;if(!x.height)x.height=h.height}if(i%3===0){setStatus(`Comparando fotos ${i+1}/${photos.length}…`);await wait()}}
  const videos=GP.items.filter(x=>x.kind==='video');
- for(let i=0;i<videos.length;i++){const x=videos[i];if(!x.duration){const m=await videoMeta(x.url);x.duration=m.duration;x.width=m.width;x.height=m.height}if(i%5===0){setStatus(`Revisando videos ${i+1}/${videos.length}…`);await wait()}}
- const pairs=[];
- const buckets=new Map();
- for(const x of photos.filter(x=>x.visualHash)){
-  const sigs=[0,4,8,12].map(o=>`${o}:${x.visualHash.slice(o,o+4)}`);let cand=new Set();for(const s of sigs){for(const y of buckets.get(s)||[])cand.add(y)}
-  for(const y of cand){if(exactIds.has(x.id)&&exactIds.has(y.id)&&x.contentHash===y.contentHash)continue;const ar1=x.width/x.height,ar2=y.width/y.height;if(Math.abs(ar1-ar2)>0.12)continue;if(ham(x.visualHash,y.visualHash)<=8)pairs.push([x,y])}
-  for(const s of sigs){if(!buckets.has(s))buckets.set(s,[]);buckets.get(s).push(x)}
- }
- const vBuckets=new Map();for(const x of videos){const k=Math.round((x.duration||0)*2)/2;if(!vBuckets.has(k))vBuckets.set(k,[]);vBuckets.get(k).push(x)}
- for(const arr of vBuckets.values())for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length;j++){const a=arr[i],b=arr[j];if(exactIds.has(a.id)&&exactIds.has(b.id)&&a.contentHash===b.contentHash)continue;const sizeRatio=Math.min(a.size,b.size)/Math.max(a.size,b.size);if(sizeRatio>.92||normName(a.name)===normName(b.name))pairs.push([a,b])}
+ for(let i=0;i<videos.length;i++){const x=videos[i];if(!x.remoteBaseUrl&&!x.duration){const m=await videoMeta(x.url);x.duration=m.duration;x.width=x.width||m.width;x.height=x.height||m.height}if(x.remoteBaseUrl&&!x.visualHash&&x.previewFile){const h=await imageHash(x.previewFile);x.visualHash=h.hash}if(i%5===0){setStatus(`Revisando videos ${i+1}/${videos.length}…`);await wait()}}
+ const pairs=[],buckets=new Map();
+ for(const x of photos.filter(x=>x.visualHash)){const sigs=[0,4,8,12].map(o=>`${o}:${x.visualHash.slice(o,o+4)}`);let cand=new Set();for(const s of sigs)for(const y of buckets.get(s)||[])cand.add(y);for(const y of cand){if(exactIds.has(x.id)&&exactIds.has(y.id)&&x.contentHash===y.contentHash)continue;const ar1=(x.width||1)/(x.height||1),ar2=(y.width||1)/(y.height||1);if(Math.abs(ar1-ar2)>0.12)continue;if(ham(x.visualHash,y.visualHash)<=8)pairs.push([x,y])}for(const s of sigs){if(!buckets.has(s))buckets.set(s,[]);buckets.get(s).push(x)}}
+ for(let i=0;i<videos.length;i++)for(let j=i+1;j<videos.length;j++){const a=videos[i],b=videos[j];if(exactIds.has(a.id)&&exactIds.has(b.id)&&a.contentHash===b.contentHash)continue;let similar=false;if(a.duration&&b.duration&&Math.abs(a.duration-b.duration)<=0.6){const sr=a.size&&b.size?Math.min(a.size,b.size)/Math.max(a.size,b.size):0;if(sr>.92||normName(a.name)===normName(b.name))similar=true}else if(a.remoteBaseUrl&&b.remoteBaseUrl){const sameDims=a.width&&b.width&&a.height&&b.height&&a.width===b.width&&a.height===b.height;if(normName(a.name)&&normName(a.name)===normName(b.name)&&sameDims)similar=true;else if(sameDims&&a.visualHash&&b.visualHash&&ham(a.visualHash,b.visualHash)<=4)similar=true}if(similar)pairs.push([a,b])}
  const similarArrays=unionGroups(GP.items,pairs).filter(a=>!a.every(x=>exactIds.has(x.id)));
  let gi=0;GP.groups=[...exactArrays.map(items=>({id:'e'+(++gi),type:'exact',items})),...similarArrays.map(items=>({id:'s'+(++gi),type:'similar',items}))];
  for(const g of GP.groups){const keep=chooseKeep(g.items);for(const x of g.items)if(x.id!==keep.id)GP.marked.add(x.id)}
- GP.busy=false;GP.reviewOnly=false;setStatus(`Análisis terminado: ${GP.groups.length} grupo(s) encontrado(s). Revisá antes de eliminar.`);renderModule();
+ GP.busy=false;GP.reviewOnly=false;setStatus(`Análisis terminado: ${GP.groups.length} grupo(s) encontrado(s). Revisá en grande antes de eliminar.`);renderModule();
+}
+function loadGIS(){
+ if(window.google?.accounts?.oauth2)return Promise.resolve();
+ if(GP.gisPromise)return GP.gisPromise;
+ GP.gisPromise=new Promise((resolve,reject)=>{let s=document.querySelector('script[data-angela-gis]');if(!s){s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.defer=true;s.dataset.angelaGis='1';document.head.appendChild(s)}const start=Date.now();const tick=()=>{if(window.google?.accounts?.oauth2)return resolve();if(Date.now()-start>15000)return reject(new Error('No se pudo cargar Google Identity Services'));setTimeout(tick,150)};tick()});
+ return GP.gisPromise;
+}
+function requestGoogleToken(){return new Promise(async(resolve,reject)=>{try{await loadGIS();const tc=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:GOOGLE_SCOPE,include_granted_scopes:true,callback:r=>{if(r?.error)return reject(new Error(r.error));if(!r?.access_token)return reject(new Error('Google no devolvió token'));resolve(r)}});tc.requestAccessToken({prompt:'select_account'})}catch(e){reject(e)}})}
+async function authFetch(url,token,options={}){const h=new Headers(options.headers||{});h.set('Authorization','Bearer '+token);const r=await fetch(url,{...options,headers:h});if(!r.ok){let msg='';try{msg=await r.text()}catch{};throw new Error(`Google ${r.status}: ${msg.slice(0,240)}`)}return r}
+function tokenForAccount(acct){return GP.tokens.get(acct?.id)?.access_token||null}
+function parseSeconds(v,def){const n=parseFloat(String(v||'').replace('s',''));return Number.isFinite(n)?n:def}
+async function createPickerSession(token){const r=await authFetch(`${PICKER_API}/sessions`,token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pickingConfig:{maxItemCount:'2000'}})});return r.json()}
+async function getPickerSession(id,token){return (await authFetch(`${PICKER_API}/sessions/${encodeURIComponent(id)}`,token)).json()}
+async function listPickedItems(sessionId,token){let out=[],page='';do{const u=new URL(`${PICKER_API}/mediaItems`);u.searchParams.set('sessionId',sessionId);u.searchParams.set('pageSize','100');if(page)u.searchParams.set('pageToken',page);const j=await (await authFetch(u.toString(),token)).json();out.push(...(j.mediaItems||[]));page=j.nextPageToken||''}while(page);return out}
+async function deletePickerSession(id,token){try{await authFetch(`${PICKER_API}/sessions/${encodeURIComponent(id)}`,token,{method:'DELETE'})}catch{}}
+async function fetchMediaBlob(baseUrl,type,token,large=false){const suffix=type==='VIDEO'?(large?'=dv':'=w1280-h720-no'):(large?'=w3200-h3200':'=w1200-h1200');const r=await authFetch(baseUrl+suffix,token);return r.blob()}
+async function importPickedMedia(media,acct,token){
+ const existing=new Set(GP.items.map(x=>`${x.accountId}:${x.googleId||''}`));let added=0;
+ for(let i=0;i<media.length;i++){
+  const m=media[i],mf=m.mediaFile||{},gId=m.id||'';if(existing.has(`${acct.id}:${gId}`))continue;
+  const kind=m.type==='VIDEO'?'video':'photo';setStatus(`Preparando vista previa ${i+1}/${media.length}…`);
+  try{
+   const blob=await fetchMediaBlob(mf.baseUrl,kind==='video'?'VIDEO':'PHOTO',token,false);
+   const name=mf.filename||`${kind}_${i+1}`;const file=kind==='photo'?new File([blob],name,{type:mf.mimeType||blob.type||'image/jpeg',lastModified:m.createTime?Date.parse(m.createTime):Date.now()}):null;
+   const previewFile=new File([blob],name,{type:blob.type||'image/jpeg',lastModified:Date.now()});
+   const md=mf.mediaFileMetadata||{};
+   GP.items.push({id:'ggp_'+acct.id.replace(/[^a-z0-9]/gi,'').slice(-10)+'_'+gId,name,size:0,analysisSize:file?.size||0,date:m.createTime?Date.parse(m.createTime):Date.now(),kind,accountId:acct.id,accountEmail:acct.email,width:Number(md.width)||0,height:Number(md.height)||0,duration:0,contentHash:null,visualHash:null,file,previewFile,url:URL.createObjectURL(blob),remoteBaseUrl:mf.baseUrl,remoteMime:mf.mimeType||'',googleId:gId,tokenAccountId:acct.id,videoUrl:null,largeUrl:null});added++;
+  }catch(e){console.warn('ÁNGELA Google Fotos preview',e)}
+  if(i%8===0)await wait();
+ }
+ GP.groups=[];GP.marked.clear();setStatus(`${added} archivo(s) nuevos cargados desde ${acct.email}. Tocá “Buscar duplicados”.`);renderModule();
+}
+async function runPicker(acct,token){
+ let pop=null;try{pop=window.open('about:blank','angela_google_photos_picker','width=1100,height=820');if(pop)pop.document.write('<title>ÁNGELA · Google Fotos</title><div style="font-family:sans-serif;padding:24px">Preparando Google Fotos…</div>')}catch{}
+ setStatus(`Creando selector para ${acct.email}…`);
+ let session;
+ try{session=await createPickerSession(token)}catch(e){try{pop?.close()}catch{};throw e}
+ if(!session?.id||!session?.pickerUri){try{pop?.close()}catch{};throw new Error('Google no devolvió una sesión válida')}
+ let uri=session.pickerUri;if(!/\/autoclose(?:\?|$)/.test(uri))uri=uri.replace(/\/$/,'')+'/autoclose';
+ if(pop&&!pop.closed)pop.location.href=uri;else window.open(uri,'_blank','noopener');
+ setStatus('Google Fotos está abierto. Elegí las fotos/videos y tocá Listo. ÁNGELA esperará acá.');
+ const started=Date.now();let current=session;
+ while(Date.now()-started<20*60*1000){if(current.mediaItemsSet)break;const interval=Math.max(1500,Math.min(10000,parseSeconds(current.pollingConfig?.pollInterval,3)*1000));await sleep(interval);try{current=await getPickerSession(session.id,token)}catch(e){if(/401|403/.test(e.message))throw e;await sleep(1500)}}
+ if(!current.mediaItemsSet){await deletePickerSession(session.id,token);throw new Error('Se agotó el tiempo de selección. Volvé a intentarlo.')}
+ setStatus('Selección terminada. Cargando fotos y videos en ÁNGELA…');const media=await listPickedItems(session.id,token);await importPickedMedia(media,acct,token);await deletePickerSession(session.id,token);
 }
 window.angelaGPAbrir=()=>renderModule();
 window.angelaGPCambiarCuenta=v=>{GP.activeAccount=v;renderModule()};
 window.angelaGPImportarLocal=()=>$('agGPFiles')?.click();
-window.angelaGPProcesarArchivos=async files=>{
- const list=[...(files||[])];if(!list.length)return;const acct=activeAccount();setStatus(`Cargando ${list.length} archivo(s)…`);
- let start=GP.items.length;
- for(let i=0;i<list.length;i++){const f=list[i];if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;GP.items.push({id:'gp'+Date.now().toString(36)+(start+i)+Math.random().toString(36).slice(2,5),file:f,url:URL.createObjectURL(f),name:f.name,size:f.size,date:f.lastModified||Date.now(),kind:f.type.startsWith('video/')?'video':'photo',accountId:acct.id,accountEmail:acct.email,width:0,height:0,duration:0,contentHash:null,visualHash:null});if(i%20===0)await wait()}
- GP.groups=[];GP.marked.clear();setStatus(`${list.length} archivo(s) cargados. Tocá “Buscar duplicados”.`);renderModule();
-};
+window.angelaGPProcesarArchivos=async files=>{const list=[...(files||[])];if(!list.length)return;const acct=activeAccount();setStatus(`Cargando ${list.length} archivo(s)…`);let start=GP.items.length;for(let i=0;i<list.length;i++){const f=list[i];if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;GP.items.push({id:'gp'+Date.now().toString(36)+(start+i)+Math.random().toString(36).slice(2,5),file:f,previewFile:f,url:URL.createObjectURL(f),name:f.name,size:f.size,analysisSize:f.size,date:f.lastModified||Date.now(),kind:f.type.startsWith('video/')?'video':'photo',accountId:acct.id,accountEmail:acct.email,width:0,height:0,duration:0,contentHash:null,visualHash:null});if(i%20===0)await wait()}GP.groups=[];GP.marked.clear();setStatus(`${list.length} archivo(s) cargados. Tocá “Buscar duplicados”.`);renderModule()};
 window.angelaGPAnalizar=analyze;
 window.angelaGPFiltro=f=>{GP.filter=f;GP.reviewOnly=false;renderGroups()};
 window.angelaGPToggle=(id,on)=>{on?GP.marked.add(id):GP.marked.delete(id);renderSummary();renderGroups()};
 window.angelaGPConservarMejor=gid=>{const g=GP.groups.find(x=>x.id===gid);if(!g)return;const keep=chooseKeep(g.items);g.items.forEach(x=>x.id===keep.id?GP.marked.delete(x.id):GP.marked.add(x.id));renderSummary();renderGroups()};
 window.angelaGPIgnorarGrupo=gid=>{const g=GP.groups.find(x=>x.id===gid);if(!g)return;if(!confirm('¿Ocultar este grupo para que ÁNGELA no vuelva a mostrarlo como duplicado en esta instalación?'))return;const s=ignoredSet();s.add(groupSignature(g));saveIgnored(s);g.items.forEach(x=>GP.marked.delete(x.id));renderSummary();renderGroups()};
 window.angelaGPRevisionFinal=()=>{GP.reviewOnly=true;GP.filter='all';setStatus(`Revisión final: ${GP.marked.size} archivo(s) marcados. Abrí cada imagen o video en grande si tenés dudas.`);renderSummary();renderGroups()};
-window.angelaGPVer=id=>{const x=GP.items.find(a=>a.id===id);if(!x)return;const v=$('agGPViewer'),m=$('agGPViewerMedia'),info=$('agGPViewerInfo');if(!v||!m)return;m.innerHTML=x.kind==='video'?`<video src="${x.url}" controls autoplay playsinline></video>`:`<img src="${x.url}" alt="${esc(x.name)}">`;info.innerHTML=`<b>${esc(x.name)}</b><br>${esc(x.accountEmail)} · ${fmtBytes(x.size)}${x.width?' · '+x.width+'×'+x.height:''}${x.duration?' · '+fmtDur(x.duration):''}<br><span class="${GP.marked.has(x.id)?'text-red-300':'text-emerald-300'}">${GP.marked.has(x.id)?'🗑️ Marcada para eliminar':'✅ Conservar'}</span>`;v.classList.remove('hidden')};
+window.angelaGPVer=async id=>{const x=GP.items.find(a=>a.id===id);if(!x)return;const v=$('agGPViewer'),m=$('agGPViewerMedia'),info=$('agGPViewerInfo');if(!v||!m)return;v.classList.remove('hidden');m.innerHTML='<div style="padding:30px">⏳ Cargando vista grande…</div>';try{if(x.remoteBaseUrl){const token=tokenForAccount(GP.accounts.find(a=>a.id===x.tokenAccountId));if(!token)throw new Error('La sesión de esta cuenta venció. Volvé a conectarla para abrir el archivo grande.');if(x.kind==='video'){if(!x.videoUrl){const b=await fetchMediaBlob(x.remoteBaseUrl,'VIDEO',token,true);x.videoUrl=URL.createObjectURL(b)}m.innerHTML=`<video src="${x.videoUrl}" controls autoplay playsinline></video>`}else{if(!x.largeUrl){const b=await fetchMediaBlob(x.remoteBaseUrl,'PHOTO',token,true);x.largeUrl=URL.createObjectURL(b)}m.innerHTML=`<img src="${x.largeUrl}" alt="${esc(x.name)}">`}}else m.innerHTML=x.kind==='video'?`<video src="${x.url}" controls autoplay playsinline></video>`:`<img src="${x.url}" alt="${esc(x.name)}">`}catch(e){m.innerHTML=`<img src="${x.url}" alt="${esc(x.name)}"><div style="padding:10px;color:#fca5a5">${esc(e.message)}</div>`}info.innerHTML=`<b>${esc(x.name)}</b><br>${esc(metaText(x))}<br><span class="${GP.marked.has(x.id)?'text-red-300':'text-emerald-300'}">${GP.marked.has(x.id)?'🗑️ Marcada para eliminar':'✅ Conservar'}</span>`};
 window.angelaGPCerrarVista=()=>{$('agGPViewer')?.classList.add('hidden');const m=$('agGPViewerMedia');if(m)m.innerHTML=''};
-window.angelaGPPrepararEliminacion=()=>{if(!GP.marked.size){alert('No hay fotos ni videos marcados para eliminar.');return}GP.reviewOnly=true;renderGroups();const n=GP.marked.size;if(!confirm(`Revisión de seguridad: hay ${n} archivo(s) marcados. ÁNGELA NO los borrará automáticamente. ¿Querés preparar la lista y abrir Google Fotos para eliminarlos manualmente?`))return;const rows=[...GP.marked].map(id=>GP.items.find(x=>x.id===id)).filter(Boolean);const txt='ÁNGELA · ARCHIVOS MARCADOS PARA ELIMINAR\n\n'+rows.map((x,i)=>`${i+1}. ${x.name} | ${x.accountEmail} | ${fmtBytes(x.size)}`).join('\n');const b=new Blob([txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='ANGELA_FOTOS_VIDEOS_MARCADOS.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);window.open('https://photos.google.com/','_blank','noopener');setStatus('Lista descargada. Google Fotos se abrió para que hagas la eliminación final de forma manual y segura.')};
+window.angelaGPPrepararEliminacion=()=>{if(!GP.marked.size){alert('No hay fotos ni videos marcados para eliminar.');return}GP.reviewOnly=true;renderGroups();const n=GP.marked.size;if(!confirm(`Revisión de seguridad: hay ${n} archivo(s) marcados. ÁNGELA NO los borrará automáticamente. ¿Querés preparar la lista y abrir Google Fotos para eliminarlos manualmente?`))return;const rows=[...GP.marked].map(id=>GP.items.find(x=>x.id===id)).filter(Boolean);const txt='ÁNGELA · ARCHIVOS MARCADOS PARA ELIMINAR\n\n'+rows.map((x,i)=>`${i+1}. ${x.name} | ${x.accountEmail}${x.googleId?' | Google ID: '+x.googleId:''}`).join('\n');const b=new Blob([txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='ANGELA_FOTOS_VIDEOS_MARCADOS.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);window.open('https://photos.google.com/','_blank','noopener');setStatus('Lista preparada. Google Fotos se abrió para que hagas la eliminación final manualmente y con seguridad.')};
 window.angelaGPConectarCuenta=async()=>{
- setStatus('Buscando conexión segura con Google…');
- try{const r=await fetch(`${API_BASE}/auth/start?returnTo=${encodeURIComponent(location.href)}`,{credentials:'include'});if(!r.ok)throw new Error('oauth');const j=await r.json();if(!j?.url)throw new Error('url');location.href=j.url;return}catch(e){}
- const email=prompt('La parte visual para varias cuentas ya está instalada. Para registrar una cuenta mientras configuramos OAuth, escribí el Gmail (no se guarda ninguna contraseña):');if(!email)return;const clean=email.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)){alert('Escribí un correo Gmail/Google válido.');return}const id='pending_'+clean.toLowerCase();if(!GP.accounts.some(a=>a.id===id))GP.accounts.push({id,email:clean,connected:false});saveAccounts();GP.activeAccount=id;setStatus('Cuenta registrada como pendiente. Falta activar OAuth en Vercel para leer Google Fotos.');renderModule();
+ setStatus('Abriendo autorización de Google…');
+ try{
+  const tok=await requestGoogleToken();
+  let label=prompt('✅ Google autorizó el acceso a las fotos y videos que vos elijas.\n\nPara distinguir esta cuenta de las demás, escribí el Gmail que acabás de autorizar:','');
+  label=(label||'').trim();if(!label)label='Cuenta Google '+(GP.accounts.filter(a=>!a.local).length+1);
+  const old=GP.accounts.find(a=>a.email.toLowerCase()===label.toLowerCase());const id=old?.id||('google_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7));
+  if(!old)GP.accounts.push({id,email:label});else old.email=label;
+  GP.tokens.set(id,{access_token:tok.access_token,expiresAt:Date.now()+(Number(tok.expires_in)||3600)*1000});saveAccounts();GP.activeAccount=id;setStatus(`${label} conectada. Ahora tocá “Seleccionar de Google Fotos”.`);renderModule();
+ }catch(e){console.error(e);setStatus('No se pudo conectar Google Fotos.');alert('No se pudo completar la autorización de Google Fotos.\n\n'+e.message+'\n\nSi Google muestra un error de origen autorizado, revisamos el cliente OAuth en Google Cloud.')}
 };
 window.angelaGPSeleccionarGoogle=async()=>{
- const acct=activeAccount();
- if(acct.local){setStatus('En celular, “Elegir fotos/videos” puede mostrar Google Fotos como proveedor. Para conexión directa, conectá una cuenta Google.');$('agGPFiles')?.click();return}
- if(!acct.connected){alert('Esta cuenta todavía figura pendiente de OAuth. Primero hay que completar la conexión de Google Fotos.');return}
- try{const r=await fetch(`${API_BASE}/picker/session?account=${encodeURIComponent(acct.id)}`,{method:'POST',credentials:'include'});if(!r.ok)throw 0;const j=await r.json();if(j?.pickerUri){window.open(j.pickerUri,'_blank','noopener');setStatus('Selector de Google Fotos abierto. Cuando termines la selección, volvé a ÁNGELA.');return}}catch(e){}
- alert('No se pudo abrir el selector de Google Fotos. La interfaz está lista, pero falta terminar el backend OAuth/Picker en Vercel.');
+ const acct=activeAccount();if(acct.local){alert('Primero tocá “Conectar otra cuenta Google” y elegí la cuenta de Google Fotos que querés revisar.');return}
+ const token=tokenForAccount(acct);if(!token){alert(`La cuenta ${acct.email} necesita volver a conectarse. Tocá “Conectar otra cuenta Google” y elegí esa cuenta.`);return}
+ try{await runPicker(acct,token)}catch(e){console.error(e);setStatus('No se pudo completar la selección de Google Fotos.');alert('Google Fotos no pudo completar la selección.\n\n'+e.message)}
 };
-async function syncAccountsFromBackend(){
- try{const r=await fetch(`${API_BASE}/accounts`,{credentials:'include'});if(!r.ok)return;const j=await r.json();const list=Array.isArray(j?.accounts)?j.accounts:[];for(const a of list){if(!a?.id||!a?.email)continue;const old=GP.accounts.find(x=>x.id===a.id||x.email===a.email);if(old){old.id=a.id;old.email=a.email;old.connected=true}else GP.accounts.push({id:a.id,email:a.email,connected:true})}saveAccounts()}catch(e){}
-}
-loadAccounts();syncAccountsFromBackend();
-const oldOpen=window.angelaAbrirGestion;
-window.angelaAbrirGestion=function(m){if(m==='googlephotos')return renderModule();return oldOpen?.(m)};
+loadAccounts();loadGIS().catch(()=>{});
+const oldOpen=window.angelaAbrirGestion;window.angelaAbrirGestion=function(m){if(m==='googlephotos')return renderModule();return oldOpen?.(m)};
 })();
+
 </script>
 
 
