@@ -149,12 +149,16 @@ button:disabled{opacity:.55;cursor:not-allowed;}
    Extensión aditiva: conserva el diseño V6.4.1.
    ========================================== */
 .angela-modal-backdrop{position:fixed;inset:0;z-index:120;background:rgba(0,3,10,.93);display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
-.angela-modal-panel{width:min(1480px,98vw);height:min(930px,96vh);background:#071321;border:1px solid #334a72;border-radius:24px;box-shadow:0 24px 90px rgba(0,0,0,.65),0 0 45px rgba(0,150,255,.09);overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 320px}
+#visorImagenGrande{padding:0}
+#visorImagenGrande .angela-modal-panel{width:100vw;height:100dvh;max-width:none;max-height:none;border-radius:0;grid-template-columns:minmax(0,1fr) minmax(380px,450px)}
+#visorImagenGrande .angela-modal-stage{min-height:0}
+#visorImagenGrande .angela-modal-side{padding:16px 18px 28px}
+.angela-modal-panel{width:min(1680px,99vw);height:min(980px,98vh);background:#071321;border:1px solid #334a72;border-radius:24px;box-shadow:0 24px 90px rgba(0,0,0,.65),0 0 45px rgba(0,150,255,.09);overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 420px}
 .angela-modal-stage{position:relative;min-width:0;min-height:0;background:radial-gradient(circle at center,#17213b 0%,#030812 70%);overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}
-.angela-modal-side{background:#081426;border-left:1px solid #253c60;padding:14px;overflow:auto}
+.angela-modal-side{background:#081426;border-left:1px solid #253c60;padding:16px 16px 22px;overflow:auto}
 .angela-view-canvas{max-width:none;max-height:none;transform-origin:center center;cursor:grab;user-select:none;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 14px 55px rgba(0,0,0,.45)}
 .angela-view-canvas.dragging{cursor:grabbing}
-.angela-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.angela-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.angela-modal-grid.tight .quick{padding:10px 8px;font-size:12px}.angela-large-sliders label{display:block;font-size:11px;color:#67e8f9;margin-top:8px}.angela-large-sliders input[type="range"]{width:100%}
 .angela-zoom-badge{position:absolute;left:14px;bottom:14px;background:rgba(7,19,33,.9);border:1px solid #294260;padding:6px 10px;border-radius:999px;font-size:11px;color:#bae6fd;pointer-events:none}
 .motion-preview-shell{position:relative;min-height:230px;background:radial-gradient(circle at 50% 35%,#1b2b50 0%,#070d18 58%,#02050a 100%);border:1px solid #294260;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:22px;perspective:900px}
 .motion-preview-text{font-size:clamp(30px,5vw,68px);line-height:1.05;font-weight:1000;text-align:center;letter-spacing:.02em;word-break:break-word;transform-style:preserve-3d;max-width:100%;padding:18px;text-shadow:0 2px 0 #111827,0 4px 0 #0f172a,0 7px 13px rgba(0,0,0,.6);will-change:transform,filter}
@@ -178,7 +182,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 @keyframes angelaMotionPulse{0%,100%{transform:scale(.96);filter:brightness(.92)}50%{transform:scale(1.06);filter:brightness(1.25)}}
 @keyframes angelaMotionEnter{0%,15%{transform:translateZ(-220px) translateY(40px) scale(.65);opacity:.15}45%,80%{transform:translateZ(30px) translateY(0) scale(1.03);opacity:1}100%{transform:translateZ(0) scale(1);opacity:1}}
 .motion-aspect-916{aspect-ratio:9/16;max-height:66vh;margin:auto}.motion-aspect-11{aspect-ratio:1/1}.motion-aspect-169{aspect-ratio:16/9}
-@media(max-width:900px){.angela-modal-panel{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;width:100vw;height:100vh;border-radius:0}.angela-modal-side{border-left:0;border-top:1px solid #253c60;max-height:42vh}.angela-modal-backdrop{padding:0}.motion-preview-shell{min-height:190px}}
+@media(max-width:900px){.angela-modal-panel{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;width:100vw;height:100vh;border-radius:0}.angela-modal-side{border-left:0;border-top:1px solid #253c60;max-height:48vh}.angela-modal-backdrop{padding:0}.motion-preview-shell{min-height:190px}}
 
 </style>
 
@@ -882,15 +886,28 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
     </div>
     <div class="angela-modal-side custom-scrollbar">
       <div class="flex justify-between items-start gap-2 mb-3"><div><div class="font-bold text-cyan-300">🔍 Editor en grande</div><div class="text-[10px] text-slate-400">Zoom, mover, comparar y editar sin perder el editor original.</div></div><button onclick="cerrarVisorImagenGrande()" class="quick px-3">✕</button></div>
-      <div class="angela-modal-grid">
+      <div class="angela-modal-grid tight">
         <button onclick="zoomVisorImagen(1.2)" class="quick text-xs">➕ Zoom</button><button onclick="zoomVisorImagen(0.833333)" class="quick text-xs">➖ Zoom</button>
-        <button onclick="resetVisorImagen()" class="quick text-xs">↺ Ajustar</button><button id="btnCompararImagenGrande" onclick="toggleCompararImagenGrande()" class="quick text-xs">🌓 Ver original</button>
-        <button onclick="mejorarImagenAutomatico();actualizarVisorImagenGrande()" class="quick text-xs">✨ Mejorar</button><button onclick="aumentarNitidezImagen();actualizarVisorImagenGrande()" class="quick text-xs">🔍 Nitidez</button>
-        <button onclick="filtroImagen('jarvis');actualizarVisorImagenGrande()" class="quick text-xs">▦ Jarvis</button><button onclick="filtroImagen('stucki');actualizarVisorImagenGrande()" class="quick text-xs">▦ Stucki</button>
-        <button onclick="quitarFondoImagen();actualizarVisorImagenGrande()" class="quick text-xs">🪄 Fondo</button><button onclick="prepararLaserImagen();actualizarVisorImagenGrande()" class="quick text-xs">🔥 Láser</button>
-        <button onclick="prepararSublimacionImagen();actualizarVisorImagenGrande()" class="quick text-xs">👕 Sublimación</button><button onclick="guardarImagen()" class="quick text-xs">💾 Guardar PNG</button>
+        <button onclick="resetVisorImagen()" class="quick text-xs">↺ Ajustar</button><button id="btnCompararImagenGrande" onclick="toggleCompararImagenGrande()" class="quick text-xs">🌓 Original</button>
+        <button onclick="filtroImagen('normal');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🧼 Original</button><button onclick="filtroImagen('bn');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">⚫ B/N</button>
+        <button onclick="filtroImagen('grises');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">◻ Grises</button><button onclick="filtroImagen('dither');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">▦ Dither</button>
+        <button onclick="filtroImagen('jarvis');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">▦ Jarvis</button><button onclick="filtroImagen('stucki');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">▦ Stucki</button>
+        <button onclick="filtroImagen('lineart');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">✒️ Line art</button><button onclick="filtroImagen('stencil');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🧩 Stencil</button>
+        <button onclick="filtroImagen('sepia');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🟤 Sepia</button><button onclick="filtroImagen('invertir');actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🎨 Invertir</button>
+        <button onclick="mejorarImagenAutomatico();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">✨ Mejorar</button><button onclick="aumentarNitidezImagen();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🔍 Nitidez</button>
+        <button onclick="rotarImagen();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">↻ Rotar</button><button onclick="espejoImagen();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">↔️ Espejo</button>
+        <button onclick="quitarFondoImagen();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🪄 Quitar fondo</button><button onclick="restaurarImagen();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">♻ Restaurar</button>
+        <button onclick="prepararLaserImagen();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🔥 Láser</button><button onclick="prepararSublimacionImagen();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">👕 Sublimación</button>
+        <button onclick="prepararMedallaImagen(50);actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🪙 Medalla 50</button><button onclick="recortarRostroAutomatico();actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">🧑 Rostro</button>
+        <button onclick="aumentarResolucionImagen(2);actualizarVisorImagenGrande();syncLargeEditorControls()" class="quick text-xs">⬆️ Resolución 2×</button><button onclick="guardarImagen()" class="quick text-xs">💾 Guardar PNG</button>
       </div>
-      <div class="card-mini mt-3 text-[10px] text-slate-300"><b>Modo detalle:</b> arrastrá la imagen con el mouse o con el dedo. Usá Zoom +/− para revisar ojos, letras, manos, bordes y detalles finos.</div>
+      <div class="card-mini mt-3 angela-large-sliders">
+        <div class="text-[11px] font-bold text-cyan-300 mb-2">🎚 Ajustes rápidos</div>
+        <label for="visorBrillo">☀️ Brillo</label><input id="visorBrillo" type="range" min="50" max="160" value="100" oninput="setLargeBrightness(this.value)">
+        <label for="visorContraste">◐ Contraste</label><input id="visorContraste" type="range" min="50" max="220" value="100" oninput="setLargeContrast(this.value)">
+        <label for="visorNitidez">🔍 Nitidez</label><input id="visorNitidez" type="range" min="0" max="100" value="0" oninput="setLargeSharpness(this.value)">
+      </div>
+      <div class="card-mini mt-3 text-[10px] text-slate-300"><b>Modo detalle:</b> arrastrá la imagen con el mouse o con el dedo. Usá Zoom +/− para revisar ojos, letras, manos, bordes y detalles finos. Esta vista ahora abre más grande y con todas las herramientas principales de imagen.</div>
       <div class="card-mini mt-2 text-[10px] text-slate-400">Los cambios se aplican al mismo editor que ya usa ÁNGELA. Al cerrar, volvés a la pantalla normal sin perder nada.</div>
     </div>
   </div>
@@ -1108,6 +1125,11 @@ const STATE = {
     imageViewer:{scale:1,x:0,y:0,dragging:false,startX:0,startY:0,compareOriginal:false},
     motion3d:{lastPrompt:""}
 };
+
+// Puente único entre módulos: STATE es un const global léxico y no aparece en window automáticamente.
+// Varios módulos (vista previa, editor grande, archivos y herramientas) consultan window.STATE.
+// Exponer la MISMA referencia evita estados duplicados y permite que todos trabajen sobre la misma imagen/archivo.
+window.STATE = STATE;
 
 // Completa campos institucionales antiguos sin borrar personalizaciones del usuario.
 STATE.settings.comedor={...DEFAULT_SETTINGS.comedor,...(STATE.settings.comedor||{})};
@@ -2990,18 +3012,29 @@ function mostrarSubBoton(key){const data=SUB_REFERENCE[key];const box=$("resulta
    IMAGE EDITOR
    ========================================== */
 async function cargarImagenArchivo(file){
-    const valid=validateFile(file,true);if(!valid.ok){showToast(valid.message);return;}
+    const valid=validateFile(file,true);if(!valid.ok){showToast(valid.message);return false;}
+    const initImageState=(sourceCanvas)=>{
+        STATE.image.sourceCanvas=sourceCanvas;STATE.image.originalCanvas=clonarCanvas(sourceCanvas);STATE.image.ratio=sourceCanvas.width/sourceCanvas.height;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.sharpness=0;STATE.image.widthMm=100;STATE.image.heightMm=Number((100/STATE.image.ratio).toFixed(1));STATE.image.versions=null;STATE.image.lockRatio=STATE.image.lockRatio!==false;syncImageControls();renderImage();STATE.fileContext={kind:"image",name:file.name,text:"Imagen cargada en el editor de ÁNGELA."};STATE.pdfPageImages=[];STATE.videoFrames=[];renderContextoArchivo();logActivity("Imagen",`Cargada ${file.name}`);window.syncLargeEditorControls?.();return true;
+    };
+    const makeCanvasFromSource=(source)=>{const sw=source.width||source.naturalWidth,sh=source.height||source.naturalHeight,max=1600,scale=Math.min(1,max/Math.max(sw,sh));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));c.getContext("2d").drawImage(source,0,0,c.width,c.height);return c;};
+    let lastError=null;
     try{
-        let source=null,cleanup=()=>{};
-        if("createImageBitmap" in window){source=await createImageBitmap(file);cleanup=()=>source?.close?.();}
-        else{
-            const url=URL.createObjectURL(file);source=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("Formato de imagen no compatible"));img.src=url;});cleanup=()=>URL.revokeObjectURL(url);
+        if("createImageBitmap" in window){
+            try{const bmp=await createImageBitmap(file);const c=makeCanvasFromSource(bmp);bmp.close?.();return initImageState(c);}catch(error){lastError=error;console.warn("ÁNGELA · createImageBitmap falló, pruebo método alternativo",error);}
         }
-        const sw=source.width||source.naturalWidth,sh=source.height||source.naturalHeight,max=1600,scale=Math.min(1,max/Math.max(sw,sh));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));c.getContext("2d").drawImage(source,0,0,c.width,c.height);cleanup();
-        STATE.image.sourceCanvas=c;STATE.image.originalCanvas=clonarCanvas(c);STATE.image.ratio=c.width/c.height;STATE.image.rotation=0;STATE.image.mirror=false;STATE.image.mode="normal";STATE.image.brightness=100;STATE.image.contrast=100;STATE.image.sharpness=0;STATE.image.widthMm=100;STATE.image.heightMm=Number((100/STATE.image.ratio).toFixed(1));STATE.image.versions=null;syncImageControls();renderImage();STATE.fileContext={kind:"image",name:file.name,text:"Imagen cargada en el editor de ÁNGELA."};STATE.pdfPageImages=[];STATE.videoFrames=[];renderContextoArchivo();logActivity("Imagen",`Cargada ${file.name}`);
-    }catch(error){console.error(error);showToast("No pude abrir esa imagen en este navegador.");}
+        try{
+            const url=URL.createObjectURL(file);
+            const source=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("No pude decodificar la imagen"));img.src=url;});
+            const c=makeCanvasFromSource(source);URL.revokeObjectURL(url);return initImageState(c);
+        }catch(error){lastError=error;console.warn("ÁNGELA · carga por URL falló",error);}
+        const dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result||''));fr.onerror=()=>reject(new Error("No pude leer el archivo"));fr.readAsDataURL(file);});
+        const source=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("No pude abrir la imagen cargada"));img.src=dataUrl;});
+        const c=makeCanvasFromSource(source);return initImageState(c);
+    }catch(error){
+        console.error(error);showToast("No pude abrir esa imagen en este navegador.");throw(lastError||error||new Error("No pude abrir la imagen"));
+    }
 }
-function syncImageControls(){if($("brillo"))$("brillo").value=STATE.image.brightness;if($("contraste"))$("contraste").value=STATE.image.contrast;if($("nitidezImagen"))$("nitidezImagen").value=Math.round((STATE.image.sharpness||0)*100);if($("anchoMm"))$("anchoMm").value=STATE.image.widthMm||"";if($("altoMm"))$("altoMm").value=STATE.image.heightMm||"";if($("bloquearProporcion"))$("bloquearProporcion").checked=STATE.image.lockRatio;}
+function syncImageControls(){if($("brillo"))$("brillo").value=STATE.image.brightness;if($("contraste"))$("contraste").value=STATE.image.contrast;if($("nitidezImagen"))$("nitidezImagen").value=Math.round((STATE.image.sharpness||0)*100);if($("anchoMm"))$("anchoMm").value=STATE.image.widthMm||"";if($("altoMm"))$("altoMm").value=STATE.image.heightMm||"";if($("bloquearProporcion"))$("bloquearProporcion").checked=STATE.image.lockRatio;window.syncLargeEditorControls?.();}
 function imageTransformCanvas(){
     const src=STATE.image.sourceCanvas;if(!src)return null;const rot=((STATE.image.rotation%360)+360)%360;const swap=rot===90||rot===270;const out=document.createElement("canvas");out.width=swap?src.height:src.width;out.height=swap?src.width:src.height;const ctx=out.getContext("2d",{willReadFrequently:true});ctx.save();ctx.translate(out.width/2,out.height/2);ctx.rotate(rot*Math.PI/180);ctx.scale(STATE.image.mirror?-1:1,1);ctx.drawImage(src,-src.width/2,-src.height/2);ctx.restore();return out;
 }
@@ -3208,7 +3241,11 @@ function actualizarVisorImagenGrande(){
     aplicarTransformVisorImagen();
     const btn=$("btnCompararImagenGrande");if(btn)btn.textContent=STATE.imageViewer.compareOriginal?"🌓 Ver editada":"🌓 Ver original";
 }
-function abrirVisorImagenGrande(){
+function syncLargeEditorControls(){const b=$("visorBrillo"),c=$("visorContraste"),n=$("visorNitidez");if(b)b.value=STATE.image?.brightness||100;if(c)c.value=STATE.image?.contrast||100;if(n)n.value=Math.round((STATE.image?.sharpness||0)*100);} 
+function setLargeBrightness(val){if($("brillo"))$("brillo").value=val;onImageAdjust();actualizarVisorImagenGrande();syncLargeEditorControls();}
+function setLargeContrast(val){if($("contraste"))$("contraste").value=val;onImageAdjust();actualizarVisorImagenGrande();syncLargeEditorControls();}
+function setLargeSharpness(val){ajustarNitidezImagen(val);actualizarVisorImagenGrande();syncLargeEditorControls();}
+function abrirVisorImagenGrande(){syncLargeEditorControls();
     if(!imagenActiva()){abrirMenu("imagenes");showToast("Primero cargá una foto con ＋ → Fotos o desde Imágenes.");return false;}
     STATE.imageViewer.compareOriginal=false;$("visorImagenGrande")?.classList.remove("hidden");resetVisorImagen(false);actualizarVisorImagenGrande();document.body.style.overflow="hidden";return true;
 }
@@ -3594,6 +3631,17 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
   <button id="btnMaxAngelaPanelFloat" onclick="toggleMaxPanelAngela()" title="Ampliar / restaurar panel">⛶ AMPLIAR PANTALLA</button>
 </section>
 
+<!-- ÁNGELA V9.2 · Área de trabajo real. Este contenedor faltaba en V9.1 y por eso la vista previa cerraba sin mostrar el editor. -->
+<div id="angelaWorkspaceBackdrop" aria-hidden="true" onclick="if(event.target===this)cerrarModuloGrandeAngela()"></div>
+<section id="angelaWorkspaceModal" role="dialog" aria-modal="true" aria-labelledby="angelaWorkspaceTitle" aria-hidden="true">
+  <div class="angela-workspace-head">
+    <div id="angelaWorkspaceTitle" class="angela-workspace-title">⛶ Área de trabajo</div>
+    <div class="angela-workspace-actions">
+      <button type="button" class="quick text-xs px-3" onclick="cerrarModuloGrandeAngela()">✕ Cerrar</button>
+    </div>
+  </div>
+  <div id="angelaWorkspaceBody" class="custom-scrollbar"></div>
+</section>
 
 <script id="angela-menu-cards-v77-script">
 (function(){
@@ -3775,19 +3823,23 @@ window.addEventListener("load",()=>{renderProIntegrations();if(STATE.settings.ha
   const WORKSPACE={module:null,parent:null,next:null,style:null};
   const WORKSPACE_TITLES={imagenes:'🖼️ Imágenes y Diseños',motion3d:'✨ Tipografía 3D / Motion',laser:'🔥 Herramientas Láser',sublimacion:'👕 Sublimación',proyectos:'📂 Proyectos',stock:'📦 Stock',archivos:'📁 Archivos y Multimedia',web:'🌐 Web',comedor:'🥣 Comedor Ángel Guardián',config:'⚙️ Configuración'};
   window.abrirModuloGrandeAngela=function(id){
-    const el=$a(id),modal=$a('angelaWorkspaceModal'),back=$a('angelaWorkspaceBackdrop'),body=$a('angelaWorkspaceBody');if(!el||!modal||!back||!body)return;
+    const el=$a(id),modal=$a('angelaWorkspaceModal'),back=$a('angelaWorkspaceBackdrop'),body=$a('angelaWorkspaceBody');
+    if(!el){console.warn('ÁNGELA workspace: módulo inexistente',id);return false;}
+    if(!modal||!back||!body){console.warn('ÁNGELA workspace: contenedor no disponible');abrirMenu(id);return false;}
     if(WORKSPACE.module)cerrarModuloGrandeAngela();
     WORKSPACE.module=el;WORKSPACE.parent=el.parentNode;WORKSPACE.next=el.nextSibling;WORKSPACE.style=el.getAttribute('style');
     cerrarPanelMenuAngela();
     body.appendChild(el);el.classList.add('angela-workspace-module');el.style.display='block';el.style.maxHeight='none';
-    $a('angelaWorkspaceTitle').textContent=`⛶ ${WORKSPACE_TITLES[id]||'Área de trabajo grande'}`;
-    modal.classList.add('open');back.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+    const title=$a('angelaWorkspaceTitle');if(title)title.textContent=`⛶ ${WORKSPACE_TITLES[id]||'Área de trabajo grande'}`;
+    modal.classList.add('open');back.classList.add('open');modal.setAttribute('aria-hidden','false');back.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
     if(id==='motion3d')setTimeout(()=>actualizarMotion3D?.(),40);
+    if(id==='imagenes')setTimeout(()=>{try{renderImage?.();$a('canvasImagen')?.scrollIntoView({behavior:'smooth',block:'center'});}catch{}},90);
+    return true;
   };
   window.cerrarModuloGrandeAngela=function(){
     const el=WORKSPACE.module,modal=$a('angelaWorkspaceModal'),back=$a('angelaWorkspaceBackdrop');
     if(el&&WORKSPACE.parent){el.classList.remove('angela-workspace-module');if(WORKSPACE.style===null)el.removeAttribute('style');else el.setAttribute('style',WORKSPACE.style);if(WORKSPACE.next&&WORKSPACE.next.parentNode===WORKSPACE.parent)WORKSPACE.parent.insertBefore(el,WORKSPACE.next);else WORKSPACE.parent.appendChild(el);}
-    WORKSPACE.module=null;WORKSPACE.parent=null;WORKSPACE.next=null;WORKSPACE.style=null;modal?.classList.remove('open');back?.classList.remove('open');modal?.setAttribute('aria-hidden','true');document.body.style.overflow='';
+    WORKSPACE.module=null;WORKSPACE.parent=null;WORKSPACE.next=null;WORKSPACE.style=null;modal?.classList.remove('open');back?.classList.remove('open');modal?.setAttribute('aria-hidden','true');back?.setAttribute('aria-hidden','true');document.body.style.overflow='';
   };
   function requireImage(fn,openViewer=false){if(!window.STATE?.image?.sourceCanvas){cerrarPanelMenuAngela();abrirMenu('imagenes');showToast('Primero cargá una imagen.');setTimeout(()=>$a('archivoImagen')?.click(),120);return;}cerrarPanelMenuAngela();fn();if(openViewer)setTimeout(()=>abrirVisorImagenGrande(),80);}
   window.usarTarjetaMenuAngela=function(c){
@@ -6775,8 +6827,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
-<style id="angela-universal-preview-v90-css">
-/* ÁNGELA V9.0 · Vista previa universal + recuperación local. Prefijo AUP para no tocar módulos existentes. */
+<style id="angela-universal-preview-v91-css">
+/* ÁNGELA V9.4 · Vista previa universal + editor real conectado + recuperación local + editor grande robusto + puente STATE corregido. Prefijo AUP para no tocar módulos existentes. */
 #aupBack{position:fixed;inset:0;z-index:13050;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;padding:12px}
 #aupBack.open{display:flex}
 .aup-card{width:min(1500px,98vw);height:min(960px,96dvh);background:#030914;border:1px solid #31527b;border-radius:20px;box-shadow:0 28px 90px rgba(0,0,0,.65);display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;overflow:hidden;color:#e5eefc}
@@ -6785,31 +6837,32 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .aup-head-actions{display:flex;gap:8px;flex-wrap:wrap}.aup-btn{border:1px solid #365b86;background:#0b1a2e;color:#fff;border-radius:11px;padding:9px 12px;font-size:12px;font-weight:850;cursor:pointer}.aup-btn:hover{background:#102746}.aup-btn.primary{background:#0e7490;border-color:#22d3ee}.aup-btn.danger{border-color:#7f1d1d;color:#fecaca;background:#2a0b0b}
 .aup-status{padding:9px 16px;border-bottom:1px solid #203550;background:#06101e;font-size:12px;color:#a7f3d0}.aup-status.warn{color:#fde68a}.aup-status.err{color:#fecaca}
 .aup-body{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:0}.aup-list{overflow:auto;border-right:1px solid #223a59;background:#050d18;padding:10px}.aup-item{width:100%;text-align:left;border:1px solid #263d5c;background:#071321;border-radius:12px;padding:11px;margin-bottom:8px;color:#dbeafe;cursor:pointer}.aup-item.active{border-color:#22d3ee;box-shadow:0 0 0 1px rgba(34,211,238,.25)}.aup-item b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aup-item span{display:block;font-size:11px;color:#94a3b8;margin-top:3px}
-.aup-main{min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);background:#02060d}.aup-meta{padding:10px 14px;border-bottom:1px solid #1e293b;font-size:12px;line-height:1.5;color:#cbd5e1}.aup-preview{overflow:auto;min-height:0;padding:14px;display:flex;align-items:flex-start;justify-content:center}.aup-preview img,.aup-preview video{max-width:100%;max-height:74vh;width:auto;height:auto;object-fit:contain;background:#000;border-radius:12px}.aup-preview video{width:min(1100px,100%)}.aup-preview canvas{max-width:100%;height:auto;background:#fff;border-radius:10px}.aup-pre{width:100%;white-space:pre-wrap;word-break:break-word;background:#07111f;border:1px solid #263d5c;border-radius:12px;padding:16px;font-size:15px;line-height:1.55;color:#e2e8f0;overflow:auto}.aup-table-wrap{width:100%;overflow:auto;border:1px solid #294260;border-radius:12px;background:#07111f}.aup-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:14px}.aup-table th,.aup-table td{border-bottom:1px solid #23344d;border-right:1px solid #23344d;padding:9px 11px;text-align:left;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aup-table th{position:sticky;top:0;background:#0b1e35;color:#67e8f9;z-index:2;font-size:14px}.aup-empty{margin:auto;text-align:center;color:#cbd5e1;font-size:15px;padding:28px}.aup-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid #223a59;background:#07111f;font-size:11px;color:#94a3b8}
+.aup-main{min-width:0;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);background:#02060d}.aup-meta{padding:10px 14px;border-bottom:1px solid #1e293b;font-size:12px;line-height:1.5;color:#cbd5e1}.aup-workbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-bottom:1px solid #203550;background:#06101e}.aup-workbar .aup-btn{font-size:13px;padding:10px 13px}.aup-workbar .aup-hint{font-size:12px;color:#a7f3d0;margin-left:auto}.aup-preview{overflow:auto;min-height:0;padding:14px;display:flex;align-items:flex-start;justify-content:center}.aup-preview img,.aup-preview video{max-width:100%;max-height:74vh;width:auto;height:auto;object-fit:contain;background:#000;border-radius:12px}.aup-preview video{width:min(1100px,100%)}.aup-preview canvas{max-width:100%;height:auto;background:#fff;border-radius:10px}.aup-pre{width:100%;white-space:pre-wrap;word-break:break-word;background:#07111f;border:1px solid #263d5c;border-radius:12px;padding:16px;font-size:15px;line-height:1.55;color:#e2e8f0;overflow:auto}.aup-table-wrap{width:100%;overflow:auto;border:1px solid #294260;border-radius:12px;background:#07111f}.aup-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:14px}.aup-table th,.aup-table td{border-bottom:1px solid #23344d;border-right:1px solid #23344d;padding:9px 11px;text-align:left;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aup-table th{position:sticky;top:0;background:#0b1e35;color:#67e8f9;z-index:2;font-size:14px}.aup-empty{margin:auto;text-align:center;color:#cbd5e1;font-size:15px;padding:28px}.aup-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid #223a59;background:#07111f;font-size:11px;color:#94a3b8}
 #aupRecovery{position:fixed;z-index:13040;left:50%;bottom:18px;transform:translateX(-50%);width:min(760px,94vw);display:none;background:#071729;border:1px solid #22d3ee;border-radius:16px;box-shadow:0 18px 55px rgba(0,0,0,.55);padding:12px 14px;color:#e6f7ff}.aup-rec-title{font-weight:950;color:#67e8f9;font-size:14px}.aup-rec-text{font-size:12px;color:#cbd5e1;margin-top:4px}.aup-rec-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 #aupOpenInFiles{margin-top:10px;width:100%;font-size:12px}
 @media(max-width:900px){.aup-card{width:100vw;height:100dvh;border-radius:0}.aup-body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.aup-list{border-right:0;border-bottom:1px solid #223a59;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:8px}.aup-item{min-width:210px;margin:0}.aup-preview{padding:8px}.aup-preview img,.aup-preview video{max-height:65vh}.aup-head{align-items:flex-start}.aup-title{font-size:17px}.aup-table{font-size:13px}.aup-pre{font-size:15px}}
-@media(max-width:560px){.aup-head{padding:10px}.aup-head-actions .aup-btn{padding:8px 9px;font-size:11px}.aup-status,.aup-meta{font-size:12px}.aup-preview img,.aup-preview video{max-height:62vh}.aup-foot{font-size:10px}}
+@media(max-width:560px){.aup-head{padding:10px}.aup-head-actions .aup-btn{padding:9px 10px;font-size:12px}.aup-status,.aup-meta{font-size:12px}.aup-workbar{padding:8px}.aup-workbar .aup-btn{flex:1 1 46%;font-size:12px;padding:10px 8px}.aup-workbar .aup-hint{width:100%;margin-left:0;text-align:center}.aup-preview img,.aup-preview video{max-height:62vh}.aup-foot{font-size:10px}}
 </style>
 <div id="aupBack" aria-hidden="true">
   <div class="aup-card" role="dialog" aria-modal="true" aria-label="Vista previa universal de ÁNGELA">
     <div class="aup-head">
-      <div><div class="aup-title">👁 Vista previa universal</div><div class="aup-sub">Imagen · video · PDF · Word · Excel · CSV · texto · otros archivos</div></div>
-      <div class="aup-head-actions"><button class="aup-btn" type="button" onclick="angelaAUPVerEdicionActual()">🛠 Ver edición actual</button><button class="aup-btn primary" type="button" onclick="angelaAUPRecuperarEnModulo()">↩ Recuperar y seguir</button><button class="aup-btn" type="button" onclick="angelaAUPCerrar()">✕ Cerrar</button></div>
+      <div><div class="aup-title">👁 Vista previa universal</div><div class="aup-sub">Revisá primero · después abrí el editor o módulo correspondiente sin perder el archivo</div></div>
+      <div class="aup-head-actions"><button class="aup-btn primary" type="button" onclick="angelaAUPTrabajarActual()">✏️ Trabajar este archivo</button><button class="aup-btn" type="button" onclick="angelaAUPVerEdicionActual()">🛠 Ver edición actual</button><button class="aup-btn" type="button" onclick="angelaAUPCerrar()">✕ Cerrar</button></div>
     </div>
     <div id="aupStatus" class="aup-status">Vista previa local: no depende de Internet.</div>
-    <div class="aup-body"><div id="aupList" class="aup-list"></div><div class="aup-main"><div id="aupMeta" class="aup-meta"></div><div id="aupPreview" class="aup-preview"><div class="aup-empty">Seleccioná un archivo para verlo.</div></div></div></div>
+    <div class="aup-body"><div id="aupList" class="aup-list"></div><div class="aup-main"><div id="aupMeta" class="aup-meta"></div><div id="aupWorkbar" class="aup-workbar"></div><div id="aupPreview" class="aup-preview"><div class="aup-empty">Seleccioná un archivo para verlo.</div></div></div></div>
     <div class="aup-foot"><span>💾 El último trabajo compatible queda guardado localmente para poder recuperarlo si la página se recarga.</span><span id="aupSavedAt"></span></div>
   </div>
 </div>
-<div id="aupRecovery"><div class="aup-rec-title">↩ ÁNGELA encontró un trabajo anterior</div><div id="aupRecoveryText" class="aup-rec-text"></div><div class="aup-rec-actions"><button class="aup-btn primary" onclick="angelaAUPRecuperarEnModulo()">Recuperar y seguir</button><button class="aup-btn" onclick="angelaAUPOpen()">Ver vista previa</button><button class="aup-btn danger" onclick="angelaAUPDescartarSesion()">Descartar guardado</button></div></div>
-<script id="angela-universal-preview-v90-js">
+<div id="aupRecovery"><div class="aup-rec-title">↩ ÁNGELA encontró un trabajo anterior</div><div id="aupRecoveryText" class="aup-rec-text"></div><div class="aup-rec-actions"><button class="aup-btn primary" onclick="angelaAUPRecuperarEnModulo()">Recuperar y trabajar</button><button class="aup-btn" onclick="angelaAUPOpen()">Ver vista previa</button><button class="aup-btn danger" onclick="angelaAUPDescartarSesion()">Descartar guardado</button></div></div>
+<script id="angela-universal-preview-v94-js">
 (function(){
 'use strict';
 const DB_NAME='ANGELA_UNIVERSAL_PREVIEW_V1',STORE='kv',SESSION_KEY='last-session',EDITED_KEY='last-edited';
 const MAX_STORE_TOTAL=200*1024*1024;
 const SKIP_IDS=new Set(['angelaBackupInput','inputImportConfig']);
 const AUP={files:[],sourceId:'',sourceLabel:'',active:0,urls:[],restoring:false,db:null,edited:null,sessionTime:0};
+const editorState=()=>window.STATE||(typeof STATE!=='undefined'?STATE:null);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const ext=n=>(String(n||'').split('.').pop()||'').toLowerCase();
@@ -6826,6 +6879,55 @@ async function saveSession(files,input){const list=Array.from(files||[]);if(!lis
 function setStatus(t,cls=''){const e=$('aupStatus');if(!e)return;e.className='aup-status'+(cls?' '+cls:'');e.textContent=t}
 function renderList(){const b=$('aupList');if(!b)return;b.innerHTML=AUP.files.map((f,i)=>`<button class="aup-item ${i===AUP.active?'active':''}" onclick="angelaAUPSeleccionar(${i})"><b>${esc(f.name||'archivo')}</b><span>${esc(kind(f))} · ${size(f.size)}</span></button>`).join('')||'<div class="aup-empty">Sin archivos.</div>'}
 function metaText(f){const d=f.lastModified?new Date(f.lastModified).toLocaleString('es-AR'):'';return `<b>${esc(f.name||'archivo')}</b> · ${esc(String(f.type||kind(f)||'archivo'))} · ${size(f.size)}${d?' · '+esc(d):''}<br><span style="color:#a7f3d0">Vista previa local. No necesita Internet para mostrar el archivo ya cargado.</span>`}
+function activeFile(){return AUP.files[AUP.active]||null}
+function renderWorkbar(f){const b=$('aupWorkbar');if(!b)return;if(!f){b.innerHTML='';return}const k=kind(f);if(k==='image'){b.innerHTML=`<button class="aup-btn primary" onclick="angelaAUPTrabajarActual()">🎨 Abrir editor grande</button><button class="aup-btn" onclick="angelaAUPImagenAccion('improve')">✨ Mejorar</button><button class="aup-btn" onclick="angelaAUPImagenAccion('bn')">⚫ B/N</button><button class="aup-btn" onclick="angelaAUPImagenAccion('grises')">◻ Grises</button><button class="aup-btn" onclick="angelaAUPImagenAccion('jarvis')">▦ Jarvis</button><button class="aup-btn" onclick="angelaAUPImagenAccion('stucki')">▦ Stucki</button><button class="aup-btn" onclick="angelaAUPImagenAccion('removebg')">🪄 Quitar fondo</button><button class="aup-btn" onclick="angelaAUPImagenAccion('laser')">🔥 Preparar láser</button><span class="aup-hint">La vista previa es para revisar · al trabajar abre la imagen en grande y con más herramientas.</span>`;return}if(k==='video'){b.innerHTML=`<button class="aup-btn primary" onclick="angelaAUPTrabajarActual()">🎬 Abrir editor de video</button><span class="aup-hint">Podés reproducir acá o abrir las herramientas de video.</span>`;return}if(k==='sheet'){b.innerHTML=`<button class="aup-btn primary" onclick="angelaAUPTrabajarActual()">📊 Trabajar planilla</button><span class="aup-hint">Abrir Excel/CSV en Archivos para cruzar, unificar o analizar.</span>`;return}if(k==='word'||k==='pdf'||k==='text'){b.innerHTML=`<button class="aup-btn primary" onclick="angelaAUPTrabajarActual()">📄 Trabajar documento</button><span class="aup-hint">Abrir el archivo en su área de trabajo sin volver a seleccionarlo.</span>`;return}b.innerHTML=`<button class="aup-btn primary" onclick="angelaAUPTrabajarActual()">📎 Trabajar este archivo</button><span class="aup-hint">El archivo ya está cargado.</span>`}
+function openWorkspace(id){
+ try{
+  let opened=false;
+  if(typeof window.abrirModuloGrandeAngela==='function')opened=window.abrirModuloGrandeAngela(id)===true;
+  if(!opened&&typeof window.abrirMenu==='function'){window.abrirMenu(id);opened=true;}
+  if(opened)window.angelaAUPCerrar?.();
+  return opened;
+ }catch(e){console.warn('AUP workspace',e);return false}
+}
+async function loadImageForWork(f,action=''){
+ if(!f)return false;
+ try{
+  setStatus('⏳ Cargando la imagen en el editor grande…');
+  if(typeof window.cargarImagenArchivo!=='function')throw new Error('El editor de imágenes no está disponible');
+  const loaded=await window.cargarImagenArchivo(f);
+  const st=editorState();if(loaded===false||!st?.image?.sourceCanvas)throw new Error('La imagen no llegó al editor');
+  if(action==='improve'&&typeof window.mejorarImagenAutomatico==='function')window.mejorarImagenAutomatico();
+  else if(action==='bn'&&typeof window.filtroImagen==='function')window.filtroImagen('bn');
+  else if(action==='grises'&&typeof window.filtroImagen==='function')window.filtroImagen('grises');
+  else if(action==='jarvis'&&typeof window.filtroImagen==='function')window.filtroImagen('jarvis');
+  else if(action==='stucki'&&typeof window.filtroImagen==='function')window.filtroImagen('stucki');
+  else if(action==='removebg'&&typeof window.quitarFondoImagen==='function')window.quitarFondoImagen();
+  else if(action==='laser'&&typeof window.prepararLaserImagen==='function')window.prepararLaserImagen();
+  openWorkspace('imagenes');
+  const labels={improve:'Mejora automática aplicada',bn:'Blanco y negro aplicado',grises:'Escala de grises aplicada',jarvis:'Tramado Jarvis aplicado',stucki:'Tramado Stucki aplicado',removebg:'Quitar fondo aplicado',laser:'Preparación para láser aplicada'};
+  setTimeout(()=>{
+   try{
+    window.renderImage?.();
+    window.syncLargeEditorControls?.();
+    document.getElementById('canvasImagen')?.scrollIntoView({behavior:'smooth',block:'center'});
+    if(typeof window.abrirVisorImagenGrande==='function')window.abrirVisorImagenGrande();
+   }catch{}
+   window.angelaAUPCerrar?.();
+   if(typeof window.showToast==='function')window.showToast(action?`✅ ${labels[action]||'Cambio aplicado'}. La imagen quedó abierta en grande para seguir trabajando.`:'✅ Imagen abierta en grande. Ya podés editarla con todas las herramientas.');
+   setStatus(action?`✅ ${labels[action]||'Cambio aplicado'}. La imagen ya está abierta en grande.`:'✅ Imagen abierta en grande y lista para editar.');
+  },160);
+  const rec=$('aupRecovery');if(rec)rec.style.display='none';
+  setTimeout(()=>window.snapshotEditedCanvas?.(),900);
+  return true;
+ }catch(e){
+  console.error(e);
+  setStatus('❌ No pude abrir la imagen en el editor grande: '+(e.message||e),'err');
+  return false;
+ }
+}
+async function restoreFilesToSource(files){const input=AUP.sourceId?$(AUP.sourceId):null;if(!input||input.type!=='file'||!files.length)return false;try{const dt=new DataTransfer();const max=input.multiple?files.length:1;files.slice(0,max).forEach(f=>dt.items.add(f));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return true}catch(e){console.warn('AUP restore source',e);return false}}
+async function workCurrent(){if(!AUP.files.length)await restoreStored();const f=activeFile()||AUP.files[0];if(!f){setStatus('No hay un archivo disponible para trabajar.','warn');return false}const k=kind(f);if(k==='image')return loadImageForWork(f);if(k==='video'){try{if(typeof window.cargarVideoArchivo!=='function')throw new Error('El editor de video no está disponible');await window.cargarVideoArchivo(f);$('aupRecovery')?.style&&($('aupRecovery').style.display='none');openWorkspace('archivos');return true}catch(e){setStatus('❌ No pude abrir el video: '+(e.message||e),'err');return false}}if(AUP.sourceId==='archivosMultiplesAngela'&&AUP.files.length>1){AUP.restoring=true;try{const ok=await restoreFilesToSource(AUP.files.filter(x=>!x.__aupEdited));if(!ok)throw new Error('No pude restaurar los archivos múltiples');$('aupRecovery')?.style&&($('aupRecovery').style.display='none');openWorkspace('archivos');return true}finally{setTimeout(()=>AUP.restoring=false,350)}}try{if(typeof window.handleGeneralFile==='function'){await window.handleGeneralFile(f);$('aupRecovery')?.style&&($('aupRecovery').style.display='none');openWorkspace('archivos');return true}}catch(e){console.warn(e)}setStatus('El archivo sigue disponible, pero no encuentro un módulo compatible para abrirlo.','warn');return false}
 async function previewImage(f,box){const u=URL.createObjectURL(f);AUP.urls.push(u);box.innerHTML=`<img src="${u}" alt="${esc(f.name)}">`}
 async function previewVideo(f,box){const u=URL.createObjectURL(f);AUP.urls.push(u);box.innerHTML=`<video src="${u}" controls playsinline preload="metadata"></video>`}
 async function previewPDF(f,box){if(!window.pdfjsLib){box.innerHTML='<div class="aup-empty">El PDF está cargado, pero el visor PDF no terminó de iniciar. No refresques: esperá unos segundos y volvé a abrir la vista previa.</div>';return}box.innerHTML='<div class="aup-empty">⏳ Preparando primera página del PDF…</div>';try{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,page=await pdf.getPage(1),vp=page.getViewport({scale:1.55}),c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;box.innerHTML='';box.appendChild(c);const note=document.createElement('div');note.className='aup-pre';note.style.marginLeft='12px';note.style.maxWidth='420px';note.textContent=`PDF: ${pdf.numPages} página(s).\nSe muestra la primera página para comprobar que el archivo es correcto.`;box.appendChild(note)}catch(e){box.innerHTML=`<div class="aup-empty">❌ No pude dibujar el PDF: ${esc(e.message||e)}<br>El archivo sigue guardado; no hace falta refrescar.</div>`}}
@@ -6833,21 +6935,26 @@ function tableHTML(rows){if(!rows?.length)return'<div class="aup-empty">La plani
 async function previewSheet(f,box){box.innerHTML='<div class="aup-empty">⏳ Preparando vista previa de la planilla…</div>';try{if(!window.XLSX)throw new Error('El lector Excel todavía no está disponible');const wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true}),sn=wb.SheetNames?.[0],rows=sn?XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:false}):[];box.innerHTML=tableHTML(rows)}catch(e){box.innerHTML=`<div class="aup-empty">❌ No pude generar la tabla previa: ${esc(e.message||e)}<br>El archivo quedó cargado y guardado.</div>`}}
 async function previewWord(f,box){box.innerHTML='<div class="aup-empty">⏳ Preparando vista previa de Word…</div>';try{if(ext(f.name)==='doc')throw new Error('El formato .DOC antiguo no tiene vista local completa; conviene guardarlo como .DOCX');if(!window.mammoth)throw new Error('El lector Word todavía no está disponible');const r=await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()});box.innerHTML=`<div class="aup-pre">${esc(String(r.value||'').slice(0,18000)||'Documento sin texto visible.')}</div>`}catch(e){box.innerHTML=`<div class="aup-empty">${esc(e.message||e)}<br><br>El archivo sigue cargado y puede recuperarse.</div>`}}
 async function previewText(f,box){try{let t=await f.text();if(ext(f.name)==='json')try{t=JSON.stringify(JSON.parse(t),null,2)}catch{}box.innerHTML=`<div class="aup-pre">${esc(t.slice(0,20000)||'Archivo sin texto visible.')}</div>`}catch(e){box.innerHTML=`<div class="aup-empty">No pude leer el texto, pero el archivo sigue cargado.</div>`}}
-async function renderPreview(){cleanupUrls();renderList();const f=AUP.files[AUP.active],box=$('aupPreview'),meta=$('aupMeta');if(!box||!meta)return;if(!f){meta.innerHTML='';box.innerHTML='<div class="aup-empty">Seleccioná un archivo.</div>';return}meta.innerHTML=metaText(f);box.innerHTML='<div class="aup-empty">⏳ Preparando vista previa…</div>';const k=kind(f);if(k==='image')await previewImage(f,box);else if(k==='video')await previewVideo(f,box);else if(k==='pdf')await previewPDF(f,box);else if(k==='sheet')await previewSheet(f,box);else if(k==='word')await previewWord(f,box);else if(k==='text')await previewText(f,box);else box.innerHTML=`<div class="aup-empty">✅ Archivo cargado correctamente.<br><br><b>${esc(f.name)}</b><br>${size(f.size)}<br><br>Este tipo no tiene una vista visual completa en el navegador, pero queda disponible para seguir trabajando.</div>`;setStatus(`✅ ${AUP.files.length} archivo(s) listos. Vista previa local generada sin depender de Internet.`);$('aupSavedAt').textContent=AUP.sessionTime?'Guardado: '+new Date(AUP.sessionTime).toLocaleTimeString('es-AR'):''}
-async function capture(input,files){if(AUP.restoring)return;const list=Array.from(files||[]);if(!list.length)return;const stored=await saveSession(list,input);window.angelaAUPOpen();setStatus(stored?'💾 Archivo guardado localmente. Si la página se recarga, ÁNGELA puede recuperarlo.':'⚠️ Vista previa lista. El archivo es demasiado grande para garantizar recuperación automática tras refrescar.','warn');await renderPreview();setTimeout(snapshotContext,1000)}
-function snapshotContext(){try{const f=window.STATE?.fileContext;if(f)localStorage.setItem('ANGELA_AUP_FILECONTEXT_V1',JSON.stringify({time:Date.now(),kind:f.kind,name:f.name,text:String(f.text||'').slice(0,42000)}))}catch{}}
-async function restoreStored(){const s=await get(SESSION_KEY),ed=await get(EDITED_KEY);AUP.edited=ed||null;if(!s?.files?.length&&!ed)return;AUP.files=(s?.files||[]).map(toFile);AUP.sourceId=s?.sourceId||'';AUP.sourceLabel=s?.sourceLabel||'Trabajo anterior';AUP.sessionTime=s?.time||Date.now();if(ed?.blob){const ef=toFile({blob:ed.blob,name:ed.name||'ANGELA_ULTIMA_EDICION.png',type:ed.type||'image/png',size:ed.blob.size,lastModified:ed.time});ef.__aupEdited=true;AUP.files.unshift(ef)}const r=$('aupRecovery'),t=$('aupRecoveryText');if(r&&t){t.textContent=`${AUP.files.length} archivo(s) disponibles${AUP.sourceLabel?' · '+AUP.sourceLabel:''}. Podés verlos o recuperarlos sin volver a buscarlos.`;r.style.display='block'}}
-async function snapshotEditedCanvas(force=false){try{const c=$('canvasImagen'),im=window.STATE?.image;if(!c||c.width<2||c.height<2||!window.STATE?.fileContext||!im)return null;const changed=force||im.mode!=='normal'||Number(im.brightness||100)!==100||Number(im.contrast||100)!==100||Number(im.sharpness||0)>.001||Number(im.rotation||0)%360!==0||!!im.mirror||(im.originalCanvas&&(im.sourceCanvas?.width!==im.originalCanvas.width||im.sourceCanvas?.height!==im.originalCanvas.height));if(!changed)return null;const sig=`${c.width}x${c.height}:${window.STATE.fileContext.name||''}:${im.mode||''}:${im.brightness||''}:${im.contrast||''}:${im.sharpness||''}:${im.rotation||0}:${im.mirror?1:0}`;if(!force&&sig===snapshotEditedCanvas.sig)return null;snapshotEditedCanvas.sig=sig;const blob=await new Promise(res=>c.toBlob(res,'image/png',.92));if(!blob||blob.size>25*1024*1024)return null;const data={time:Date.now(),name:`RECUPERADO_${(window.STATE.fileContext.name||'imagen').replace(/\.[^.]+$/,'')}.png`,type:'image/png',blob};await put(EDITED_KEY,data);AUP.edited=data;return toFile({blob,name:data.name,type:data.type,size:blob.size,lastModified:data.time})}catch(e){return null}}
+async function renderPreview(){cleanupUrls();renderList();const f=AUP.files[AUP.active],box=$('aupPreview'),meta=$('aupMeta');if(!box||!meta)return;if(!f){meta.innerHTML='';renderWorkbar(null);box.innerHTML='<div class="aup-empty">Seleccioná un archivo.</div>';return}meta.innerHTML=metaText(f);renderWorkbar(f);box.innerHTML='<div class="aup-empty">⏳ Preparando vista previa…</div>';const k=kind(f);if(k==='image')await previewImage(f,box);else if(k==='video')await previewVideo(f,box);else if(k==='pdf')await previewPDF(f,box);else if(k==='sheet')await previewSheet(f,box);else if(k==='word')await previewWord(f,box);else if(k==='text')await previewText(f,box);else box.innerHTML=`<div class="aup-empty">✅ Archivo cargado correctamente.<br><br><b>${esc(f.name)}</b><br>${size(f.size)}<br><br>Este tipo no tiene una vista visual completa en el navegador, pero queda disponible para seguir trabajando.</div>`;setStatus(`✅ ${AUP.files.length} archivo(s) listos. Vista previa local generada sin depender de Internet.`);$('aupSavedAt').textContent=AUP.sessionTime?'Guardado: '+new Date(AUP.sessionTime).toLocaleTimeString('es-AR'):''}
+async function capture(input,files){if(AUP.restoring)return;const list=Array.from(files||[]);if(!list.length)return;const stored=await saveSession(list,input);window.angelaAUPOpen();setStatus(stored?'✅ Vista previa lista y guardada. Revisá el archivo y tocá “Trabajar este archivo” para editarlo sin volver a cargarlo.':'⚠️ Vista previa lista. Podés trabajar el archivo ahora, pero por su tamaño no puedo garantizar recuperación automática tras refrescar.','warn');await renderPreview();setTimeout(snapshotContext,1000)}
+function snapshotContext(){try{const f=editorState()?.fileContext;if(f)localStorage.setItem('ANGELA_AUP_FILECONTEXT_V1',JSON.stringify({time:Date.now(),kind:f.kind,name:f.name,text:String(f.text||'').slice(0,42000)}))}catch{}}
+async function restoreStored(){const s=await get(SESSION_KEY),ed=await get(EDITED_KEY);AUP.edited=ed||null;if(!s?.files?.length&&!ed)return;AUP.files=(s?.files||[]).map(toFile);AUP.sourceId=s?.sourceId||'';AUP.sourceLabel=s?.sourceLabel||'Trabajo anterior';AUP.sessionTime=s?.time||Date.now();if(ed?.blob){const ef=toFile({blob:ed.blob,name:ed.name||'ANGELA_ULTIMA_EDICION.png',type:ed.type||'image/png',size:ed.blob.size,lastModified:ed.time});ef.__aupEdited=true;AUP.files.unshift(ef)}const r=$('aupRecovery'),t=$('aupRecoveryText');if(r&&t){t.textContent=`${AUP.files.length} archivo(s) disponibles${AUP.sourceLabel?' · '+AUP.sourceLabel:''}. Tocá “Recuperar y trabajar” para volver directamente al editor o módulo correspondiente.`;r.style.display='block'}}
+async function snapshotEditedCanvas(force=false){try{const st=editorState(),c=$('canvasImagen'),im=st?.image,fc=st?.fileContext;if(!c||c.width<2||c.height<2||!fc||!im)return null;const changed=force||im.mode!=='normal'||Number(im.brightness||100)!==100||Number(im.contrast||100)!==100||Number(im.sharpness||0)>.001||Number(im.rotation||0)%360!==0||!!im.mirror||(im.originalCanvas&&(im.sourceCanvas?.width!==im.originalCanvas.width||im.sourceCanvas?.height!==im.originalCanvas.height));if(!changed)return null;const sig=`${c.width}x${c.height}:${fc.name||''}:${im.mode||''}:${im.brightness||''}:${im.contrast||''}:${im.sharpness||''}:${im.rotation||0}:${im.mirror?1:0}`;if(!force&&sig===snapshotEditedCanvas.sig)return null;snapshotEditedCanvas.sig=sig;const blob=await new Promise(res=>c.toBlob(res,'image/png',.92));if(!blob||blob.size>25*1024*1024)return null;const data={time:Date.now(),name:`RECUPERADO_${(fc.name||'imagen').replace(/\.[^.]+$/,'')}.png`,type:'image/png',blob};await put(EDITED_KEY,data);AUP.edited=data;return toFile({blob,name:data.name,type:data.type,size:blob.size,lastModified:data.time})}catch(e){return null}}
 async function clearSession(){await del(SESSION_KEY);await del(EDITED_KEY);try{localStorage.removeItem('ANGELA_AUP_META_V1');localStorage.removeItem('ANGELA_AUP_FILECONTEXT_V1')}catch{}AUP.files=[];AUP.edited=null;AUP.sourceId='';$('aupRecovery')?.style&&( $('aupRecovery').style.display='none');setStatus('Guardado local descartado. Los archivos originales no fueron borrados.')}
-async function recover(){if(!AUP.files.length)await restoreStored();if(!AUP.files.length){setStatus('No hay un trabajo guardado para recuperar.','warn');return}let files=AUP.files.filter(f=>!f.__aupEdited);const edited=AUP.files.find(f=>f.__aupEdited);if(edited&&confirm('ÁNGELA guardó una imagen editada. ¿Querés recuperar primero esa última edición?'))files=[edited];const input=AUP.sourceId?$(AUP.sourceId):null;AUP.restoring=true;try{if(input&&input.type==='file'&&files.length){const dt=new DataTransfer();files.forEach(f=>dt.items.add(f));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));setStatus(`↩ Trabajo recuperado en ${AUP.sourceLabel||'su módulo'}.`)}else if(files[0]&&typeof window.handleGeneralFile==='function'){await window.handleGeneralFile(files[0]);setStatus('↩ Archivo recuperado en ÁNGELA.')}else setStatus('El archivo está disponible en esta vista previa, pero este módulo no permite reinyectarlo automáticamente.','warn')}catch(e){console.warn(e);setStatus('No pude reabrir automáticamente el módulo, pero el archivo sigue disponible en la vista previa.','warn')}finally{setTimeout(()=>AUP.restoring=false,350)}$('aupRecovery')?.style&&( $('aupRecovery').style.display='none')}
+async function recover(){if(!AUP.files.length)await restoreStored();if(!AUP.files.length){setStatus('No hay un trabajo guardado para recuperar.','warn');return false}if(AUP.files.some(f=>f.__aupEdited)){const i=AUP.files.findIndex(f=>f.__aupEdited);if(i>=0)AUP.active=i}return workCurrent()}
 window.angelaAUPOpen=async()=>{const b=$('aupBack');if(b){b.classList.add('open');b.setAttribute('aria-hidden','false')}if(!AUP.files.length)await restoreStored();await renderPreview()};
 window.angelaAUPCerrar=()=>{const b=$('aupBack');if(b){b.classList.remove('open');b.setAttribute('aria-hidden','true')}};
 window.angelaAUPSeleccionar=i=>{AUP.active=Math.max(0,Math.min(Number(i)||0,AUP.files.length-1));renderPreview()};
+window.angelaAUPTrabajarActual=workCurrent;
+window.angelaAUPImagenAccion=async action=>{const f=activeFile();if(!f||kind(f)!=='image'){setStatus('Seleccioná una imagen para usar esta acción.','warn');return false}return loadImageForWork(f,action)};
 window.angelaAUPRecuperarEnModulo=recover;
+window.snapshotEditedCanvas=snapshotEditedCanvas;
 window.angelaAUPVerEdicionActual=async()=>{const f=await snapshotEditedCanvas(true);if(!f){setStatus('No hay una imagen visible en el editor para mostrar ahora.','warn');window.angelaAUPOpen();return}f.__aupEdited=true;AUP.files=[f,...AUP.files.filter(x=>!x.__aupEdited)];AUP.active=0;AUP.sessionTime=Date.now();window.angelaAUPOpen();setStatus('🛠 Mostrando la edición actual. Así podés revisar cómo quedó antes de guardar o seguir retocando.')};
 window.angelaAUPDescartarSesion=clearSession;
 function addOpenButton(){const panel=$('archivos');if(!panel||$('aupOpenInFiles'))return;const b=document.createElement('button');b.id='aupOpenInFiles';b.type='button';b.className='quick';b.textContent='👁 Ver último archivo / recuperar sesión';b.onclick=()=>window.angelaAUPOpen();const target=$('contextoArchivoPanel')||panel.firstChild;panel.insertBefore(b,target)}
-function boot(){addOpenButton();restoreStored();setInterval(snapshotEditedCanvas,7000);setInterval(snapshotContext,6000);document.addEventListener('change',e=>{const input=e.target;if(!(input instanceof HTMLInputElement)||input.type!=='file'||SKIP_IDS.has(input.id))return;const fs=Array.from(input.files||[]);if(fs.length)capture(input,fs)},true);window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('aupBack')?.classList.contains('open'))window.angelaAUPCerrar()});}
+function addImagePreviewButton(){const panel=$('imagenes'),input=$('archivoImagen');if(!panel||!input||$('aupOpenInImages'))return;const b=document.createElement('button');b.id='aupOpenInImages';b.type='button';b.className='quick w-full mb-3';b.textContent='👁 Ver archivo original / vista previa';b.onclick=()=>window.angelaAUPOpen();input.insertAdjacentElement('afterend',b)}
+function hookImageAutosave(){if(window.__AUP_RENDER_HOOK||typeof window.renderImage!=='function')return;const original=window.renderImage;let timer=null;window.renderImage=function(...args){const out=original.apply(this,args);clearTimeout(timer);timer=setTimeout(()=>snapshotEditedCanvas(false),650);return out};window.__AUP_RENDER_HOOK=true}
+function boot(){addOpenButton();addImagePreviewButton();hookImageAutosave();restoreStored();setInterval(snapshotEditedCanvas,7000);setInterval(snapshotContext,6000);document.addEventListener('change',e=>{const input=e.target;if(!(input instanceof HTMLInputElement)||input.type!=='file'||SKIP_IDS.has(input.id))return;const fs=Array.from(input.files||[]);if(fs.length)capture(input,fs)},true);window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('aupBack')?.classList.contains('open'))window.angelaAUPCerrar()});const required=['angelaWorkspaceModal','angelaWorkspaceBackdrop','angelaWorkspaceBody','imagenes','canvasImagen'];const missing=required.filter(id=>!$(id));if(missing.length)console.error('ÁNGELA V9.4 · faltan componentes del editor:',missing);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,900),{once:true});else setTimeout(boot,900);
 })();
 </script>
