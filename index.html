@@ -6959,5 +6959,296 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+<style>
+.angqr-shell{display:grid;grid-template-columns:minmax(320px,420px) minmax(0,1fr);gap:16px;margin-top:14px}
+.angqr-panel{background:rgba(2,6,23,.72);border:1px solid rgba(34,211,238,.20);border-radius:22px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.angqr-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}
+.angqr-title{font-size:1.08rem;font-weight:800;color:#67e8f9;display:flex;align-items:center;gap:8px}
+.angqr-sub{font-size:.78rem;color:#94a3b8;margin-top:3px;line-height:1.4}
+.angqr-grid{display:grid;gap:10px}
+.angqr-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.angqr-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.angqr-field{display:flex;flex-direction:column;gap:6px}
+.angqr-field label{font-size:.78rem;font-weight:700;color:#cbd5e1}
+.angqr-field input,.angqr-field select,.angqr-field textarea{width:100%;background:#020617;border:1px solid #334155;border-radius:14px;padding:10px 12px;color:#fff;font-size:.86rem;outline:none;transition:border-color .2s, box-shadow .2s}
+.angqr-field input:focus,.angqr-field select:focus,.angqr-field textarea:focus{border-color:#22d3ee;box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+.angqr-field textarea{min-height:84px;resize:vertical}
+.angqr-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.angqr-btn{background:linear-gradient(135deg,#06b6d4,#0ea5e9);border:none;color:#082f49;font-weight:800;border-radius:14px;padding:10px 14px;font-size:.82rem;cursor:pointer;box-shadow:0 8px 18px rgba(14,165,233,.18);transition:transform .18s ease, filter .18s ease}
+.angqr-btn:hover{transform:translateY(-1px);filter:brightness(1.04)}
+.angqr-btn.alt{background:#0f172a;color:#e2e8f0;border:1px solid #334155;box-shadow:none}
+.angqr-btn.soft{background:linear-gradient(135deg,#fb7185,#f59e0b);color:white}
+.angqr-note{font-size:.74rem;line-height:1.45;color:#94a3b8;background:rgba(15,23,42,.9);border:1px dashed rgba(148,163,184,.25);border-radius:14px;padding:10px 12px}
+.angqr-switch{display:flex;align-items:center;gap:8px;font-size:.83rem;color:#e2e8f0;background:#020617;border:1px solid #334155;padding:10px 12px;border-radius:14px}
+ .angqr-switch input{accent-color:#22d3ee}
+.angqr-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:10px}
+.angqr-thumb{position:relative;background:#020617;border:1px solid #334155;border-radius:16px;padding:6px;overflow:hidden}
+.angqr-thumb img{width:100%;height:88px;object-fit:cover;border-radius:12px;display:block}
+.angqr-thumb button{position:absolute;top:8px;right:8px;background:rgba(15,23,42,.88);border:1px solid rgba(148,163,184,.45);color:#fff;width:22px;height:22px;border-radius:999px;font-size:.78rem;line-height:20px;cursor:pointer}
+.angqr-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(103,232,249,.28);border-radius:999px;padding:6px 10px;background:rgba(8,47,73,.35);font-size:.74rem;color:#e0f2fe;margin:2px 6px 2px 0}
+.angqr-previewTop{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-bottom:10px}
+.angqr-previewGrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:14px}
+.angqr-card{background:linear-gradient(180deg,#fff8ef,#fffdf9);color:#4b2a1a;border-radius:28px;padding:18px;border:1px solid rgba(120,53,15,.14);box-shadow:0 20px 40px rgba(15,23,42,.18)}
+.angqr-card.small{max-width:360px;margin:0 auto}
+.angqr-card h4{font-size:1.32rem;line-height:1.15;font-weight:800;margin:0;color:#5b2a16}
+.angqr-card p{margin:6px 0 0;font-size:.92rem;line-height:1.45;color:#7c3d16}
+.angqr-qrWrap{display:grid;place-items:center;background:white;border-radius:22px;padding:14px;margin:16px auto 12px;border:1px solid rgba(120,53,15,.12);min-height:220px}
+.angqr-qrWrap img{max-width:220px;width:100%;height:auto;border-radius:14px}
+.angqr-fallbackQR{display:grid;place-items:center;text-align:center;color:#7c2d12;background:linear-gradient(180deg,#fff7ed,#fffbeb);border:1px dashed rgba(194,65,12,.35);border-radius:16px;padding:18px;min-height:190px}
+.angqr-cardFooter{font-size:.75rem;color:#9a3412;line-height:1.4;text-align:center}
+.angqr-iframe{width:100%;min-height:720px;background:white;border-radius:24px;border:1px solid rgba(148,163,184,.22);overflow:hidden}
+.angqr-code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:.76rem;word-break:break-all;background:#020617;border:1px solid #1e293b;color:#67e8f9;padding:10px 12px;border-radius:14px}
+.angqr-publish{margin-top:12px;border:1px solid rgba(34,197,94,.28);background:rgba(3,30,21,.78);border-radius:16px;padding:12px;font-size:.78rem;line-height:1.5;color:#bbf7d0}.angqr-publish.busy{border-color:rgba(250,204,21,.35);background:rgba(45,36,4,.78);color:#fde68a}.angqr-publish.error{border-color:rgba(248,113,113,.38);background:rgba(55,8,8,.78);color:#fecaca}.angqr-publish a{color:#67e8f9;font-weight:800;word-break:break-all}.angqr-btn.publish{background:linear-gradient(135deg,#22c55e,#14b8a6);color:#052e16;box-shadow:0 10px 24px rgba(34,197,94,.2)}
+@media (max-width:1180px){.angqr-shell,.angqr-previewGrid{grid-template-columns:1fr}.angqr-iframe{min-height:620px}}
+@media (max-width:760px){.angqr-grid.two,.angqr-grid.three{grid-template-columns:1fr}.angqr-panel{padding:14px}.angqr-title{font-size:1rem}.angqr-card h4{font-size:1.15rem}.angqr-iframe{min-height:540px}}
+</style>
+<script>
+(function(){
+  if(window.__ANGELA_REGALOS_QR__) return; window.__ANGELA_REGALOS_QR__=true;
+  const STORAGE='ANGELA_regalos_qr_v1';
+  const THEMES={
+    romantico:{name:'Romántico',bg:'#fdf2f8',bg2:'#fff7ed',accent:'#be185d',accent2:'#fb7185',text:'#6b2147',soft:'#fff1f2'},
+    cumple:{name:'Cumpleaños',bg:'#fff7ed',bg2:'#fef3c7',accent:'#c2410c',accent2:'#f59e0b',text:'#7c2d12',soft:'#fff8ef'},
+    elegante:{name:'Elegante',bg:'#faf7f2',bg2:'#f5f0e8',accent:'#7c3aed',accent2:'#c084fc',text:'#4a2f5d',soft:'#fdf7ff'},
+    floral:{name:'Floral',bg:'#fdfcf8',bg2:'#eefbf3',accent:'#9d174d',accent2:'#16a34a',text:'#4d1d33',soft:'#fbf4f8'},
+    infantil:{name:'Infantil',bg:'#eff6ff',bg2:'#fdf2f8',accent:'#2563eb',accent2:'#f472b6',text:'#1e3a8a',soft:'#f8fbff'},
+    fiesta:{name:'Fiesta / 15',bg:'#faf5ff',bg2:'#fff7ed',accent:'#9333ea',accent2:'#f59e0b',text:'#581c87',soft:'#fcf7ff'},
+    umbanda:{name:'Umbanda',bg:'#fffaf0',bg2:'#eefbf3',accent:'#0f766e',accent2:'#f59e0b',text:'#134e4a',soft:'#f8fffb'},
+    nacion:{name:'Nación',bg:'#f8fafc',bg2:'#eff6ff',accent:'#1d4ed8',accent2:'#f59e0b',text:'#1e3a8a',soft:'#f8fbff'},
+    xeixe:{name:'Yeshé / Xeixé',bg:'#fff7ed',bg2:'#faf5ff',accent:'#b45309',accent2:'#9333ea',text:'#78350f',soft:'#fffaf5'},
+    quimbanda:{name:'Quimbanda',bg:'#fff1f2',bg2:'#fef2f2',accent:'#991b1b',accent2:'#111827',text:'#7f1d1d',soft:'#fff7f7'}
+  };
+  const OCCASIONS={
+    cumple:{label:'Cumpleaños',title:'Hoy es el cumpleaños de mi persona favorita',cta:'Descúbrelo',progress:'Un poquito más',qrTitle:'Feliz Cumpleaños',cardText:'He preparado algo especial para ti',phrases:[
+      'Feliz cumpleaños, {nombre}. Que este nuevo año te regale amor, paz y momentos inolvidables.',
+      '{nombre}, hoy celebro tu vida y la alegría enorme de tenerte cerca. Feliz cumpleaños.',
+      'Un día tan lindo como vos merecía una sorpresa especial. Feliz cumpleaños, {nombre}.']},
+    aniversario:{label:'Aniversario',title:'Hay una sorpresa esperando por ti',cta:'Abrir sorpresa',progress:'Nuestro momento',qrTitle:'Feliz Aniversario',cardText:'Escaneá para descubrir tu regalo',phrases:[
+      '{nombre}, gracias por cada recuerdo, cada abrazo y cada pedacito de historia compartida.',
+      'Nuestro amor se celebra en cada detalle. Esta sorpresa es para vos, {nombre}.',
+      'Hoy quiero recordarte cuánto te amo y lo feliz que soy a tu lado, {nombre}.']},
+    pareja:{label:'Pareja / Amor',title:'Una sorpresa hecha con amor',cta:'Ver sorpresa',progress:'Casi listo',qrTitle:'Para mi amor',cardText:'Escaneá para descubrir tu sorpresa',phrases:[
+      'Mi lugar favorito siempre será a tu lado, {nombre}.',
+      'Sos mi casualidad favorita y esta sorpresa la hice pensando en vos, {nombre}.',
+      'Gracias por existir, por acompañarme y por hacer mis días más lindos, {nombre}.']},
+    madre:{label:'Día de la Madre',title:'Para una persona muy especial',cta:'Abrir regalo',progress:'Con todo mi amor',qrTitle:'Feliz Día Mamá',cardText:'Una sorpresa con mucho amor para ti',phrases:[
+      'Gracias por tu amor infinito, tu fuerza y tu abrazo que siempre calma todo. Te amo, mamá.',
+      'Para la mejor mamá del mundo: gracias por estar, por cuidar y por amar tan bonito.',
+      'Mamá, esta sorpresa es una forma chiquita de devolverte todo el amor que me das.']},
+    amistad:{label:'Amistad',title:'Una sorpresa para alguien importante',cta:'Descúbrelo',progress:'Abriendo recuerdo',qrTitle:'Para una amistad hermosa',cardText:'Escaneá para ver tu sorpresa',phrases:[
+      'Las amistades verdaderas se sienten como casa. Gracias por estar siempre, {nombre}.',
+      '{nombre}, esta sorpresa es para recordarte lo valiosa que es tu amistad.',
+      'Gracias por las risas, el apoyo y por estar en todas. Sos una persona increíble.']},
+    quince:{label:'15 años',title:'Hoy comienza un capítulo inolvidable',cta:'Ver sorpresa',progress:'Una emoción más',qrTitle:'Felices 15',cardText:'Escaneá para descubrir tu sorpresa',phrases:[
+      '{nombre}, que tus 15 años estén llenos de luz, alegría y sueños cumplidos.',
+      'Un día tan especial merecía una sorpresa única. Felices 15, {nombre}.',
+      'Que cada instante de tus 15 quede guardado para siempre en tu corazón.']},
+    invitacion:{label:'Invitación',title:'Te invité de una manera especial',cta:'Abrir invitación',progress:'Preparando invitación',qrTitle:'Invitación especial',cardText:'Escaneá para ver todos los detalles',phrases:[
+      'Quiero compartir contigo un momento muy especial. Abrí esta invitación y descubrí los detalles.',
+      'Preparé esta invitación con mucho cariño para que nos acompañes en un día importante.',
+      'Tu presencia hará aún más especial este momento. Abrí la invitación y enterate de todo.']},
+    umbanda:{label:'Umbanda',title:'Hay un mensaje espiritual preparado para ti',cta:'Abrir mensaje',progress:'Conectando la energía',qrTitle:'Mensaje de Umbanda',cardText:'Escaneá para descubrir esta sorpresa espiritual',phrases:[
+      '{nombre}, que la luz te acompañe, te proteja y abra caminos de paz y evolución.',
+      'Esta sorpresa fue preparada con cariño y respeto, para honrar la energía y el camino de {nombre}.',
+      'Que cada paso de {nombre} esté guiado por luz, firmeza y bendiciones.']},
+    nacion:{label:'Nación',title:'Una dedicatoria especial para este camino',cta:'Ver dedicatoria',progress:'Preparando el mensaje',qrTitle:'Recuerdo especial',cardText:'Escaneá para descubrir este homenaje',phrases:[
+      '{nombre}, este detalle fue creado con respeto y cariño para acompañar tu camino espiritual.',
+      'Que nunca falte claridad, firmeza y protección en la vida de {nombre}.',
+      'Este recuerdo busca honrar la fe, la tradición y la historia que acompañan a {nombre}.']},
+    xeixe:{label:'Yeshé / Xeixé',title:'Una sorpresa hecha con fe y cariño',cta:'Abrir sorpresa',progress:'Activando recuerdo',qrTitle:'Sorpresa espiritual',cardText:'Escaneá para descubrir este regalo',phrases:[
+      '{nombre}, que este detalle te abrace con buenas energías, fe y protección.',
+      'Preparé esta sorpresa con cariño para que {nombre} reciba un recuerdo único y especial.',
+      'Que la espiritualidad y la armonía acompañen siempre a {nombre}.']},
+    quimbanda:{label:'Quimbanda',title:'Un detalle especial lleno de fuerza',cta:'Descubrir ahora',progress:'Canalizando energía',qrTitle:'Detalle especial',cardText:'Escaneá para abrir esta sorpresa personalizada',phrases:[
+      '{nombre}, que la fuerza, la determinación y la protección te acompañen siempre.',
+      'Este regalo fue creado con presencia, carácter y mucho respeto para {nombre}.',
+      'Que cada camino de {nombre} se abra con firmeza, claridad y propósito.']}
+  };
+  const SYMBOLS={heart:'❤',star:'★',gift:'🎁',flower:'✿',spark:'✦'};
+  const DEFAULTS={occasion:'cumple',theme:'cumple',symbol:'heart',name:'',sender:'',date:'',detail:'',title:'',subtitle:'',phrase:'',message:'',cta:'',progressText:'',cardTitle:'',cardText:'',publicUrl:'',publishedUrl:'',publishedAt:'',musicUrl:'',musicName:'',musicData:'',autoPhrase:true,autofillTheme:true,photos:[],activePhoto:0,lastHtml:'',lastCardHtml:''};
+  let STATE=load();
+  function load(){try{return {...DEFAULTS,...JSON.parse(localStorage.getItem(STORAGE)||'{}')}}catch(e){return {...DEFAULTS}}}
+  function save(){localStorage.setItem(STORAGE,JSON.stringify(STATE));}
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const slug=s=>String(s||'regalo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'regalo';
+  function occasionInfo(k){return OCCASIONS[k]||OCCASIONS.cumple}
+  function themeInfo(k){return THEMES[k]||THEMES.cumple}
+  function occasionOptionsHtml(){
+    const general=['cumple','aniversario','pareja','madre','amistad','quince','invitacion'];
+    const spiritual=['umbanda','nacion','xeixe','quimbanda'];
+    const opts=list=>list.map(k=>`<option value="${k}">${OCCASIONS[k].label}</option>`).join('');
+    return `<optgroup label="Regalos e invitaciones">${opts(general)}</optgroup><optgroup label="Religión / espiritualidad">${opts(spiritual)}</optgroup>`;
+  }
+  function normalizeGiftText(s=''){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9ñ]+/g,' ').replace(/\s+/g,' ').trim()}
+  function detectOccasionFromText(raw=''){
+    const t=normalizeGiftText(raw);
+    if(/\bquimbanda\b/.test(t))return'quimbanda';
+    if(/\bumbanda\b/.test(t))return'umbanda';
+    if(/\b(nacion|nación)\b/.test(t))return'nacion';
+    if(/\b(yeshe|yeje|yeche|xeixe|xeixe|xexe|xexe)\b/.test(t))return'xeixe';
+    if(/\b(15|quince)\b/.test(t))return'quince';
+    if(/\bmadre\b|dia de la madre/.test(t))return'madre';
+    if(/\baniversario\b/.test(t))return'aniversario';
+    if(/\bpareja\b|\bnovi[oa]\b|\bamor\b/.test(t))return'pareja';
+    if(/\bamistad\b|\bamig[oa]\b/.test(t))return'amistad';
+    if(/\binvitacion\b|\binvitar\b/.test(t))return'invitacion';
+    if(/\bcumple\b|\bcumpleanos\b/.test(t))return'cumple';
+    return'';
+  }
+  function detectGiftQrIntent(raw=''){
+    const t=normalizeGiftText(raw);
+    const occasion=detectOccasionFromText(raw);
+    const trigger=/(\bqr\b|codigo qr|regalo|sorpresa|tarjeta|invitacion|crear.*punto|armar.*punto|hacer.*punto)/.test(t);
+    if(!trigger||!occasion)return null;
+    let detail='';
+    const point=t.match(/\bpunto(?:\s+de|\s+para)?\s+(quimbanda|umbanda|nacion|yeshe|yeje|xeixe|xexe)\b/);
+    if(point){const label={quimbanda:'Quimbanda',umbanda:'Umbanda',nacion:'Nación',yeshe:'Yeshé',yeje:'Yeshé',xeixe:'Xeixé',xexe:'Xeixé'}[point[1]]||point[1];detail='Punto de '+label;}
+    return{occasion,detail,raw:String(raw)};
+  }
+
+  function ensureButton(){
+    const grid=document.querySelector('#centroGestionAngela .grid');
+    if(!grid||document.getElementById('agBtnRegalosQR')) return;
+    const btn=document.createElement('button');
+    btn.id='agBtnRegalosQR'; btn.className='quick'; btn.textContent='🎁 Regalos QR'; btn.onclick=()=>window.angelaAbrirGestion && window.angelaAbrirGestion('regalosqr');
+    grid.insertBefore(btn, grid.children[grid.children.length-1] || null);
+  }
+  function wrapOpen(){
+    if(window.__ANGELA_REGALOS_QR_WRAP__) return; window.__ANGELA_REGALOS_QR_WRAP__=true;
+    const prev=window.angelaAbrirGestion;
+    window.angelaAbrirGestion=function(m){ if(m==='regalosqr') return open(); return prev?.(m); };
+  }
+  function bindInput(id, prop, transform){const el=document.getElementById(id); if(!el) return; const fn=()=>{STATE[prop]=transform?transform(el):el.value; if(prop==='occasion') syncOccasion(); if(prop==='theme'&&STATE.autofillTheme===false){} syncPreview(); save();}; el.addEventListener('input',fn); el.addEventListener('change',fn);}
+  function syncOccasion(){const info=occasionInfo(STATE.occasion); if(STATE.autofillTheme){STATE.theme=STATE.occasion in THEMES ? STATE.occasion : (STATE.occasion==='aniversario'||STATE.occasion==='pareja'?'romantico': STATE.occasion==='madre'?'floral': STATE.occasion==='quince'?'fiesta': STATE.occasion==='invitacion'?'elegante': STATE.occasion==='umbanda'?'umbanda': STATE.occasion==='nacion'?'nacion': STATE.occasion==='xeixe'?'xeixe': STATE.occasion==='quimbanda'?'quimbanda':'cumple');}
+    if(!STATE.title || STATE.__autoTitle!==false){STATE.title=info.title; STATE.__autoTitle=true;}
+    if(!STATE.cta || STATE.__autoCta!==false){STATE.cta=info.cta; STATE.__autoCta=true;}
+    if(!STATE.progressText || STATE.__autoProgress!==false){STATE.progressText=info.progress; STATE.__autoProgress=true;}
+    if(!STATE.cardTitle || STATE.__autoCardTitle!==false){STATE.cardTitle=info.qrTitle; STATE.__autoCardTitle=true;}
+    if(!STATE.cardText || STATE.__autoCardText!==false){STATE.cardText=info.cardText; STATE.__autoCardText=true;}
+    if(STATE.autoPhrase){STATE.phrase=makePhrase();}
+    renderFormValues();
+  }
+  function makePhrase(){const info=occasionInfo(STATE.occasion); const arr=info.phrases||OCCASIONS.cumple.phrases; const raw=arr[(Math.floor(Math.random()*arr.length))%arr.length]; return raw.replaceAll('{nombre}',STATE.name||'vos').replaceAll('{remitente}',STATE.sender||'yo');}
+  async function compressGiftImage(file){
+    if(!file?.type?.startsWith('image/'))return fileToData(file);
+    const raw=await fileToData(file);
+    try{
+      const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('No pude leer la foto'));i.src=raw});
+      const max=1400,scale=Math.min(1,max/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+      const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));
+      const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+      const webp=c.toDataURL('image/webp',.82);return webp&&webp.startsWith('data:image/webp')?webp:c.toDataURL('image/jpeg',.84);
+    }catch{return raw}
+  }
+  async function readFiles(files){const list=[]; for(const f of Array.from(files||[])){const data=await compressGiftImage(f); list.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),name:f.name,type:f.type,size:f.size,data})} return list;}
+  function fileToData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('No se pudo leer el archivo'));r.readAsDataURL(file);});}
+  function shareTarget(){
+    const clean=(STATE.publicUrl||'').trim();
+    if(clean) return clean;
+    const summary=[STATE.cardTitle||occasionInfo(STATE.occasion).qrTitle,STATE.name?('Para: '+STATE.name):'',STATE.phrase||STATE.message||'',STATE.sender?('De: '+STATE.sender):''].filter(Boolean).join(' · ');
+    return 'ÁNGELA · Regalo QR\n'+summary;
+  }
+  function qrSrc(size){return 'https://api.qrserver.com/v1/create-qr-code/?size='+(size||220)+'x'+(size||220)+'&data='+encodeURIComponent(shareTarget())}
+  function giftHtml(){
+    const t=themeInfo(STATE.theme), photos=(STATE.photos||[]).map(x=>x.data).filter(Boolean), first=photos[0]||'', audio=STATE.musicData||'', hasAudio=!!(audio||STATE.musicUrl), symbol=SYMBOLS[STATE.symbol]||SYMBOLS.heart;
+    const title=STATE.title||occasionInfo(STATE.occasion).title, phrase=STATE.phrase||makePhrase(), msg=STATE.message||'', cta=STATE.cta||occasionInfo(STATE.occasion).cta, prog=STATE.progressText||occasionInfo(STATE.occasion).progress;
+    const who=STATE.name?`<div class="who">Para ${esc(STATE.name)}</div>`:'';
+    const detail=STATE.detail?`<div class="who" style="font-weight:700;color:var(--accent)">${esc(STATE.detail)}</div>`:'';
+    const date=STATE.date?`<div class="date">${esc(STATE.date)}</div>`:'';
+    const sender=STATE.sender?`<div class="sender">Con amor, ${esc(STATE.sender)}</div>`:'';
+    const gallery=photos.length>1 ? photos.map((src,i)=>`<button class="thumb ${i===0?'active':''}" data-i="${i}"><img src="${src}" alt="foto ${i+1}"></button>`).join('') : '';
+    const slides=photos.map((src,i)=>`<img src="${src}" class="slide ${i===0?'show':''}" alt="foto ${i+1}">`).join('');
+    return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>
+      :root{--bg:${t.bg};--bg2:${t.bg2};--accent:${t.accent};--accent2:${t.accent2};--text:${t.text};--soft:${t.soft}}
+      *{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Georgia,'Times New Roman',serif;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);min-height:100%}body{min-height:100vh;display:flex;justify-content:center}button{font:inherit}#app{width:min(100%,560px);padding:18px 14px 40px} .screen{display:none;animation:fade .55s ease}.screen.active{display:block}@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+      .hero{text-align:center;padding:16px 10px 10px}.hero h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;margin:0 0 6px;font-weight:600}.date,.who{opacity:.78;font-size:1rem;margin:2px 0}.polaroid{margin:20px auto 14px;background:#fff;max-width:340px;border-radius:10px;padding:16px 16px 28px;box-shadow:0 24px 50px rgba(0,0,0,.16)}.photoWrap{width:100%;aspect-ratio:1/1;background:#f2ebe5;border-radius:4px;overflow:hidden;position:relative}.slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .55s ease}.slide.show{opacity:1}.miniDecor{display:flex;align-items:center;justify-content:center;gap:12px;font-size:.9rem;margin-top:12px;color:var(--accent)}.miniDecor:before,.miniDecor:after{content:'✳';opacity:.55;font-size:1.1rem}.wave{text-align:center;font-size:2rem;line-height:1;color:var(--accent);margin:10px 0 18px}.cta{display:block;margin:0 auto;background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border:none;padding:14px 24px;border-radius:999px;box-shadow:0 16px 30px rgba(0,0,0,.16);font-weight:700;letter-spacing:.2px;cursor:pointer}
+      .thumbs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:14px}.thumb{width:58px;height:58px;border-radius:16px;border:2px solid transparent;padding:0;background:#fff;overflow:hidden;cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.08)}.thumb.active{border-color:var(--accent)}.thumb img{width:100%;height:100%;object-fit:cover}
+      .loading{display:grid;place-items:center;min-height:74vh;text-align:center;padding:20px}.loadingCard{width:min(100%,360px)}.symbol{width:92px;height:110px;margin:0 auto 10px;display:grid;place-items:center;font-size:4rem;color:var(--accent)}.loading h2{font-size:2rem;margin:0 0 4px;font-weight:600}.loading p{font-size:1.05rem;opacity:.78;margin:0 0 18px}.bar{width:100%;height:14px;background:rgba(255,255,255,.65);border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:999px;transition:width .2s ease}.percent{margin-top:8px;font-size:.95rem;opacity:.8}
+      .letter{background:rgba(255,255,255,.58);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.55);border-radius:28px;padding:22px;box-shadow:0 18px 38px rgba(0,0,0,.12)}.message{font-size:1.18rem;line-height:1.7;white-space:pre-wrap}.phrase{font-size:1.35rem;font-style:italic;line-height:1.5;text-align:center;color:var(--accent);margin:8px 0 18px}.sender{margin-top:16px;text-align:right;font-size:1.02rem;font-weight:700}.audio{margin-top:18px;background:#fff;border-radius:18px;padding:10px;box-shadow:0 10px 24px rgba(0,0,0,.08)}audio{width:100%}.back{margin-top:18px;background:transparent;border:1px solid rgba(0,0,0,.12);padding:10px 16px;border-radius:999px;color:var(--text)}
+      </style></head><body><main id="app"><section class="screen active" id="s1"><div class="hero"><h1>${esc(title)}</h1>${detail}${date}${who}</div><div class="polaroid"><div class="photoWrap">${slides||'<div style="position:absolute;inset:0;display:grid;place-items:center;color:#94a3b8;font-family:sans-serif">Agregá una foto para completar la sorpresa</div>'}</div><div class="miniDecor">${symbol.repeat(1)} <span style="font-size:.82rem">hecho con amor</span> ${symbol.repeat(1)}</div></div><div class="wave">~</div><button class="cta" id="btnStart">${esc(cta)}</button>${gallery?`<div class="thumbs">${gallery}</div>`:''}</section><section class="screen" id="s2"><div class="loading"><div class="loadingCard"><div class="symbol">${symbol}</div><h2>${esc(STATE.name||'')}</h2><p>${esc(prog)}</p><div class="bar"><div class="fill" id="fill"></div></div><div class="percent" id="percent">0%</div></div></div></section><section class="screen" id="s3"><div class="letter"><div class="phrase">${esc(phrase)}</div>${msg?`<div class="message">${esc(msg)}</div>`:''}${sender}${hasAudio?`<div class="audio"><div style="font-family:sans-serif;font-size:.85rem;color:#64748b;margin-bottom:8px">🎵 Música para acompañar este regalo</div><audio controls ${audio?'':'src="'+esc(STATE.musicUrl)+'"'} ${audio?'src="'+audio+'"':''}></audio></div>`:''}<button class="back" id="btnBack">← Volver a verlo</button></div></section></main><script>const screens=[...document.querySelectorAll('.screen')];const show=id=>screens.forEach(s=>s.classList.toggle('active',s.id===id));const slides=[...document.querySelectorAll('.slide')],thumbs=[...document.querySelectorAll('.thumb')];let current=0;function setSlide(i){if(!slides.length)return;current=(i+slides.length)%slides.length;slides.forEach((s,idx)=>s.classList.toggle('show',idx===current));thumbs.forEach((t,idx)=>t.classList.toggle('active',idx===current));}thumbs.forEach(t=>t.addEventListener('click',()=>setSlide(+t.dataset.i||0)));document.getElementById('btnStart')?.addEventListener('click',()=>{show('s2');let p=0;const fill=document.getElementById('fill'),text=document.getElementById('percent');const timer=setInterval(()=>{p+=4+Math.random()*9;if(p>=100){p=100;clearInterval(timer);setTimeout(()=>show('s3'),260)}if(fill)fill.style.width=p+'%';if(text)text.textContent=Math.round(p)+'%';},110)});document.getElementById('btnBack')?.addEventListener('click',()=>show('s1'));if(slides.length>1){setInterval(()=>setSlide(current+1),3300)}<\/script></body></html>`;
+  }
+  function cardHtml(){
+    const t=themeInfo(STATE.theme), hasUrl=!!(STATE.publicUrl||'').trim();
+    const note=hasUrl?'Escaneá para descubrir tu sorpresa':'QR de prueba. Si pegás un enlace público, el QR abrirá el regalo completo desde cualquier celular.';
+    return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tarjeta QR</title><style>body{margin:0;font-family:Arial,sans-serif;background:#f8fafc;padding:24px} .card{max-width:420px;margin:auto;border-radius:28px;padding:26px;background:linear-gradient(180deg,${t.soft},#fff);box-shadow:0 20px 50px rgba(15,23,42,.14);border:1px solid rgba(15,23,42,.08);text-align:center;color:${t.text}} h1{margin:0;font-size:2rem;color:${t.accent}} p{margin:8px 0 0;line-height:1.55}.qr{margin:20px auto 14px;background:#fff;padding:14px;border-radius:24px;display:grid;place-items:center;border:1px solid rgba(15,23,42,.08)} img{width:240px;height:240px;max-width:100%}.hint{font-size:.86rem;opacity:.78;margin-top:10px}</style></head><body><div class="card"><h1>${esc(STATE.cardTitle||occasionInfo(STATE.occasion).qrTitle)}</h1><p>${esc(STATE.cardText||occasionInfo(STATE.occasion).cardText)}</p><div class="qr"><img src="${qrSrc(280)}" alt="QR"></div><p><b>${esc(STATE.name||'')}</b></p><div class="hint">${esc(note)}</div></div></body></html>`;
+  }
+  function open(){
+    const root=document.getElementById('angelaGestionContenido'); if(!root) return; root.classList.remove('hidden');
+    root.innerHTML=`<div class="border border-slate-700 rounded-2xl p-4 bg-slate-950/40"><div class="flex justify-between gap-2 flex-wrap"><div><h3 class="font-bold text-cyan-300">🎁 Regalos QR · Tarjetas, sorpresas e invitaciones</h3><p class="text-xs text-slate-400 mt-1">Generá páginas tipo regalo con fotos, frase, música y una tarjeta con QR. No rompe nada de lo que ya funciona: solo suma este módulo nuevo.</p></div><button class="text-xs bg-slate-700 px-3 py-1 rounded-lg" onclick="document.getElementById('angelaGestionContenido').classList.add('hidden')">Cerrar</button></div><div class="angqr-shell"><section class="angqr-panel"><div class="angqr-head"><div><div class="angqr-title">🪄 Crear regalo</div><div class="angqr-sub">Elegí el tipo, cargá fotos, definí la frase y prepará una vista previa lista para descargar.</div></div></div><div class="angqr-grid two"><div class="angqr-field"><label>Tipo</label><select id="agqr_occasion">${occasionOptionsHtml()}</select></div><div class="angqr-field"><label>Temática visual</label><select id="agqr_theme">${Object.entries(THEMES).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('')}</select></div><div class="angqr-field"><label>Nombre destinatario</label><input id="agqr_name" placeholder="Ej: Eva"></div><div class="angqr-field"><label>Remitente</label><input id="agqr_sender" placeholder="Ej: Héctor"></div><div class="angqr-field"><label>Fecha / evento</label><input id="agqr_date" type="text" placeholder="Ej: 15 de junio"></div><div class="angqr-field"><label>Detalle / punto / entidad / ceremonia</label><input id="agqr_detail" type="text" placeholder="Ej: Punto de Quimbanda, Mae Oxum, Pae Ogum..."></div><div class="angqr-field"><label>Ícono / corazón</label><select id="agqr_symbol">${Object.entries(SYMBOLS).map(([k,v])=>`<option value="${k}">${v} ${k}</option>`).join('')}</select></div></div><div class="angqr-grid"><div class="angqr-field"><label>Título principal</label><input id="agqr_title" placeholder="Ej: Hoy es el cumpleaños de mi persona favorita"></div><div class="angqr-grid two"><div class="angqr-field"><label>Texto del botón</label><input id="agqr_cta" placeholder="Ej: Descúbrelo"></div><div class="angqr-field"><label>Texto de carga</label><input id="agqr_progress" placeholder="Ej: Un poquito más"></div></div><label class="angqr-switch"><input id="agqr_autoPhrase" type="checkbox"> Generar frase linda automática según el tema</label><div class="angqr-field"><label>Frase principal</label><textarea id="agqr_phrase" placeholder="Ej: Mi lugar favorito siempre será a tu lado..."></textarea></div><div class="angqr-field"><label>Mensaje adicional / invitación</label><textarea id="agqr_message" placeholder="Acá podés escribir un mensaje más largo, los detalles de una invitación o una dedicatoria."></textarea></div></div><div class="angqr-grid two"><div class="angqr-field"><label>Título de la tarjeta QR</label><input id="agqr_cardTitle" placeholder="Ej: Feliz Cumpleaños"></div><div class="angqr-field"><label>Texto de la tarjeta QR</label><input id="agqr_cardText" placeholder="Ej: He preparado algo especial para ti"></div><div class="angqr-field"><label>Link público para QR real (opcional)</label><input id="agqr_publicUrl" placeholder="https://..."></div><div class="angqr-field"><label>Música desde link (opcional)</label><input id="agqr_musicUrl" placeholder="https://...mp3"></div></div><div class="angqr-grid two"><div class="angqr-field"><label>Subir música (opcional)</label><input id="agqr_musicFile" type="file" accept="audio/*"></div><div class="angqr-field"><label>Subir fotos (múltiples)</label><input id="agqr_photos" type="file" accept="image/*" multiple></div></div><div class="angqr-note">✅ <b>Cómo funciona hoy:</b> este módulo ya genera la experiencia, la vista previa, la tarjeta QR y el <b>HTML descargable</b>. Con <b>Crear + publicar + generar QR</b>, ÁNGELA intenta crear el link público automáticamente y usa ese enlace en el QR. También podés pegar un link manual si alguna vez lo necesitás. <br><br>🖨 También podés <b>imprimir solo el QR</b> o <b>descargarlo en PNG</b> para usarlo en tazas, sublimación, cuadros, stickers, tarjetas o grabado láser.</div><div class="angqr-actions"><button class="angqr-btn publish" id="agqr_btnPublish">✨ Crear + publicar + generar QR</button><button class="angqr-btn" id="agqr_btnPhrase">✨ Crear frase</button><button class="angqr-btn soft" id="agqr_btnRefresh">🎨 Actualizar vista previa</button><button class="angqr-btn alt" id="agqr_btnDownloadGift">⬇ Descargar HTML del regalo</button><button class="angqr-btn alt" id="agqr_btnDownloadCard">🪪 Descargar tarjeta HTML</button><button class="angqr-btn alt" id="agqr_btnPrintCard">🖨 Imprimir tarjeta</button><button class="angqr-btn alt" id="agqr_btnDownloadQR">⬇ Descargar QR PNG</button><button class="angqr-btn alt" id="agqr_btnPrintQR">🧾 Imprimir solo QR</button><button class="angqr-btn alt" id="agqr_btnOpenFinal">🌐 Abrir link final</button><button class="angqr-btn alt" id="agqr_btnCopyLink">🔗 Copiar link / texto QR</button></div><div id="agqr_publishStatus" class="angqr-publish">🟢 Editor listo. Cuando termines, tocá <b>Crear + publicar + generar QR</b>. ÁNGELA creará el link público y actualizará el QR automáticamente.</div><div id="agqr_photoList" class="angqr-thumbs"></div></section><section class="angqr-panel"><div class="angqr-previewTop"><div><div class="angqr-title">👁 Vista previa</div><div class="angqr-sub">Se actualiza acá mismo: a la izquierda trabajás, a la derecha ves el regalo y la tarjeta como quedarían.</div></div><div><span class="angqr-chip">${STATE.photos.length||0} foto(s)</span><span class="angqr-chip" id="agqr_chipTheme">Tema: ${esc(themeInfo(STATE.theme).name)}</span></div></div><div class="angqr-previewGrid"><div><div class="angqr-field" style="margin-bottom:10px"><label>Experiencia del regalo</label></div><iframe id="agqr_iframe" class="angqr-iframe" title="Vista previa del regalo"></iframe></div><div><div class="angqr-field" style="margin-bottom:10px"><label>Tarjeta QR / invitación</label></div><div id="agqr_cardPreview" class="angqr-card small"></div><div class="angqr-field" style="margin-top:12px"><label>Dato que usa el QR</label><div id="agqr_qrData" class="angqr-code"></div></div></div></div></section></div></div>`;
+    renderFormValues();
+    bindInput('agqr_occasion','occasion',el=>el.value); bindInput('agqr_theme','theme',el=>{STATE.autofillTheme=false;return el.value}); bindInput('agqr_name','name',el=>el.value); bindInput('agqr_sender','sender',el=>el.value); bindInput('agqr_date','date',el=>el.value); bindInput('agqr_detail','detail',el=>el.value); bindInput('agqr_symbol','symbol',el=>el.value);
+    bindInput('agqr_title','title',el=>{STATE.__autoTitle=false;return el.value}); bindInput('agqr_cta','cta',el=>{STATE.__autoCta=false;return el.value}); bindInput('agqr_progress','progressText',el=>{STATE.__autoProgress=false;return el.value}); bindInput('agqr_phrase','phrase',el=>{STATE.autoPhrase=false; const c=document.getElementById('agqr_autoPhrase'); if(c) c.checked=false; return el.value}); bindInput('agqr_message','message',el=>el.value); bindInput('agqr_cardTitle','cardTitle',el=>{STATE.__autoCardTitle=false;return el.value}); bindInput('agqr_cardText','cardText',el=>{STATE.__autoCardText=false;return el.value}); bindInput('agqr_publicUrl','publicUrl',el=>el.value); bindInput('agqr_musicUrl','musicUrl',el=>el.value);
+    const auto=document.getElementById('agqr_autoPhrase'); if(auto){auto.checked=!!STATE.autoPhrase; auto.addEventListener('change',()=>{STATE.autoPhrase=auto.checked; if(auto.checked) STATE.phrase=makePhrase(); syncPreview(); save(); renderFormValues();});}
+    document.getElementById('agqr_btnPhrase')?.addEventListener('click',()=>{STATE.phrase=makePhrase(); STATE.autoPhrase=true; const c=document.getElementById('agqr_autoPhrase'); if(c) c.checked=true; renderFormValues(); syncPreview(); save();});
+    document.getElementById('agqr_btnRefresh')?.addEventListener('click',()=>{syncPreview(); save();});
+    document.getElementById('agqr_btnDownloadGift')?.addEventListener('click',()=>downloadText(`ANGELA_REGALO_QR_${slug(STATE.name||STATE.occasion||'regalo')}.html`,giftHtml(),'text/html;charset=utf-8'));
+    document.getElementById('agqr_btnDownloadCard')?.addEventListener('click',()=>downloadText(`ANGELA_TARJETA_QR_${slug(STATE.name||STATE.occasion||'tarjeta')}.html`,cardHtml(),'text/html;charset=utf-8'));
+    document.getElementById('agqr_btnPrintCard')?.addEventListener('click',()=>{const w=window.open('about:blank','angela_qr_card','width=480,height=760'); if(!w) return alert('El navegador bloqueó la ventana emergente.'); w.document.write(cardHtml()); w.document.close(); setTimeout(()=>w.print(),500)});
+    document.getElementById('agqr_btnPublish')?.addEventListener('click',()=>publishGift());
+    document.getElementById('agqr_btnDownloadQR')?.addEventListener('click',()=>downloadQrPng());
+    document.getElementById('agqr_btnPrintQR')?.addEventListener('click',()=>printQrOnly());
+    document.getElementById('agqr_btnOpenFinal')?.addEventListener('click',()=>{const u=(STATE.publicUrl||STATE.publishedUrl||'').trim();if(!/^https?:\/\//i.test(u))return alert('Todavía no hay un link final publicado.');window.open(u,'_blank','noopener')});
+    document.getElementById('agqr_btnCopyLink')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(shareTarget()); alert('Dato del QR copiado. Si pegaste un link público, eso es lo que abrirá el código QR.');}catch(e){alert('No se pudo copiar automáticamente.\n\n'+shareTarget())}});
+    document.getElementById('agqr_photos')?.addEventListener('change',async e=>{const batch=await readFiles(e.target.files); if(batch.length){STATE.photos=[...STATE.photos,...batch]; if(typeof e.target.value==='string') e.target.value='';} renderPhotos(); syncPreview(); save();});
+    document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{const f=e.target.files?.[0]; if(!f) return; if(f.size>2500000){alert('Para publicar automáticamente, el audio subido debe pesar menos de 2,5 MB. Si es más grande, usá el campo Música desde link.'); e.target.value=''; return;} STATE.musicName=f.name; STATE.musicData=await fileToData(f); if(typeof e.target.value==='string') e.target.value=''; syncPreview(); save();});
+    syncPreview(); renderPhotos(); save();
+    if(STATE.publicUrl){setPublishStatus(`✅ <b>Link final guardado.</b><br><a href="${esc(STATE.publicUrl)}" target="_blank" rel="noopener">${esc(STATE.publicUrl)}</a>`)}
+  }
+  function renderFormValues(){ const map={agqr_occasion:STATE.occasion,agqr_theme:STATE.theme,agqr_name:STATE.name,agqr_sender:STATE.sender,agqr_date:STATE.date,agqr_detail:STATE.detail||'',agqr_symbol:STATE.symbol,agqr_title:STATE.title||occasionInfo(STATE.occasion).title,agqr_cta:STATE.cta||occasionInfo(STATE.occasion).cta,agqr_progress:STATE.progressText||occasionInfo(STATE.occasion).progress,agqr_phrase:STATE.phrase||'',agqr_message:STATE.message||'',agqr_cardTitle:STATE.cardTitle||occasionInfo(STATE.occasion).qrTitle,agqr_cardText:STATE.cardText||occasionInfo(STATE.occasion).cardText,agqr_publicUrl:STATE.publicUrl||'',agqr_musicUrl:STATE.musicUrl||''}; Object.entries(map).forEach(([id,val])=>{const el=document.getElementById(id); if(el && el.value!==String(val??'')) el.value=String(val??'')}); const c=document.getElementById('agqr_chipTheme'); if(c) c.textContent='Tema: '+themeInfo(STATE.theme).name; }
+  function renderPhotos(){ const root=document.getElementById('agqr_photoList'); if(!root) return; if(!STATE.photos.length){root.innerHTML='<div class="angqr-note">Todavía no cargaste fotos. Podés subir una o varias para la sorpresa o invitación.</div>'; return;} root.innerHTML=STATE.photos.map((p,i)=>`<div class="angqr-thumb"><img src="${p.data}" alt="${esc(p.name)}"><button type="button" data-remove="${p.id}" title="Quitar">×</button><div style="font-size:.68rem;color:#cbd5e1;margin-top:6px;word-break:break-word">${esc(p.name)}</div></div>`).join(''); root.querySelectorAll('button[data-remove]').forEach(b=>b.addEventListener('click',()=>{STATE.photos=STATE.photos.filter(x=>x.id!==b.dataset.remove); syncPreview(); renderPhotos(); save();})); }
+  function syncPreview(){ renderFormValues(); const html=giftHtml(); STATE.lastHtml=html; const iframe=document.getElementById('agqr_iframe'); if(iframe){iframe.srcdoc=html;} const preview=document.getElementById('agqr_cardPreview'); if(preview){ const hasUrl=!!(STATE.publicUrl||'').trim(); preview.className='angqr-card small'; preview.innerHTML=`<h4>${esc(STATE.cardTitle||occasionInfo(STATE.occasion).qrTitle)}</h4><p>${esc(STATE.cardText||occasionInfo(STATE.occasion).cardText)}</p><div class="angqr-qrWrap">${shareTarget()?`<img src="${qrSrc(250)}" alt="Código QR">`:`<div class="angqr-fallbackQR">Configurá un link o un texto para el QR</div>`}</div><div style="text-align:center;font-weight:700;font-size:.95rem">${esc(STATE.name||'')}</div><div class="angqr-cardFooter" style="margin-top:10px">${hasUrl?'✅ Este QR abrirá tu enlace público.':'⚠️ Sin enlace público: el QR genera una versión de prueba. Si más adelante pegás un link, quedará listo para imprimir.'}</div>`; }
+    const data=document.getElementById('agqr_qrData'); if(data) data.textContent=shareTarget(); save(); }
+  function setPublishStatus(text,type='ok'){
+    const el=document.getElementById('agqr_publishStatus');if(!el)return;
+    el.className='angqr-publish'+(type==='busy'?' busy':type==='error'?' error':'');el.innerHTML=text;
+  }
+  async function publishGift(){
+    try{
+      if(!STATE.phrase&&STATE.autoPhrase)STATE.phrase=makePhrase();
+      syncPreview();
+      const html=giftHtml();
+      const bytes=new Blob([html]).size;
+      if(bytes>3900000)throw new Error('El regalo pesa demasiado para publicarlo de una sola vez. Quitá alguna foto o usá la música mediante un link.');
+      if(location.protocol==='file:')throw new Error('La publicación automática funciona desde la versión subida a Vercel. En archivo local podés revisar y descargar, pero no crear el link público.');
+      setPublishStatus('⏳ <b>Publicando...</b> ÁNGELA está creando el link público y después actualizará el QR.','busy');
+      const res=await fetch('/api/regalos-publicar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html,slug:slug(STATE.name||STATE.detail||STATE.occasion||'regalo'),title:STATE.cardTitle||occasionInfo(STATE.occasion).qrTitle})});
+      let data={};try{data=await res.json()}catch{}
+      if(!res.ok||!data.url)throw new Error(data.error||`No se pudo publicar (${res.status}).`);
+      STATE.publicUrl=data.url;STATE.publishedUrl=data.url;STATE.publishedAt=new Date().toISOString();save();renderFormValues();syncPreview();
+      setPublishStatus(`✅ <b>Publicado.</b> El QR ya apunta al regalo final.<br><a href="${esc(data.url)}" target="_blank" rel="noopener">${esc(data.url)}</a>`,'ok');
+      try{await navigator.clipboard.writeText(data.url)}catch{}
+      if(typeof window.showToast==='function')window.showToast('✅ Regalo publicado y QR final generado.');
+      return data.url;
+    }catch(e){console.error('ÁNGELA Regalos QR publish',e);setPublishStatus(`❌ <b>No pude publicar todavía.</b> ${esc(e.message||e)}<br>El diseño no se perdió: podés seguir editando o descargar el HTML.`,'error');return null}
+  }
+  function downloadText(name,text,type){const blob=new Blob([text],{type:type||'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200)}
+  async function downloadQrPng(){const url=qrSrc(900);try{const r=await fetch(url);if(!r.ok)throw new Error('QR');const b=await r.blob(),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`ANGELA_QR_${slug(STATE.name||STATE.detail||STATE.occasion||'codigo')}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200);}catch{window.open(url,'_blank','noopener')}}
+  function printQrOnly(){const hasUrl=!!(STATE.publicUrl||'').trim();const w=window.open('about:blank','angela_qr_only','width=520,height=720'); if(!w) return alert('El navegador bloqueó la ventana emergente.'); const name=esc(STATE.name||''); const title=esc(STATE.cardTitle||occasionInfo(STATE.occasion).qrTitle); const text=esc(STATE.cardText||occasionInfo(STATE.occasion).cardText); w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>QR Ángela</title><style>body{font-family:Arial,sans-serif;margin:0;padding:28px;background:#fff;color:#111;text-align:center}.sheet{max-width:420px;margin:auto}.qr{border:1px solid #ddd;border-radius:18px;padding:16px;display:inline-block}img{width:280px;height:280px}.title{font-size:28px;font-weight:800;margin:0 0 8px}.text{font-size:15px;color:#444;line-height:1.5;margin:0 0 16px}.name{font-size:18px;font-weight:700;margin:12px 0 0}.warn{margin-top:12px;font-size:12px;color:#666}</style></head><body><div class="sheet"><div class="title">${title}</div><div class="text">${text}</div><div class="qr"><img src="${qrSrc(900)}" alt="QR"></div><div class="name">${name}</div><div class="warn">${hasUrl?'Este QR abrirá el enlace público cargado.':'Este QR es de prueba. Para que abra el regalo final desde cualquier celular, cargá un link público.'}</div></div></body></html>`); w.document.close(); setTimeout(()=>w.print(),600)}
+  function applyCommandIntent(raw,intent){
+    const k=intent?.occasion||detectOccasionFromText(raw)||'cumple';
+    STATE.occasion=k;STATE.autofillTheme=true;STATE.autoPhrase=true;
+    STATE.__autoTitle=true;STATE.__autoCta=true;STATE.__autoProgress=true;STATE.__autoCardTitle=true;STATE.__autoCardText=true;
+    STATE.title='';STATE.cta='';STATE.progressText='';STATE.cardTitle='';STATE.cardText='';STATE.phrase='';
+    STATE.detail=intent?.detail||'';
+    syncOccasion();
+    if(STATE.detail){STATE.title=STATE.detail;STATE.__autoTitle=false;STATE.cardTitle=STATE.detail;STATE.__autoCardTitle=false;}
+    STATE.phrase=makePhrase();save();open();syncPreview();
+    setTimeout(()=>document.getElementById('agqr_photos')?.scrollIntoView({behavior:'smooth',block:'center'}),160);
+    return k;
+  }
+  function openFromAngelaCommand(raw){const intent=detectGiftQrIntent(raw);if(!intent)return false;const k=applyCommandIntent(raw,intent);const label=OCCASIONS[k]?.label||k;const detail=intent.detail?` (${intent.detail})`:'';const msg=`🎁 Listo. Abrí Regalos QR en ${label}${detail}. Cargá las fotos y, si querés, el punto o música. Después tocá “Crear + publicar + generar QR” y ÁNGELA hará el link público y el QR final.`;try{window.agregarMensaje?.('angela',msg);window.hablar?.(msg)}catch{}return true;}
+  function hookAngelaQrIntent(){
+    if(window.__ANGELA_QR_INTENT_HOOK__)return;
+    const prev=window.procesarEntrada;if(typeof prev!=='function')return;
+    window.procesarEntrada=async function(texto){if(openFromAngelaCommand(String(texto||'')))return;return prev.apply(this,arguments)};
+    window.__ANGELA_QR_INTENT_HOOK__=true;
+  }
+  window.ANGELARegalosQR={open,openFromCommand:openFromAngelaCommand,detectIntent:detectGiftQrIntent,publish:publishGift,getState:()=>({...STATE})};
+  function boot(){ensureButton();wrapOpen();hookAngelaQrIntent();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot(); setTimeout(()=>{ensureButton();wrapOpen();hookAngelaQrIntent();},1400);
+})();
+</script>
+
 </body>
 </html>
