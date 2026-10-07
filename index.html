@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.17 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
+<!-- ÁNGELA V11.18 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -7478,7 +7478,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.17 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
+    // ===== ÁNGELA V11.18 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7537,9 +7537,61 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='✨ <b>ÁNGELA preparó retos y preguntas diferentes según el evento.</b> Podés cambiar, borrar o agregar lo que quieras.';
     }
     function evPageHtml(d){
-      const card=evMarkup(d,false),retos=evItems(d.challenges),preg=evItems(d.questions);
+      const retos=evItems(d.challenges),preg=evItems(d.questions);
       const retosJson=JSON.stringify(retos).replace(/</g,'\u003c'),pregJson=JSON.stringify(preg).replace(/</g,'\u003c');
-      return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${evEsc(d.name||'Evento QR')}</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:22px;background:#070b16;font-family:Inter,Arial,sans-serif;display:grid;place-items:center}@keyframes pulse{50%{opacity:.55;transform:scale(1.04)}}button{font:inherit}.angGuestMission{max-width:620px;margin:14px auto 0;padding:18px;border-radius:22px;background:rgba(15,23,42,.92);color:#fff;box-shadow:0 18px 45px rgba(0,0,0,.28)}.angGuestMission b{color:#fde68a}.angGuestMission .mission{padding:12px;margin-top:9px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.08)}</style></head><body><main style="width:min(100%,680px)">${card}<div class="angGuestMission" id="angGuestMission"></div></main><script>(()=>{const retos=${retosJson},preg=${pregJson};let id=localStorage.getItem('ANGELA_EVENT_GUEST_ID');if(!id){id=String(Date.now())+'_'+Math.random().toString(36).slice(2);localStorage.setItem('ANGELA_EVENT_GUEST_ID',id)}let h=0;for(let i=0;i<id.length;i++)h=((h<<5)-h+id.charCodeAt(i))|0;const pick=(a,off)=>a.length?a[Math.abs(h+off)%a.length]:'';const reto=pick(retos,17),q=pick(preg,53),box=document.getElementById('angGuestMission');document.querySelectorAll('[data-ang-upload]').forEach(b=>b.onclick=()=>{const i=document.createElement('input');i.type='file';i.accept=b.dataset.angUpload;i.onchange=()=>{if(i.files&&i.files[0])alert('Recuerdo seleccionado: '+i.files[0].name+'\\nAl publicar ÁNGELA online, este archivo se enviará al álbum compartido del evento.')};i.click()});if(box){box.innerHTML='<b>✨ Tu participación de hoy</b>'+(reto?'<div class="mission">📸 <b>Tu reto:</b><br>'+reto+'</div>':'')+(q?'<div class="mission">🎙️ <b>Tu pregunta:</b><br>'+q+'</div>':'')+'<div style="font-size:.78rem;opacity:.72;margin-top:10px">ÁNGELA reparte distintas combinaciones entre los invitados para que no todos reciban lo mismo.</div>'}})();<\/script></body></html>`;
+      const eventId=('evt_'+String(d.name||'evento').toLowerCase().replace(/[^a-z0-9áéíóúñ]+/gi,'_').slice(0,36)+'_'+String(d.date||'').replace(/\D/g,'')).replace(/_+$/,'');
+      const type=String(d.type||'libre'), title=evEsc(d.name||'Nuestro evento'), date=evEsc(d.date||'Una fecha para recordar');
+      const themeMap={
+        cumple:{a:'#7c3aed',b:'#ec4899',icon:'🎂',decor:'🎈 ✨ 🎉'},
+        cumpleaños:{a:'#7c3aed',b:'#ec4899',icon:'🎂',decor:'🎈 ✨ 🎉'},
+        casamiento:{a:'#7c2d12',b:'#be185d',icon:'💍',decor:'🌹 ✨ 🥂'},
+        quince:{a:'#6d28d9',b:'#db2777',icon:'👑',decor:'✨ 💎 🌸'},
+        '15':{a:'#6d28d9',b:'#db2777',icon:'👑',decor:'✨ 💎 🌸'},
+        aniversario:{a:'#9f1239',b:'#7c3aed',icon:'❤️',decor:'🌹 ✨ 💞'},
+        baby:{a:'#0369a1',b:'#db2777',icon:'🍼',decor:'☁️ ⭐ 🧸'},
+        bautismo:{a:'#0f766e',b:'#2563eb',icon:'🕊️',decor:'✨ 🤍 🌿'},
+        graduacion:{a:'#1e3a8a',b:'#7c3aed',icon:'🎓',decor:'⭐ ✨ 📜'},
+        graduación:{a:'#1e3a8a',b:'#7c3aed',icon:'🎓',decor:'⭐ ✨ 📜'}
+      };
+      const t=themeMap[type]||themeMap.cumple;
+      return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Inter,Arial,sans-serif;color:#fff;background:linear-gradient(135deg,${t.a},#070b16 48%,${t.b});background-size:220% 220%;animation:bg 12s ease infinite;padding:18px}
+@keyframes bg{50%{background-position:100% 50%}}@keyframes float{50%{transform:translateY(-9px) rotate(2deg)}}@keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.wrap{max-width:720px;margin:auto}.hero,.panel{background:rgba(8,12,28,.78);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.18);border-radius:28px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.34);margin-bottom:14px;animation:pop .5s ease}
+.hero{text-align:center;overflow:hidden;position:relative}.icon{font-size:64px;animation:float 3s ease-in-out infinite}.decor{font-size:25px;letter-spacing:10px;opacity:.9}.hero h1{font-size:clamp(30px,8vw,56px);margin:7px 0}.muted{opacity:.78}.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:16px}
+button,.btn{border:0;border-radius:16px;padding:14px 12px;font-weight:800;font-size:15px;cursor:pointer;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.16)}
+button.primary{background:linear-gradient(135deg,${t.a},${t.b})}.mission{padding:14px;border-radius:18px;background:rgba(255,255,255,.09);margin:10px 0}.field{width:100%;padding:13px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.22);color:#fff;margin:7px 0}
+.preview{margin:10px 0;padding:12px;border-radius:18px;background:rgba(0,0,0,.28)}.preview img,.preview video{max-width:100%;max-height:360px;border-radius:14px;display:block;margin:auto}.preview audio{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.hide{display:none!important}.status{font-size:14px;margin-top:9px}.owner{border:1px solid rgba(253,230,138,.45)}.cards{display:grid;gap:9px}.item{padding:13px;border-radius:16px;background:rgba(255,255,255,.08)}.item small{opacity:.7}
+</style></head><body><main class="wrap">
+<section class="hero"><div class="decor">${t.decor}</div><div class="icon">${t.icon}</div><div class="muted">EVENTO QR · ÁNGELA</div><h1>${title}</h1><div>${date}</div><p>Participá y dejá un recuerdo especial. Lo que envíes será privado para el agasajado.</p></section>
+<section class="panel" id="guest">
+<h2>✨ Tu participación</h2><input class="field" id="who" maxlength="50" placeholder="Tu nombre o apodo">
+<div id="mission"></div>
+<div class="tabs"><button data-kind="photo">📸 Foto</button><button data-kind="video">🎥 Video</button><button data-kind="audio">🎙️ Audio</button><button data-kind="text">💌 Mensaje</button></div>
+<div id="editor" class="preview hide"></div><div id="sendStatus" class="status"></div>
+</section>
+<section class="panel owner hide" id="owner"><h2>❤️ Mis recuerdos</h2><div class="row"><button data-filter="all">Todos</button><button data-filter="photo">📸 Fotos</button><button data-filter="video">🎥 Videos</button><button data-filter="audio">🎙️ Audios</button><button data-filter="text">💌 Mensajes</button></div><p id="count"></p><div class="cards" id="items"></div></section>
+</main>
+<script>
+(()=>{const EVENT=${JSON.stringify(eventId)},retos=${retosJson},preg=${pregJson},MAX_VIDEO=60,MAX_AUDIO=120;
+const qs=new URLSearchParams(location.search),ownerMode=qs.get('owner')==='1',store='ANGELA_EVENT_ITEMS_'+EVENT;
+const get=()=>{try{return JSON.parse(localStorage.getItem(store)||'[]')}catch{return[]}},put=a=>localStorage.setItem(store,JSON.stringify(a));
+let gid=localStorage.getItem('ANGELA_EVENT_GUEST_ID_'+EVENT);if(!gid){gid=Date.now()+'_'+Math.random().toString(36).slice(2);localStorage.setItem('ANGELA_EVENT_GUEST_ID_'+EVENT,gid)}
+let hash=0;for(const c of gid)hash=((hash<<5)-hash+c.charCodeAt(0))|0;const pick=(a,o)=>a.length?a[Math.abs(hash+o)%a.length]:'';
+let reto=pick(retos,17),question=pick(preg,53);const mission=document.getElementById('mission');
+function drawMission(){mission.innerHTML=(reto?'<div class="mission">🎯 <b>Tu reto:</b><br>'+reto+'</div>':'')+(question?'<div class="mission">💬 <b>Pregunta:</b><br>'+question+'</div>':'')+'<button id="other">🔄 Dame otro reto</button>';document.getElementById('other').onclick=()=>{hash+=97;reto=pick(retos,17);question=pick(preg,53);drawMission()}}drawMission();
+const ed=document.getElementById('editor'),st=document.getElementById('sendStatus');let draft=null,url='';
+function reset(){if(url)URL.revokeObjectURL(url);url='';draft=null;ed.classList.add('hide');ed.innerHTML=''}
+function saveDraft(kind,data,label){const who=document.getElementById('who').value.trim();if(!who){st.textContent='⚠️ Primero escribí tu nombre o apodo.';return}const arr=get();arr.unshift({id:Date.now()+'_'+Math.random().toString(36).slice(2),guest:gid,who,kind,data,label,challenge:reto,question,at:new Date().toISOString()});put(arr);st.textContent='❤️ Tu recuerdo fue enviado. Podés enviar otro cuando quieras.';reset()}
+function fileEditor(kind,accept){const inp=document.createElement('input');inp.type='file';inp.accept=accept;if(kind==='video')inp.setAttribute('capture','environment');inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;url=URL.createObjectURL(f);draft=f;ed.classList.remove('hide');const media=kind==='photo'?'<img src="'+url+'">':kind==='video'?'<video src="'+url+'" controls></video>':'<audio src="'+url+'" controls></audio>';ed.innerHTML=media+'<div class="row"><button id="change">🔄 Cambiar</button><button id="del">🗑️ Quitar</button><button class="primary" id="send">Enviar</button></div><div class="status">'+(kind==='video'?'Video máximo 60 segundos.':kind==='audio'?'Audio máximo 2 minutos.':'Revisá la foto antes de enviarla.')+'</div>';ed.querySelector('#change').onclick=()=>inp.click();ed.querySelector('#del').onclick=reset;ed.querySelector('#send').onclick=()=>{const reader=new FileReader();reader.onload=()=>saveDraft(kind,reader.result,f.name);reader.readAsDataURL(f)};if(kind==='video'||kind==='audio'){const m=ed.querySelector(kind==='video'?'video':'audio');m.onloadedmetadata=()=>{const max=kind==='video'?MAX_VIDEO:MAX_AUDIO;if(m.duration>max){st.textContent='⚠️ '+(kind==='video'?'El video supera 60 segundos. Elegí o grabá uno más corto.':'El audio supera 2 minutos.');reset()}}}};inp.click()}
+document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{const k=b.dataset.kind;if(k==='photo')fileEditor(k,'image/*');else if(k==='video')fileEditor(k,'video/*');else if(k==='audio')fileEditor(k,'audio/*');else{ed.classList.remove('hide');ed.innerHTML='<textarea class="field" id="msg" maxlength="1000" rows="5" placeholder="Escribí tu saludo, deseo o anécdota…"></textarea><div class="row"><button id="del">🗑️ Borrar</button><button class="primary" id="send">Enviar mensaje</button></div>';ed.querySelector('#del').onclick=reset;ed.querySelector('#send').onclick=()=>{const v=ed.querySelector('#msg').value.trim();if(!v){st.textContent='⚠️ Escribí un mensaje.';return}saveDraft('text',v,'Mensaje')}}});
+function owner(){document.getElementById('guest').classList.add('hide');document.getElementById('owner').classList.remove('hide');render('all')}
+function render(filter){const a=get().filter(x=>filter==='all'||x.kind===filter),box=document.getElementById('items');document.getElementById('count').textContent=a.length+' recuerdos recibidos';box.innerHTML=a.length?'':'Todavía no llegaron recuerdos.';a.forEach(x=>{const e=document.createElement('div');e.className='item';let body=x.kind==='photo'?'<img style="max-width:100%;border-radius:12px" src="'+x.data+'">':x.kind==='video'?'<video style="width:100%;border-radius:12px" controls src="'+x.data+'"></video>':x.kind==='audio'?'<audio style="width:100%" controls src="'+x.data+'"></audio>':'<p>'+String(x.data).replace(/[&<>]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))+'</p>';e.innerHTML='<b>'+x.who+'</b> te envió '+({photo:'una foto',video:'un video',audio:'un audio',text:'un mensaje'}[x.kind])+'<br><small>'+new Date(x.at).toLocaleString()+'</small>'+body+'<button data-del="'+x.id+'">🗑️ Eliminar</button>';box.appendChild(e)});box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('¿Eliminar este recuerdo?')){put(get().filter(x=>x.id!==b.dataset.del));render(filter)}})}
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>render(b.dataset.filter));if(ownerMode)owner();
+})();
+<\/script></body></html>`;
     }
     async function evValidatePublishedPage(url){
       try{
@@ -7581,9 +7633,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         const r=await evPublishOnline(htmlFinal);
         const verify=await evValidatePublishedPage(r.url);
         if(!verify.ok)throw new Error('Control final falló: '+verify.reason);
-        d={...d,publicUrl:r.url,publishProvider:r.provider||'Automático',publishedAt:new Date().toISOString()};
+        const ownerUrl=r.url+(r.url.includes('?')?'&':'?')+'owner=1';
+        d={...d,publicUrl:r.url,ownerUrl,publishProvider:r.provider||'Automático',publishedAt:new Date().toISOString()};
         localStorage.setItem(EVKEY,JSON.stringify(d));evFill(d);evPreview();
-        if(st)st.innerHTML='✅ <b>Evento publicado, comprobado y QR generado.</b> ÁNGELA verificó que el enlace abre como página web antes de habilitar el QR. Ya podés descargar el QR o la tarjeta PNG.';
+        if(st)st.innerHTML='✅ <b>Evento publicado, comprobado y QR generado.</b><br>QR invitados listo.<br><a href="'+r.url+'" target="_blank" rel="noopener">Abrir vista invitado</a> · <a href="'+ownerUrl+'" target="_blank" rel="noopener">❤️ Abrir tarjeta privada del agasajado</a><br><span style="font-size:.75rem">La tarjeta privada es para entregar solamente al receptor del evento.</span>';
       }catch(e){if(st)st.textContent='⚠️ No pude publicar el evento: '+(e?.message||e)}
     }
     async function evEnsureUrl(){
