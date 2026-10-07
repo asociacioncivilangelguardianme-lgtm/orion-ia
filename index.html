@@ -4792,7 +4792,7 @@ window.angelaAbrirGestion=(m)=>{
     <div class="card-mini">💾 Datos locales: ✅ funcionando</div>
     <div class="card-mini">📊 Excel/Word múltiples: ✅ instalado</div>
     <div class="card-mini">🤖 IA / imágenes: usa la conexión actual</div>
-    <div class="card-mini">☁️ Supabase: ⏳ falta conectar</div>
+    <div class="card-mini" id="angelaSupabaseBox"><span id="angelaSupabaseStatus">☁️ Supabase: ⏳ verificando…</span> <button id="angelaSupabaseConnectBtn" type="button" onclick="window.ANGELASupabase&&window.ANGELASupabase.connectPrompt()" style="margin-left:8px;padding:5px 9px;border-radius:8px;border:1px solid #38bdf8;background:#0f172a;color:#e2e8f0;font-size:11px;cursor:pointer">Conectar</button></div>
     <div class="card-mini">📧 Gmail: ⏳ falta OAuth</div>
     <div class="card-mini">📸 Google Fotos: ✅ OAuth + Picker configurado · varias cuentas</div>
     <div class="card-mini">🖥️ Bridge PC: ⏳ falta instalar/conectar</div>
@@ -7273,7 +7273,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   async function publishWithPasteHtml(htmlFinal){const bytes=new TextEncoder().encode(htmlFinal).length;if(bytes>1950000)throw new Error('servicio 2 omitido por tamaño');const filename=`regalo-${slug(STATE.name||STATE.detail||STATE.occasion||'angela')}.html`,r=await fetch(`https://pastehtml.dev/api/pastes?filename=${encodeURIComponent(filename)}`,{method:'POST',headers:{'Content-Type':'text/html;charset=utf-8',Accept:'application/json'},body:htmlFinal,mode:'cors',cache:'no-store'}),raw=await r.text(),data=parseJsonSafe(raw);if(!r.ok)throw new Error(publicationError('servicio 2',r.status,raw));const url=data?.live_url||data?.liveUrl||data?.url||'';if(!/^https:\/\//i.test(url))throw new Error('servicio 2 sin enlace válido');return{url,projectId:data?.token||'',updateToken:data?.update_token||'',provider:'PasteHTML'}}
   function ensureSparkClient(){if(window.Spark&&typeof window.Spark.deploy==='function')return Promise.resolve(window.Spark);if(window.__ANGELA_SPARK_LOADING__)return window.__ANGELA_SPARK_LOADING__;window.__ANGELA_SPARK_LOADING__=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://spark.boqsc.eu/spark-client.js';s.async=true;s.onload=()=>window.Spark?.deploy?resolve(window.Spark):reject(new Error('servicio 3 no disponible'));s.onerror=()=>reject(new Error('servicio 3 no disponible'));document.head.appendChild(s)}).finally(()=>setTimeout(()=>window.__ANGELA_SPARK_LOADING__=null,1000));return window.__ANGELA_SPARK_LOADING__}
   async function publishWithSpark(htmlFinal){const S=await ensureSparkClient(),app=await S.deploy({index:htmlFinal});let url=app?.scaffold?.site_url||app?.scaffold?.siteUrl||app?.site_url||app?.siteUrl||app?.url||'';if(url&&url.startsWith('/'))url='https://spark.boqsc.eu'+url;if(!/^https:\/\//i.test(url))throw new Error('servicio 3 sin enlace válido');return{url,projectId:app?.project?.id||app?.project_id||app?.id||'',provider:'Spark'}}
-  async function createOnlineGift(htmlFinal){const providers=[publishWithHtmlHoster,publishWithPasteHtml,publishWithSpark],errors=[];for(let i=0;i<providers.length;i++){setStatus(`⏳ <b>Creando tu regalo y el QR…</b><br>Paso ${i+1} de ${providers.length}. No cierres esta pantalla.`,`busy`);try{const r=await providers[i](htmlFinal);if(r?.url)return r}catch(e){console.warn('ÁNGELA Regalos QR fallback',e);errors.push(e?.message||String(e))}}throw new Error('No pude crear el enlace del regalo en este momento. Revisá Internet y volvé a intentar.')}
+  async function createOnlineGift(htmlFinal){const providers=[...(window.ANGELASupabase?.publishGift?[window.ANGELASupabase.publishGift]:[]),publishWithHtmlHoster,publishWithPasteHtml,publishWithSpark],errors=[];for(let i=0;i<providers.length;i++){setStatus(`⏳ <b>Creando tu regalo y el QR…</b><br>Paso ${i+1} de ${providers.length}. No cierres esta pantalla.`,`busy`);try{const r=await providers[i](htmlFinal);if(r?.url)return r}catch(e){console.warn('ÁNGELA Regalos QR fallback',e);errors.push(e?.message||String(e))}}throw new Error('No pude crear el enlace del regalo en este momento. Revisá Internet y volvé a intentar.')}
   function addHistory(result){const list=loadHistory(),entry={id:uid(),createdAt:new Date().toISOString(),name:STATE.name||STATE.detail||occasionInfo(STATE.occasion).label,occasion:STATE.occasion,presentation:resolvedPresentation(),url:result.url,provider:result.provider||'',projectId:result.projectId||'',deleteToken:result.deleteToken||'',updateToken:result.updateToken||''};const filtered=list.filter(x=>x.url!==entry.url);filtered.unshift(entry);saveHistory(filtered);renderHistory();return entry}
   async function createGiftAndQr(){try{stopPreviewMusic();if(!STATE.phrase&&STATE.autoPhrase)STATE.phrase=makePhrase();syncPreview();const manual=String(STATE.publicUrl||'').trim();if(/^https?:\/\//i.test(manual)){STATE.publishedUrl='';STATE.publishedAt=new Date().toISOString();STATE.publishProvider='manual';saveState();syncPreview();setStatus(`✅ <b>REGALO LISTO + QR FINAL LISTO.</b><br><a href="${esc(manual)}" target="_blank" rel="noopener">Abrir regalo</a>`,'ok');return manual}const htmlFinal=giftHtml();STATE.lastHtml=htmlFinal;saveState();const result=await createOnlineGift(htmlFinal);STATE.publicUrl='';STATE.publishedUrl=result.url;STATE.publishedAt=new Date().toISOString();STATE.publishProvider=result.provider||'Automático';STATE.publishProjectId=result.projectId||'';STATE.publishDeleteToken=result.deleteToken||'';STATE.publishUpdateToken=result.updateToken||'';saveState();addHistory(result);syncPreview();renderFormValues();setStatus(`✅ <b>REGALO LISTO + QR FINAL LISTO.</b><br><a href="${esc(result.url)}" target="_blank" rel="noopener">${esc(result.url)}</a><br><span style="font-size:.74rem">Ya podés descargar o imprimir el QR y usarlo en tarjeta, taza, sublimación, cuadro, sticker o láser.</span>`,'ok');window.showToast?.('✅ Regalo y QR final listos.');setTimeout(()=>document.getElementById('agqr_cardPreview')?.scrollIntoView({behavior:'smooth',block:'center'}),180);return result.url}catch(e){console.error('ÁNGELA Regalos QR',e);setStatus(`❌ <b>No pude terminar el regalo.</b><br>${esc(e.message||e)}<br>Todo lo que cargaste sigue guardado. Revisá la conexión y tocá nuevamente “Crear regalo y generar QR”.`,'error');return null}}
   async function ensureFinal(){return finalPublicUrl()||await createGiftAndQr()}
@@ -7397,5 +7397,95 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+
+<!-- ÁNGELA V11.13 · Supabase conexión visible y segura: no altera la interfaz principal -->
+<script id="angela-v1112-supabase-safe">
+(()=>{
+  'use strict';
+  const PROJECT_URL='https://xbbmqfapcfqndwanfkvh.supabase.co';
+  const BUCKET='eventos-qr';
+  const STORE='angela_supabase_public_config_v1';
+  const clean=v=>String(v||'').trim().replace(/\/$/,'');
+  const validKey=k=>/^sb_publishable_/i.test(String(k||'')) || /^eyJ/i.test(String(k||''));
+  function status(msg,kind='wait'){
+    const el=document.getElementById('angelaSupabaseStatus');
+    if(!el)return;
+    const icon=kind==='ok'?'✅':kind==='error'?'⚠️':'⏳';
+    el.textContent=`☁️ Supabase: ${icon} ${msg}`;
+    const b=document.getElementById('angelaSupabaseConnectBtn');
+    if(b)b.style.display=kind==='ok'?'none':'inline-block';
+  }
+  function saved(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')||{}}catch{return{}}}
+  function save(c){try{localStorage.setItem(STORE,JSON.stringify(c))}catch{}}
+  async function fromEndpoint(){
+    if(location.protocol==='file:')return null;
+    for(const u of ['/api/supabase-config','/api/config/supabase']){
+      try{
+        const r=await fetch(u,{cache:'no-store',credentials:'same-origin'});
+        if(!r.ok)continue;
+        const j=await r.json();
+        const key=String(j.key||j.publishableKey||j.supabaseKey||j.SUPABASE_PUBLISHABLE_KEY||j.NEXT_PUBLIC_SUPABASE_ANON_KEY||'').trim();
+        const url=clean(j.url||j.supabaseUrl||j.SUPABASE_URL||PROJECT_URL);
+        if(validKey(key))return{url,key,bucket:j.bucket||BUCKET};
+      }catch{}
+    }
+    return null;
+  }
+  async function config(){
+    const s=saved();
+    if(validKey(s.key))return{url:clean(s.url||PROJECT_URL),key:s.key,bucket:s.bucket||BUCKET};
+    const api=await fromEndpoint();
+    if(api){save(api);return api}
+    const w=window.ANGELA_SUPABASE_CONFIG||window.ANGELA_PRO_CONFIG?.supabase||{};
+    const key=String(w.key||w.publishableKey||'').trim();
+    if(validKey(key))return{url:clean(w.url||PROJECT_URL),key,bucket:w.bucket||BUCKET};
+    return null;
+  }
+  async function request(path,opts={}){
+    const c=await config();
+    if(!c)throw new Error('Supabase está configurado en Vercel, pero este HTML local no puede leer variables del servidor. Publicalo en Vercel o conectá la Publishable Key desde el sitio.');
+    const headers=new Headers(opts.headers||{});
+    headers.set('apikey',c.key); headers.set('Authorization',`Bearer ${c.key}`);
+    return fetch(`${c.url}${path}`,{...opts,headers,cache:'no-store'});
+  }
+  async function check(){
+    if(location.protocol==='file:'){
+      const s=saved();
+      if(validKey(s.key)){status(`configuración local guardada · ${s.bucket||BUCKET}`,'ok');return true}
+      status('lista para conectar · tocá Conectar una sola vez','wait');return false;
+    }
+    status('verificando conexión…','wait');
+    try{
+      const c=await config();
+      if(!c){status('variables guardadas; falta exponer la configuración pública','wait');return false}
+      const r=await request(`/storage/v1/object/list/${encodeURIComponent(c.bucket)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prefix:'',limit:1,offset:0})});
+      if(!r.ok)throw new Error(await r.text());
+      status(`conectado · ${c.bucket}`,'ok');return true;
+    }catch(e){console.warn('ÁNGELA Supabase:',e);status('pendiente de verificación','error');return false}
+  }
+  async function publishGift(htmlFinal){
+    const c=await config(); if(!c)throw new Error('Supabase aún no está disponible en esta ejecución');
+    const id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
+    const path=`regalos/${new Date().toISOString().slice(0,10)}/${id}/index.html`;
+    const encoded=path.split('/').map(encodeURIComponent).join('/');
+    const r=await request(`/storage/v1/object/${encodeURIComponent(c.bucket)}/${encoded}`,{method:'POST',headers:{'Content-Type':'text/html; charset=utf-8','x-upsert':'false'},body:htmlFinal});
+    if(!r.ok)throw new Error(`Supabase Storage HTTP ${r.status}: ${(await r.text()).slice(0,130)}`);
+    return{url:`${c.url}/storage/v1/object/public/${encodeURIComponent(c.bucket)}/${encoded}`,projectId:path,provider:'Supabase'};
+  }
+  async function connectPrompt(){
+    const current=saved();
+    const key=prompt('Pegá la Publishable Key de Supabase (sb_publishable_...). Se guarda solamente en este navegador.',current.key||'');
+    if(!key)return false;
+    if(!validKey(key)){alert('La clave no parece una Publishable Key válida.');return false}
+    save({url:PROJECT_URL,key,bucket:BUCKET}); return check();
+  }
+  window.ANGELASupabase={config,check,publishGift,connectPrompt,projectUrl:PROJECT_URL,bucket:BUCKET};
+  const refresh=()=>setTimeout(check,350);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh,{once:true}); else refresh();
+  const old=window.angelaAbrirGestion;
+  if(typeof old==='function')window.angelaAbrirGestion=function(...args){const r=old.apply(this,args);if(args[0]==='estado')setTimeout(check,100);return r};
+})();
+</script>
 </body>
 </html>
