@@ -1,3 +1,4 @@
+<!-- ÁNGELA V11.16 · basada íntegramente en V11.15 · Eventos QR workspace + música + multimedia · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -4792,7 +4793,7 @@ window.angelaAbrirGestion=(m)=>{
     <div class="card-mini">💾 Datos locales: ✅ funcionando</div>
     <div class="card-mini">📊 Excel/Word múltiples: ✅ instalado</div>
     <div class="card-mini">🤖 IA / imágenes: usa la conexión actual</div>
-    <div class="card-mini" id="angelaSupabaseBox"><span id="angelaSupabaseStatus">☁️ Supabase: ⏳ verificando…</span> <button id="angelaSupabaseConnectBtn" type="button" onclick="window.ANGELASupabase&&window.ANGELASupabase.connectPrompt()" style="margin-left:8px;padding:5px 9px;border-radius:8px;border:1px solid #38bdf8;background:#0f172a;color:#e2e8f0;font-size:11px;cursor:pointer">Conectar</button></div>
+    <div class="card-mini" id="angelaSupabaseStatus">☁️ Supabase: ⏳ verificando…</div>
     <div class="card-mini">📧 Gmail: ⏳ falta OAuth</div>
     <div class="card-mini">📸 Google Fotos: ✅ OAuth + Picker configurado · varias cuentas</div>
     <div class="card-mini">🖥️ Bridge PC: ⏳ falta instalar/conectar</div>
@@ -7365,6 +7366,98 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <div class="angqr-note" style="margin-top:12px">✅ <b>Flujo simple:</b> terminás el regalo y tocás <b>Crear regalo y generar QR</b>. ÁNGELA hace lo necesario por detrás y te entrega el QR final. Cada regalo obtiene un enlace y QR propios. Cuando terminás uno, tocás <b>Nuevo regalo</b> y empezás desde cero; el QR anterior sigue funcionando.</div>
   <div class="angqr-actions"><button class="angqr-btn publish" id="agqr_btnPublish">✨ Crear regalo y generar QR</button><button class="angqr-btn alt" id="agqr_btnDownloadQR">⬇ Descargar QR</button><button class="angqr-btn alt" id="agqr_btnPrintQR">🧾 Imprimir QR</button><button class="angqr-btn alt" id="agqr_btnPrintCard">🖨 Imprimir tarjeta</button><button class="angqr-btn alt" id="agqr_btnShareCard">📲 Tarjeta para WhatsApp</button><button class="angqr-btn alt" id="agqr_btnDownloadCard">💾 Descargar tarjeta PNG</button><button class="angqr-btn alt" id="agqr_btnOpenFinal">🌐 Abrir regalo</button><button class="angqr-btn alt" id="agqr_btnCopyLink">🔗 Copiar enlace</button><button class="angqr-btn soft" id="agqr_btnNewGift">➕ Nuevo regalo</button></div>
   <div id="agqr_status" class="angqr-status">🟢 Editor listo. Podés trabajar tranquilo; nada se genera hasta que toques <b>Crear regalo y generar QR</b>.</div><div id="agqr_photoList" class="angqr-thumbs"></div>
+  <details class="angqr-history" id="agqr_eventosQR" style="margin-top:14px">
+    <summary style="cursor:pointer;color:#67e8f9;font-weight:900;font-size:.9rem">🎉 Eventos QR · Juego / Álbum / Confesionario <span class="angqr-chip">NUEVO</span></summary>
+    <div style="margin-top:12px;padding:14px;border:1px solid rgba(103,232,249,.20);border-radius:18px;background:rgba(8,47,73,.12)">
+      <div class="angqr-title">📸 Un QR para participar del evento</div>
+      <div class="angqr-sub" style="margin-top:5px">Prepará casamientos, cumpleaños, 15 años, aniversarios, baby shower y otros eventos. Podés combinar retos de fotos con preguntas de Confesionario.</div>
+
+      <div class="angqr-grid two" style="margin-top:12px">
+        <div class="angqr-field"><label>Tipo de evento</label>
+          <select id="agqr_evType">
+            <option value="casamiento">💍 Casamiento</option><option value="cumple">🎂 Cumpleaños</option>
+            <option value="quince">👑 15 años</option><option value="aniversario">❤️ Aniversario</option>
+            <option value="babyshower">🍼 Baby shower</option><option value="bautismo">🕊️ Bautismo</option>
+            <option value="graduacion">🎓 Graduación</option><option value="libre">✨ Otro evento</option>
+          </select>
+        </div>
+        <div class="angqr-field"><label>Nombre del evento / homenajeado</label><input id="agqr_evName" placeholder="Ej: Casamiento de Ana y Juan"></div>
+        <div class="angqr-field"><label>Fecha</label><input id="agqr_evDate" placeholder="Ej: 18/10/2026"></div>
+        <div class="angqr-field"><label>Estilo</label>
+          <select id="agqr_evStyle"><option value="elegante">✨ Elegante</option><option value="romantico">🌹 Romántico</option><option value="fiesta">🎉 Fiesta</option><option value="suave">🤍 Suave</option><option value="colorido">🌈 Colorido</option></select>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;padding:12px;border:1px solid rgba(148,163,184,.18);border-radius:16px">
+
+        <div class="angqr-field" style="grid-column:1/-1">
+          <label>🎨 Presentación visual del evento</label>
+          <select id="agqr_evTemplate">
+            <option value="auto">✨ ÁNGELA elige automáticamente</option>
+            <option value="elegante">💎 Elegante premium</option>
+            <option value="luces">✨ Luces y destellos</option>
+            <option value="flores">🌸 Floral romántica</option>
+            <option value="fiesta">🎉 Fiesta / confeti</option>
+            <option value="cielo">☁️ Cielo / estrellas</option>
+            <option value="cinema">🎬 Noche / cinematográfica</option>
+            <option value="minimal">🤍 Minimal elegante</option>
+          </select>
+        </div>
+        <div class="angqr-field" style="grid-column:1/-1">
+          <label>🖼️ Foto o imagen de fondo (opcional)</label>
+          <input id="agqr_evBg" type="file" accept="image/*">
+          <div style="font-size:.69rem;color:#94a3b8;margin-top:5px">ÁNGELA aplica una capa de contraste para que los textos sigan siendo legibles.</div>
+          <button type="button" class="angqr-btn soft" id="agqr_evBgClear" style="margin-top:7px">Quitar fondo</button>
+        </div>
+        <div style="font-weight:900;margin-bottom:8px">Elegí qué tendrá el QR</div>
+        <label style="display:flex;gap:8px;align-items:center;margin:7px 0"><input id="agqr_evGame" type="checkbox" checked> 📸 Juego de fotos / retos</label>
+        <label style="display:flex;gap:8px;align-items:center;margin:7px 0"><input id="agqr_evConf" type="checkbox" checked> 🎙️ Confesionario · mensajes, audios o videos</label>
+        <label style="display:flex;gap:8px;align-items:center;margin:7px 0"><input id="agqr_evAlbum" type="checkbox" checked> ❤️ Álbum de recuerdos del evento</label>
+      </div>
+
+      <div class="angqr-grid two" style="margin-top:12px">
+        <div class="angqr-field">
+          <label>🎵 Música del evento</label>
+          <input id="agqr_evMusic" type="file" accept="audio/*,.mp3,.m4a,.wav,.ogg">
+          <div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Podés elegir una canción para acompañar la página del evento. En la publicación online se prepara para reproducirla desde el evento.</div>
+        </div>
+        <div class="angqr-field">
+          <label>📸🎙️🎥 Aportes de invitados</label>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px">
+            <label class="angqr-check"><input type="checkbox" id="agqr_evGuestPhotos" checked> Fotos</label>
+            <label class="angqr-check"><input type="checkbox" id="agqr_evGuestAudio" checked> Audios</label>
+            <label class="angqr-check"><input type="checkbox" id="agqr_evGuestVideo" checked> Videos</label>
+          </div>
+          <div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Estas opciones preparan la experiencia pública para que cada invitado pueda aportar recuerdos desde el celular. La carga compartida real necesita el almacenamiento online del evento.</div>
+        </div>
+        <div class="angqr-field"><label>📷 Banco de retos · uno por línea</label><div style="font-size:.69rem;color:#94a3b8;margin-bottom:5px">Cada invitado recibirá una misión distinta elegida de este banco.</div><textarea id="agqr_evChallenges" rows="7" placeholder="Foto con los protagonistas&#10;El brindis&#10;La persona más divertida"></textarea></div>
+        <div class="angqr-field"><label>🎙️ Banco de preguntas del Confesionario · una por línea</label><div style="font-size:.69rem;color:#94a3b8;margin-bottom:5px">ÁNGELA irá variando la pregunta entre invitados.</div><textarea id="agqr_evQuestions" rows="7" placeholder="Dejales un deseo&#10;Contá una anécdota&#10;¿Qué consejo les darías?"></textarea></div>
+      </div>
+
+      <div class="angqr-actions" style="margin-top:12px">
+        <button type="button" class="angqr-btn soft" id="agqr_evFullscreen">🖥️ Abrir Eventos QR en pantalla completa</button>
+        <button type="button" class="angqr-btn soft" id="agqr_evCloseFullscreen" style="display:none">✕ Volver a Regalos QR</button>
+        <button type="button" class="angqr-btn publish" id="agqr_evSurprise">✨ ÁNGELA, sorprendeme</button>
+        <button type="button" class="angqr-btn alt" id="agqr_evPreview">👁 Vista previa</button>
+        <button type="button" class="angqr-btn alt" id="agqr_evDownload">💾 Descargar proyecto del evento</button>
+        <button type="button" class="angqr-btn publish" id="agqr_evGenerateQR">✨ Crear evento y generar QR</button>
+        <button type="button" class="angqr-btn alt" id="agqr_evDownloadQR">⬇ Descargar QR del evento</button>
+        <button type="button" class="angqr-btn alt" id="agqr_evDownloadCard">💾 Descargar tarjeta PNG</button>
+        <button type="button" class="angqr-btn alt" id="agqr_evShareCard">📲 Tarjeta para WhatsApp</button>
+        <button type="button" class="angqr-btn alt" id="agqr_evOpen">🌐 Abrir evento</button>
+        <button type="button" class="angqr-btn soft" id="agqr_evClear">🧹 Nuevo evento</button>
+      </div>
+
+      <div id="agqr_evStatus" class="angqr-status" style="margin-top:10px">🟢 Editor de Eventos QR listo. Esta función está separada del Regalo QR normal y no modifica tus regalos existentes.</div>
+      <div id="agqr_evLocalNotice" class="angqr-note" style="display:none;margin-top:8px">🧪 <b>Modo prueba local:</b> podés diseñar, cambiar plantillas, fondo, retos, preguntas y vista previa. Para publicar el evento y generar el QR público, abrí esta misma versión desde ÁNGELA online.</div>
+      <div id="agqr_evPreviewBox" style="display:none;margin-top:12px"></div>
+
+      <div class="angqr-note" style="margin-top:12px">
+        🔐 <b>Importante:</b> esta versión deja listo el creador, los retos, el Confesionario y la vista previa sin tocar lo que ya funciona. Para que invitados desde distintos celulares suban fotos/videos y todos aparezcan en un mismo álbum, la siguiente conexión debe ser almacenamiento en la nube. ÁNGELA no simula esa parte ni promete guardar archivos donde todavía no hay nube conectada.
+      </div>
+    </div>
+  </details>
+
   <details class="angqr-history"><summary style="cursor:pointer;color:#cbd5e1;font-weight:800;font-size:.82rem">🗂 Mis regalos creados</summary><div id="agqr_historyList" class="angqr-history-list"></div></details>
   </section><section class="angqr-panel"><div class="angqr-previewTop"><div><div class="angqr-title">👁 Vista previa</div><div class="angqr-sub">Las presentaciones cambian la distribución, no solo los colores.</div></div><div><span class="angqr-chip">${STATE.photos.length||0} foto(s)</span><span class="angqr-chip" id="agqr_chipPresentation"></span><span class="angqr-chip" id="agqr_chipTheme"></span></div></div><div class="angqr-previewGrid"><div><div class="angqr-field" style="margin-bottom:10px"><label>Experiencia del regalo</label></div><iframe id="agqr_iframe" class="angqr-iframe" title="Vista previa del regalo"></iframe></div><div><div class="angqr-field" style="margin-bottom:10px"><label>Tarjeta QR / invitación</label></div><div id="agqr_cardPreview" class="angqr-card small"></div></div></div></section></div></div>`;
     renderFormValues();
@@ -7385,6 +7478,139 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
+    // ===== ÁNGELA V11.16 · EVENTOS QR PREMIUM (conserva íntegra V11.15) =====
+    const EVKEY='ANGELA_eventos_qr_v2';
+    const evDefaults={
+      casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
+      cumple:{retos:['Foto con el cumpleañero/a','La sonrisa más grande','Foto de toda tu mesa','El momento más divertido','Una selfie inesperada','Foto del brindis o la torta'],preguntas:['Dejale un deseo','¿Cuál es tu mejor recuerdo juntos?','Decile algo que quieras que recuerde siempre']},
+      quince:{retos:['Foto con la quinceañera','El vestido en acción','La pista llena','Foto con tu grupo','El brindis','La selfie más divertida'],preguntas:['Dejale un deseo para esta nueva etapa','Contá un recuerdo juntos','¿Qué te gustaría decirle para cuando vea esto en unos años?']},
+      aniversario:{retos:['Foto con la pareja','Un abrazo espontáneo','El brindis','Una foto romántica','La sonrisa de la noche','Un recuerdo del festejo'],preguntas:['¿Qué admirás de esta pareja?','Dejales un deseo','Contá una anécdota que recuerdes']},
+      babyshower:{retos:['Foto con la futura mamá','Un regalo especial','La mesa dulce','Una selfie divertida','Foto grupal','El detalle más tierno'],preguntas:['Dejale un mensaje al bebé','Un consejo para la familia','¿Qué deseo tenés para esta nueva etapa?']},
+      bautismo:{retos:['Foto con la familia','Un momento de la ceremonia','Foto con padrinos','Un detalle especial','Foto grupal','Una sonrisa del día'],preguntas:['Dejale una bendición o deseo','Un mensaje para cuando sea grande','¿Qué recordás de este día?']},
+      graduacion:{retos:['Foto con el/la graduado/a','El diploma','Foto con amigos','Foto con la familia','El festejo','La selfie más orgullosa'],preguntas:['Dejale un mensaje por este logro','¿Qué fue lo mejor del camino?','¿Qué deseás para lo que viene?']},
+      libre:{retos:['Foto con los protagonistas','Una foto grupal','El momento más divertido','Un detalle especial','Una selfie','La foto que mejor represente el día'],preguntas:['Dejá un mensaje especial','Contá una anécdota','¿Qué querés que recuerden de este día?']}
+    };
+    // V11.15: amplía los bancos para que ÁNGELA pueda repartir combinaciones diferentes.
+    const evExtra={
+      casamiento:{retos:["Selfie con alguien que conociste hoy", "Foto de un abrazo espontáneo", "Capturá una mirada de los novios", "Foto de tres generaciones", "La mesa con más energía", "Un detalle de la decoración", "Foto bailando con alguien inesperado", "La mejor pose elegante", "Una foto desde otro ángulo del salón", "El invitado con el look más original"],preguntas:["¿Qué momento de hoy te emocionó más?", "Definí a la pareja en tres palabras", "¿Qué canción te hace pensar en ellos?", "¿Qué aventura les deseás vivir juntos?", "Dejales una frase para leer en su aniversario"]},cumple:{retos:["Foto con alguien que no veías hace tiempo", "La pose más loca", "Foto con tres invitados de distintas mesas", "Capturá una carcajada", "La decoración favorita", "Una foto bailando", "El regalo más curioso", "Una foto con alguien que llegó temprano", "El mejor look de la fiesta", "Foto del momento más inesperado"],preguntas:["¿Qué palabra define al cumpleañero/a?", "¿Qué aventura vivieron juntos?", "¿Qué le deseás para este nuevo año?", "Contá algo gracioso que hayan vivido", "¿Qué canción le dedicarías?"]},quince:{retos:["Foto con una amiga de la infancia", "La mejor foto en la pista", "Un detalle del vestido", "Foto con alguien de la familia", "La pose más glam", "Una foto saltando", "El rincón más lindo de la fiesta", "Foto con alguien que conociste hoy", "El momento más emocionante", "La foto más creativa de la noche"],preguntas:["¿Qué le deseás para sus próximos años?", "¿Qué cualidad suya admirás?", "Dejale un mensaje para que lea a los 18", "¿Cuál es tu recuerdo favorito con ella?", "¿Qué sueño te gustaría verla cumplir?"]},
+      aniversario:{retos:["Recreá una pose romántica", "Foto de las manos de la pareja", "Capturá un brindis espontáneo", "Foto con amigos de hace años", "Un detalle que represente su historia", "La sonrisa más cómplice", "Foto de una pareja invitada", "El rincón más romántico", "Una foto de celebración", "La pose más elegante"],preguntas:["¿Cuál creés que es el secreto de esta pareja?", "¿Qué recuerdo compartís con ellos?", "Dejales un deseo para los próximos años", "¿Qué canción representa su historia?", "Definí su relación en tres palabras"]},babyshower:{retos:["Foto con un detalle para el bebé", "La predicción más divertida", "Foto de manos sobre la pancita", "El regalo más tierno", "Foto con la familia", "La mesa más dulce", "Una selfie con futura mamá", "Un detalle de la decoración", "La sonrisa más tierna", "Foto de un juego del baby shower"],preguntas:["¿Qué cualidad deseás que tenga el bebé?", "Dejale una frase para cuando sea grande", "¿Qué consejo cariñoso darías a la familia?", "¿Qué aventura imaginás para esta nueva etapa?", "Elegí una palabra de bienvenida para el bebé"]},bautismo:{retos:["Foto con padrinos y familia", "Un detalle de la ceremonia", "Foto de tres generaciones", "Una sonrisa espontánea", "El recuerdo más tierno", "Foto con abuelos", "Un detalle del festejo", "Una foto familiar completa", "Un abrazo especial", "La foto más serena del día"],preguntas:["Dejale un deseo para su camino", "¿Qué te gustaría que recuerde de su familia?", "Una palabra para acompañar su crecimiento", "Dejale un mensaje para leer de grande", "¿Qué hizo especial este día?"]},
+      graduacion:{retos:["Foto lanzando el birrete o celebrando", "Foto con un compañero de camino", "La familia orgullosa", "El abrazo después del logro", "Una foto con docentes o mentores", "El detalle del diploma", "La pose más triunfal", "Foto con amigos", "El festejo más espontáneo", "La foto que diga 'lo logramos'"],preguntas:["¿Qué desafío superó para llegar hasta acá?", "¿Qué le deseás para la próxima etapa?", "Dejale un consejo para el futuro", "¿Qué cualidad lo/la llevó hasta este logro?", "¿Qué debería recordar siempre de este camino?"]},libre:{retos:["Foto con alguien nuevo", "Una imagen que cuente una historia", "El momento más alegre", "Una pose creativa", "Un detalle que nadie notó", "Foto grupal diferente", "La mejor sonrisa", "Una foto en movimiento", "El rincón más lindo", "El recuerdo más inesperado"],preguntas:["¿Qué fue lo mejor del día?", "Dejá un deseo para los protagonistas", "Contá algo que quieras conservar de este momento", "¿Qué palabra resume el evento?", "¿Qué te gustaría que recuerden dentro de diez años?"]}
+    };
+    Object.keys(evExtra).forEach(k=>{if(evDefaults[k]){evDefaults[k].retos=[...evDefaults[k].retos,...evExtra[k].retos];evDefaults[k].preguntas=[...evDefaults[k].preguntas,...evExtra[k].preguntas]}});
+
+    const evLines=a=>(a||[]).join('\n');
+    const evGet=()=>{try{return JSON.parse(localStorage.getItem(EVKEY)||'{}')}catch{return{}}};
+    const evSave=()=>{const prev=evGet();const d={type:document.getElementById('agqr_evType')?.value||'casamiento',name:document.getElementById('agqr_evName')?.value||'',date:document.getElementById('agqr_evDate')?.value||'',style:document.getElementById('agqr_evStyle')?.value||'elegante',template:document.getElementById('agqr_evTemplate')?.value||prev.template||'auto',bgData:prev.bgData||'',publicUrl:prev.publicUrl||'',game:!!document.getElementById('agqr_evGame')?.checked,conf:!!document.getElementById('agqr_evConf')?.checked,album:!!document.getElementById('agqr_evAlbum')?.checked,challenges:document.getElementById('agqr_evChallenges')?.value||'',questions:document.getElementById('agqr_evQuestions')?.value||''};localStorage.setItem(EVKEY,JSON.stringify(d));return d};
+    const evFill=d=>{if(!d)return;[['agqr_evType','type'],['agqr_evName','name'],['agqr_evDate','date'],['agqr_evStyle','style'],['agqr_evTemplate','template'],['agqr_evChallenges','challenges'],['agqr_evQuestions','questions']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.value=d[k]});[['agqr_evGame','game'],['agqr_evConf','conf'],['agqr_evAlbum','album']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.checked=!!d[k]})};
+    const evEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const evItems=s=>String(s||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    const evTheme=d=>{
+      let t=d.template||'auto';
+      if(t==='auto'){
+        t=({casamiento:'flores',cumple:'fiesta',quince:'luces',aniversario:'elegante',babyshower:'cielo',bautismo:'cielo',graduacion:'luces'})[d.type]||'elegante';
+      }
+      const M={
+        elegante:{bg:'linear-gradient(145deg,#171923,#3b2f46 55%,#b08d57)',accent:'#f7d9a7',fx:'✦ · ✧ · ✦',label:'ELEGANTE'},
+        luces:{bg:'radial-gradient(circle at 20% 10%,#7c3aed 0,transparent 30%),radial-gradient(circle at 85% 25%,#06b6d4 0,transparent 28%),linear-gradient(145deg,#0f172a,#312e81)',accent:'#fef08a',fx:'✦ ✨ ✦ ✨',label:'NOCHE DE LUCES'},
+        flores:{bg:'radial-gradient(circle at 10% 10%,#fb7185 0,transparent 25%),radial-gradient(circle at 90% 80%,#f9a8d4 0,transparent 25%),linear-gradient(145deg,#4c1d3d,#1f2937)',accent:'#fecdd3',fx:'❀  ✦  ❀',label:'RECUERDO ESPECIAL'},
+        fiesta:{bg:'radial-gradient(circle at 15% 20%,#f59e0b 0,transparent 24%),radial-gradient(circle at 85% 15%,#ec4899 0,transparent 25%),linear-gradient(145deg,#312e81,#111827)',accent:'#fde68a',fx:'✦ ● ▲ ★ ✦',label:'CELEBRACIÓN'},
+        cielo:{bg:'radial-gradient(circle at 25% 15%,#bae6fd 0,transparent 28%),linear-gradient(160deg,#1e3a8a,#312e81 58%,#111827)',accent:'#e0f2fe',fx:'☁︎ ✦ ☾ ✦',label:'UN DÍA PARA RECORDAR'},
+        cinema:{bg:'radial-gradient(circle at 50% 0,#7f1d1d 0,transparent 35%),linear-gradient(145deg,#020617,#18181b)',accent:'#f5d0a9',fx:'✦  ◇  ✦',label:'NOCHE INOLVIDABLE'},
+        minimal:{bg:'linear-gradient(145deg,#f8fafc,#e2e8f0)',accent:'#334155',fx:'✦',label:'EVENTO QR'}
+      }; return M[t]||M.elegante;
+    };
+    function evMarkup(d,withQr=false){
+      const retos=evItems(d.challenges),preg=evItems(d.questions),v=evTheme(d);
+      const buttons=[d.game?'📸 Cumplí un reto':'',d.conf?'🎙️ Dejá un mensaje':'',d.album?'❤️ Mirá los recuerdos':''].filter(Boolean);
+      const bg=d.bgData?`background-image:linear-gradient(rgba(2,6,23,.62),rgba(2,6,23,.78)),url("${d.bgData}");background-size:cover;background-position:center;`: `background:${v.bg};`;
+      const qr=withQr&&d.publicUrl?`<div style="background:#fff;padding:10px;border-radius:18px;display:inline-block;margin:18px auto 8px"><img crossorigin="anonymous" src="https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(d.publicUrl)}" style="width:210px;height:210px;display:block"></div><div style="font-size:.8rem;opacity:.8">Escaneá para participar</div>`:'';
+      return `<div style="max-width:620px;margin:auto;padding:30px 24px;border-radius:30px;${bg}color:${d.template==='minimal'?'#0f172a':'#fff'};text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.35);position:relative;overflow:hidden"><div style="font-size:1.5rem;letter-spacing:.35em;color:${v.accent};animation:pulse 2.6s ease-in-out infinite">${v.fx}</div><div style="font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;opacity:.8;margin-top:8px">${v.label} · ÁNGELA</div><h3 style="font-size:1.8rem;margin:10px 0 4px">${evEsc(d.name||'Nuestro evento')}</h3><div style="opacity:.8">${evEsc(d.date||'Una fecha para recordar')}</div><p style="margin:18px auto 14px;max-width:480px">Escaneá, participá y ayudanos a guardar este día entre todos.</p><div style="display:grid;gap:9px">${buttons.map(x=>`<div style="padding:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:16px;font-weight:800;backdrop-filter:blur(6px)">${x}</div>`).join('')}</div>${d.game?`<div style="text-align:left;margin-top:20px;background:rgba(0,0,0,.16);padding:14px;border-radius:18px"><b>📷 Retos</b>${retos.slice(0,6).map((x,i)=>`<div style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,.16)">${String(i+1).padStart(2,'0')} · ${evEsc(x)}</div>`).join('')}</div>`:''}${d.conf?`<div style="text-align:left;margin-top:14px;background:rgba(0,0,0,.16);padding:14px;border-radius:18px"><b>🎙️ Confesionario</b>${preg.slice(0,4).map(x=>`<div style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,.16)">${evEsc(x)}</div>`).join('')}</div>`:''}${qr}</div>`;
+    }
+    function evPreview(){
+      const d=evSave(),box=document.getElementById('agqr_evPreviewBox');if(!box)return;
+      box.style.display='block';box.innerHTML=evMarkup(d,!!d.publicUrl);
+      box.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+    function evSurprise(){
+      const type=document.getElementById('agqr_evType')?.value||'casamiento',p=evDefaults[type]||evDefaults.libre;
+      const r=document.getElementById('agqr_evChallenges'),q=document.getElementById('agqr_evQuestions');if(r)r.value=evLines(p.retos);if(q)q.value=evLines(p.preguntas);evSave();evPreview();
+      const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='✨ <b>ÁNGELA preparó retos y preguntas diferentes según el evento.</b> Podés cambiar, borrar o agregar lo que quieras.';
+    }
+    function evPageHtml(d){
+      const card=evMarkup(d,false),retos=evItems(d.challenges),preg=evItems(d.questions);
+      const retosJson=JSON.stringify(retos).replace(/</g,'\u003c'),pregJson=JSON.stringify(preg).replace(/</g,'\u003c');
+      return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${evEsc(d.name||'Evento QR')}</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:22px;background:#070b16;font-family:Inter,Arial,sans-serif;display:grid;place-items:center}@keyframes pulse{50%{opacity:.55;transform:scale(1.04)}}button{font:inherit}.angGuestMission{max-width:620px;margin:14px auto 0;padding:18px;border-radius:22px;background:rgba(15,23,42,.92);color:#fff;box-shadow:0 18px 45px rgba(0,0,0,.28)}.angGuestMission b{color:#fde68a}.angGuestMission .mission{padding:12px;margin-top:9px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.08)}</style></head><body><main style="width:min(100%,680px)">${card}<div class="angGuestMission" id="angGuestMission"></div></main><script>(()=>{const retos=${retosJson},preg=${pregJson};let id=localStorage.getItem('ANGELA_EVENT_GUEST_ID');if(!id){id=String(Date.now())+'_'+Math.random().toString(36).slice(2);localStorage.setItem('ANGELA_EVENT_GUEST_ID',id)}let h=0;for(let i=0;i<id.length;i++)h=((h<<5)-h+id.charCodeAt(i))|0;const pick=(a,off)=>a.length?a[Math.abs(h+off)%a.length]:'';const reto=pick(retos,17),q=pick(preg,53),box=document.getElementById('angGuestMission');document.querySelectorAll('[data-ang-upload]').forEach(b=>b.onclick=()=>{const i=document.createElement('input');i.type='file';i.accept=b.dataset.angUpload;i.onchange=()=>{if(i.files&&i.files[0])alert('Recuerdo seleccionado: '+i.files[0].name+'\\nAl publicar ÁNGELA online, este archivo se enviará al álbum compartido del evento.')};i.click()});if(box){box.innerHTML='<b>✨ Tu participación de hoy</b>'+(reto?'<div class="mission">📸 <b>Tu reto:</b><br>'+reto+'</div>':'')+(q?'<div class="mission">🎙️ <b>Tu pregunta:</b><br>'+q+'</div>':'')+'<div style="font-size:.78rem;opacity:.72;margin-top:10px">ÁNGELA reparte distintas combinaciones entre los invitados para que no todos reciban lo mismo.</div>'}})();<\/script></body></html>`;
+    }
+    async function evGenerateQR(){
+      let d=evSave(),st=document.getElementById('agqr_evStatus');
+      if(!d.name){if(st)st.textContent='⚠️ Escribí el nombre del evento antes de generar el QR.';return}
+      if(location.protocol==='file:'){if(st)st.innerHTML='🧪 <b>Esta copia está abierta desde Descargas.</b> El diseño funciona para probar, pero el QR público se genera cuando abras esta misma versión desde ÁNGELA online, donde Supabase puede leer la configuración del servidor.';return}
+      if(st)st.textContent='⏳ Publicando el evento y preparando su QR…';
+      try{
+        if(!window.ANGELASupabase?.publishGift)throw new Error('Supabase no está disponible');
+        const r=await window.ANGELASupabase.publishGift(evPageHtml(d));
+        d={...d,publicUrl:r.url};localStorage.setItem(EVKEY,JSON.stringify(d));evFill(d);evPreview();
+        if(st)st.innerHTML='✅ <b>Evento publicado y QR generado.</b> Ya podés descargar el QR o la tarjeta PNG.';
+      }catch(e){if(st)st.textContent='⚠️ No pude publicar el evento: '+(e?.message||e)}
+    }
+    async function evEnsureUrl(){let d=evSave();if(d.publicUrl)return d.publicUrl;await evGenerateQR();return evGet().publicUrl||''}
+    async function evDownloadQR(){
+      const u=await evEnsureUrl();if(!u)return;const q=`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(u)}`;
+      try{const r=await fetch(q),b=await r.blob(),o=URL.createObjectURL(b),a=document.createElement('a');a.href=o;a.download='ANGELA_EVENTO_QR_'+String(evGet().name||'evento').replace(/[^\wáéíóúñ-]+/gi,'_')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(o),1000)}catch{window.open(q,'_blank','noopener')}
+    }
+    async function evCardBlob(){
+      const u=await evEnsureUrl();if(!u)return null;const d=evGet(),v=evTheme(d),c=document.createElement('canvas');c.width=1080;c.height=1350;const x=c.getContext('2d');
+      const g=x.createLinearGradient(0,0,1080,1350);g.addColorStop(0,'#111827');g.addColorStop(1,'#312e81');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
+      if(d.bgData){await new Promise(res=>{const im=new Image();im.onload=()=>{x.globalAlpha=.42;const s=Math.max(c.width/im.width,c.height/im.height),w=im.width*s,h=im.height*s;x.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h);x.globalAlpha=1;res()};im.onerror=res;im.src=d.bgData})}
+      x.fillStyle='rgba(0,0,0,.46)';x.fillRect(70,70,940,1210);x.textAlign='center';x.fillStyle='#fff';x.font='700 34px Arial';x.fillText('EVENTO QR · ÁNGELA',540,155);x.font='800 62px Arial';x.fillText((d.name||'Nuestro evento').slice(0,28),540,260);x.font='32px Arial';x.fillText((d.date||'Una fecha para recordar').slice(0,40),540,320);
+      x.font='30px Arial';x.fillText('Escaneá y participá de este recuerdo',540,390);
+      const qr=await new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=rej;im.src=`https://api.qrserver.com/v1/create-qr-code/?size=700x700&data=${encodeURIComponent(u)}`});
+      x.fillStyle='#fff';x.fillRect(285,470,510,510);x.drawImage(qr,305,490,470,470);x.font='700 30px Arial';x.fillStyle='#fff';x.fillText('📸 Retos  ·  🎙️ Mensajes  ·  ❤️ Recuerdos',540,1050);x.font='26px Arial';x.fillText('Guardá esta tarjeta o compartila por WhatsApp',540,1120);
+      return await new Promise(res=>c.toBlob(res,'image/png'));
+    }
+    async function evDownloadCard(force=true){
+      const b=await evCardBlob();if(!b)return;const d=evGet(),file=new File([b],'ANGELA_TARJETA_EVENTO_'+String(d.name||'evento').replace(/[^\wáéíóúñ-]+/gi,'_')+'.png',{type:'image/png'});
+      if(!force&&navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:d.name||'Evento QR',text:'Escaneá el QR y participá del evento ✨'});return}catch(e){if(e?.name==='AbortError')return}}
+      const o=URL.createObjectURL(b),a=document.createElement('a');a.href=o;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(o),1200);
+    }
+    function evDownload(){
+      const d=evSave(),blob=new Blob([JSON.stringify({version:'ANGELA_EVENTOS_QR_V1',createdAt:new Date().toISOString(),...d},null,2)],{type:'application/json;charset=utf-8'}),a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);a.download='ANGELA_EVENTO_QR_'+String(d.name||d.type||'evento').replace(/[^\wáéíóúñ-]+/gi,'_')+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800);
+      const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='✅ Proyecto del evento descargado. No modifica ni reemplaza ningún Regalo QR.';
+    }
+    // V11.16: Eventos QR se abre como espacio de trabajo a pantalla completa; suma música y aportes multimedia.
+    const evDetails=document.getElementById('agqr_eventosQR');
+    const evFsStyle=document.createElement('style');
+    evFsStyle.textContent=`#agqr_eventosQR.angqr-event-fullscreen{position:fixed!important;inset:10px!important;z-index:2147483000!important;margin:0!important;padding:16px!important;background:linear-gradient(145deg,#07111f,#0b1730)!important;border:1px solid rgba(56,189,248,.45)!important;border-radius:22px!important;overflow:auto!important;box-shadow:0 30px 90px rgba(0,0,0,.65)!important}#agqr_eventosQR.angqr-event-fullscreen>summary{position:sticky;top:-16px;z-index:5;padding:14px;background:#07111f;border-bottom:1px solid rgba(56,189,248,.25)}body.angqr-event-lock{overflow:hidden!important}@media(max-width:760px){#agqr_eventosQR.angqr-event-fullscreen{inset:4px!important;padding:10px!important;border-radius:14px!important}}`;
+    document.head.appendChild(evFsStyle);
+    function evSetFullscreen(on){
+      if(!evDetails)return;
+      evDetails.open=true;evDetails.classList.toggle('angqr-event-fullscreen',!!on);document.body.classList.toggle('angqr-event-lock',!!on);
+      const a=document.getElementById('agqr_evFullscreen'),b=document.getElementById('agqr_evCloseFullscreen');if(a)a.style.display=on?'none':'';if(b)b.style.display=on?'':'none';
+      if(on)setTimeout(()=>evDetails.scrollTo({top:0,behavior:'smooth'}),20);
+    }
+    document.getElementById('agqr_evFullscreen')?.addEventListener('click',()=>evSetFullscreen(true));
+    if(evDetails){
+      evDetails.addEventListener('toggle',()=>{ if(evDetails.open && !evDetails.classList.contains('angqr-event-fullscreen')) evSetFullscreen(true); });
+    }
+    document.getElementById('agqr_evCloseFullscreen')?.addEventListener('click',()=>evSetFullscreen(false));
+    if(location.protocol==='file:'){const n=document.getElementById('agqr_evLocalNotice');if(n)n.style.display='block'}
+
+    const oldEv=evGet(); if(Object.keys(oldEv).length)evFill(oldEv);
+    document.querySelectorAll('#agqr_eventosQR input,#agqr_eventosQR select,#agqr_eventosQR textarea').forEach(e=>e.addEventListener('input',evSave));
+    document.getElementById('agqr_evMusic')?.addEventListener('change',e=>{const f=e.target.files?.[0],st=document.getElementById('agqr_evStatus');if(f&&st)st.textContent='🎵 Música seleccionada: '+f.name+'. Quedará asociada al evento al publicarlo online.'});
+    document.getElementById('agqr_evSurprise')?.addEventListener('click',evSurprise);
+    document.getElementById('agqr_evPreview')?.addEventListener('click',evPreview);
+    document.getElementById('agqr_evDownload')?.addEventListener('click',evDownload);
+    document.getElementById('agqr_evGenerateQR')?.addEventListener('click',evGenerateQR);
+    document.getElementById('agqr_evDownloadQR')?.addEventListener('click',evDownloadQR);
+    document.getElementById('agqr_evDownloadCard')?.addEventListener('click',()=>evDownloadCard(true));
+    document.getElementById('agqr_evShareCard')?.addEventListener('click',()=>evDownloadCard(false));
+    document.getElementById('agqr_evOpen')?.addEventListener('click',async()=>{const u=await evEnsureUrl();if(u)window.open(u,'_blank','noopener')});
+    document.getElementById('agqr_evBg')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const d=evSave();d.bgData=String(r.result||'');d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()};r.readAsDataURL(f);e.target.value=''});
+    document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();d.bgData='';d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()});
+    document.getElementById('agqr_evClear')?.addEventListener('click',()=>{localStorage.removeItem(EVKEY);evFill({type:'casamiento',name:'',date:'',style:'elegante',template:'auto',bgData:'',publicUrl:'',game:true,conf:true,album:true,challenges:'',questions:''});const b=document.getElementById('agqr_evPreviewBox');if(b){b.style.display='none';b.innerHTML=''};const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🆕 Nuevo evento listo. Los Regalos QR existentes no fueron tocados.'});
+
     syncPreview();renderPhotos();renderHistory();saveState();if(finalPublicUrl())setStatus(`✅ <b>Este regalo ya tiene QR final.</b><br><a href="${esc(finalPublicUrl())}" target="_blank" rel="noopener">Abrir regalo</a>`,'ok')
   }
 
@@ -7399,7 +7625,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 
-<!-- ÁNGELA V11.13 · Supabase conexión visible y segura: no altera la interfaz principal -->
+<!-- ÁNGELA V11.12 CORREGIDA · Supabase aislado: no altera la interfaz principal -->
 <script id="angela-v1112-supabase-safe">
 (()=>{
   'use strict';
@@ -7413,8 +7639,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(!el)return;
     const icon=kind==='ok'?'✅':kind==='error'?'⚠️':'⏳';
     el.textContent=`☁️ Supabase: ${icon} ${msg}`;
-    const b=document.getElementById('angelaSupabaseConnectBtn');
-    if(b)b.style.display=kind==='ok'?'none':'inline-block';
   }
   function saved(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')||{}}catch{return{}}}
   function save(c){try{localStorage.setItem(STORE,JSON.stringify(c))}catch{}}
@@ -7453,7 +7677,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(location.protocol==='file:'){
       const s=saved();
       if(validKey(s.key)){status(`configuración local guardada · ${s.bucket||BUCKET}`,'ok');return true}
-      status('lista para conectar · tocá Conectar una sola vez','wait');return false;
+      status('configurada para Vercel · abrí la versión publicada para verificar','wait');return false;
     }
     status('verificando conexión…','wait');
     try{
