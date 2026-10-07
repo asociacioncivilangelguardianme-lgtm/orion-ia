@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.16 · basada íntegramente en V11.15 · Eventos QR workspace + música + multimedia · prueba separada -->
+<!-- ÁNGELA V11.17 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -7478,7 +7478,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.16 · EVENTOS QR PREMIUM (conserva íntegra V11.15) =====
+    // ===== ÁNGELA V11.17 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7541,19 +7541,61 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       const retosJson=JSON.stringify(retos).replace(/</g,'\u003c'),pregJson=JSON.stringify(preg).replace(/</g,'\u003c');
       return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${evEsc(d.name||'Evento QR')}</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:22px;background:#070b16;font-family:Inter,Arial,sans-serif;display:grid;place-items:center}@keyframes pulse{50%{opacity:.55;transform:scale(1.04)}}button{font:inherit}.angGuestMission{max-width:620px;margin:14px auto 0;padding:18px;border-radius:22px;background:rgba(15,23,42,.92);color:#fff;box-shadow:0 18px 45px rgba(0,0,0,.28)}.angGuestMission b{color:#fde68a}.angGuestMission .mission{padding:12px;margin-top:9px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.08)}</style></head><body><main style="width:min(100%,680px)">${card}<div class="angGuestMission" id="angGuestMission"></div></main><script>(()=>{const retos=${retosJson},preg=${pregJson};let id=localStorage.getItem('ANGELA_EVENT_GUEST_ID');if(!id){id=String(Date.now())+'_'+Math.random().toString(36).slice(2);localStorage.setItem('ANGELA_EVENT_GUEST_ID',id)}let h=0;for(let i=0;i<id.length;i++)h=((h<<5)-h+id.charCodeAt(i))|0;const pick=(a,off)=>a.length?a[Math.abs(h+off)%a.length]:'';const reto=pick(retos,17),q=pick(preg,53),box=document.getElementById('angGuestMission');document.querySelectorAll('[data-ang-upload]').forEach(b=>b.onclick=()=>{const i=document.createElement('input');i.type='file';i.accept=b.dataset.angUpload;i.onchange=()=>{if(i.files&&i.files[0])alert('Recuerdo seleccionado: '+i.files[0].name+'\\nAl publicar ÁNGELA online, este archivo se enviará al álbum compartido del evento.')};i.click()});if(box){box.innerHTML='<b>✨ Tu participación de hoy</b>'+(reto?'<div class="mission">📸 <b>Tu reto:</b><br>'+reto+'</div>':'')+(q?'<div class="mission">🎙️ <b>Tu pregunta:</b><br>'+q+'</div>':'')+'<div style="font-size:.78rem;opacity:.72;margin-top:10px">ÁNGELA reparte distintas combinaciones entre los invitados para que no todos reciban lo mismo.</div>'}})();<\/script></body></html>`;
     }
+    async function evValidatePublishedPage(url){
+      try{
+        const r=await fetch(url,{method:'GET',cache:'no-store'});
+        if(!r.ok)return {ok:false,reason:'HTTP '+r.status};
+        const ct=(r.headers.get('content-type')||'').toLowerCase();
+        const body=await r.text();
+        const looksHtml=/<!doctype html|<html[\s>]/i.test(body.slice(0,500));
+        if(!looksHtml)return {ok:false,reason:'el archivo publicado no contiene una página HTML válida'};
+        if(!ct.includes('text/html'))return {ok:false,reason:'el servidor lo está entregando como '+(ct||'texto/archivo')};
+        return {ok:true};
+      }catch(e){return {ok:false,reason:e?.message||'no se pudo validar la página'}}
+    }
+    async function evPublishOnline(htmlFinal){
+      const providers=[];
+      if(window.ANGELASupabase?.publishGift)providers.push(window.ANGELASupabase.publishGift);
+      if(typeof publishWithHtmlHoster==='function')providers.push(publishWithHtmlHoster);
+      if(typeof publishWithPasteHtml==='function')providers.push(publishWithPasteHtml);
+      if(typeof publishWithSpark==='function')providers.push(publishWithSpark);
+      const errors=[];
+      for(const provider of providers){
+        try{
+          const r=await provider(htmlFinal);
+          if(!r?.url)continue;
+          const v=await evValidatePublishedPage(r.url);
+          if(v.ok)return r;
+          errors.push((r.provider||'Proveedor')+': '+v.reason);
+        }catch(e){errors.push(e?.message||String(e))}
+      }
+      throw new Error('No se encontró una publicación web validada. '+errors.slice(0,3).join(' | '));
+    }
     async function evGenerateQR(){
       let d=evSave(),st=document.getElementById('agqr_evStatus');
       if(!d.name){if(st)st.textContent='⚠️ Escribí el nombre del evento antes de generar el QR.';return}
       if(location.protocol==='file:'){if(st)st.innerHTML='🧪 <b>Esta copia está abierta desde Descargas.</b> El diseño funciona para probar, pero el QR público se genera cuando abras esta misma versión desde ÁNGELA online, donde Supabase puede leer la configuración del servidor.';return}
       if(st)st.textContent='⏳ Publicando el evento y preparando su QR…';
       try{
-        if(!window.ANGELASupabase?.publishGift)throw new Error('Supabase no está disponible');
-        const r=await window.ANGELASupabase.publishGift(evPageHtml(d));
-        d={...d,publicUrl:r.url};localStorage.setItem(EVKEY,JSON.stringify(d));evFill(d);evPreview();
-        if(st)st.innerHTML='✅ <b>Evento publicado y QR generado.</b> Ya podés descargar el QR o la tarjeta PNG.';
+        const htmlFinal=evPageHtml(d);
+        const r=await evPublishOnline(htmlFinal);
+        const verify=await evValidatePublishedPage(r.url);
+        if(!verify.ok)throw new Error('Control final falló: '+verify.reason);
+        d={...d,publicUrl:r.url,publishProvider:r.provider||'Automático',publishedAt:new Date().toISOString()};
+        localStorage.setItem(EVKEY,JSON.stringify(d));evFill(d);evPreview();
+        if(st)st.innerHTML='✅ <b>Evento publicado, comprobado y QR generado.</b> ÁNGELA verificó que el enlace abre como página web antes de habilitar el QR. Ya podés descargar el QR o la tarjeta PNG.';
       }catch(e){if(st)st.textContent='⚠️ No pude publicar el evento: '+(e?.message||e)}
     }
-    async function evEnsureUrl(){let d=evSave();if(d.publicUrl)return d.publicUrl;await evGenerateQR();return evGet().publicUrl||''}
+    async function evEnsureUrl(){
+      let d=evSave();
+      if(d.publicUrl){
+        const v=await evValidatePublishedPage(d.publicUrl);
+        if(v.ok)return d.publicUrl;
+        d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));
+        const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🔄 El enlace anterior no pasó el control. ÁNGELA lo está publicando nuevamente…';
+      }
+      await evGenerateQR();return evGet().publicUrl||'';
+    }
     async function evDownloadQR(){
       const u=await evEnsureUrl();if(!u)return;const q=`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(u)}`;
       try{const r=await fetch(q),b=await r.blob(),o=URL.createObjectURL(b),a=document.createElement('a');a.href=o;a.download='ANGELA_EVENTO_QR_'+String(evGet().name||'evento').replace(/[^\wáéíóúñ-]+/gi,'_')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(o),1000)}catch{window.open(q,'_blank','noopener')}
@@ -7693,9 +7735,11 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
     const path=`regalos/${new Date().toISOString().slice(0,10)}/${id}/index.html`;
     const encoded=path.split('/').map(encodeURIComponent).join('/');
-    const r=await request(`/storage/v1/object/${encodeURIComponent(c.bucket)}/${encoded}`,{method:'POST',headers:{'Content-Type':'text/html; charset=utf-8','x-upsert':'false'},body:htmlFinal});
+    const blob=new Blob([htmlFinal],{type:'text/html;charset=utf-8'});
+    const r=await request(`/storage/v1/object/${encodeURIComponent(c.bucket)}/${encoded}`,{method:'POST',headers:{'Content-Type':'text/html;charset=utf-8','x-upsert':'false','cache-control':'3600'},body:blob});
     if(!r.ok)throw new Error(`Supabase Storage HTTP ${r.status}: ${(await r.text()).slice(0,130)}`);
-    return{url:`${c.url}/storage/v1/object/public/${encodeURIComponent(c.bucket)}/${encoded}`,projectId:path,provider:'Supabase'};
+    const publicUrl=`${c.url}/storage/v1/object/public/${encodeURIComponent(c.bucket)}/${encoded}`;
+    return{url:publicUrl,projectId:path,provider:'Supabase',contentType:'text/html'};
   }
   async function connectPrompt(){
     const current=saved();
