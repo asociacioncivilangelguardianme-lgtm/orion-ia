@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.29 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
+<!-- ÁNGELA V11.30 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -7496,7 +7496,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.29 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
+    // ===== ÁNGELA V11.30 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7912,15 +7912,36 @@ if(ownerMode)owner();
     document.getElementById('agqr_evShareCard')?.addEventListener('click',()=>evDownloadCard(false));document.getElementById('agqr_evDownloadBoth').onclick=evDownloadBoth;
     document.getElementById('agqr_evOpen')?.addEventListener('click',async()=>{const u=await evEnsureUrl();if(u)window.open(u,'_blank','noopener')});
     document.getElementById('agqr_evBg')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const d=evSave();d.bgData=String(r.result||'');d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()};r.readAsDataURL(f);e.target.value=''});
-    document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();
-    ['agqr_evWhen','agqr_evPlan','agqr_evLetter'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>{evSave();evPreview()}));
-    document.getElementById('agqr_evGallery')?.addEventListener('change',async e=>{
-      const files=[...(e.target.files||[])].slice(0,9),pics=[];
-      for(const f of files){pics.push(await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)}))}
-      const d=evGet();d.photos=pics;localStorage.setItem(EVKEY,JSON.stringify(d));evPreview();
+    document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();d.bgData='';d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()});
+
+    ['agqr_evWhen','agqr_evPlan','agqr_evLetter'].forEach(id=>{
+      document.getElementById(id)?.addEventListener('input',()=>{evSave();evPreview()});
     });
-d.bgData='';d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()});
-    document.getElementById('agqr_evClear')?.addEventListener('click',()=>{localStorage.removeItem(EVKEY);evFill({type:'casamiento',name:'',date:'',style:'elegante',template:'auto',bgData:'',publicUrl:'',game:true,conf:true,album:true,challenges:'',questions:''});const b=document.getElementById('agqr_evPreviewBox');if(b){b.style.display='none';b.innerHTML=''};const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🆕 Nuevo evento listo. Los Regalos QR existentes no fueron tocados.'});
+
+    document.getElementById('agqr_evGallery')?.addEventListener('change',async e=>{
+      const files=[...(e.target.files||[])].slice(0,9);
+      if(!files.length)return;
+      const pics=[];
+      for(const f of files){
+        if(!f.type.startsWith('image/'))continue;
+        const data=await new Promise((resolve,reject)=>{
+          const r=new FileReader();
+          r.onload=()=>resolve(String(r.result||''));
+          r.onerror=()=>reject(r.error||new Error('No se pudo leer la foto'));
+          r.readAsDataURL(f);
+        });
+        pics.push(data);
+      }
+      const d=evSave();
+      d.photos=pics;
+      d.publicUrl='';
+      localStorage.setItem(EVKEY,JSON.stringify(d));
+      evPreview();
+      const st=document.getElementById('agqr_evStatus');
+      if(st)st.innerHTML=`🖼️ <b>${pics.length} foto${pics.length===1?'':'s'} cargada${pics.length===1?'':'s'}.</b> Ya aparecen en la Parte 3 de la vista previa.`;
+      e.target.value='';
+    });
+    document.getElementById('agqr_evClear')?.addEventListener('click',()=>{localStorage.removeItem(EVKEY);evFill({type:'casamiento',name:'',date:'',when:'',plan:'',letter:'',photos:[],style:'elegante',template:'auto',bgData:'',publicUrl:'',game:true,conf:true,album:true,challenges:'',questions:''});const b=document.getElementById('agqr_evPreviewBox');if(b){b.style.display='none';b.innerHTML=''};const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🆕 Nuevo evento listo. Los Regalos QR existentes no fueron tocados.'});
 
     window.ANGELA_EVENTOS_QR_OPEN=function(){const d=document.getElementById('agqr_eventosQR');if(!d)return;d.open=true;evSetFullscreen(true);setTimeout(()=>{const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='🎉 <b>Eventos QR abierto como módulo independiente.</b> Podés probar Foto, Video, Audio, Mensaje y Otro reto desde Vista previa antes de publicar.';},40)};
     syncPreview();renderPhotos();renderHistory();saveState();if(finalPublicUrl())setStatus(`✅ <b>Este regalo ya tiene QR final.</b><br><a href="${esc(finalPublicUrl())}" target="_blank" rel="noopener">Abrir regalo</a>`,'ok')
