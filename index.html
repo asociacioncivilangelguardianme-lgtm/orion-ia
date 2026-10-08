@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.23 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
+<!-- ÁNGELA V11.26 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -7481,7 +7481,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.23 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
+    // ===== ÁNGELA V11.26 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7603,7 +7603,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     function evPageHtml(d){
       const retos=evItems(d.challenges),preg=evItems(d.questions);
       const retosJson=JSON.stringify(retos).replace(/</g,'\u003c'),pregJson=JSON.stringify(preg).replace(/</g,'\u003c');
-      const eventId=('evt_'+String(d.name||'evento').toLowerCase().replace(/[^a-z0-9áéíóúñ]+/gi,'_').slice(0,36)+'_'+String(d.date||'').replace(/\D/g,'')).replace(/_+$/,'');
+      const eventId=String(d.eventId||'');
       const type=String(d.type||'libre'), title=evEsc(d.name||'Nuestro evento'), date=evEsc(d.date||'Una fecha para recordar');
       const themeMap={
         cumple:{a:'#7c3aed',b:'#ec4899',icon:'🎂',decor:'🎈 ✨ 🎉'},
@@ -7633,28 +7633,78 @@ button.primary{background:linear-gradient(135deg,${t.a},${t.b})}.mission{padding
 <section class="panel" id="guest">
 <h2>✨ Tu participación</h2><input class="field" id="who" maxlength="50" placeholder="Tu nombre o apodo">
 <div id="mission"></div>
-<div class="tabs"><button data-kind="photo">📸 Foto / reto</button><button data-kind="selfie">🤳 Selfie</button><button data-kind="video">🎥 Video</button><button data-kind="audio">🎙️ Audio</button><button data-kind="text">💌 Mensaje</button><button data-kind="memory">❤️ Anécdota</button></div>
+<div class="tabs"><button data-kind="photo">📸 Foto / reto</button><button data-kind="selfie">🤳 Sacarme una selfie</button><button data-kind="video">🎥 Video</button><button data-kind="audio">🎙️ Audio</button><button data-kind="memory">❤️ Anécdota</button></div>
 <div id="editor" class="preview hide"></div><div id="sendStatus" class="status"></div>
 </section>
-<section class="panel owner hide" id="owner"><h2>❤️ Mis recuerdos</h2><div class="row"><button data-filter="all">Todos</button><button data-filter="photo">📸 Fotos</button><button data-filter="video">🎥 Videos</button><button data-filter="audio">🎙️ Audios</button><button data-filter="text">💌 Mensajes</button></div><p id="count"></p><div class="cards" id="items"></div></section>
+<section class="panel owner hide" id="owner"><h2>❤️ Mis recuerdos</h2><div class="row"><button data-filter="all">Todos</button><button data-filter="foto">📸 Fotos</button><button data-filter="video">🎥 Videos</button><button data-filter="audio">🎙️ Audios</button><button data-filter="mensaje">❤️ Anécdotas</button></div><p id="count"></p><div id="ownerStatus" class="status">🟢 Conectando recuerdos…</div><div class="cards" id="items"></div></section>
 </main>
 <script>
-(()=>{const EVENT=${JSON.stringify(eventId)},retos=${retosJson},preg=${pregJson},MAX_VIDEO=60,MAX_AUDIO=120;
-const qs=new URLSearchParams(location.search),ownerMode=qs.get('owner')==='1',store='ANGELA_EVENT_ITEMS_'+EVENT;
-const get=()=>{try{return JSON.parse(localStorage.getItem(store)||'[]')}catch{return[]}},put=a=>localStorage.setItem(store,JSON.stringify(a));
+(()=>{const EVENT=${JSON.stringify(eventId)},SB=${JSON.stringify(String(d.supabaseUrl||''))},KEY=${JSON.stringify(String(d.supabaseKey||''))},BUCKET=${JSON.stringify(String(d.supabaseBucket||'eventos-qr'))},retos=${retosJson},preg=${pregJson},MAX_VIDEO=60,MAX_AUDIO=120;
+const qs=new URLSearchParams(location.search),OWNER_TOKEN=qs.get('token')||'',ownerMode=qs.get('owner')==='1'&&!!OWNER_TOKEN;
 let gid=localStorage.getItem('ANGELA_EVENT_GUEST_ID_'+EVENT);if(!gid){gid=Date.now()+'_'+Math.random().toString(36).slice(2);localStorage.setItem('ANGELA_EVENT_GUEST_ID_'+EVENT,gid)}
 let hash=0;for(const c of gid)hash=((hash<<5)-hash+c.charCodeAt(0))|0;const pick=(a,o)=>a.length?a[Math.abs(hash+o)%a.length]:'';
-let reto=pick(retos,17),question=pick(preg,53);const mission=document.getElementById('mission');
-function drawMission(){mission.innerHTML=(reto?'<div class="mission">🎯 <b>Tu reto:</b><br>'+reto+'</div>':'')+(question?'<div class="mission">💬 <b>Pregunta:</b><br>'+question+'</div>':'')+'<button id="other">🔄 Dame otro reto</button>';document.getElementById('other').onclick=()=>{hash+=97;reto=pick(retos,17);question=pick(preg,53);drawMission()}}drawMission();
+let reto=pick(retos,17),question=pick(preg,53);
+const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function drawMission(){const r=document.querySelector('[data-mission]');if(r)r.innerHTML=(reto?'<div class="mission">🎯 <b>Tu reto:</b><br>'+esc(reto)+'</div>':'')+(question?'<div class="mission">💬 <b>Pregunta:</b><br>'+esc(question)+'</div>':'')+'<button id="other">🔄 Dame otro reto</button>';const o=document.getElementById('other');if(o)o.onclick=()=>{hash+=97;reto=pick(retos,17);question=pick(preg,53);drawMission()}}drawMission();
 const ed=document.getElementById('editor'),st=document.getElementById('sendStatus');let draft=null,url='';
 function reset(){if(url)URL.revokeObjectURL(url);url='';draft=null;ed.classList.add('hide');ed.innerHTML=''}
-function saveDraft(kind,data,label){const who=document.getElementById('who').value.trim();if(!who){st.textContent='⚠️ Primero escribí tu nombre o apodo.';return}const arr=get();arr.unshift({id:Date.now()+'_'+Math.random().toString(36).slice(2),guest:gid,who,kind,data,label,challenge:reto,question,at:new Date().toISOString()});put(arr);st.textContent='❤️ Tu recuerdo fue enviado. Podés enviar otro cuando quieras.';reset()}
-function fileEditor(kind,accept){const inp=document.createElement('input');inp.type='file';inp.accept=accept;if(kind==='video')inp.setAttribute('capture','environment');inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;url=URL.createObjectURL(f);draft=f;ed.classList.remove('hide');const media=(kind==='photo'||kind==='selfie')?'<img src="'+url+'">':kind==='video'?'<video src="'+url+'" controls></video>':'<audio src="'+url+'" controls></audio>';ed.innerHTML=media+'<div class="row"><button id="change">🔄 Cambiar</button><button id="del">🗑️ Quitar</button><button class="primary" id="send">Enviar</button></div><div class="status">'+(kind==='video'?'Video máximo 60 segundos.':kind==='audio'?'Audio máximo 2 minutos.':'Revisá la foto antes de enviarla.')+'</div>';ed.querySelector('#change').onclick=()=>inp.click();ed.querySelector('#del').onclick=reset;ed.querySelector('#send').onclick=()=>{const reader=new FileReader();reader.onload=()=>saveDraft(kind,reader.result,f.name);reader.readAsDataURL(f)};if(kind==='video'||kind==='audio'){const m=ed.querySelector(kind==='video'?'video':'audio');m.onloadedmetadata=()=>{const max=kind==='video'?MAX_VIDEO:MAX_AUDIO;if(m.duration>max){st.textContent='⚠️ '+(kind==='video'?'El video supera 60 segundos. Elegí o grabá uno más corto.':'El audio supera 2 minutos.');reset()}}}};inp.click()}
-document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{const k=b.dataset.kind;if(k==='photo'||k==='selfie')fileEditor('photo','image/*');else if(k==='video')fileEditor(k,'video/*');else if(k==='audio')fileEditor(k,'audio/*');else{ed.classList.remove('hide');ed.innerHTML='<textarea class="field" id="msg" maxlength="1000" rows="5" placeholder="Escribí tu saludo, deseo, historia o anécdota…"></textarea><div class="row"><button id="del">🗑️ Borrar</button><button class="primary" id="send">Enviar mensaje</button></div>';ed.querySelector('#del').onclick=reset;ed.querySelector('#send').onclick=()=>{const v=ed.querySelector('#msg').value.trim();if(!v){st.textContent='⚠️ Escribí un mensaje.';return}saveDraft('text',v,'Mensaje')}}});
-function owner(){document.getElementById('guest').classList.add('hide');document.getElementById('owner').classList.remove('hide');render('all')}
-function render(filter){const a=get().filter(x=>filter==='all'||x.kind===filter),box=document.getElementById('items');document.getElementById('count').textContent=a.length+' recuerdos recibidos';box.innerHTML=a.length?'':'Todavía no llegaron recuerdos.';a.forEach(x=>{const e=document.createElement('div');e.className='item';let body=x.kind==='photo'?'<img style="max-width:100%;border-radius:12px" src="'+x.data+'">':x.kind==='video'?'<video style="width:100%;border-radius:12px" controls src="'+x.data+'"></video>':x.kind==='audio'?'<audio style="width:100%" controls src="'+x.data+'"></audio>':'<p>'+String(x.data).replace(/[&<>]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))+'</p>';e.innerHTML='<b>'+x.who+'</b> te envió '+({photo:'una foto',video:'un video',audio:'un audio',text:'un mensaje'}[x.kind])+'<br><small>'+new Date(x.at).toLocaleString()+'</small>'+body+'<button data-del="'+x.id+'">🗑️ Eliminar</button>';box.appendChild(e)});box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('¿Eliminar este recuerdo?')){put(get().filter(x=>x.id!==b.dataset.del));render(filter)}})}
-document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>render(b.dataset.filter));if(ownerMode)owner();
+async function uploadFile(file){
+ const ext=(file.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'').slice(0,8)||'bin';
+ const path='aportes/'+EVENT+'/'+Date.now()+'_'+crypto.getRandomValues(new Uint32Array(1))[0].toString(36)+'.'+ext;
+ const r=await fetch(SB+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'false'},body:file});
+ if(!r.ok)throw new Error('No se pudo subir el archivo: '+await r.text());
+ return {path,url:SB+'/storage/v1/object/public/'+BUCKET+'/'+path};
+}
+async function sendRecord(kind,data,label){
+ const who=document.getElementById('who').value.trim();if(!who){st.textContent='⚠️ Primero escribí tu nombre o apodo.';return}
+ st.textContent='⏳ Enviando tu recuerdo…';
+ try{
+   let archivo_path=null,mensaje=null;
+   if(kind==='text'||kind==='memory')mensaje=String(data||''); else if(data instanceof File){const up=await uploadFile(data);archivo_path=up.path}
+   const tipo=kind==='photo'||kind==='selfie'?'foto':kind==='video'?'video':kind==='audio'?'audio':'mensaje';
+   const r=await fetch(SB+'/rest/v1/angela_eventos_recuerdos',{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify({evento_id:EVENT,invitado_id:gid,invitado_nombre:who,tipo,mensaje,archivo_path,reto, pregunta:question})});
+   if(!r.ok)throw new Error(await r.text());
+   st.textContent='❤️ Recuerdo enviado correctamente. Ya quedó guardado para el agasajado.';reset()
+ }catch(e){st.textContent='⚠️ No se pudo enviar: '+(e?.message||e)}
+}
+function fileEditor(kind,accept,captureMode=''){const inp=document.createElement('input');inp.type='file';inp.accept=accept;if(captureMode)inp.setAttribute('capture',captureMode);inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;url=URL.createObjectURL(f);draft=f;ed.classList.remove('hide');const media=(kind==='photo'||kind==='selfie')?'<img src="'+url+'">':kind==='video'?'<video src="'+url+'" controls></video>':'<audio src="'+url+'" controls></audio>';ed.innerHTML=media+'<div class="row"><button id="change">🔄 Repetir</button><button id="del">🗑️ Borrar</button><button class="primary" id="send">❤️ Enviar</button></div><div class="status">'+(kind==='video'?'Video máximo 60 segundos.':kind==='audio'?'Audio máximo 2 minutos.':'Revisá la foto antes de enviarla.')+'</div>';ed.querySelector('#change').onclick=()=>inp.click();ed.querySelector('#del').onclick=reset;ed.querySelector('#send').onclick=()=>sendRecord(kind,f,f.name);if(kind==='video'||kind==='audio'){const m=ed.querySelector(kind==='video'?'video':'audio');m.onloadedmetadata=()=>{const max=kind==='video'?MAX_VIDEO:MAX_AUDIO;if(m.duration>max){st.textContent='⚠️ '+(kind==='video'?'El video supera 60 segundos.':'El audio supera 2 minutos.');reset()}}}};inp.click()}
+function cameraSelfie(){fileEditor('selfie','image/*','user')}
+function cameraVideo(){fileEditor('video','video/*','environment')}
+let rec=null,recStream=null,recChunks=[],recTimer=null,recSeconds=0;
+function fmtSec(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function stopTracks(){try{recStream?.getTracks().forEach(t=>t.stop())}catch(_){}recStream=null}
+async function audioRecorder(){
+ reset();ed.classList.remove('hide');
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){ed.innerHTML='<b>🎙️ Grabación directa no disponible en este navegador.</b><div class="row"><button id="pick">📁 Elegir audio</button></div>';ed.querySelector('#pick').onclick=()=>fileEditor('audio','audio/*');return}
+ ed.innerHTML='<div style="text-align:center"><div style="font-size:2.5rem">🎙️</div><b>Grabá tu mensaje de voz</b><div id="recClock" style="font-size:1.7rem;margin:10px">00:00</div><div class="row"><button class="primary" id="startRec">🔴 Grabar audio</button><button id="pick">📁 Elegir audio</button></div></div>';
+ ed.querySelector('#pick').onclick=()=>fileEditor('audio','audio/*');
+ ed.querySelector('#startRec').onclick=async()=>{try{recStream=await navigator.mediaDevices.getUserMedia({audio:true});recChunks=[];recSeconds=0;rec=new MediaRecorder(recStream);rec.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data)};rec.onstop=()=>{clearInterval(recTimer);stopTracks();const blob=new Blob(recChunks,{type:rec.mimeType||'audio/webm'}),f=new File([blob],'audio_'+Date.now()+'.webm',{type:blob.type});url=URL.createObjectURL(blob);draft=f;ed.innerHTML='<audio src="'+url+'" controls style="width:100%"></audio><div class="row"><button id="again">🔄 Repetir</button><button id="del">🗑️ Borrar</button><button class="primary" id="send">❤️ Enviar</button></div>';ed.querySelector('#again').onclick=audioRecorder;ed.querySelector('#del').onclick=reset;ed.querySelector('#send').onclick=()=>sendRecord('audio',f,f.name)};rec.start();ed.innerHTML='<div style="text-align:center"><div style="font-size:2.5rem">🔴</div><b>Grabando audio…</b><div id="recClock" style="font-size:1.7rem;margin:10px">00:00 / 02:00</div><button class="primary" id="stopRec">⏹ Detener</button></div>';ed.querySelector('#stopRec').onclick=()=>{if(rec?.state==='recording')rec.stop()};recTimer=setInterval(()=>{recSeconds++;const c=ed.querySelector('#recClock');if(c)c.textContent=fmtSec(recSeconds)+' / 02:00';if(recSeconds>=MAX_AUDIO&&rec?.state==='recording')rec.stop()},1000)}catch(e){stopTracks();st.textContent='⚠️ Permití el micrófono para grabar el audio.'}};
+}
+document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{const k=b.dataset.kind;if(k==='photo')fileEditor('photo','image/*');else if(k==='selfie')cameraSelfie();else if(k==='video'){reset();ed.classList.remove('hide');ed.innerHTML='<b>🎥 Video</b><div class="status">Grabalo ahora o elegí uno que ya tengas. Máximo 60 segundos.</div><div class="row"><button class="primary" id="recordVideo">🔴 Grabar video</button><button id="pickVideo">📁 Elegir video</button></div>';ed.querySelector('#recordVideo').onclick=cameraVideo;ed.querySelector('#pickVideo').onclick=()=>fileEditor('video','video/*')}else if(k==='audio')audioRecorder();else{ed.classList.remove('hide');ed.innerHTML='<textarea class="field" id="msg" maxlength="1000" rows="5" placeholder="Contá una anécdota, un recuerdo, una historia o algo lindo que viviste con el agasajado…"></textarea><div class="row"><button id="del">🗑️ Borrar</button><button class="primary" id="send">Enviar</button></div>';ed.querySelector('#del').onclick=reset;ed.querySelector('#send').onclick=()=>{const v=ed.querySelector('#msg').value.trim();if(!v){st.textContent='⚠️ Escribí un mensaje.';return}sendRecord(k,v,k==='memory'?'Anécdota':'Mensaje')}}});
+let currentFilter='all',poll=null,lastSig='';
+async function ownerLoad(){
+ try{
+   const r=await fetch(SB+'/rest/v1/rpc/angela_ver_recuerdos',{method:'POST',headers:H,body:JSON.stringify({p_evento:EVENT,p_owner_token:OWNER_TOKEN})});
+   if(!r.ok)throw new Error(await r.text());
+   const a=await r.json(),sig=JSON.stringify(a.map(x=>[x.id,x.creado_en]));
+   if(sig!==lastSig){lastSig=sig;renderOwner(a,currentFilter)}
+   document.getElementById('ownerStatus').textContent='🟢 Actualizado automáticamente · '+new Date().toLocaleTimeString();
+ }catch(e){document.getElementById('ownerStatus').textContent='⚠️ No pude actualizar: '+(e?.message||e)}
+}
+function publicMedia(path){return path?SB+'/storage/v1/object/public/'+BUCKET+'/'+path:''}
+function renderOwner(all,filter){
+ const a=all.filter(x=>filter==='all'||x.tipo===filter),box=document.getElementById('items');
+ document.getElementById('count').textContent=all.length+' recuerdos recibidos';
+ box.innerHTML=a.length?'':'Todavía no llegaron recuerdos.';
+ a.forEach(x=>{const e=document.createElement('div');e.className='item';const u=publicMedia(x.archivo_path);let body=x.tipo==='foto'?'<img style="max-width:100%;border-radius:12px" src="'+u+'">':x.tipo==='video'?'<video style="width:100%;border-radius:12px" controls src="'+u+'"></video>':x.tipo==='audio'?'<audio style="width:100%" controls src="'+u+'"></audio>':'<p>'+esc(x.mensaje||'')+'</p>';e.innerHTML='<b>'+esc(x.invitado_nombre)+'</b> te envió '+({foto:'una foto',video:'un video',audio:'un audio',mensaje:'una anécdota'}[x.tipo]||'un recuerdo')+'<br><small>'+new Date(x.creado_en).toLocaleString()+'</small>'+body+(x.reto?'<div class="mission">🎯 '+esc(x.reto)+'</div>':'')+'<button data-del="'+x.id+'">🗑️ Eliminar</button>';box.appendChild(e)});
+ box.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('¿Eliminar este recuerdo?'))return;const r=await fetch(SB+'/rest/v1/rpc/angela_eliminar_recuerdo',{method:'POST',headers:H,body:JSON.stringify({p_recuerdo:b.dataset.del,p_owner_token:OWNER_TOKEN})});if(r.ok){lastSig='';ownerLoad()}});
+}
+function owner(){document.getElementById('guest').classList.add('hide');document.getElementById('owner').classList.remove('hide');ownerLoad();poll=setInterval(ownerLoad,3000)}
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{currentFilter=b.dataset.filter;lastSig='';ownerLoad()});
+if(ownerMode)owner();
 })();
+
 <\/script></body></html>`;
     }
     async function evValidatePublishedPage(url){
