@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.36 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
+<!-- ÁNGELA V11.37 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -7497,7 +7497,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.36 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
+    // ===== ÁNGELA V11.37 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7577,6 +7577,7 @@ libre:[['✨','Bienvenida','Comienza un momento especial'],['📸','Fotos','Guar
           <div style="position:absolute;inset:0;background:linear-gradient(transparent,rgba(0,0,0,.42))"></div>
           <div style="position:relative;text-align:center">
             <div style="letter-spacing:.25em;font-weight:900;font-size:.72rem">${x.eyebrow}</div>
+            <div style="margin:12px auto 4px;padding:7px 14px;border:1px solid rgba(255,255,255,.35);border-radius:999px;width:max-content;max-width:95%;font-weight:900;font-size:.82rem;letter-spacing:.12em">${evEsc((d.type==='quince'?'MIS 15':d.type==='casamiento'?'CASAMIENTO':d.type==='babyshower'?'BABY SHOWER':d.type==='bautismo'?'BAUTISMO':d.type==='graduacion'?'GRADUACIÓN':d.type==='aniversario'?'ANIVERSARIO':'CUMPLEAÑOS'))}</div>
             <div style="font-size:4rem;margin:10px">${x.icon}</div>
             <h2 style="font-size:2.6rem;margin:4px">${evEsc(d.name||'Nuestro evento')}</h2>
             <div style="font-size:1.05rem">${evEsc(d.date||'Una fecha para recordar')}</div>
@@ -7822,6 +7823,10 @@ if(ownerMode)owner();
     }
     async function evGenerateQR(){
       let d=evSave(),st=document.getElementById('agqr_evStatus');
+      if(d.publicUrl){
+        const oldCheck=await evValidatePublishedPage(d.publicUrl);
+        if(!oldCheck.ok){d.publicUrl='';d.ownerUrl='';}
+      }
       if(!d.name){if(st)st.textContent='⚠️ Escribí el nombre del evento antes de generar el QR.';return}
       if(location.protocol==='file:'){if(st)st.innerHTML='🧪 <b>Esta copia está abierta desde Descargas.</b> El diseño funciona para probar, pero el QR público se genera cuando abras esta misma versión desde ÁNGELA online, donde Supabase puede leer la configuración del servidor.';return}
       if(st)st.textContent='⏳ Publicando el evento y preparando su QR…';
@@ -7854,6 +7859,20 @@ if(ownerMode)owner();
     function evCanvasColors(d){
       const M={casamiento:['#4c1d3d','#1f2937'],quince:['#4b1991','#b42378'],cumple:['#312e81','#be2069'],aniversario:['#7d1237','#3e1973'],babyshower:['#2378aa','#be5087'],bautismo:['#2a5d9b','#4b3f91'],graduacion:['#142d64','#642d91'],libre:['#192d55','#4b2369']};return M[d.type]||M.libre;
     }
+    function evRound(ctx,x,y,w,h,r){
+      const rr=Math.min(r,w/2,h/2);
+      ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath();
+    }
+    async function evLoadImg(src){
+      const r=await fetch(src,{cache:'no-store'});
+      if(!r.ok)throw new Error('No se pudo generar la imagen QR (HTTP '+r.status+').');
+      const b=await r.blob(),u=URL.createObjectURL(b);
+      try{
+        return await new Promise((resolve,reject)=>{
+          const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('No se pudo abrir la imagen QR.'));im.src=u;
+        });
+      }finally{setTimeout(()=>URL.revokeObjectURL(u),3000)}
+    }
     async function evOwnerCardBlob(){
       const d=evGet();if(!d.ownerUrl)throw new Error('Primero creá y publicá el evento.');
       const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),v=evTheme(d),cc=evCanvasColors(d),g=x.createLinearGradient(0,0,W,H);
@@ -7866,9 +7885,21 @@ if(ownerMode)owner();
     }
     async function evOwnerCard(){try{const d=evGet(),b=await evOwnerCardBlob(),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='02_TARJETA_PRIVADA_'+(d.name||'evento').replace(/\s+/g,'_')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}catch(e){alert(e.message)}}
     async function evDownloadBoth(){
-      const d=evGet();if(!d.publicUrl||!d.ownerUrl){alert('Primero creá y publicá el evento para generar los dos QR.');return}
-      try{const pub=await evCardBlob(),priv=await evOwnerCardBlob();const save=(b,n,t)=>setTimeout(()=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2500)},t);
-      save(pub,'01_TARJETA_INVITADOS_'+(d.name||'evento').replace(/\s+/g,'_')+'.png',0);save(priv,'02_TARJETA_PRIVADA_'+(d.name||'evento').replace(/\s+/g,'_')+'.png',500)}catch(e){alert('No se pudieron generar las dos tarjetas: '+e.message)}
+      let d=evGet();
+      if(!d.publicUrl||!d.ownerUrl){
+        const st=document.getElementById('agqr_evStatus');if(st)st.textContent='⏳ Primero estoy generando y comprobando los dos accesos…';
+        await evGenerateQR(); d=evGet();
+      }
+      if(!d.publicUrl||!d.ownerUrl){alert('Todavía no hay un QR público y un acceso privado válidos. Tocá “Crear evento y generar QR” y revisá el mensaje verde.');return}
+      try{
+        const pub=await evCardBlob(),priv=await evOwnerCardBlob();
+        if(!pub||!priv)throw new Error('No se pudieron preparar las imágenes.');
+        const save=(b,n,t)=>setTimeout(()=>{const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)},t);
+        const safe=(d.name||'evento').replace(/\s+/g,'_');
+        save(pub,'01_TARJETA_INVITADOS_'+safe+'.png',0);
+        save(priv,'02_TARJETA_PRIVADA_'+safe+'.png',900);
+        const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='✅ <b>Las 2 tarjetas fueron generadas.</b> Una es para compartir con invitados y la otra es privada para el agasajado.';
+      }catch(e){alert('No se pudieron generar las dos tarjetas: '+(e?.message||e))}
     }
     async function evCardBlob(){
       const u=await evEnsureUrl();if(!u)return null;const d=evGet(),v=evTheme(d),c=document.createElement('canvas');c.width=1080;c.height=1350;const x=c.getContext('2d');
@@ -7876,7 +7907,7 @@ if(ownerMode)owner();
       if(d.bgData){await new Promise(res=>{const im=new Image();im.onload=()=>{x.globalAlpha=.42;const s=Math.max(c.width/im.width,c.height/im.height),w=im.width*s,h=im.height*s;x.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h);x.globalAlpha=1;res()};im.onerror=res;im.src=d.bgData})}
       x.fillStyle='rgba(0,0,0,.46)';x.fillRect(70,70,940,1210);x.textAlign='center';x.fillStyle='#fff';x.font='700 34px Arial';x.fillText('EVENTO QR',540,155);x.font='800 62px Arial';x.fillText((d.name||'Nuestro evento').slice(0,28),540,260);x.font='32px Arial';x.fillText((d.date||'Una fecha para recordar').slice(0,40),540,320);
       x.font='30px Arial';x.fillText('Escaneá y participá de este recuerdo',540,390);
-      const qr=await new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=rej;im.src=`https://api.qrserver.com/v1/create-qr-code/?size=700x700&data=${encodeURIComponent(u)}`});
+      const qr=await evLoadImg(`https://api.qrserver.com/v1/create-qr-code/?size=700x700&data=${encodeURIComponent(u)}`);
       x.fillStyle='#fff';x.fillRect(285,470,510,510);x.drawImage(qr,305,490,470,470);x.font='700 30px Arial';x.fillStyle='#fff';x.fillText('📸 Retos  ·  🎙️ Audios  ·  ❤️ Anécdotas',540,1050);x.font='26px Arial';x.fillText('Guardá esta tarjeta o compartila por WhatsApp',540,1120);
       return await new Promise(res=>c.toBlob(res,'image/png'));
     }
@@ -7935,13 +7966,13 @@ if(ownerMode)owner();
         im.onerror=()=>reject(new Error('No se pudo abrir '+file.name));
         im.src=raw;
       });
-      const max=1280;
+      const max=900;
       let w=img.naturalWidth||img.width,hg=img.naturalHeight||img.height;
       const scale=Math.min(1,max/Math.max(w,hg));
       w=Math.max(1,Math.round(w*scale)); hg=Math.max(1,Math.round(hg*scale));
       const c=document.createElement('canvas'); c.width=w;c.height=hg;
       const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,hg);
-      return c.toDataURL('image/jpeg',.78);
+      return c.toDataURL('image/jpeg',.68);
     };
 
     document.getElementById('agqr_evGallery')?.addEventListener('change',async e=>{
