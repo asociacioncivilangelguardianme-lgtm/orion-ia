@@ -19,9 +19,8 @@ module.exports = async function handler(req, res) {
   }
 
   const headers = {
-    apikey: secretKey,
-    Authorization: `Bearer ${secretKey}`
-  };
+  apikey: secretKey
+};
 
   const tables = [
     "studio_projects",
