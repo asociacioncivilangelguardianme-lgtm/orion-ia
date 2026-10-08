@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.37 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
+<!-- ÁNGELA V11.38 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -186,6 +186,7 @@ button:disabled{opacity:.55;cursor:not-allowed;}
 .motion-aspect-916{aspect-ratio:9/16;max-height:66vh;margin:auto}.motion-aspect-11{aspect-ratio:1/1}.motion-aspect-169{aspect-ratio:16/9}
 @media(max-width:900px){.angela-modal-panel{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;width:100vw;height:100vh;border-radius:0}.angela-modal-side{border-left:0;border-top:1px solid #253c60;max-height:48vh}.angela-modal-backdrop{padding:0}.motion-preview-shell{min-height:190px}}
 
+@keyframes agPremiumFloat{0%,100%{transform:scale(1.02) translateY(0)}50%{transform:scale(1.07) translateY(-10px)}}
 </style>
 
 <style id="angela-layout-original-ordenado">
@@ -7497,7 +7498,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.37 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
+    // ===== ÁNGELA V11.38 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7574,12 +7575,13 @@ libre:[['✨','Bienvenida','Comienza un momento especial'],['📸','Fotos','Guar
       const manual=evItems(d.plan);
       return `<div style="max-width:720px;margin:auto;color:#fff;${experienceBg}">
         <section style="${bg}min-height:610px;border-radius:34px;padding:42px 28px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;box-shadow:0 25px 70px #0007">
-          <div style="position:absolute;inset:0;background:linear-gradient(transparent,rgba(0,0,0,.42))"></div>
+          <div style="position:absolute;inset:0;overflow:hidden">${evPremiumArt(d)}</div>
+          <div style="position:absolute;inset:0;background:linear-gradient(rgba(5,8,20,.06),rgba(5,8,20,.18) 45%,rgba(0,0,0,.72))"></div>
           <div style="position:relative;text-align:center">
             <div style="letter-spacing:.25em;font-weight:900;font-size:.72rem">${x.eyebrow}</div>
             <div style="margin:12px auto 4px;padding:7px 14px;border:1px solid rgba(255,255,255,.35);border-radius:999px;width:max-content;max-width:95%;font-weight:900;font-size:.82rem;letter-spacing:.12em">${evEsc((d.type==='quince'?'MIS 15':d.type==='casamiento'?'CASAMIENTO':d.type==='babyshower'?'BABY SHOWER':d.type==='bautismo'?'BAUTISMO':d.type==='graduacion'?'GRADUACIÓN':d.type==='aniversario'?'ANIVERSARIO':'CUMPLEAÑOS'))}</div>
-            <div style="font-size:4rem;margin:10px">${x.icon}</div>
-            <h2 style="font-size:2.6rem;margin:4px">${evEsc(d.name||'Nuestro evento')}</h2>
+            <div style="height:235px"></div>
+            <h2 style="font-size:2.6rem;margin:4px;text-shadow:0 3px 20px #000">${evEsc(d.name||'Nuestro evento')}</h2>
             <div style="font-size:1.05rem">${evEsc(d.date||'Una fecha para recordar')}</div>
             ${d.when?`<div style="margin-top:8px;font-weight:800">${evEsc(d.when)}</div>`:''}
             <p style="font-family:Georgia,serif;font-style:italic;font-size:1.12rem;color:${v.accent}">${x.note}</p>
@@ -7670,7 +7672,7 @@ libre:[['✨','Bienvenida','Comienza un momento especial'],['📸','Fotos','Guar
       return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
 <style>
 *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Inter,Arial,sans-serif;color:#fff;background:${d.bgData?`linear-gradient(rgba(2,6,23,.66),rgba(2,6,23,.82)),url("${d.bgData}") center/cover fixed no-repeat`:`linear-gradient(135deg,${t.a},#070b16 48%,${t.b})`};background-size:${d.bgData?'cover':'220% 220%'};animation:${d.bgData?'none':'bg 12s ease infinite'};padding:18px}
-@keyframes bg{50%{background-position:100% 50%}}@keyframes float{50%{transform:translateY(-9px) rotate(2deg)}}@keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes bg{50%{background-position:100% 50%}}@keyframes agPremiumFloat{0%,100%{transform:scale(1.02) translateY(0)}50%{transform:scale(1.07) translateY(-10px)}}@keyframes float{50%{transform:translateY(-9px) rotate(2deg)}}@keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .wrap{max-width:720px;margin:auto}.hero,.panel{background:rgba(8,12,28,.78);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.18);border-radius:28px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.34);margin-bottom:14px;animation:pop .5s ease}
 .hero{text-align:center;overflow:hidden;position:relative}.icon{font-size:64px;animation:float 3s ease-in-out infinite}.decor{font-size:25px;letter-spacing:10px;opacity:.9}.hero h1{font-size:clamp(30px,8vw,56px);margin:7px 0}.muted{opacity:.78}.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:16px}
 button,.btn{border:0;border-radius:16px;padding:14px 12px;font-weight:800;font-size:15px;cursor:pointer;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.16)}
@@ -7678,7 +7680,14 @@ button.primary{background:linear-gradient(135deg,${t.a},${t.b})}.mission{padding
 .preview{margin:10px 0;padding:12px;border-radius:18px;background:rgba(0,0,0,.28)}.preview img,.preview video{max-width:100%;max-height:360px;border-radius:14px;display:block;margin:auto}.preview audio{width:100%}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.hide{display:none!important}.status{font-size:14px;margin-top:9px}.owner{border:1px solid rgba(253,230,138,.45)}.cards{display:grid;gap:9px}.item{padding:13px;border-radius:16px;background:rgba(255,255,255,.08)}.item small{opacity:.7}
 .timeline{display:grid;gap:9px;margin-top:14px}.moment{display:flex;gap:11px;align-items:center;background:#ffffff0d;border:1px solid #ffffff17;border-radius:15px;padding:11px}.num{min-width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#ffffff18;font-weight:900}.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.gallery img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px}.kicker{font-size:.7rem;letter-spacing:.17em;font-weight:900;opacity:.7}</style></head><body><main class="wrap">
-<section class="hero"><div class="decor">${t.decor}</div><div style="font-size:.68rem;letter-spacing:.22em;font-weight:900;opacity:.82">${({casamiento:"NUESTRA HISTORIA COMIENZA",cumple:"HOY CELEBRAMOS",quince:"MIS XV · UNA NOCHE ÚNICA",aniversario:"UNA HISTORIA QUE SIGUE CRECIENDO",babyshower:"UNA DULCE ESPERA",bautismo:"UN DÍA LLENO DE LUZ",graduacion:"LO LOGRASTE"})[type]||"UN MOMENTO PARA RECORDAR"}</div><div class="icon">${t.icon}</div><div class="muted">EVENTO QR</div><h1>${title}</h1><div>${date}</div><p>Participá y dejá un recuerdo especial. Lo que envíes será privado para el agasajado.</p></section>
+<section class="hero" style="min-height:650px;display:flex;flex-direction:column;justify-content:flex-end;padding-top:310px">
+<div style="position:absolute;inset:0;overflow:hidden">${evPremiumArt(d)}</div>
+<div style="position:absolute;inset:0;background:linear-gradient(rgba(3,6,18,.04),rgba(3,6,18,.16) 48%,rgba(0,0,0,.74));pointer-events:none"></div>
+<div style="position:relative;z-index:2">
+<div style="font-size:.68rem;letter-spacing:.22em;font-weight:900;opacity:.9">${({casamiento:"NUESTRA HISTORIA COMIENZA",cumple:"HOY CELEBRAMOS",quince:"MIS XV · UNA NOCHE ÚNICA",aniversario:"UNA HISTORIA QUE SIGUE CRECIENDO",babyshower:"UNA DULCE ESPERA",bautismo:"UN DÍA LLENO DE LUZ",graduacion:"LO LOGRASTE"})[type]||"UN MOMENTO PARA RECORDAR"}</div>
+<div class="muted" style="margin-top:9px">EVENTO QR</div><h1 style="text-shadow:0 3px 22px #000">${title}</h1><div>${date}</div>${d.when?`<div style="margin-top:7px;font-weight:800">${esc(d.when)}</div>`:''}
+<p>Participá y dejá un recuerdo especial. Lo que envíes será privado para el agasajado.</p>
+</div></section>
 <section class="panel" id="journey">
 <div class="kicker">BIENVENIDOS A ESTA HISTORIA</div>
 <h2>✨ Así vamos a vivir este día</h2>
@@ -7859,6 +7868,44 @@ if(ownerMode)owner();
     function evCanvasColors(d){
       const M={casamiento:['#4c1d3d','#1f2937'],quince:['#4b1991','#b42378'],cumple:['#312e81','#be2069'],aniversario:['#7d1237','#3e1973'],babyshower:['#2378aa','#be5087'],bautismo:['#2a5d9b','#4b3f91'],graduacion:['#142d64','#642d91'],libre:['#192d55','#4b2369']};return M[d.type]||M.libre;
     }
+    function evPremiumArt(d){
+      const k=d.type||'cumple',v=Number(d.surpriseIndex||0)%4;
+      const defs=`<defs><filter id="agGlow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="agSoft"><feGaussianBlur stdDeviation="20"/></filter><linearGradient id="agSweep"><stop stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`;
+      const stars=`<g fill="#fff">${[[90,90],[690,100],[610,260],[160,300],[720,470],[100,520],[560,590],[330,150]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${2+i%3}" opacity=".8"><animate attributeName="opacity" values=".2;1;.2" dur="${2+i*.21}s" repeatCount="indefinite"/></circle>`).join('')}</g>`;
+      const art={
+        cumple:[
+          `<g>${[['#ff4d9d',130,210],['#ffd45c',670,175],['#57d8ff',620,420],['#9a70ff',170,455]].map(([c,x,y],i)=>`<g transform="translate(${x} ${y})"><ellipse rx="52" ry="67" fill="${c}" opacity=".88"/><path d="M0 67 C${i%2?40:-40} 125 ${i%2?-30:30} 165 0 220" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="3"/></g>`).join('')}<g transform="translate(400 510)"><ellipse rx="190" ry="34" fill="#000" opacity=".2" filter="url(#agSoft)"/><rect x="-120" y="0" width="240" height="105" rx="18" fill="#ffb14e"/><path d="M-138 5 Q0 -78 138 5Z" fill="#ff66a5"/><g fill="#fff4c4">${[-75,-25,25,75].map(x=>`<rect x="${x-3}" y="-74" width="6" height="60" rx="3"/><ellipse cx="${x}" cy="-85" rx="8" ry="14" fill="#ffd54d" filter="url(#agGlow)"/>`).join('')}</g></g></g>`,
+          `<g><g fill="none" stroke-width="8" opacity=".78"><circle cx="150" cy="230" r="90" stroke="#ffd65a"/><circle cx="650" cy="240" r="115" stroke="#5cddff"/><circle cx="400" cy="455" r="160" stroke="#ff73bb"/></g>${Array.from({length:20},(_,i)=>`<rect x="${55+(i*91)%700}" y="${70+(i*67)%470}" width="8" height="24" rx="4" fill="${i%2?'#ffd85e':'#fff'}" opacity=".8" transform="rotate(${i*23} ${55+(i*91)%700} ${70+(i*67)%470})"/>`).join('')}</g>`
+        ],
+        quince:[
+          `<g><path d="M400 125 C335 225 315 340 235 535 C330 590 470 590 565 535 C485 340 465 225 400 125Z" fill="#f6a8da" opacity=".68"/><path d="M400 145 C365 260 350 365 300 510M400 145 C435 260 450 365 500 510" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3"/><path d="M315 165 Q400 90 485 165" fill="none" stroke="#ffd96a" stroke-width="10"/><g fill="#ffd96a">${[350,375,400,425,450].map((x,i)=>`<circle cx="${x}" cy="${137-Math.abs(400-x)*.45}" r="9"/>`).join('')}</g></g>`,
+          `<g><circle cx="400" cy="340" r="225" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2"/><circle cx="400" cy="340" r="185" fill="none" stroke="#f5b9ff" stroke-opacity=".6" stroke-width="5"/><g fill="#ffc6ec">${[[170,190],[630,175],[120,440],[680,450],[270,580],[540,575]].map(([x,y],i)=>`<g transform="translate(${x} ${y}) rotate(${i*37})"><ellipse rx="34" ry="15"/><ellipse rx="15" ry="34"/><circle r="11" fill="#ffe58a"/></g>`).join('')}</g></g>`
+        ],
+        casamiento:[
+          `<g><g fill="none" stroke="#fff0cf" stroke-width="12" opacity=".86"><circle cx="345" cy="335" r="125"/><circle cx="470" cy="335" r="125"/></g><g fill="#fff0f4">${[[130,170],[675,170],[115,505],[690,505],[250,600],[555,590]].map(([x,y])=>`<g transform="translate(${x} ${y})"><circle r="34"/><circle cx="28" cy="-8" r="26"/><circle cx="-25" cy="-12" r="24"/><circle cy="-30" r="22"/><circle r="10" fill="#d7b46a"/></g>`).join('')}</g></g>`,
+          `<g><path d="M80 625 Q180 315 350 160M720 625 Q620 315 450 160" fill="none" stroke="#cde7c5" stroke-width="12"/><g fill="#fff2f4">${Array.from({length:13},(_,i)=>`<ellipse cx="${105+i*49}" cy="${530-Math.sin(i)*175}" rx="32" ry="20" transform="rotate(${i*19} ${105+i*49} ${530-Math.sin(i)*175})"/>`).join('')}</g></g>`
+        ],
+        babyshower:[
+          `<g><path d="M80 225 Q175 105 270 225 Q355 75 455 225 Q560 100 710 225" fill="#fff" opacity=".58"/><circle cx="625" cy="125" r="72" fill="#ffe18a" opacity=".8"/><g transform="translate(400 455)"><path d="M-120 20 Q0 -155 120 20Z" fill="#9edcff" opacity=".82"/><path d="M-120 20 Q0 165 120 20Z" fill="#f5b6d8" opacity=".8"/><circle cy="-20" r="55" fill="#fff" opacity=".75"/></g></g>`,
+          `<g><g fill="#fff" opacity=".72">${[[180,220],[620,220],[250,485],[560,500]].map(([x,y])=>`<g transform="translate(${x} ${y})"><circle r="55"/><circle cx="45" cy="10" r="38"/><circle cx="-45" cy="10" r="38"/></g>`).join('')}</g><path d="M400 145 C330 240 335 365 400 440 C465 365 470 240 400 145Z" fill="#ffd0e5" opacity=".72"/></g>`
+        ],
+        bautismo:[
+          `<g><circle cx="400" cy="275" r="180" fill="#fff" opacity=".12" filter="url(#agGlow)"/><path d="M400 115v320M245 250h310" stroke="#fff" stroke-width="20" stroke-linecap="round" opacity=".82"/><g fill="#fff" opacity=".7">${[[165,500],[650,485],[250,600],[560,590]].map(([x,y])=>`<path d="M${x} ${y} q35 -60 70 0 q-35 50 -70 0Z"/>`).join('')}</g></g>`,
+          `<g><path d="M400 90 Q300 215 400 340 Q500 215 400 90Z" fill="#d8f3ff" opacity=".75"/><circle cx="400" cy="370" r="150" fill="none" stroke="#fff" stroke-opacity=".52" stroke-width="5"/></g>`
+        ],
+        aniversario:[
+          `<g><path d="M400 555 C125 365 170 145 320 175 C380 188 400 245 400 245 C400 245 420 188 480 175 C630 145 675 365 400 555Z" fill="#e94b78" opacity=".66"/><path d="M400 515 C205 380 245 220 340 235 C385 242 400 285 400 285 C400 285 415 242 460 235 C555 220 595 380 400 515Z" fill="none" stroke="#ffd5df" stroke-width="6"/></g>`,
+          `<g><g fill="#f8b5c8">${[[150,180],[650,170],[110,500],[690,500],[260,600],[550,590]].map(([x,y],i)=>`<g transform="translate(${x} ${y}) rotate(${i*31})"><ellipse rx="42" ry="18"/><ellipse rx="18" ry="42"/><circle r="12" fill="#f7d77a"/></g>`).join('')}</g><circle cx="400" cy="350" r="180" fill="none" stroke="#ffd7a1" stroke-width="7" opacity=".75"/></g>`
+        ],
+        graduacion:[
+          `<g transform="translate(400 285)"><path d="M-230 0 L0 -110 L230 0 L0 110Z" fill="#111827" stroke="#f3c969" stroke-width="8"/><path d="M-120 55v120q120 80 240 0V55" fill="#1f2b4d" stroke="#f3c969" stroke-width="6"/><path d="M210 5v170" stroke="#f3c969" stroke-width="7"/><circle cx="210" cy="185" r="14" fill="#f3c969"/></g>`,
+          `<g><path d="M145 525 Q400 120 655 525" fill="none" stroke="#f0c85a" stroke-width="12"/><path d="M210 535 Q400 220 590 535" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="5"/></g>`
+        ]
+      };
+      const arr=art[k]||art.cumple;
+      return `<svg viewBox="0 0 800 700" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:-4%;width:108%;height:108%;animation:agPremiumFloat 10s ease-in-out infinite;filter:saturate(1.1) contrast(1.03)">${defs}${arr[v%arr.length]}${stars}<rect x="-180" y="0" width="120" height="700" fill="url(#agSweep)" opacity=".22"><animate attributeName="x" values="-180;900" dur="8s" repeatCount="indefinite"/></rect></svg>`;
+    }
+
     function evRound(ctx,x,y,w,h,r){
       const rr=Math.min(r,w/2,h/2);
       ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath();
