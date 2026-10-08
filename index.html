@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.28 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
+<!-- ÁNGELA V11.29 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -7386,6 +7386,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         </div>
         <div class="angqr-field"><label>Nombre del evento / homenajeado</label><input id="agqr_evName" placeholder="Ej: Casamiento de Ana y Juan"></div>
         <div class="angqr-field"><label>Fecha</label><input id="agqr_evDate" placeholder="Ej: 18/10/2026"></div>
+        <div class="angqr-field"><label>Horario / lugar (opcional)</label><input id="agqr_evWhen" placeholder="Ej: 20:30 hs · Salón Los Robles"></div>
         <div class="angqr-field"><label>Estilo</label>
           <select id="agqr_evStyle"><option value="elegante">✨ Elegante</option><option value="romantico">🌹 Romántico</option><option value="fiesta">🎉 Fiesta</option><option value="suave">🤍 Suave</option><option value="colorido">🌈 Colorido</option></select>
         </div>
@@ -7432,6 +7433,20 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             <label class="angqr-check"><input type="checkbox" id="agqr_evGuestVideo" checked> Videos</label>
           </div>
           <div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Estas opciones preparan la experiencia pública para que cada invitado pueda aportar recuerdos desde el celular. La carga compartida real necesita el almacenamiento online del evento.</div>
+        </div>
+        <div class="angqr-field" style="grid-column:1/-1">
+          <label>🕒 Horarios o momentos particulares (opcional · uno por línea)</label>
+          <textarea id="agqr_evPlan" rows="5" placeholder="20:30 · Recepción de invitados&#10;21:30 · Entrada&#10;23:00 · Cena"></textarea>
+          <div style="font-size:.69rem;color:#94a3b8;margin-top:5px">ÁNGELA ya arma el recorrido según el tipo de evento. Acá agregás solamente horarios o momentos propios de esta fiesta.</div>
+        </div>
+        <div class="angqr-field" style="grid-column:1/-1">
+          <label>💌 Carta / dedicatoria final</label>
+          <textarea id="agqr_evLetter" rows="6" placeholder="Escribí unas palabras para tus invitados, una historia, agradecimiento o dedicatoria especial..."></textarea>
+        </div>
+        <div class="angqr-field" style="grid-column:1/-1">
+          <label>🖼️ Fotos para la galería final</label>
+          <input id="agqr_evGallery" type="file" accept="image/*" multiple>
+          <div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Podés elegir hasta 9 fotos. Son públicas dentro de la presentación; los aportes de invitados siguen siendo privados.</div>
         </div>
         <div class="angqr-field"><label>📷 Banco de retos · uno por línea</label><div style="font-size:.69rem;color:#94a3b8;margin-bottom:5px">Cada invitado recibirá una misión distinta elegida de este banco.</div><textarea id="agqr_evChallenges" rows="7" placeholder="Foto con los protagonistas&#10;El brindis&#10;La persona más divertida"></textarea></div>
         <div class="angqr-field"><label>🎙️ Banco de preguntas del Confesionario · una por línea</label><div style="font-size:.69rem;color:#94a3b8;margin-bottom:5px">ÁNGELA irá variando la pregunta entre invitados.</div><textarea id="agqr_evQuestions" rows="7" placeholder="Dejales un deseo&#10;Contá una anécdota&#10;¿Qué consejo les darías?"></textarea></div>
@@ -7481,7 +7496,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.28 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
+    // ===== ÁNGELA V11.29 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7503,7 +7518,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
     const evLines=a=>(a||[]).join('\n');
     const evGet=()=>{try{return JSON.parse(localStorage.getItem(EVKEY)||'{}')}catch{return{}}};
-    const evSave=()=>{const prev=evGet();const d={...prev,type:document.getElementById('agqr_evType')?.value||'casamiento',name:document.getElementById('agqr_evName')?.value||'',date:document.getElementById('agqr_evDate')?.value||'',style:document.getElementById('agqr_evStyle')?.value||'elegante',template:document.getElementById('agqr_evTemplate')?.value||prev.template||'auto',bgData:prev.bgData||'',publicUrl:prev.publicUrl||'',game:!!document.getElementById('agqr_evGame')?.checked,conf:!!document.getElementById('agqr_evConf')?.checked,album:!!document.getElementById('agqr_evAlbum')?.checked,challenges:document.getElementById('agqr_evChallenges')?.value||'',questions:document.getElementById('agqr_evQuestions')?.value||'',surpriseIndex:Number(prev.surpriseIndex||0),eventId:prev.eventId||'',ownerToken:prev.ownerToken||'',ownerUrl:prev.ownerUrl||''};localStorage.setItem(EVKEY,JSON.stringify(d));return d};
+    const evSave=()=>{const prev=evGet();const d={...prev,type:document.getElementById('agqr_evType')?.value||'casamiento',name:document.getElementById('agqr_evName')?.value||'',date:document.getElementById('agqr_evDate')?.value||'',when:document.getElementById('agqr_evWhen')?.value||'',plan:document.getElementById('agqr_evPlan')?.value||'',letter:document.getElementById('agqr_evLetter')?.value||'',photos:prev.photos||[],style:document.getElementById('agqr_evStyle')?.value||'elegante',template:document.getElementById('agqr_evTemplate')?.value||prev.template||'auto',bgData:prev.bgData||'',publicUrl:prev.publicUrl||'',game:!!document.getElementById('agqr_evGame')?.checked,conf:!!document.getElementById('agqr_evConf')?.checked,album:!!document.getElementById('agqr_evAlbum')?.checked,challenges:document.getElementById('agqr_evChallenges')?.value||'',questions:document.getElementById('agqr_evQuestions')?.value||'',surpriseIndex:Number(prev.surpriseIndex||0),eventId:prev.eventId||'',ownerToken:prev.ownerToken||'',ownerUrl:prev.ownerUrl||''};localStorage.setItem(EVKEY,JSON.stringify(d));return d};
     const evFill=d=>{if(!d)return;[['agqr_evType','type'],['agqr_evName','name'],['agqr_evDate','date'],['agqr_evStyle','style'],['agqr_evTemplate','template'],['agqr_evChallenges','challenges'],['agqr_evQuestions','questions']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.value=d[k]});[['agqr_evGame','game'],['agqr_evConf','conf'],['agqr_evAlbum','album']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.checked=!!d[k]})};
     const evEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const evItems=s=>String(s||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
@@ -7544,36 +7559,52 @@ libre:[['✨','Bienvenida','Comienza un momento especial'],['📸','Fotos','Guar
       };return M[d.type]||M.libre;
     }
     function evMarkup(d,withQr=false){
-      const retos=evItems(d.challenges),preg=evItems(d.questions),v=evTheme(d),x=evIdentity(d);
-      const bg=d.bgData?`background-image:linear-gradient(rgba(2,6,23,.42),rgba(2,6,23,.80)),url("${d.bgData}");background-size:cover;background-position:center;`:`background:${x.hero};`;
-      const qr=withQr&&d.publicUrl?`<div style="background:#fff;padding:10px;border-radius:22px;display:inline-block;margin:20px auto 8px;box-shadow:0 12px 35px rgba(0,0,0,.25)"><img crossorigin="anonymous" src="https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(d.publicUrl)}" style="width:205px;height:205px;display:block"></div><div style="font-size:.8rem;opacity:.82">Escaneá · participá · sorprendé</div>`:'';
-      const b=(kind,ico,label,sub)=>`<button type="button" data-ev-demo="${kind}" style="padding:13px 10px;background:${x.card};color:#fff;border:1px solid rgba(255,255,255,.30);border-radius:18px;font-weight:850;cursor:pointer;min-height:76px;backdrop-filter:blur(10px)"><span style="font-size:1.45rem;display:block">${ico}</span>${label}<small style="display:block;font-size:.66rem;opacity:.72;margin-top:3px">${sub}</small></button>`;
-      return `<div class="ev-demo-card" style="max-width:680px;margin:auto;padding:0;border-radius:34px;${bg}color:#fff;text-align:center;box-shadow:0 25px 70px rgba(0,0,0,.42);position:relative;overflow:hidden">
-        <div style="position:absolute;right:-25px;top:45px;font-size:7rem;opacity:.08;transform:rotate(10deg)">${x.shape}</div>
-        <div style="padding:32px 26px 18px;border-bottom:1px solid rgba(255,255,255,.14)">
-          <div style="font-size:1.15rem;letter-spacing:.28em;color:${v.accent};animation:pulse 2.6s ease-in-out infinite">${x.orn}</div>
-          <div style="font-size:.68rem;letter-spacing:.24em;font-weight:900;margin-top:14px;opacity:.82">${x.eyebrow}</div>
-          <div style="font-size:3.1rem;margin:8px 0 0">${x.icon}</div>
-          <h3 style="font-size:2rem;margin:5px 0 4px">${evEsc(d.name||'Nuestro evento')}</h3>
-          <div style="opacity:.82">${evEsc(d.date||'Una fecha para recordar')}</div>
-          <div style="font-family:Georgia,serif;font-style:italic;margin:13px auto 0;max-width:470px;color:${v.accent}">${x.note}</div>
-        </div>
-        <div style="padding:22px 24px 30px">
-          <div style="font-size:.76rem;letter-spacing:.14em;font-weight:900;margin-bottom:10px">DEJÁ TU RECUERDO PRIVADO</div>
-          <input data-ev-name placeholder="Tu nombre o apodo" style="width:100%;padding:13px;border-radius:15px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.20);color:#fff;margin:5px 0 14px">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
+      const retos=evItems(d.challenges),preg=evItems(d.questions),v=evTheme(d),x=evIdentity(d),agenda=evAgenda(d);
+      const bg=d.bgData?`background-image:linear-gradient(rgba(2,6,23,.28),rgba(2,6,23,.72)),url("${d.bgData}");background-size:cover;background-position:center;`:`background:${x.hero};`;
+      const b=(kind,ico,label,sub)=>`<button type="button" data-ev-demo="${kind}" style="padding:13px 10px;background:${x.card};color:#fff;border:1px solid rgba(255,255,255,.30);border-radius:18px;font-weight:850;cursor:pointer;min-height:76px"><span style="font-size:1.45rem;display:block">${ico}</span>${label}<small style="display:block;font-size:.66rem;opacity:.72;margin-top:3px">${sub}</small></button>`;
+      const manual=evItems(d.plan);
+      return `<div style="max-width:720px;margin:auto;color:#fff">
+        <section style="${bg}min-height:610px;border-radius:34px;padding:42px 28px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;box-shadow:0 25px 70px #0007">
+          <div style="position:absolute;inset:0;background:linear-gradient(transparent,rgba(0,0,0,.42))"></div>
+          <div style="position:relative;text-align:center">
+            <div style="letter-spacing:.25em;font-weight:900;font-size:.72rem">${x.eyebrow}</div>
+            <div style="font-size:4rem;margin:10px">${x.icon}</div>
+            <h2 style="font-size:2.6rem;margin:4px">${evEsc(d.name||'Nuestro evento')}</h2>
+            <div style="font-size:1.05rem">${evEsc(d.date||'Una fecha para recordar')}</div>
+            ${d.when?`<div style="margin-top:8px;font-weight:800">${evEsc(d.when)}</div>`:''}
+            <p style="font-family:Georgia,serif;font-style:italic;font-size:1.12rem;color:${v.accent}">${x.note}</p>
+            <div style="margin-top:18px;font-size:.78rem;opacity:.8">DESLIZÁ PARA DESCUBRIR LA EXPERIENCIA ↓</div>
+          </div>
+        </section>
+
+        <section style="margin-top:18px;background:#0f172acc;border:1px solid #ffffff22;border-radius:30px;padding:28px">
+          <div style="letter-spacing:.18em;font-size:.68rem;font-weight:900;opacity:.7">PARTE 1 · EL RECORRIDO</div>
+          <h3 style="font-size:1.7rem;margin:8px 0 18px">✨ Así vamos a vivir este día</h3>
+          <div style="display:grid;gap:9px">${agenda.map((m,i)=>`<div style="display:flex;gap:12px;text-align:left;background:#ffffff0d;padding:12px;border-radius:15px"><b>${i+1}</b><div><b>${evEsc(m[0]+' '+m[1])}</b><small style="display:block;opacity:.7">${evEsc(m[2])}</small></div></div>`).join('')}</div>
+          ${manual.length?`<div style="margin-top:18px;padding:15px;background:#ffffff0d;border-radius:16px;text-align:left"><b>🕒 Horarios de este evento</b>${manual.map(m=>`<div style="margin-top:7px">${evEsc(m)}</div>`).join('')}</div>`:''}
+        </section>
+
+        <section style="margin-top:18px;background:${x.hero};border-radius:30px;padding:28px;text-align:center">
+          <div style="letter-spacing:.18em;font-size:.68rem;font-weight:900;opacity:.7">PARTE 2 · PARTICIPÁ</div>
+          <h3 style="font-size:1.7rem;margin:8px 0">📸 Ahora también sos parte de esta historia</h3>
+          <input data-ev-name placeholder="Tu nombre o apodo" style="width:100%;padding:13px;border-radius:15px;border:1px solid #ffffff44;background:#0003;color:#fff;margin:12px 0">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:9px">
             ${d.game?b('photo','📸','Foto / reto','Cumplí tu misión'):''}
-            ${d.game?b('selfie','🤳','Selfie sorpresa','Una foto espontánea'):''}
-            ${d.conf?b('video','🎥','Video','Máximo 60 segundos'):''}
-            ${d.conf?b('audio','🎙️','Audio','Dejá tu voz'):''}
-            ${d.conf?b('text','💌','Mensaje','Deseo o saludo'):''}
+            ${d.game?b('selfie','🤳','Selfie','Sacala ahora'):''}
+            ${d.conf?b('video','🎥','Video','Grabalo ahora'):''}
+            ${d.conf?b('audio','🎙️','Audio','Grabá tu voz'):''}
             ${d.conf?b('memory','❤️','Anécdota','Un recuerdo juntos'):''}
           </div>
-          <div data-ev-demo-editor style="display:none;text-align:left;margin-top:13px;background:rgba(0,0,0,.26);padding:14px;border-radius:18px"></div>
-          ${d.game?`<div style="text-align:left;margin-top:19px;background:${x.card};padding:15px;border-radius:19px;border:1px solid rgba(255,255,255,.12)"><b>🎯 Tu reto sorpresa</b><div data-ev-reto style="padding:8px 0">${evEsc(retos[0]||'Sacate una foto especial del momento')}</div><button type="button" data-ev-other style="padding:9px 12px;border:0;border-radius:12px;cursor:pointer">🔄 Quiero otro reto</button></div>`:''}
-          ${d.conf?`<div style="text-align:left;margin-top:11px;background:${x.card};padding:15px;border-radius:19px;border:1px solid rgba(255,255,255,.12)"><b>💬 Una pregunta para vos</b><div data-ev-question style="padding:8px 0">${evEsc(preg[0]||'Dejá un mensaje especial')}</div></div>`:''}
-          ${qr}
-        </div></div>`;
+          <div data-ev-demo-editor style="margin-top:12px"></div>
+        </section>
+
+        <section style="margin-top:18px;background:#111827;border:1px solid #ffffff22;border-radius:30px;padding:28px;text-align:center">
+          <div style="letter-spacing:.18em;font-size:.68rem;font-weight:900;opacity:.7">PARTE 3 · PARA GUARDAR</div>
+          <h3 style="font-size:1.7rem;margin:8px 0">💌 Unas palabras y nuestros momentos</h3>
+          ${d.letter?`<div style="font-family:Georgia,serif;font-size:1.08rem;line-height:1.7;background:#ffffff0d;border-radius:18px;padding:20px;margin:16px 0;text-align:left;white-space:pre-wrap">${evEsc(d.letter)}</div>`:`<div style="opacity:.7;margin:16px">Acá podés escribir una carta o dedicatoria especial.</div>`}
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${(d.photos||[]).map(p=>`<img src="${p}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px">`).join('')||'<div style="grid-column:1/-1;padding:20px;background:#ffffff0d;border-radius:16px">🖼️ Agregá fotos para cerrar la experiencia.</div>'}</div>
+        </section>
+      </div>`;
     }
     function evBindPreviewDemo(box,d){
       const retos=evItems(d.challenges),preg=evItems(d.questions);let ri=0;
@@ -7644,6 +7675,7 @@ button.primary{background:linear-gradient(135deg,${t.a},${t.b})}.mission{padding
 <h2>✨ Así vamos a vivir este día</h2>
 <p class="muted">Antes de participar, recorré los momentos especiales de esta celebración.</p>
 <div class="timeline">${evAgenda(d).map((m,i)=>`<div class="moment"><span class="num">${i+1}</span><span><b>${evEsc(m[0]+' '+m[1])}</b><small style="display:block;opacity:.72;margin-top:3px">${evEsc(m[2])}</small></span></div>`).join('')}</div>
+${evItems(d.plan).length?`<div class="mission" style="margin-top:16px;text-align:left"><b>🕒 Horarios de este evento</b>${evItems(d.plan).map(m=>`<div style="margin-top:7px">${evEsc(m)}</div>`).join('')}</div>`:''}
 <div style="text-align:center;margin-top:18px"><a href="#guest" class="btn primary" style="display:inline-block;text-decoration:none">📸 Quiero participar</a></div>
 </section><section class="panel" id="guest"><div class="kicker">AHORA TAMBIÉN SOS PARTE DE ESTA HISTORIA</div><h2>📸 Participá y dejá tu recuerdo</h2>
 <div class="kicker">AHORA TAMBIÉN SOS PARTE DE ESTA HISTORIA</div><h2>📸 Participá de la fiesta</h2><input class="field" id="who" maxlength="50" placeholder="Tu nombre o apodo">
@@ -7651,7 +7683,9 @@ button.primary{background:linear-gradient(135deg,${t.a},${t.b})}.mission{padding
 <div class="tabs"><button data-kind="photo">📸 Foto / reto</button><button data-kind="selfie">🤳 Sacarme una selfie</button><button data-kind="video">🎥 Video</button><button data-kind="audio">🎙️ Audio</button><button data-kind="memory">❤️ Anécdota</button></div>
 <div id="editor" class="preview hide"></div><div id="sendStatus" class="status"></div>
 </section>
-<section class="panel" id="publicGallery"><div class="kicker">MOMENTOS PARA RECORDAR</div><h2>🖼️ Nuestra galería</h2><p class="muted">Las fotos de presentación del evento. Los aportes de invitados siguen siendo privados.</p><div class="gallery">${(d.photos||[]).slice(0,9).map(p=>`<img src="${p}" alt="Momento del evento">`).join('')||'<div class="mission" style="grid-column:1/-1">📷 Muy pronto, más momentos de esta celebración.</div>'}</div></section><section class="panel owner hide" id="owner"><h2>❤️ Mis recuerdos</h2><div class="row"><button data-filter="all">Todos</button><button data-filter="foto">📸 Fotos</button><button data-filter="video">🎥 Videos</button><button data-filter="audio">🎙️ Audios</button><button data-filter="mensaje">❤️ Anécdotas</button></div><p id="count"></p><div id="ownerStatus" class="status">🟢 Conectando recuerdos…</div><div class="cards" id="items"></div></section>
+<section class="panel" id="publicGallery"><div class="kicker">PARTE 3 · PARA GUARDAR</div><h2>💌 Unas palabras y nuestros momentos</h2>
+${d.letter?`<div class="mission" style="font-family:Georgia,serif;font-size:1.08rem;line-height:1.7;white-space:pre-wrap">${evEsc(d.letter)}</div>`:''}
+<div class="gallery" style="margin-top:16px">${(d.photos||[]).slice(0,9).map(p=>`<img src="${p}" alt="Momento del evento">`).join('')||'<div class="mission" style="grid-column:1/-1">🖼️ Muy pronto, más momentos de esta celebración.</div>'}</div></section><section class="panel owner hide" id="owner"><h2>❤️ Mis recuerdos</h2><div class="row"><button data-filter="all">Todos</button><button data-filter="foto">📸 Fotos</button><button data-filter="video">🎥 Videos</button><button data-filter="audio">🎙️ Audios</button><button data-filter="mensaje">❤️ Anécdotas</button></div><p id="count"></p><div id="ownerStatus" class="status">🟢 Conectando recuerdos…</div><div class="cards" id="items"></div></section>
 </main>
 <script>
 (()=>{const EVENT=${JSON.stringify(eventId)},SB=${JSON.stringify(String(d.supabaseUrl||''))},KEY=${JSON.stringify(String(d.supabaseKey||''))},BUCKET=${JSON.stringify(String(d.supabaseBucket||'eventos-qr'))},retos=${retosJson},preg=${pregJson},MAX_VIDEO=60,MAX_AUDIO=120;
@@ -7809,10 +7843,13 @@ if(ownerMode)owner();
       const u=await evEnsureUrl();if(!u)return;const q=`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(u)}`;
       try{const r=await fetch(q),b=await r.blob(),o=URL.createObjectURL(b),a=document.createElement('a');a.href=o;a.download='ANGELA_EVENTO_QR_'+String(evGet().name||'evento').replace(/[^\wáéíóúñ-]+/gi,'_')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(o),1000)}catch{window.open(q,'_blank','noopener')}
     }
+    function evCanvasColors(d){
+      const M={casamiento:['#4c1d3d','#1f2937'],quince:['#4b1991','#b42378'],cumple:['#312e81','#be2069'],aniversario:['#7d1237','#3e1973'],babyshower:['#2378aa','#be5087'],bautismo:['#2a5d9b','#4b3f91'],graduacion:['#142d64','#642d91'],libre:['#192d55','#4b2369']};return M[d.type]||M.libre;
+    }
     async function evOwnerCardBlob(){
       const d=evGet();if(!d.ownerUrl)throw new Error('Primero creá y publicá el evento.');
-      const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),v=evTheme(d),g=x.createLinearGradient(0,0,W,H);
-      g.addColorStop(0,v.a);g.addColorStop(.55,v.b);g.addColorStop(1,'#070b18');x.fillStyle=g;x.fillRect(0,0,W,H);x.textAlign='center';x.fillStyle='#fff';
+      const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),v=evTheme(d),cc=evCanvasColors(d),g=x.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,cc[0]);g.addColorStop(.55,cc[1]);g.addColorStop(1,'#070b18');x.fillStyle=g;x.fillRect(0,0,W,H);x.textAlign='center';x.fillStyle='#fff';
       x.font='900 40px system-ui';x.fillText('❤️ MI TARJETA PRIVADA',W/2,120);x.font='900 76px system-ui';x.fillText(d.name||'Mi evento',W/2,230);x.font='600 30px system-ui';x.fillStyle='#ffffffcc';x.fillText(d.date||'',W/2,285);
       x.font='700 30px system-ui';x.fillStyle='#fff';x.fillText('Tus recuerdos de este día están acá',W/2,375);
       const im=await evLoadImg('https://api.qrserver.com/v1/create-qr-code/?size=520x520&data='+encodeURIComponent(d.ownerUrl));x.fillStyle='#fff';evRound(x,275,455,530,530,30);x.fill();x.drawImage(im,300,480,480,480);
@@ -7832,7 +7869,7 @@ if(ownerMode)owner();
       x.fillStyle='rgba(0,0,0,.46)';x.fillRect(70,70,940,1210);x.textAlign='center';x.fillStyle='#fff';x.font='700 34px Arial';x.fillText('EVENTO QR',540,155);x.font='800 62px Arial';x.fillText((d.name||'Nuestro evento').slice(0,28),540,260);x.font='32px Arial';x.fillText((d.date||'Una fecha para recordar').slice(0,40),540,320);
       x.font='30px Arial';x.fillText('Escaneá y participá de este recuerdo',540,390);
       const qr=await new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=rej;im.src=`https://api.qrserver.com/v1/create-qr-code/?size=700x700&data=${encodeURIComponent(u)}`});
-      x.fillStyle='#fff';x.fillRect(285,470,510,510);x.drawImage(qr,305,490,470,470);x.font='700 30px Arial';x.fillStyle='#fff';x.fillText('📸 Retos  ·  🎙️ Mensajes  ·  ❤️ Recuerdos',540,1050);x.font='26px Arial';x.fillText('Guardá esta tarjeta o compartila por WhatsApp',540,1120);
+      x.fillStyle='#fff';x.fillRect(285,470,510,510);x.drawImage(qr,305,490,470,470);x.font='700 30px Arial';x.fillStyle='#fff';x.fillText('📸 Retos  ·  🎙️ Audios  ·  ❤️ Anécdotas',540,1050);x.font='26px Arial';x.fillText('Guardá esta tarjeta o compartila por WhatsApp',540,1120);
       return await new Promise(res=>c.toBlob(res,'image/png'));
     }
     async function evDownloadCard(force=true){
@@ -7875,7 +7912,14 @@ if(ownerMode)owner();
     document.getElementById('agqr_evShareCard')?.addEventListener('click',()=>evDownloadCard(false));document.getElementById('agqr_evDownloadBoth').onclick=evDownloadBoth;
     document.getElementById('agqr_evOpen')?.addEventListener('click',async()=>{const u=await evEnsureUrl();if(u)window.open(u,'_blank','noopener')});
     document.getElementById('agqr_evBg')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const d=evSave();d.bgData=String(r.result||'');d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()};r.readAsDataURL(f);e.target.value=''});
-    document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();d.bgData='';d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()});
+    document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();
+    ['agqr_evWhen','agqr_evPlan','agqr_evLetter'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>{evSave();evPreview()}));
+    document.getElementById('agqr_evGallery')?.addEventListener('change',async e=>{
+      const files=[...(e.target.files||[])].slice(0,9),pics=[];
+      for(const f of files){pics.push(await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)}))}
+      const d=evGet();d.photos=pics;localStorage.setItem(EVKEY,JSON.stringify(d));evPreview();
+    });
+d.bgData='';d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()});
     document.getElementById('agqr_evClear')?.addEventListener('click',()=>{localStorage.removeItem(EVKEY);evFill({type:'casamiento',name:'',date:'',style:'elegante',template:'auto',bgData:'',publicUrl:'',game:true,conf:true,album:true,challenges:'',questions:''});const b=document.getElementById('agqr_evPreviewBox');if(b){b.style.display='none';b.innerHTML=''};const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🆕 Nuevo evento listo. Los Regalos QR existentes no fueron tocados.'});
 
     window.ANGELA_EVENTOS_QR_OPEN=function(){const d=document.getElementById('agqr_eventosQR');if(!d)return;d.open=true;evSetFullscreen(true);setTimeout(()=>{const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='🎉 <b>Eventos QR abierto como módulo independiente.</b> Podés probar Foto, Video, Audio, Mensaje y Otro reto desde Vista previa antes de publicar.';},40)};
