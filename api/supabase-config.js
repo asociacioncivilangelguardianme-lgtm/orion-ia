@@ -3,7 +3,12 @@ module.exports = function handler(req, res) {
     return res.status(405).json({ error: "Método no permitido" });
   }
 
-  const url = process.env.SUPABASE_URL || "";
+  const rawUrl = process.env.SUPABASE_URL || "";
+
+  const url = rawUrl
+    .replace(/\/rest\/v1\/?$/i, "")
+    .replace(/\/+$/, "");
+
   const key =
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.SUPABASE_ANON_KEY ||
@@ -18,8 +23,8 @@ module.exports = function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   return res.status(200).json({
-    url: url,
-    key: key,
+    url,
+    key,
     publishableKey: key,
     bucket: "eventos-qr"
   });
