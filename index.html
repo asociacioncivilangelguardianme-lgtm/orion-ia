@@ -1,4 +1,4 @@
-<!-- ÁNGELA V11.30 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
+<!-- ÁNGELA V11.31 · basada íntegramente en V11.16 · publicación QR robusta + validación cliente · prueba separada -->
 <!DOCTYPE html>
 <!-- ÁNGELA V9.9 · Regalos QR seguro en un solo HTML · sin llamadas /api falsas -->
 <html lang="es" class="dark">
@@ -7496,7 +7496,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const moveImg=(dx,dy,dz)=>{STATE.themeImageX=Math.max(0,Math.min(100,(Number(STATE.themeImageX)||50)+dx));STATE.themeImageY=Math.max(0,Math.min(100,(Number(STATE.themeImageY)||50)+dy));STATE.themeImageZoom=Math.max(70,Math.min(180,(Number(STATE.themeImageZoom)||100)+dz));invalidateFinal();saveState();syncPreview()};
     document.getElementById('agqr_imgUp')?.addEventListener('click',()=>moveImg(0,-5,0));document.getElementById('agqr_imgDown')?.addEventListener('click',()=>moveImg(0,5,0));document.getElementById('agqr_imgLeft')?.addEventListener('click',()=>moveImg(-5,0,0));document.getElementById('agqr_imgRight')?.addEventListener('click',()=>moveImg(5,0,0));document.getElementById('agqr_imgZoomOut')?.addEventListener('click',()=>moveImg(0,0,-10));document.getElementById('agqr_imgZoomIn')?.addEventListener('click',()=>moveImg(0,0,10));document.getElementById('agqr_imgReset')?.addEventListener('click',()=>{STATE.themeImageFit='contain';STATE.themeImageX=50;STATE.themeImageY=50;STATE.themeImageZoom=100;const q=document.getElementById('agqr_themeImageFit');if(q)q.value='contain';invalidateFinal();saveState();syncPreview();setStatus('✅ ÁNGELA acomodó la imagen para mostrarla completa y evitar cortes.','ok')});
     document.getElementById('agqr_musicFile')?.addEventListener('change',async e=>{invalidateFinal();stopPreviewMusic();const f=e.target.files?.[0];if(!f)return;const input=e.target;setStatus(`⏳ Preparando ${esc(f.name)}…`,'busy');try{const r=await optimizeAudioForGift(f);STATE.musicName=r.name||f.name;STATE.musicData=r.data;STATE.musicUrl='';STATE.musicStoredBytes=r.bytes||0;STATE.musicOptimized=!!r.optimized;STATE.musicClipSeconds=r.duration||0;saveState();renderFormValues();syncPreview();setStatus('✅ Música cargada. Podés probarla antes de terminar el regalo.','ok')}catch(err){STATE.musicData='';STATE.musicName='';STATE.musicStoredBytes=0;STATE.musicOptimized=false;STATE.musicClipSeconds=0;renderFormValues();setStatus(`❌ ${esc(err?.message||err)}`,'error')}finally{input.value=''}});
-    // ===== ÁNGELA V11.30 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
+    // ===== ÁNGELA V11.31 · EVENTOS QR PREMIUM (conserva íntegra V11.16) =====
     const EVKEY='ANGELA_eventos_qr_v2';
     const evDefaults={
       casamiento:{retos:['Foto con los novios','El brindis','El primer baile','Una foto de toda tu mesa','El momento más divertido','Un detalle que nadie haya visto'],preguntas:['Dejales un deseo a los novios','Contá una anécdota con ellos','¿Qué consejo les darías para esta nueva etapa?']},
@@ -7519,7 +7519,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const evLines=a=>(a||[]).join('\n');
     const evGet=()=>{try{return JSON.parse(localStorage.getItem(EVKEY)||'{}')}catch{return{}}};
     const evSave=()=>{const prev=evGet();const d={...prev,type:document.getElementById('agqr_evType')?.value||'casamiento',name:document.getElementById('agqr_evName')?.value||'',date:document.getElementById('agqr_evDate')?.value||'',when:document.getElementById('agqr_evWhen')?.value||'',plan:document.getElementById('agqr_evPlan')?.value||'',letter:document.getElementById('agqr_evLetter')?.value||'',photos:prev.photos||[],style:document.getElementById('agqr_evStyle')?.value||'elegante',template:document.getElementById('agqr_evTemplate')?.value||prev.template||'auto',bgData:prev.bgData||'',publicUrl:prev.publicUrl||'',game:!!document.getElementById('agqr_evGame')?.checked,conf:!!document.getElementById('agqr_evConf')?.checked,album:!!document.getElementById('agqr_evAlbum')?.checked,challenges:document.getElementById('agqr_evChallenges')?.value||'',questions:document.getElementById('agqr_evQuestions')?.value||'',surpriseIndex:Number(prev.surpriseIndex||0),eventId:prev.eventId||'',ownerToken:prev.ownerToken||'',ownerUrl:prev.ownerUrl||''};localStorage.setItem(EVKEY,JSON.stringify(d));return d};
-    const evFill=d=>{if(!d)return;[['agqr_evType','type'],['agqr_evName','name'],['agqr_evDate','date'],['agqr_evStyle','style'],['agqr_evTemplate','template'],['agqr_evChallenges','challenges'],['agqr_evQuestions','questions']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.value=d[k]});[['agqr_evGame','game'],['agqr_evConf','conf'],['agqr_evAlbum','album']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.checked=!!d[k]})};
+    const evFill=d=>{if(!d)return;[['agqr_evType','type'],['agqr_evName','name'],['agqr_evDate','date'],['agqr_evWhen','when'],['agqr_evPlan','plan'],['agqr_evLetter','letter'],['agqr_evStyle','style'],['agqr_evTemplate','template'],['agqr_evChallenges','challenges'],['agqr_evQuestions','questions']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.value=d[k]});[['agqr_evGame','game'],['agqr_evConf','conf'],['agqr_evAlbum','album']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.checked=!!d[k]})};
     const evEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const evItems=s=>String(s||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
     const evTheme=d=>{
@@ -7622,8 +7622,9 @@ libre:[['✨','Bienvenida','Comienza un momento especial'],['📸','Fotos','Guar
     }
     function evPreview(){
       const d=evSave(),box=document.getElementById('agqr_evPreviewBox');if(!box)return;
+      const y=window.scrollY;
       box.style.display='block';box.innerHTML=evMarkup(d,!!d.publicUrl);evBindPreviewDemo(box,d);
-      box.scrollIntoView({behavior:'smooth',block:'nearest'});
+      requestAnimationFrame(()=>window.scrollTo({top:y,left:window.scrollX,behavior:'auto'}));
     }
     function evSurprise(){
       const type=document.getElementById('agqr_evType')?.value||'casamiento',p=evDefaults[type]||evDefaults.libre,prev=evGet();
@@ -7901,7 +7902,18 @@ if(ownerMode)owner();
     if(location.protocol==='file:'){const n=document.getElementById('agqr_evLocalNotice');if(n)n.style.display='block'}
 
     const oldEv=evGet(); if(Object.keys(oldEv).length)evFill(oldEv);
-    document.querySelectorAll('#agqr_eventosQR input,#agqr_eventosQR select,#agqr_eventosQR textarea').forEach(e=>e.addEventListener('input',evSave));
+    document.querySelectorAll('#agqr_eventosQR input,#agqr_eventosQR select,#agqr_eventosQR textarea').forEach(e=>{
+      if(e.type==='file')return;
+      e.addEventListener('input',()=>evSave());
+      e.addEventListener('change',()=>{evSave();});
+    });
+        ['agqr_evType','agqr_evStyle','agqr_evTemplate'].forEach(id=>{
+      document.getElementById(id)?.addEventListener('change',()=>{
+        evSave();
+        const box=document.getElementById('agqr_evPreviewBox');
+        if(box?.style.display==='block')evPreview();
+      });
+    });
     document.getElementById('agqr_evMusic')?.addEventListener('change',e=>{const f=e.target.files?.[0],st=document.getElementById('agqr_evStatus');if(f&&st)st.textContent='🎵 Música seleccionada: '+f.name+'. Quedará asociada al evento al publicarlo online.'});
     document.getElementById('agqr_evSurprise')?.addEventListener('click',evSurprise);
     document.getElementById('agqr_evPreview')?.addEventListener('click',evPreview);
@@ -7914,22 +7926,34 @@ if(ownerMode)owner();
     document.getElementById('agqr_evBg')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const d=evSave();d.bgData=String(r.result||'');d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()};r.readAsDataURL(f);e.target.value=''});
     document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();d.bgData='';d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()});
 
-    ['agqr_evWhen','agqr_evPlan','agqr_evLetter'].forEach(id=>{
-      document.getElementById(id)?.addEventListener('input',()=>{evSave();evPreview()});
-    });
-
     document.getElementById('agqr_evGallery')?.addEventListener('change',async e=>{
       const files=[...(e.target.files||[])].slice(0,9);
       if(!files.length)return;
-      const pics=[];
-      for(const f of files){
-        if(!f.type.startsWith('image/'))continue;
-        const data=await new Promise((resolve,reject)=>{
-          const r=new FileReader();
-          r.onload=()=>resolve(String(r.result||''));
-          r.onerror=()=>reject(r.error||new Error('No se pudo leer la foto'));
-          r.readAsDataURL(f);
-        });
+      const st=document.getElementById('agqr_evStatus');
+      if(st)st.innerHTML='🖼️ Cargando fotos…';
+      try{
+        const pics=[];
+        for(const f of files){
+          if(!f.type.startsWith('image/'))continue;
+          const data=await new Promise((resolve,reject)=>{
+            const r=new FileReader();
+            r.onload=()=>resolve(String(r.result||''));
+            r.onerror=()=>reject(new Error('No se pudo leer '+f.name));
+            r.readAsDataURL(f);
+          });
+          if(data)pics.push(data);
+        }
+        if(!pics.length)throw new Error('No se encontró ninguna imagen válida.');
+        const current=evGet();
+        current.photos=pics;
+        current.publicUrl='';
+        localStorage.setItem(EVKEY,JSON.stringify(current));
+        evPreview();
+        if(st)st.innerHTML=`🖼️ <b>${pics.length} foto${pics.length===1?'':'s'} cargada${pics.length===1?'':'s'}.</b> Se muestran abajo en la Parte 3.`;
+      }catch(err){
+        if(st)st.innerHTML='⚠️ No se pudieron cargar las fotos: '+evEsc(err.message||err);
+      }finally{e.target.value=''}
+    });
         pics.push(data);
       }
       const d=evSave();
