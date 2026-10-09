@@ -9,7 +9,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- ÁNGELA V11.7 · Regalos QR Premium Variaciones + WhatsApp PNG · presentaciones + audio WhatsApp + QR único + nuevo regalo -->
-<title>ÁNGELA V11.48 | Studio IA · Prueba</title>
+<title>ÁNGELA V11.54 | Studio IA · Prueba</title>
 <!-- V8.4 · AGENTIC + PLANILLA VISIBLE + CLIMA/UBICACIÓN · 2026-10-03 -->
 <meta name="theme-color" content="#070d18">
 <meta name="description" content="ÁNGELA, asistente virtual para taller, láser, sublimación, imágenes, proyectos y trabajo diario.">
@@ -4234,7 +4234,7 @@ function montar(){
  const left=root.querySelector('aside:first-child'), right=root.querySelector('aside:last-child');
  if(left&&!document.getElementById('photoNav')){
   const nav=document.createElement('div');nav.id='photoNav';nav.className='angela-photo-nav';
-  nav.innerHTML=`<div class="angela-photo-brand"><span>🛡️</span> ÁNGELA <small style="display:block;margin-top:4px;font-size:8px;letter-spacing:.11em;color:#e879f9">V11.40 · STUDIO IA</small></div>
+  nav.innerHTML=`<div class="angela-photo-brand"><span>🛡️</span> ÁNGELA <small style="display:block;margin-top:4px;font-size:8px;letter-spacing:.11em;color:#e879f9">V11.54 · STUDIO IA</small></div>
   <button class="angela-photo-btn active" onclick="irInicio()"><span class="ico">🏠</span>Inicio / Chat</button>
   <button id="agStudioMainBtn" class="angela-photo-btn" onclick="window.ANGELAStudio?.open()" style="margin:5px 0 8px;background:linear-gradient(90deg,rgba(79,70,229,.92),rgba(162,28,175,.88),rgba(219,39,119,.88));border:1px solid #d946ef;color:#fff;font-weight:950;box-shadow:0 0 20px rgba(217,70,239,.18)"><span class="ico">🎬</span>ÁNGELA STUDIO IA <span style="margin-left:auto;font-size:8px;border:1px solid rgba(255,255,255,.45);padding:2px 5px;border-radius:999px">NUEVO</span></button>
   <div class="angela-photo-section">HERRAMIENTAS</div>
@@ -8582,5 +8582,6 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 document.addEventListener('change',e=>{if(e.target.id!=='ags_referenceVideo')return;const f=e.target.files?.[0],v=el('ags_referencePreview');if(!v)return;if(videoURL)URL.revokeObjectURL(videoURL);if(f){videoURL=URL.createObjectURL(f);v.src=videoURL;v.style.display='block'}else{v.removeAttribute('src');v.style.display='none'}});
 new MutationObserver(()=>{if(el('ags_longPrompt')&&!el('ags_longPrompt').dataset.ready)initialize()}).observe(document.body,{childList:true,subtree:true});initialize();})();
 </script>
+<script>document.addEventListener("DOMContentLoaded",function(){var el=document.createElement("div");el.textContent="ÁNGELA V11.54 · PRUEBA · "+(location.protocol==="file:"?"ARCHIVO LOCAL":"SERVIDOR");el.style.cssText="position:fixed;bottom:8px;right:8px;z-index:2147483647;background:#18233b;color:#fff;border:1px solid #a855f7;border-radius:10px;padding:7px 12px;font:700 12px Arial;box-shadow:0 2px 12px #0009;pointer-events:none";document.body.appendChild(el)});</script>
 </body>
 </html>
