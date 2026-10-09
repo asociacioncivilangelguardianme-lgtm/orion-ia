@@ -1,5 +1,5 @@
 // ÁNGELA - conexión de imágenes Hugging Face / FLUX.1-schnell
-// Archivo completo para api/image.js. No requiere editar otras partes de ÁNGELA.
+// Archivo completo para api/image.js. Versión ESM-2. No requiere editar otras partes de ÁNGELA.
 const SPACE = 'black-forest-labs/FLUX.1-schnell';
 function send(res, status, data) {
   res.setHeader('Cache-Control', 'no-store');
@@ -9,6 +9,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     return send(res, 200, {
       ok: true,
+      version: 'ESM-2',
       provider: 'Hugging Face',
       space: SPACE,
       tokenConfigured: Boolean(process.env.HF_TOKEN),
