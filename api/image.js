@@ -1,7 +1,7 @@
 // ÁNGELA — generador de imágenes mediante Space público FLUX.1-schnell.
 // El Space es gratuito con límites; la API puede aplicar cuotas, cola o restricciones.
 // HF_TOKEN debe configurarse como variable privada en Vercel.
-const client = await Client.connect(SPACE, options);
+const { Client } = require('@gradio/client');
 const SPACE = 'black-forest-labs/FLUX.1-schnell';
 function respond(res, code, body){res.status(code).setHeader('Cache-Control','no-store').json(body)}
 module.exports = async function handler(req,res){
