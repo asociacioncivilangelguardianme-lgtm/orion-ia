@@ -199,6 +199,8 @@ module.exports = async function handler(req, res) {
 
       falConfigured:
         Boolean(FAL_KEY),
+      hfTokenConfigured: Boolean(HF_TOKEN),
+      hfVideoEndpointConfigured: Boolean(HF_VIDEO_ENDPOINT),
 
       supabaseConfigured:
         Boolean(
@@ -251,18 +253,15 @@ module.exports = async function handler(req, res) {
       hfVideoEndpointConfigured: Boolean(HF_VIDEO_ENDPOINT),
       falKeyConfigured: Boolean(FAL_KEY),
       supabaseConfigured: Boolean(SUPABASE_URL && SUPABASE_PUBLIC_KEY),
-      activeVideoProvider: "fal.ai",
-      hfVideoGenerationEnabled: false,
+      activeVideoProvider: "huggingface",
+      hfVideoGenerationEnabled: Boolean(HF_TOKEN && HF_VIDEO_ENDPOINT),
       note: "Solo diagnóstico. No genera videos ni consume créditos. Un token de Hugging Face no equivale a un endpoint de video disponible."
     });
   }
 
-  if (!FAL_KEY) {
-    return jsonError(
-      500,
-      "Falta configurar FAL_KEY en Vercel"
-    );
-  }
+  // Fal.ai es opcional: solo se utiliza si se elige expresamente.
+  // Hugging Face necesita un endpoint de VIDEO operativo, no solo HF_TOKEN.
+
 
   /*
   ==========================================================
@@ -621,6 +620,42 @@ module.exports = async function handler(req, res) {
         }
       }
 
+      if (String(body.provider || "huggingface").toLowerCase() !== "fal") {
+        if (!HF_TOKEN) return jsonError(503, "Falta HF_TOKEN en Vercel.");
+        if (!HF_VIDEO_ENDPOINT) return jsonError(503,
+          "Hugging Face está conectado con token, pero falta HF_VIDEO_ENDPOINT: una URL de un servicio de VIDEO compatible. Generar imágenes no activa videos automáticamente.");
+        if (!/^https:\/\//i.test(HF_VIDEO_ENDPOINT)) return jsonError(400, "HF_VIDEO_ENDPOINT debe usar HTTPS.");
+        if (type === "video") return jsonError(422, "Este endpoint de Hugging Face no admite video-a-video sin un adaptador específico.");
+        try {
+          const hfInput = { inputs: input.prompt || "Animate naturally", parameters: { num_frames: 24 } };
+          if (type === "image") {
+            // Los endpoints HF tienen formatos diferentes. No se envía una imagen
+            // ignorando silenciosamente su URL: se exige un adaptador compatible.
+            return jsonError(422, "Imagen a video requiere un endpoint HF compatible con image_url y su formato de entrada. No se envió la imagen a un modelo de texto por error.");
+          }
+          const hfResponse = await fetch(HF_VIDEO_ENDPOINT, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${HF_TOKEN}`, "Content-Type": "application/json", Accept: "application/json, video/mp4" },
+            body: JSON.stringify(hfInput),
+            signal: AbortSignal.timeout(45000)
+          });
+          const contentType = hfResponse.headers.get("content-type") || "";
+          if (!hfResponse.ok) {
+            const details = (await hfResponse.text()).slice(0, 700);
+            return jsonError(hfResponse.status, `Hugging Face no generó el video: ${details}`);
+          }
+          if (contentType.includes("application/json")) {
+            const result = await hfResponse.json();
+            const videoUrl = result?.video?.url || result?.video_url || result?.url || result?.output?.video?.url;
+            if (videoUrl) return res.status(200).json({ok:true, action:"submit", kind:"video", provider:"huggingface", video:{url:videoUrl}, video_url:videoUrl, status:"COMPLETED"});
+            return res.status(502).json({ok:false, error:"El endpoint respondió, pero no devolvió una URL de video compatible.", details:result});
+          }
+          return jsonError(502, "El endpoint devolvió un video binario. Hace falta almacenamiento para ofrecer una URL descargable; no se devolvió una imagen ni un éxito falso.");
+        } catch (e) {
+          return jsonError(502, `No se pudo conectar con el generador de video HF: ${e.message}`);
+        }
+      }
+      if (!FAL_KEY) return jsonError(503, "Fal.ai no está configurado. Seleccioná Hugging Face o configurá FAL_KEY.");
       const response =
         await fetch(
           `https://queue.fal.run/${model}`,
