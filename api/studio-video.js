@@ -2,6 +2,8 @@ module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   const FAL_KEY = process.env.FAL_KEY || "";
+  const HF_TOKEN = process.env.HF_TOKEN || "";
+  const HF_VIDEO_ENDPOINT = process.env.HF_VIDEO_ENDPOINT || "";
 
   const rawSupabaseUrl = process.env.SUPABASE_URL || "";
   const SUPABASE_URL = rawSupabaseUrl
@@ -237,6 +239,21 @@ module.exports = async function handler(req, res) {
         "5. agregar subtitulos",
         "6. mp4 final"
       ]
+    });
+  }
+
+  // Diagnóstico seguro: no invoca proveedores, no usa créditos y no expone secretos.
+  if (req.method === "GET" && req.query?.action === "diagnostic") {
+    return res.status(200).json({
+      ok: true,
+      module: "ANGELA STUDIO IA - video",
+      hfTokenConfigured: Boolean(HF_TOKEN),
+      hfVideoEndpointConfigured: Boolean(HF_VIDEO_ENDPOINT),
+      falKeyConfigured: Boolean(FAL_KEY),
+      supabaseConfigured: Boolean(SUPABASE_URL && SUPABASE_PUBLIC_KEY),
+      activeVideoProvider: "fal.ai",
+      hfVideoGenerationEnabled: false,
+      note: "Solo diagnóstico. No genera videos ni consume créditos. Un token de Hugging Face no equivale a un endpoint de video disponible."
     });
   }
 
