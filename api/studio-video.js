@@ -4,6 +4,119 @@ module.exports = async function handler(req, res) {
   const FAL_KEY = process.env.FAL_KEY || "";
   const HF_TOKEN = process.env.HF_TOKEN || "";
   const HF_VIDEO_ENDPOINT = process.env.HF_VIDEO_ENDPOINT || "";
+  // Wan 2.2 Gradio Space. HF_VIDEO_ENDPOINT antiguo no es necesario.
+  const WAN_SPACE = "https://upsampler-wan-2-2-14b-image-to-video.hf.space";
+  const WAN_API = "generate_video";
+  const WAN_PREFIX = "wan22:";
+  const WAN_DEFAULT_NEGATIVE = "low quality, blurry, static, deformed hands, extra limbs, subtitles, watermark";
+
+  function wanError(status, msg) { return res.status(status).json({ok:false, provider:"huggingface-wan22", error:msg}); }
+  function wanHeaders(json = false) {
+    return { ...(HF_TOKEN ? {Authorization:`Bearer ${HF_TOKEN}`} : {}), ...(json ? {"Content-Type":"application/json"} : {}) };
+  }
+  function wanBase() { return WAN_SPACE.replace(/\/+$/, ""); }
+  function wanId(id) { return typeof id === "string" && id.startsWith(WAN_PREFIX) && /^[a-zA-Z0-9_-]{8,200}$/.test(id.slice(WAN_PREFIX.length)); }
+  function wanFileUrl(v) {
+    if (!v) return "";
+    if (typeof v === "string") return v.startsWith("http") ? v : `${wanBase()}/gradio_api/file=${encodeURIComponent(v)}`;
+    if (typeof v === "object") return wanFileUrl(v.url || v.path || v.name);
+    return "";
+  }
+  function wanOutput(data) {
+    const a = Array.isArray(data) ? data : (data?.data || []);
+    const v = Array.isArray(a) ? a[0] : a;
+    return wanFileUrl(v);
+  }
+  function parseWanSSE(raw) {
+    let result = null, failure = null, completed = false;
+    for (const block of raw.split(/\r?\n\r?\n/)) {
+      let event = "", payload = "";
+      for (const line of block.split(/\r?\n/)) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        if (line.startsWith("data:")) payload += line.slice(5).trim();
+      }
+      if (!payload) continue;
+      let parsed; try { parsed = JSON.parse(payload); } catch { continue; }
+      if (event === "complete") { completed = true; result = parsed; }
+      if (event === "error") { failure = parsed?.message || parsed?.error || "Wan rechazó el trabajo"; }
+    }
+    return {result, failure, completed};
+  }
+  async function wanUpload(url) {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") throw new Error("La imagen debe estar alojada en HTTPS");
+    // Evitar accesos a servicios internos por URLs proporcionadas por el navegador.
+    const h = parsed.hostname.toLowerCase();
+    if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal") || h === "0.0.0.0" || /^127\.|^10\.|^192\.168\.|^169\.254\.|^172\.(1[6-9]|2[0-9]|3[01])\./.test(h) || h === "::1") throw new Error("URL de imagen no permitida");
+    const imageRes = await fetch(url, {signal:AbortSignal.timeout(18000), redirect:"error"});
+    if (!imageRes.ok) throw new Error(`No pude descargar la imagen (${imageRes.status})`);
+    const mime = (imageRes.headers.get("content-type") || "").split(";")[0].toLowerCase();
+    if (!["image/png","image/jpeg","image/webp"].includes(mime)) throw new Error("Usá una imagen JPG, PNG o WEBP accesible mediante URL");
+    const b = await imageRes.arrayBuffer();
+    if (b.byteLength > 10*1024*1024) throw new Error("La imagen supera 10 MB");
+    const fd = new FormData();
+    fd.append("files", new Blob([b],{type:mime}), mime === "image/png" ? "imagen.png" : mime === "image/webp" ? "imagen.webp" : "imagen.jpg");
+    const uploadRes = await fetch(`${wanBase()}/gradio_api/upload`, {method:"POST",headers:wanHeaders(),body:fd,signal:AbortSignal.timeout(25000)});
+    if (!uploadRes.ok) throw new Error(`Wan no aceptó la imagen (${uploadRes.status}): ${(await uploadRes.text()).slice(0,200)}`);
+    const paths = await uploadRes.json();
+    const path = Array.isArray(paths) ? paths[0] : paths?.files?.[0];
+    if (!path || typeof path !== "string") throw new Error("Wan no devolvió la ruta de imagen esperada");
+    return {path,meta:{_type:"gradio.FileData"}};
+  }
+  async function wanSubmit(body) {
+    if (!HF_TOKEN) return wanError(503,"Falta HF_TOKEN en Vercel");
+    const imageUrl = body.image_url || body.start_image_url || body.input?.image_url || body.input?.start_image_url;
+    if (!imageUrl) return wanError(400,"Wan 2.2 necesita una imagen inicial (image_url)");
+    try {
+      const image = await wanUpload(String(imageUrl));
+      const endUrl = body.end_image_url || body.input?.end_image_url;
+      const end = endUrl ? await wanUpload(String(endUrl)) : null;
+      const prompt = String(body.prompt || body.input?.prompt || "Make this image come alive with natural cinematic motion").slice(0,2000);
+      const duration = Math.max(0.5,Math.min(5,Number(body.duration_seconds || body.duration || 3) || 3));
+      const steps = Math.max(1,Math.min(12,Math.round(Number(body.steps || 6) || 6)));
+      const data = [image,prompt,steps,String(body.negative_prompt || WAN_DEFAULT_NEGATIVE),duration,1,1,42,true,end];
+      const r = await fetch(`${wanBase()}/gradio_api/call/${WAN_API}`, {method:"POST",headers:wanHeaders(true),body:JSON.stringify({data}),signal:AbortSignal.timeout(20000)});
+      const raw = await r.text();
+      if (!r.ok) return wanError(r.status,`Wan rechazó la solicitud: ${raw.slice(0,400)}`);
+      let payload; try { payload=JSON.parse(raw); } catch { return wanError(502,`Respuesta inesperada de Wan: ${raw.slice(0,180)}`); }
+      const eventId = payload.event_id;
+      if (!eventId || !/^[a-zA-Z0-9_-]{8,200}$/.test(eventId)) return wanError(502,"Wan no devolvió un identificador de trabajo válido");
+      return res.status(200).json({ok:true,action:"submit",kind:"video",provider:"huggingface-wan22",request_id:WAN_PREFIX+eventId,status:"IN_QUEUE",model:"Wan 2.2 14B",note:"Consultá action=result con request_id hasta que esté COMPLETED"});
+    } catch(e) { return wanError(502,`No se pudo iniciar Wan 2.2: ${e.message}`); }
+  }
+  async function wanResult(requestId) {
+    if (!HF_TOKEN) return wanError(503,"Falta HF_TOKEN en Vercel");
+    if (!wanId(requestId)) return wanError(400,"request_id de Wan inválido");
+    const id = requestId.slice(WAN_PREFIX.length);
+    try {
+      // La respuesta Gradio es un flujo SSE. Esperamos un período corto y
+      // devolvemos PENDING si continúa procesando para evitar timeout Vercel.
+      const ctrl = new AbortController();
+      const timer = setTimeout(()=>ctrl.abort(), 17000);
+      let raw="";
+      try {
+        const r = await fetch(`${wanBase()}/gradio_api/call/${WAN_API}/${encodeURIComponent(id)}`,{headers:{...wanHeaders(),Accept:"text/event-stream"},signal:ctrl.signal,cache:"no-store"});
+        if (!r.ok) return wanError(r.status,`Wan no pudo consultar el trabajo (${r.status})`);
+        const reader=r.body.getReader(); const decoder=new TextDecoder();
+        while (raw.length < 180000) {
+          const {value,done}=await reader.read(); if(done)break;
+          raw+=decoder.decode(value,{stream:true});
+          const parsed=parseWanSSE(raw);
+          if(parsed.completed || parsed.failure) { try {await reader.cancel();} catch {} break; }
+        }
+      } catch(e) { if(e.name!=="AbortError") throw e; }
+      finally {clearTimeout(timer);}
+      const parsed=parseWanSSE(raw);
+      if(parsed.failure) return wanError(502,String(parsed.failure));
+      if(parsed.completed) {
+        const videoUrl=wanOutput(parsed.result);
+        if(!videoUrl) return wanError(502,"Wan finalizó, pero no se encontró la URL del MP4");
+        return res.status(200).json({ok:true,action:"result",kind:"video",provider:"huggingface-wan22",request_id:requestId,status:"COMPLETED",video_url:videoUrl,video:{url:videoUrl}});
+      }
+      return res.status(200).json({ok:true,action:"result",kind:"video",provider:"huggingface-wan22",request_id:requestId,status:"PENDING",retry_after_seconds:8});
+    } catch(e) { return wanError(502,`Error consultando Wan: ${e.message}`); }
+  }
+
 
   const rawSupabaseUrl = process.env.SUPABASE_URL || "";
   const SUPABASE_URL = rawSupabaseUrl
@@ -253,8 +366,10 @@ module.exports = async function handler(req, res) {
       hfVideoEndpointConfigured: Boolean(HF_VIDEO_ENDPOINT),
       falKeyConfigured: Boolean(FAL_KEY),
       supabaseConfigured: Boolean(SUPABASE_URL && SUPABASE_PUBLIC_KEY),
-      activeVideoProvider: "huggingface",
-      hfVideoGenerationEnabled: Boolean(HF_TOKEN && HF_VIDEO_ENDPOINT),
+      activeVideoProvider: "huggingface-wan22",
+      hfVideoGenerationEnabled: Boolean(HF_TOKEN),
+       wanSpace: WAN_SPACE,
+       wanIntegration: "Gradio call/generate_video (requiere prueba real)",
       note: "Solo diagnóstico. No genera videos ni consume créditos. Un token de Hugging Face no equivale a un endpoint de video disponible."
     });
   }
@@ -303,6 +418,11 @@ module.exports = async function handler(req, res) {
         400,
         "Falta request_id"
       );
+    }
+
+    if (kind === "video" && wanId(requestId)) {
+      if (action === "result" || action === "status") return wanResult(requestId);
+      return jsonError(400,"Acción Wan no reconocida");
     }
 
     let model = "";
@@ -514,147 +634,6 @@ module.exports = async function handler(req, res) {
     */
 
     if (action === "submit") {
-      const mode =
-        String(
-          body.mode || "economico"
-        ).toLowerCase();
-
-      const type =
-        String(
-          body.type || "text"
-        ).toLowerCase();
-
-      const model =
-        getVideoModel(
-          mode,
-          type,
-          String(
-            body.model || ""
-          )
-        );
-
-      const input = {
-        ...(body.input || {})
-      };
-
-      if (
-        body.prompt &&
-        !input.prompt
-      ) {
-        input.prompt =
-          body.prompt;
-      }
-
-      /*
-      TEXTO → VIDEO
-      */
-
-      if (
-        type === "text" &&
-        !input.prompt
-      ) {
-        return jsonError(
-          400,
-          "Escribí una idea o prompt para crear el video"
-        );
-      }
-
-      /*
-      IMAGEN → VIDEO
-      */
-
-      if (type === "image") {
-        const imageUrl =
-          body.image_url ||
-          body.start_image_url ||
-          input.image_url ||
-          input.start_image_url;
-
-        if (!imageUrl) {
-          return jsonError(
-            400,
-            "Para imagen a video falta image_url"
-          );
-        }
-
-        if (
-          model.includes(
-            "kling-video"
-          )
-        ) {
-          input.start_image_url =
-            imageUrl;
-        } else {
-          input.image_url =
-            imageUrl;
-        }
-
-        if (!input.prompt) {
-          input.prompt =
-            "Animate this image naturally with realistic movement and camera motion.";
-        }
-      }
-
-      /*
-      VIDEO → VIDEO
-      */
-
-      if (type === "video") {
-        const videoUrl =
-          body.video_url ||
-          input.video_url;
-
-        if (!videoUrl) {
-          return jsonError(
-            400,
-            "Para video a video falta video_url"
-          );
-        }
-
-        input.video_url =
-          videoUrl;
-
-        if (!input.prompt) {
-          input.prompt =
-            "Enhance this video while preserving the main subjects and scene.";
-        }
-      }
-
-      if (String(body.provider || "huggingface").toLowerCase() !== "fal") {
-        if (!HF_TOKEN) return jsonError(503, "Falta HF_TOKEN en Vercel.");
-        if (!HF_VIDEO_ENDPOINT) return jsonError(503,
-          "Hugging Face está conectado con token, pero falta HF_VIDEO_ENDPOINT: una URL de un servicio de VIDEO compatible. Generar imágenes no activa videos automáticamente.");
-        if (!/^https:\/\//i.test(HF_VIDEO_ENDPOINT)) return jsonError(400, "HF_VIDEO_ENDPOINT debe usar HTTPS.");
-        if (type === "video") return jsonError(422, "Este endpoint de Hugging Face no admite video-a-video sin un adaptador específico.");
-        try {
-          const hfInput = { inputs: input.prompt || "Animate naturally", parameters: { num_frames: 24 } };
-          if (type === "image") {
-            // Los endpoints HF tienen formatos diferentes. No se envía una imagen
-            // ignorando silenciosamente su URL: se exige un adaptador compatible.
-            return jsonError(422, "Imagen a video requiere un endpoint HF compatible con image_url y su formato de entrada. No se envió la imagen a un modelo de texto por error.");
-          }
-          const hfResponse = await fetch(HF_VIDEO_ENDPOINT, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${HF_TOKEN}`, "Content-Type": "application/json", Accept: "application/json, video/mp4" },
-            body: JSON.stringify(hfInput),
-            signal: AbortSignal.timeout(45000)
-          });
-          const contentType = hfResponse.headers.get("content-type") || "";
-          if (!hfResponse.ok) {
-            const details = (await hfResponse.text()).slice(0, 700);
-            return jsonError(hfResponse.status, `Hugging Face no generó el video: ${details}`);
-          }
-          if (contentType.includes("application/json")) {
-            const result = await hfResponse.json();
-            const videoUrl = result?.video?.url || result?.video_url || result?.url || result?.output?.video?.url;
-            if (videoUrl) return res.status(200).json({ok:true, action:"submit", kind:"video", provider:"huggingface", video:{url:videoUrl}, video_url:videoUrl, status:"COMPLETED"});
-            return res.status(502).json({ok:false, error:"El endpoint respondió, pero no devolvió una URL de video compatible.", details:result});
-          }
-          return jsonError(502, "El endpoint devolvió un video binario. Hace falta almacenamiento para ofrecer una URL descargable; no se devolvió una imagen ni un éxito falso.");
-        } catch (e) {
-          return jsonError(502, `No se pudo conectar con el generador de video HF: ${e.message}`);
-        }
-      }
       if (!FAL_KEY) return jsonError(503, "Fal.ai no está configurado. Seleccioná Hugging Face o configurá FAL_KEY.");
       const response =
         await fetch(
