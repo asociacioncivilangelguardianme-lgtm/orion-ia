@@ -431,6 +431,8 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
 }
 @media(prefers-reduced-motion:reduce){.orb,.orb.hablando{animation:none}}
 </style>
+<!-- ANGELA STUDIO IA V12.04: correcciones aisladas de casting, pistas de audio y prueba WAN -->
+<!-- STUDIO IA V12.08: segmentación y consistencia visual revisadas -->
 </head>
 <body>
 <header class="border-b border-slate-700 bg-slate-950/80 sticky top-0 z-50 backdrop-blur">
@@ -8715,7 +8717,7 @@ body.ags-lock{overflow:hidden!important}
   // ===== V11.56: REGENERADOR VIRAL (inspirado en el video de ejemplo) · texto/URL → guion → escenas → imágenes → video =====
   // Gratis: imágenes con Pollinations (o tarjetas locales), música sintetizada o tu audio, subtítulos y efectos dibujados en canvas.
   const VSTYLES=[['neoanime','Neo-Anime','Estética limpia, colores mágicos y luz cinematográfica','anime style, vibrant colors, cinematic lighting, detailed','#f472b6','#6366f1'],['graphic','Graphic Novel','Tinta marcada y estilo cómic de autor','graphic novel, bold ink lines, comic book art, dramatic shadows','#334155','#0ea5e9'],['raw','Raw Reality','Hiperrealismo: texturas y detalle documental','photorealistic, documentary photo, natural light, 35mm, ultra detailed','#78716c','#1c1917'],['pixar','Pixar 3D','Animación 3D con personajes adorables','3d animated movie style, pixar style, cute characters, soft lighting','#fb923c','#38bdf8'],['cine','Cine Blockbuster','Superproducción con lentes anamórficas','blockbuster movie still, anamorphic lens, epic lighting, film grain','#f59e0b','#0f172a'],['cyber','Cyber-Glitch','Futurismo, neones y distorsión digital','cyberpunk, neon lights, glitch art, futuristic city','#22c55e','#7c3aed'],['acuarela','Acuarela Mágica','Ilustración de cuento tradicional','watercolor illustration, storybook, soft pastel colors, paper texture','#7dd3fc','#fde68a'],['dark','Dark Fantasy','Épico, oscuro y con mucha atmósfera','dark fantasy painting, epic, moody atmosphere, dramatic light','#7f1d1d','#111827'],['gta','Videojuego Grand Theft','Arte digital tipo portada de videojuego','video game cover art style, stylized digital illustration, bold colors','#f97316','#be123c'],['noir','Cine negro','Suspenso con luces y sombras','black and white film noir cinema, dramatic chiaroscuro lighting, live action','#334155','#020617'],['terror','Terror realista','Suspenso y miedo cinematográfico','photorealistic psychological horror movie still, unsettling atmosphere, real locations','#450a0a','#111827'],['romance','Romance de cine','Romántico y natural','photorealistic romantic drama film still, warm natural light, authentic human expressions','#fb7185','#7c2d12'],['accion','Acción realista','Persecuciones y aventura','photorealistic action thriller film still, dynamic wide shot, physical action','#f97316','#1e293b'],['misterio','Misterio policial','Investigación y secretos','photorealistic mystery crime drama movie still, atmospheric realism','#1d4ed8','#0f172a'],['historico','Época histórica','Vestuario y lugares de época','photorealistic historical period drama film still, period accurate costume and setting','#a16207','#44403c'],['fantasiareal','Fantasía realista','Magia en escenarios reales','photorealistic live action fantasy movie still, practical magical effects, believable characters','#7c3aed','#164e63'],['scifi','Ciencia ficción','Futuro cinematográfico','photorealistic science fiction live action movie still, realistic futuristic set','#0e7490','#1e1b4b'],['documental','Documental natural','Gente y lugares cotidianos','authentic candid documentary photograph, natural unposed people, real world environment','#64748b','#334155'],['western','Western','Aventura del oeste','photorealistic western movie still, dusty frontier town, wide cinema shot','#b45309','#451a03'],['stopmotion','Stop motion','Muñecos y escenarios artesanales','stop motion miniature animation, handcrafted puppets, tactile practical sets','#eab308','#92400e'],['plastilina','Plastilina 3D','Animación artesanal','claymation three dimensional animation, sculpted clay characters, physical miniature sets','#f472b6','#0f766e'],['retro','Retro años 80','Cine nostálgico','photorealistic 1980s movie still, vintage analog film, era appropriate clothes','#d97706','#7c3aed'],['comicreal','Cómic realista','Viñetas de acción','realistic painted comic book panel, sequential action, expressive dynamic scene','#2563eb','#b91c1c'],['custom','Custom Studio','Escribí tu propio estilo artístico','','#a855f7','#ec4899']];
-  const VIR={name:'Mi video viral',styleId:'cine',origin:'latam',castDetails:'',custom:'',url:'',source:'',script:'',freq:12,episodeScenes:8,seriesMode:'complete',seriesBible:'',scenes:[],subs:'karaoke',music:'auto',genre:'epica',musicFile:null,musicPreviewUrl:'',narrationFile:null,narrationUrl:'',musicVolume:.22,narratorVoiceURI:'',fx:'zoom',trans:'fade',particles:true,busy:false,cancel:false,videoUrl:'',status:'Completá los pasos de arriba hacia abajo. Todo es gratis.',imageErrors:[],scriptMode:'sin revisar'};
+  const VIR={name:'Mi video viral',styleId:'cine',origin:'latam',castDetails:'',custom:'',url:'',source:'',script:'',freq:12,episodeScenes:8,seriesMode:'complete',seriesBible:'',scenes:[],subs:'karaoke',music:'none',genre:'epica',musicFile:null,musicPreviewUrl:'',narrationFile:null,narrationUrl:'',musicVolume:.22,narratorVoiceURI:'',fx:'zoom',trans:'fade',particles:false,busy:false,cancel:false,videoUrl:'',status:'Completá los pasos de arriba hacia abajo. Todo es gratis.',imageErrors:[],scriptMode:'sin revisar'};
 
   // V11.97: respaldo del proyecto y archivos binarios en IndexedDB (no guarda URLs blob efímeras).
   let viralRestoreStarted=false,viralRestoreFinished=false,viralSaveTimer=0;
@@ -8808,28 +8810,33 @@ body.ags-lock{overflow:hidden!important}
     t=t.replace(/[“"'][^“"'\n]{2,150}[”"']/g,' ').replace(/\s+/g,' ').trim();
     return t.slice(0,650);
   }
+  // V12.08: conservar límites de escena sin incorporar encabezados a su contenido.
   function vGroupScreenplay(txt){
     const lines=String(txt||'').replace(/\r/g,'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
-    if(!lines.length)return [];
-    const sceneHeader=/^(?:\d+[.)]\s*)?(?:ESCENA\s*\d+|INT\.?|EXT\.?|INTERIOR|EXTERIOR|INT\.?\s*\/\s*EXT\.?)/i;
-    const hasHeaders=lines.some(x=>sceneHeader.test(x));
-    const blocks=[];let cur='';
-    for(const line of lines){
-      const isHeader=sceneHeader.test(line);
-      if(isHeader&&cur.trim()){blocks.push(cur.trim());cur='';}
-      if(/^(?:FIN|CORTE A:|FUNDIDO A NEGRO)\.?$/i.test(line))continue;
-      cur+=(cur?' ':'')+line;
-      if(!hasHeaders&&cur.split(/\s+/).length>=42){blocks.push(cur.trim());cur='';}
-    }
-    if(cur.trim())blocks.push(cur.trim());
-    if(blocks.length===1&&blocks[0].split(/\s+/).length>75)return vLocalScript(blocks[0],VIR.freq);
-    return blocks.slice(0,20);
+    const header=/^(?:(?:\d+[.)]\s*)?(?:ESCENA|SCENE)\s*\d+|INT\.|EXT\.|INTERIOR|EXTERIOR)\b/i;
+    const metadata=/^(?:guion|t[ií]tulo|estilo(?: visual)?|g[eé]nero|ambientaci[oó]n|origen|formato|m[uú]sica|duraci[oó]n|personajes|prompt)\s*:/i;
+    const hasHeaders=lines.some(x=>header.test(x));const blocks=[];let cur=[];
+    const flush=()=>{if(cur.length){blocks.push(cur.join(' ').trim());cur=[]}};
+    for(let line of lines){if(metadata.test(line)||/^(?:FIN|CORTE A:|FUNDIDO A NEGRO)\.?$/i.test(line))continue;
+      if(header.test(line)){flush();line=line.replace(header,'').replace(/^\s*[:.\-–]+\s*/,'');if(!line)continue;}
+      cur.push(line);
+      if(!hasHeaders&&cur.join(' ').split(/\s+/).length>=42)flush();
+    }flush();return blocks.slice(0,20);
   }
+  // V12.07: texto audible separado de instrucciones de cámara y prompts visuales.
   function vNarrationText(raw){
-    return String(raw||'').replace(/\r/g,'').split(/\n/).filter(line=>!/^(?:\s*(?:prompt|negative prompt|estilo visual|instrucciones de imagen|visual prompt)\s*:)/i.test(line)).join(' ')
-      .replace(/\b(?:escena|scene)\s*\d+\s*[:.\-–]?\s*[^.!?]{0,65}(?=[.!?]|$)/gi,' ')
-      .replace(/\b(?:prompt|visual prompt)\s*:\s*[^.!?]+/gi,' ')
-      .replace(/\s+/g,' ').trim();
+    const meta=/^(?:guion|t[ií]tulo|estilo(?: visual)?|g[eé]nero|ambientaci[oó]n|origen|prompt|negative prompt|visual prompt|instrucciones(?: de imagen)?|duraci[oó]n|formato|m[uú]sica|personajes|c[aá]mara|iluminaci[oó]n|plano|encuadre|escenario|descripci[oó]n visual|acci[oó]n visual|movimiento|efectos|escena\s*\d+|scene\s*\d+)\s*[:：-]/i;
+    const camera=/^(?:la c[aá]mara|primer plano|plano general|plano medio|zoom|travelling|paneo|fundido|corte a|se ve|vemos|mostrar|en pantalla|toma de|imagen de|iluminaci[oó]n|escenario:)/i;
+    let lines=String(raw||'').replace(/\r/g,'').replace(/\[[^\]\n]{0,600}\]/g,' ').replace(/\([^()\n]*(?:c[aá]mara|plano|zoom|travelling|encuadre|iluminaci[oó]n)[^()\n]*\)/gi,' ').split(/\n/);
+    let spoken=[];
+    for(let line of lines){
+      line=line.trim().replace(/^#{1,6}\s*/, '').replace(/^(?:escena|scene)\s*\d+\s*[:.\-–]?\s*/i,'');
+      if(!line||meta.test(line)||camera.test(line)||/^(?:fin|corte a|fundido a negro)\.?$/i.test(line))continue;
+      line=line.replace(/^(?:narrador(?:a)?|narraci[oó]n|voz en off|di[aá]logo|voz)\s*:\s*/i,'').replace(/^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ]{1,28}:\s*(?=[¿¡\w])/u,'');
+      line=line.replace(/\{[^{}\n]{0,300}\}/g,' ').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,'').trim();
+      if(line&&!meta.test(line)&&!camera.test(line))spoken.push(line);
+    }
+    return spoken.join(' ').replace(/\s+/g,' ').trim();
   }
   function vSceneObj(text){return{text,prompt:'',url:'',blob:null,kind:'pendiente'}}
   // V12.01: directiva de casting concreta, separada del estilo artístico.
@@ -8844,7 +8851,7 @@ body.ags-lock{overflow:hidden!important}
       auto:'CASTING: seguir exclusivamente la identidad, el origen y la ambientación expresados en el guion; no imponer un aspecto por defecto.'
     };return choices[VIR.origin]||choices.latam;
   }
-  function vPromptSignature(){return [VIR.styleId,VIR.custom,VIR.origin,VIR.castDetails,101].join('|')}
+  function vPromptSignature(){return [VIR.styleId,VIR.custom,VIR.origin,VIR.castDetails,112].join('|')}
   function vVisualPlan(){
     const src=(VIR.source+' '+VIR.script).slice(0,3000);
     const m=src.match(/(?:personaje|protagonista|monigote|niño|niña|mujer|hombre|robot|dragón)[^.!?\n]{0,110}/i);
@@ -8869,29 +8876,46 @@ body.ags-lock{overflow:hidden!important}
   }
   function vAnimatePrompt(sc,i){
     const shot=vShotPlan(sc,i);
-    return 'VIDEO IMAGE-TO-VIDEO, 5 seconds, realistic live-action. '+shot.camera+'. '+shot.action+'. The characters PHYSICALLY PERFORM the action described; natural walking, hands, gaze, reactions and interactions. Keep faces, clothes, props, environment and character identity identical to the reference image. Smooth camera motion. No face morphing, no random new people, no static portrait slideshow, no text, no subtitles. Continuity with the previous and next scenes.';
+    return 'VIDEO IMAGE-TO-VIDEO, 5 seconds. PRESERVE EXACT VISUAL STYLE OF INPUT FRAME AND CHARACTER IDENTITY, NO STYLE CHANGE. '+shot.camera+'. '+shot.action+'. The characters PHYSICALLY PERFORM the action described; natural walking, hands, gaze, reactions and interactions. Keep faces, clothes, props, environment and character identity identical to the reference image. Smooth camera motion. No face morphing, no random new people, no static portrait slideshow, no text, no subtitles. Continuity with the previous and next scenes.';
   }
   function vExportMotionPrompts(){
     if(!VIR.scenes.length)return vMsg('⚠️ Primero generá las escenas.');
     const content='ÁNGELA V11.99 — PLAN DE CLIPS ANIMADOS\n\nCada escena necesita un motor externo de imagen-a-video. El WebM local actual solo anima la cámara sobre imágenes fijas.\n\n'+VIR.scenes.map((sc,i)=>'ESCENA '+(i+1)+'\nACCIÓN: '+vShotPlan(sc,i).action+'\nPROMPT DE MOVIMIENTO: '+vAnimatePrompt(sc,i)+'\n').join('\n');
     const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type:'text/plain;charset=utf-8'}));a.href=url;a.download='ANGELA_V11_99_CLIPS_MOVIMIENTO.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);vMsg('✅ Descargadas las instrucciones para animar cada escena. La animación real requiere un motor de video.');
   }
+  // V12.12: la escena actual manda; las demás escenas solo sirven para continuidad.
   function vBuildPrompt(sc){
-    const shot=vShotPlan(sc);const t=shot.context;
+    const idx=Math.max(0,VIR.scenes.indexOf(sc));
+    const shot=vShotPlan(sc,idx);
     const styles={
-      neoanime:'Japanese anime illustration, hand drawn cel shading, expressive anime faces, crisp anime outlines, stylized backgrounds. NOT photographic, NOT 3D.',
-      graphic:'Illustrated graphic novel comic art, heavy ink outlines, halftone shadows, sequential art illustration. NOT photographic.',
-      raw:'Photorealistic documentary photography, realistic skin texture, natural light, authentic camera photograph. NOT anime, NOT cartoon, NOT 3D.',
-      pixar:'Stylized 3D animated feature film, volumetric three-dimensional characters, smooth modeled surfaces, cinematic 3D rendering. NOT anime drawing, NOT live action.',
-      cine:'Photorealistic live-action cinema film still, anamorphic lens, cinematic lighting, film grain, movie production frame. NOT anime, NOT illustration, NOT 3D cartoon.',
-      cyber:'Futuristic neon cyberpunk illustration, electric colors, sci-fi city.',
-      acuarela:'Hand painted watercolor illustration, watercolor paper texture, soft pigment washes.',
-      dark:'Dark fantasy illustrated concept art, dramatic shadows, fantasy painting.',
-      custom:VIR.custom||'Illustration'
+      neoanime:'2D hand-drawn anime animation frame, consistent cel shading and drawn backgrounds',
+      graphic:'2D graphic novel illustration, bold ink and halftone comic art',
+      raw:'photorealistic documentary photograph, authentic natural lighting',
+      pixar:'3D computer animated family feature film frame, sculpted volumetric CGI characters and fully modeled 3D environment, rendered materials and global illumination',
+      cine:'live-action cinematic film photograph with natural human actors',
+      cyber:'cyberpunk digital illustration, neon futuristic visual design',
+      acuarela:'traditional watercolor painting on textured paper, visible pigments and washes',
+      dark:'dark fantasy illustrated painting with dramatic shadows',
+      custom:VIR.custom||'illustrated film frame'
     };
-    const style=styles[VIR.styleId]||vStyle()[3]||vSuffix();
-    const origin=vOriginPrompt();
-    return 'CASTING AND ORIGIN ARE MANDATORY, APPLY FIRST: '+origin+'. SELECTED VISUAL STYLE IS MANDATORY, APPLY EXACTLY: '+style+'. STRICT CINEMATIC STORYBOARD FRAME. '+style+'. CAMERA: '+shot.camera+'. PHYSICAL ACTION TO SHOW: '+shot.action+'. FULL SCENE CONTEXT: '+t+'. '+vVisualPlan()+'. Show a visible event in progress, actors interacting with other people or objects, environment and storytelling props. Compose as a medium-wide or wide movie frame with bodies, hands and location visible. DO NOT create a face-only portrait, beauty headshot, fashion portrait, passport photo, isolated woman staring at camera, or repeated close-up. The image must illustrate WHAT HAPPENS in this scene. Keep the same established characters and clothing, avoid inventing unrelated women or extra characters. Natural facial features and realistic anatomy when cinema style is selected. No captions, no lettering, no watermark.';
+    const style=styles[VIR.styleId]||styles.pixar;
+    const scene=(sc.prompt&&sc.prompt.trim()&&sc.prompt.trim()!==vCleanVisual(sc.text).trim()?sc.prompt:sc.text)||'';
+    const sceneVisual=vCleanVisual(scene).slice(0,850);
+    const original=vCleanVisual(sc.text).slice(0,850);
+    const identity=(VIR.castDetails||'').trim().slice(0,650);
+    const world=vOriginPrompt();
+    const isEnvironment=/\b(paisaje|campo|jard[ií]n|bosque|cielo|monta[ñn]a|flores|r[ií]o|mar|ciudad|casa|habitaci[oó]n|calle|árbol|arbol|pradera)\b/i.test(sceneVisual);
+    return [
+      'CREATE ONE FRAME FROM THIS EXACT STORY SCENE, NOT A GENERIC CHARACTER PORTRAIT.',
+      'SCENE '+(idx+1)+' — REQUIRED VISIBLE EVENTS AND SETTING: '+sceneVisual+'.',
+      'ORIGINAL SCENE CONTEXT: '+original+'.',
+      'SHOW THE SPECIFIC ACTION: '+shot.action+'.',
+      'COMPOSITION: '+(isEnvironment?'Environment-dominant wide establishing shot: clearly show the described landscape, plants, props, scale and lighting; people only if the script explicitly calls for them.':shot.camera+'. Show subjects performing the specified action in their setting, not posing for a portrait.')+'.',
+      'ONE SINGLE MANDATORY ART STYLE FOR THIS ENTIRE PROJECT: '+style+'. Every person, object and background must share this same medium.',
+      'SETTING / CULTURAL DETAILS: '+world+'.',
+      'ESTABLISHED CHARACTER DETAILS: '+(identity||'Only characters explicitly mentioned in the scene; maintain their previously established appearance.')+'.',
+      'STRICT: no extra characters, no invented groups of women, no unrelated portraits, no mismatched gender or age, no text, no subtitles, no collage, no anime unless selected, no mixing 2D/3D/photo styles.'
+    ].join(' ');
   }
   function pageViral(){
     const st=VSTYLES.map(s=>`<button type="button" data-v="style" data-id="${s[0]}" style="text-align:left;border-radius:12px;padding:0;overflow:hidden;border:2px solid ${VIR.styleId===s[0]?'#e879f9':'#2e486f'};background:#0b1220;color:white"><div style="height:46px;background:linear-gradient(135deg,${s[4]},${s[5]})"></div><div style="padding:6px 8px"><b style="font-size:11px">${esc(s[1])}</b><div style="font-size:9px;color:#94a3b8;line-height:1.3">${esc(s[2])}</div></div></button>`).join('');
@@ -8900,10 +8924,10 @@ body.ags-lock{overflow:hidden!important}
     <div class="ags-card" style="margin-top:10px"><h4>2 · Estilo visual</h4><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px">${st}</div>${VIR.styleId==='custom'?`<label style="font-size:11px;margin-top:8px;display:block">Definí tu estilo artístico</label><textarea id="ags_vCustom" class="ags-textarea" style="min-height:60px" placeholder="Ej.: estilo anime, pero realista, con luz cálida">${esc(VIR.custom)}</textarea>`:''}</div>
     <div class="ags-card" style="margin-top:10px"><h4>🎭 Personajes y ambientación</h4><p class="ags-note">Elegí el contexto cultural de la historia. Podés combinar personas de cualquier origen y tono de piel. No modifica la historia escrita ni excluye personajes.</p><label style="font-size:12px;display:block;margin:8px 0 4px">Origen o ambientación</label><select id="ags_vOrigin" class="ags-select"><option value="latam">Argentina / Latinoamérica (predeterminado)</option><option value="usa">Estados Unidos / Norteamérica</option><option value="europa">Europa</option><option value="africa">África</option><option value="asia">Asia</option><option value="mixed">Elenco multicultural / mixto</option><option value="auto">Según el guion (automático)</option></select><label style="font-size:12px;display:block;margin:8px 0 4px">Describí los personajes (opcional)</label><textarea id="ags_vCast" class="ags-textarea" style="min-height:65px" placeholder="Ej.: Marcela, 32 años, pelo castaño corto, campera roja; Juan, 35 años, piel oscura, barba, camisa azul. Mismos rostros y vestuario en toda la serie.">${esc(VIR.castDetails||'')}</textarea><p class="ags-note">Las características de cada personaje se mantienen en los prompts. Si cambiás la apariencia, regenerá las imágenes para aplicar el cambio.</p></div>
     <div class="ags-card" style="margin-top:10px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between"><h4>3 · Guion</h4><button class="ags-btn good" type="button" data-v="auto">✨ Crear guion, imágenes y video</button></div><div style="padding:10px;border:1px solid #365c80;border-radius:10px;margin:9px 0"><b>📚 Crear una historia o serie original</b><p class="ags-note">Escribí tu idea o usá un enlace como referencia cuando su contenido sea accesible. La historia tendrá acciones, diálogos y continuidad.</p><div style="display:flex;gap:9px;flex-wrap:wrap"><label style="font-size:11px">Cantidad de escenas <select id="ags_vEpisodeScenes" class="ags-select"><option value="7" ${VIR.episodeScenes===7?'selected':''}>7 escenas</option><option value="8" ${VIR.episodeScenes!==7?'selected':''}>8 escenas</option></select></label><label style="font-size:11px">Tipo de historia <select id="ags_vSeriesMode" class="ags-select"><option value="complete" ${VIR.seriesMode==='complete'?'selected':''}>Historia completa</option><option value="series" ${VIR.seriesMode==='series'?'selected':''}>Serie por capítulos</option></select></label></div><button type="button" class="ags-btn good" data-v="story" style="margin-top:8px">✨ Crear historia original con 8 escenas</button></div><label style="font-size:11px">URL de YouTube o TikTok (opcional)</label><input id="ags_vUrl" class="ags-input" placeholder="https://www.youtube.com/shorts/..." value="${esc(VIR.url)}"><p style="font-size:10px;color:#fde68a;margin:6px 0">ℹ️ ÁNGELA intenta obtener la transcripción desde el servidor; si solo consigue el título, te lo indica. Para una historia completa con IA usá la versión publicada en Vercel.</p><textarea id="ags_vSource" class="ags-textarea" style="min-height:130px" placeholder="Pegá acá el texto original o tu propia idea">${esc(VIR.source)}</textarea><input id="ags_vFile" type="file" accept=".txt,text/plain" class="ags-input" style="margin-top:6px"><label style="font-size:11px;margin-top:8px;display:block">Frecuencia visual: <b id="ags_vFreqN">${VIR.freq}</b> imágenes por minuto</label><input id="ags_vFreq" type="range" min="6" max="20" value="${VIR.freq}" style="width:100%"><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px"><button class="ags-btn good" type="button" data-v="rewrite">✍️ Mejorar con IA (si responde)</button><button class="ags-btn" type="button" data-v="scenes">🎞️ Generar escenas</button><button class="ags-btn" type="button" data-v="listen">▶ Escuchar guion</button><button class="ags-btn" type="button" data-v="pausevoice">⏸ Pausar / continuar</button><button class="ags-btn" type="button" data-v="stopvoice">■ Detener</button></div><textarea id="ags_vScript" class="ags-textarea" style="min-height:110px;margin-top:8px" placeholder="Acá aparece el guion reescrito (podés editarlo)">${esc(VIR.script)}</textarea></div>
-    <div class="ags-card" style="margin-top:10px"><h4>4 · Escenas e imágenes (${VIR.scenes.length})</h4><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px"><button class="ags-btn good" type="button" data-v="allimg">🎨 Generar todas las imágenes IA</button><button class="ags-btn" type="button" data-v="prompts">📄 Descargar prompts de todas las escenas</button><button class="ags-btn" type="button" data-v="previewprompt">👁️ Ver instrucciones de imagen</button><button class="ags-btn" type="button" data-v="motionprompts">🎥 Descargar plan de movimiento</button><button class="ags-btn" type="button" data-v="allcards">🃏 Tarjetas (opcional)</button><button class="ags-btn" type="button" data-v="addscene">＋ Escena</button><button class="ags-btn warn" type="button" data-v="cancel">■ Cancelar</button></div><div class="ags-note" style="margin-bottom:8px">Las imágenes IA ahora intentan representar acciones y planos amplios, no retratos. Para crear personajes que realmente caminen o hablen necesitás un motor de video; el WebM actual solo anima fotografías. El proveedor de imágenes integrado utiliza una dirección antigua y puede no responder. Para generar imágenes por fuera, descargá los prompts y después subí cada imagen en su escena. Hailuo (https://hailuoai.video) permite animar imágenes desde su web con créditos sujetos a límites; no está integrado automáticamente. Si la IA gratuita no devuelve imágenes, ÁNGELA no las sustituye sin avisar. Podés reintentar o subir tu propia imagen para cada escena.</div><div id="ags_vScenes"></div></div>
+    <div class="ags-card" style="margin-top:10px"><h4>4 · Escenas e imágenes (${VIR.scenes.length})</h4><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px"><button class="ags-btn good" type="button" data-v="allimg">🎨 Generar todas las imágenes IA</button><button class="ags-btn" type="button" data-v="prompts">📄 Descargar prompts de todas las escenas</button><button class="ags-btn" type="button" data-v="previewprompt">👁️ Ver instrucciones de imagen</button><button class="ags-btn" type="button" data-v="motionprompts">🎥 Descargar plan de movimiento</button><button class="ags-btn" type="button" data-v="allcards">🃏 Tarjetas (opcional)</button><button class="ags-btn" type="button" data-v="addscene">＋ Escena</button><button class="ags-btn warn" type="button" data-v="cancel">■ Cancelar</button></div><div class="ags-note" style="margin-bottom:8px">V12.06: cambiá el estilo u origen y regenerá las imágenes; las anteriores pueden no corresponder al relato. El proveedor gratuito de imágenes puede ignorar indicaciones y no garantiza fidelidad. Las imágenes IA intentan representar acciones y planos amplios, no retratos. Para crear personajes que realmente caminen o hablen necesitás un motor de video; el WebM actual solo anima fotografías. El proveedor de imágenes integrado utiliza una dirección antigua y puede no responder. Para generar imágenes por fuera, descargá los prompts y después subí cada imagen en su escena. Hailuo (https://hailuoai.video) permite animar imágenes desde su web con créditos sujetos a límites; no está integrado automáticamente. Si la IA gratuita no devuelve imágenes, ÁNGELA no las sustituye sin avisar. Podés reintentar o subir tu propia imagen para cada escena.</div><div id="ags_vScenes"></div></div>
     <div class="ags-card" style="margin-top:10px"><h4>5 · Subtítulos, música y efectos</h4>
     <div style="border:1px solid #426d95;border-radius:12px;padding:10px;margin:8px 0">
-      <b>🎙️ Voz narradora del video</b>
+      <b>🎙️ Voz narradora del video</b><div style="margin:9px 0;padding:9px;border:1px solid #60768c;border-radius:9px"><label style="display:block;margin-bottom:8px"><input type="checkbox" id="ags_vUseNarration" ${VIR.useNarration!==false?'checked':''}> Incluir narración en el video automáticamente (si cargué un audio)</label><label style="display:block"><input type="checkbox" id="ags_vUseMusic" ${VIR.useMusic!==false?'checked':''}> Incluir música seleccionada automáticamente</label><small style="display:block;margin-top:7px;color:#b9c9d8">Las casillas controlan la exportación. La voz del dispositivo solo sirve para escuchar: para grabarla en el archivo todavía se necesita un audio narrado o un servicio TTS.</small></div>
       <p class="ags-note">Podés escuchar el guion con la voz del dispositivo. Para incluir narración dentro del WebM, subí un audio narrado MP3, WAV o M4A.</p>
       <label style="display:block;margin-top:10px;font-size:12px">Elegí la voz del narrador</label>
       <select id="ags_vNarratorVoice" class="ags-input" style="width:100%;margin:5px 0"><option value="">Cargando voces en español…</option></select>
@@ -8912,15 +8936,15 @@ body.ags-lock{overflow:hidden!important}
         <button type="button" class="ags-btn" data-v="pausevoice">⏸ Pausar / continuar</button>
         <button type="button" class="ags-btn" data-v="stopvoice">■ Detener</button>
       </div>
-      <p class="ags-note">La voz seleccionada sirve para escuchar la narración. Para que la voz quede grabada dentro del WebM, todavía necesitás cargar el audio narrado debajo; las voces del navegador no se pueden exportar directamente como pista de audio.</p>
+      <p class="ags-note">La voz elegida sirve para escuchar una vista previa. Todavía NO se incorpora automáticamente al archivo exportado: requiere TTS que produzca audio. Para exportar la narración, cargá un archivo de voz debajo. La automatización completa requiere un servicio TTS de audio.</p>
       <label style="display:block;font-size:11px;margin-top:9px">Audio de la narración (opcional)</label>
       <input type="file" id="ags_vNarrationFile" accept="audio/*,.mp3,.wav,.m4a" style="width:100%">
       <audio id="ags_vNarrationPreview" controls playsinline preload="metadata" style="display:block;width:100%;margin-top:7px"></audio>
       <p class="ags-note" id="ags_vNarrationName">${VIR.narrationFile?'🎙️ '+esc(VIR.narrationFile.name):'Sin narración grabada. La música puede seguir sonando sola.'}</p>
       <label style="font-size:11px">Volumen de música de fondo: <span id="ags_vMusicVolumeN">${Math.round((VIR.musicVolume??.22)*100)}%</span></label>
       <input id="ags_vMusicVolume" type="range" min="0" max="100" step="5" value="${Math.round((VIR.musicVolume??.22)*100)}" style="width:100%">
-    </div><div class="ags-grid two"><div><label style="font-size:11px">Subtítulos</label><select id="ags_vSubs" class="ags-select"><option value="karaoke">Karaoke (palabra resaltada)</option><option value="simple">Simples</option><option value="off">Sin subtítulos</option></select></div><div><label style="font-size:11px">Efecto de movimiento</label><select id="ags_vFx" class="ags-select"><option value="zoom">Zoom lento</option><option value="pan">Paneo</option><option value="none">Sin movimiento</option></select></div><div><label style="font-size:11px">Transición</label><select id="ags_vTrans" class="ags-select"><option value="fade">Fundido</option><option value="cut">Corte directo</option></select></div><div><label style="font-size:11px">Música</label><select id="ags_vMusic" class="ags-select"><option value="auto">Automática (gratis)</option><option value="file">Subir mi audio</option><option value="none">Sin música</option></select></div><div><label style="font-size:11px">Género de la música automática</label><select id="ags_vGenre" class="ags-select"><option value="epica">Épica / cinematográfica</option><option value="balada">Balada / emotiva</option><option value="rock">Rock</option><option value="pop">Pop alegre</option><option value="cumbia">Cumbia</option><option value="cuarteto">Cuarteto</option><option value="regueton">Reguetón</option><option value="folklore">Folklore</option></select></div><div style="min-width:0"><div class="ags-card" style="margin-top:9px;border:1px solid #426d95"><b style="font-size:12px;display:block;margin-bottom:8px">🎧 Vista previa de tu música</b><label for="ags_vMusicFile" class="ags-note" style="display:block;margin:8px 0 4px">Elegí tu archivo de música:</label><input id="ags_vMusicFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg" style="display:block;width:100%;margin:0 0 10px;color:#fff"><audio id="ags_vMusicPreview" controls preload="metadata" playsinline style="display:block;width:100%;min-height:54px;margin:8px 0"></audio><p class="ags-note" id="ags_vMusicName">Ningún archivo cargado.</p></div></div><label style="font-size:12px;display:block;margin-top:8px"><input id="ags_vPart" type="checkbox" ${VIR.particles?'checked':''}> Partículas brillantes</label><p style="font-size:10px;color:#94a3b8">La voz narrada no se puede grabar dentro del video con herramientas gratuitas del navegador: usá «▶ Escuchar guion» para oírla, o subí una locución como «mi audio».</p></div></div>
-    <div class="ags-card" style="margin-top:10px;border:2px solid #34d399"><h4>6 · Video final</h4><button class="ags-btn primary" type="button" data-v="render" style="font-size:12px;padding:12px">🎬 Generar video (WebM)</button><progress id="ags_vProg" max="100" value="0" style="width:100%;margin-top:8px"></progress><div id="ags_vOut"></div></div></div>`;
+    </div><div class="ags-grid two"><div><label style="font-size:11px">Subtítulos</label><select id="ags_vSubs" class="ags-select"><option value="karaoke">Karaoke (palabra resaltada)</option><option value="simple">Simples</option><option value="off">Sin subtítulos</option></select></div><div><label style="font-size:11px">Efecto de movimiento</label><select id="ags_vFx" class="ags-select"><option value="zoom">Zoom lento</option><option value="pan">Paneo</option><option value="none">Sin movimiento</option></select></div><div><label style="font-size:11px">Transición</label><select id="ags_vTrans" class="ags-select"><option value="fade">Fundido</option><option value="cut">Corte directo</option></select></div><div><label style="font-size:11px">Música</label><select id="ags_vMusic" class="ags-select"><option value="auto">Automática experimental (sonido sintetizado)</option><option value="file">Subir mi audio</option><option value="none" selected>Sin música</option></select></div><div><label style="font-size:11px">Género del sintetizador experimental (NO es música comercial)</label><select id="ags_vGenre" class="ags-select"><option value="epica">Épica / cinematográfica</option><option value="balada">Balada / emotiva</option><option value="rock">Rock</option><option value="pop">Pop alegre</option><option value="cumbia">Cumbia</option><option value="cuarteto">Cuarteto</option><option value="regueton">Reguetón</option><option value="folklore">Folklore</option></select></div><div style="min-width:0"><div class="ags-card" style="margin-top:9px;border:1px solid #426d95"><b style="font-size:12px;display:block;margin-bottom:8px">🎧 Vista previa de tu música</b><label for="ags_vMusicFile" class="ags-note" style="display:block;margin:8px 0 4px">Elegí tu archivo de música:</label><input id="ags_vMusicFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg" style="display:block;width:100%;margin:0 0 10px;color:#fff"><audio id="ags_vMusicPreview" controls preload="metadata" playsinline style="display:block;width:100%;min-height:54px;margin:8px 0"></audio><p class="ags-note" id="ags_vMusicName">${VIR.musicFile?esc(VIR.musicFile.name):"Ningún archivo cargado."}</p><button type="button" class="ags-btn warn" data-v="clearmusic">🗑️ Quitar música cargada</button></div></div><label style="font-size:12px;display:block;margin-top:8px"><input id="ags_vPart" type="checkbox" ${VIR.particles?'checked':''}> Partículas brillantes</label><p style="font-size:10px;color:#94a3b8">La voz elegida en «Probar voz» es una vista previa del dispositivo. Para incluir narración en el video, subí un archivo de voz en «Narración». Elegí «Sin música» para eliminar el sonido sintetizado.</p></div></div>
+    <div class="ags-card" style="margin-top:10px;border:2px solid #60a5fa;padding:12px"><h4>🎞️ Video real — Wan 2.2 (servidor) / LTX (aún sin conexión)</h4><p class="ags-note" style="color:#fde68a">Las escenas, voces y música se pueden probar en este HTML. La generación MP4 por IA requiere una API en funcionamiento; abrir un HTML local no ejecuta Wan ni LTX. No se mostrará una presentación de fotos como si fuera un video IA.</p><p class="ags-note">Primero probá una sola escena. Wan necesita una imagen pública HTTPS y un servidor disponible. Este botón prueba la conexión real: si el servidor falla, se mostrará el error. No usa zoom ni WebM.</p><label>Motor</label><select id="ags_motionEngine" class="ags-select"><option value="wan">Wan 2.2 (conexión de prueba)</option><option value="ltx">LTX Video (pendiente de conexión del servidor)</option></select><label style="display:block;margin-top:8px">URL de imagen HTTPS (opcional)</label><input id="ags_motionImage" class="ags-input" placeholder="https://.../imagen.jpg" style="width:100%"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button type="button" class="ags-btn primary" data-v="motiontest">🧪 Diagnóstico: animar primera escena (MP4)</button></div><div id="ags_motionOut" style="margin-top:8px"></div></div><div class="ags-card" style="margin-top:10px;border:2px solid #34d399"><h4>6 · Video final</h4><button class="ags-btn primary" type="button" data-v="render" style="font-size:12px;padding:12px">🎬 Presentación de fotos WebM (opcional)</button><progress id="ags_vProg" max="100" value="0" style="width:100%;margin-top:8px"></progress><div id="ags_vOut"></div></div></div>`;
   }
   function vRenderScenes(){const box=$('ags_vScenes');if(!box)return;box.replaceChildren();if(!VIR.scenes.length){box.innerHTML='<div class="ags-preview-empty">Todavía no hay escenas. Pegá un texto y tocá «Generar escenas».</div>';return}
     VIR.scenes.forEach((sc,i)=>{const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;margin-bottom:8px;padding:8px;border:1px solid #2e486f;border-radius:10px;background:#071321';const th=document.createElement(sc.url?'img':'div');if(sc.url){th.src=sc.url}else{th.textContent='Sin imagen';th.style.cssText+='display:flex;align-items:center;justify-content:center;font-size:9px;color:#64748b'}th.style.cssText+=';width:64px;height:96px;flex:none;object-fit:cover;border-radius:6px;background:#0b1220';const col=document.createElement('div');col.style.cssText='flex:1;min-width:0';const ta=document.createElement('textarea');ta.className='ags-textarea';ta.style.minHeight='54px';ta.value=vNarrationText(sc.text);ta.oninput=()=>{sc.text=ta.value;viralQueueSave()};const pr=document.createElement('input');pr.className='ags-input';pr.style.marginTop='4px';pr.placeholder='Prompt de la imagen (opcional)';pr.value=sc.prompt||vCleanVisual(sc.text);pr.oninput=()=>{sc.prompt=pr.value;viralQueueSave()};const bt=document.createElement('div');bt.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-top:4px';const mk=(t,fn)=>{const b=document.createElement('button');b.type='button';b.className='ags-btn';b.textContent=t;b.onclick=fn;return b};
@@ -8928,7 +8952,7 @@ body.ags-lock{overflow:hidden!important}
   const vWait=ms=>new Promise(r=>setTimeout(r,ms));
   async function vImage(i,ai){
     const sc=VIR.scenes[i];if(!sc)return false;
-    if(sc.url&&sc.blob&&(!ai||(sc.styleId===VIR.styleId&&sc.promptVersion===101&&sc.promptSignature===vPromptSignature())))return true;
+    if(sc.url&&sc.blob&&(!ai||(sc.styleId===VIR.styleId&&sc.promptVersion===112&&sc.promptSignature===vPromptSignature())))return true;
     let blob=null;
     if(ai){
       if(!navigator.onLine){vMsg('⚠️ Sin conexión. Se conserva el proyecto.');return false}
@@ -8957,7 +8981,7 @@ body.ags-lock{overflow:hidden!important}
       if(!blob)return false;
     }else blob=await txtBlob(txtCard(vNarrationText(sc.text),i,VIR.scenes.length,VIR.name));
     if(sc.url?.startsWith('blob:'))try{URL.revokeObjectURL(sc.url)}catch{}
-    sc.blob=blob;sc.url=URL.createObjectURL(blob);sc.kind=ai?'ia':'tarjeta';sc.styleId=ai?VIR.styleId:null;sc.promptVersion=ai?101:null;sc.promptSignature=ai?vPromptSignature():null;
+    sc.blob=blob;sc.url=URL.createObjectURL(blob);sc.kind=ai?'ia':'tarjeta';sc.styleId=ai?VIR.styleId:null;sc.promptVersion=ai?112:null;sc.promptSignature=ai?vPromptSignature():null;
     viralQueueSave();vRenderScenes();
     vMsg('✅ Imagen '+(i+1)+'/'+VIR.scenes.length+' lista.');
     return true;
@@ -8966,7 +8990,7 @@ body.ags-lock{overflow:hidden!important}
     if(VIR.busy)return;
     VIR.busy=true;VIR.cancel=false;
     try{
-      const todo=VIR.scenes.map((sc,i)=>i).filter(i=>!VIR.scenes[i].url||(ai&&(VIR.scenes[i].styleId!==VIR.styleId||VIR.scenes[i].promptVersion!==100||VIR.scenes[i].promptSignature!==vPromptSignature())));
+      const todo=VIR.scenes.map((sc,i)=>i).filter(i=>!VIR.scenes[i].url||(ai&&(VIR.scenes[i].styleId!==VIR.styleId||VIR.scenes[i].promptVersion!==112||VIR.scenes[i].promptSignature!==vPromptSignature())));
       if(!todo.length){vMsg('✅ Todas las escenas tienen imágenes.');return}
       for(let k=0;k<todo.length;k++){
         if(VIR.cancel){vMsg('Generación detenida. Las imágenes listas se conservaron.');return}
@@ -8984,24 +9008,14 @@ body.ags-lock{overflow:hidden!important}
     }finally{VIR.busy=false}
   }
   function vStoryFallback(idea,n){
-    const base=String(idea||'Una aventura inesperada').replace(/https?:\/\/\S+/g,'').trim().slice(0,260);
-    const named=base.match(/\b(?:Marcela|Juan|Lucía|Lucas|Sofía|Martín|Ana|Pedro|María|Camila|Tomás)\b/gi)||[];
-    const first=named[0]||'Alex',second=named.find(x=>x.toLowerCase()!==first.toLowerCase())||'Sam';
-    const place=/bosque/i.test(base)?'bosque':/playa|mar/i.test(base)?'costa':/ciudad|calle/i.test(base)?'ciudad':'lugar misterioso';
-    const beats=[
-      ['El descubrimiento',`${first} llega al ${place} buscando respuestas. Algo se mueve delante de sus ojos. «¿Viste eso?», pregunta. ${second} aparece y le pide que no avance.`],
-      ['Una advertencia',`${second} muestra una pista inesperada. ${first} la examina y descubre una señal relacionada con su pasado. «¿Cómo sabías que vendría?». ${second} evita responder.`],
-      ['La primera decisión',`Una puerta se abre donde antes no había nada. ${first} se acerca; ${second} intenta detenerle. Un ruido los obliga a esconderse mientras alguien se aproxima.`],
-      ['El peligro',`Una figura desconocida descubre su escondite. ${first} y ${second} corren por el ${place}, esquivan obstáculos y encuentran un objeto que podría explicar el misterio.`],
-      ['La revelación',`${first} abre el objeto y reconoce un mensaje. «Entonces todo esto fue planeado», dice. ${second} admite que conoce parte del secreto, pero todavía falta una pieza.`],
-      ['La confrontación',`La figura misteriosa aparece de nuevo. ${first} exige la verdad. ${second} toma una decisión arriesgada y enfrenta a quien los persigue, mientras el entorno comienza a cambiar.`],
-      ['La elección',`${first} debe escoger entre escapar o ayudar a ${second}. Recuerda por qué comenzó esta aventura, da media vuelta y ejecuta un plan que nadie esperaba.`],
-      ['El desenlace',`El peligro inmediato termina, pero una última señal revela que el misterio es más grande. ${first} mira a ${second}: «Esto recién empieza». Ambos avanzan hacia lo desconocido.`]
-    ];
-    const chosen= n===7?[...beats.slice(0,6),beats[7]]:beats;
-    return chosen.map((b,i)=>`ESCENA ${i+1} — ${b[0]}\n${b[1]}`).join('\n\n');
+    const base=String(idea||'').replace(/https?:\/\/\S+/g,'').trim();
+    const beats=vGroupScreenplay(base);
+    if(beats.length>1)return beats.slice(0,Math.max(1,n)).map((t,i)=>'ESCENA '+(i+1)+': '+t).join('\n');
+    // No inventar Alex, Sam, mujeres, persecuciones o paisajes ajenos al relato.
+    // Sin IA de guion disponible, conservar la historia original tal cual.
+    return 'ESCENA 1: '+base;
   }
-  function vVideoPlatform(url){try{const u=new URL(url);const h=u.hostname.toLowerCase();return /(^|\.)youtube\.com$|(^|\.)youtu\.be$/.test(h)?'youtube':/(^|\.)tiktok\.com$/.test(h)?'tiktok':''}catch{return ''}}
+
   async function vVideoReference(url){
     const platform=vVideoPlatform(url);if(!platform)throw new Error('Usá un enlace válido de YouTube o TikTok.');
     if(location.protocol!=='file:'){
@@ -9062,7 +9076,7 @@ body.ags-lock{overflow:hidden!important}
       for(const s of scenes){let im;if(s.url){im=await new Promise((res,rej)=>{const x=new Image();x.onload=()=>res(x);x.onerror=()=>rej(Error('imagen'));x.src=s.url})}else{const c=txtCard(s.text,s.i,scenes.length,VIR.name);im=await new Promise(res=>{const x=new Image();x.onload=()=>res(x);x.src=c.toDataURL('image/png')})}imgs.push(im)}
       let durs=scenes.map(s=>Math.max(3,Math.min(9,vWords(vNarrationText(s.text))/2.6+.6)));const tot0=durs.reduce((a,b)=>a+b,0);if(tot0>150)durs=durs.map(d=>d*150/tot0);const total=durs.reduce((a,b)=>a+b,0);
       const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx)throw Error('No se pudo iniciar el lienzo de video.');ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.drawImage(imgs[0],0,0,w,h);stream=canvas.captureStream(24);if(!stream.getVideoTracks().length)throw Error('El navegador no habilitó la pista de video.');
-      if(VIR.music!=='none'||VIR.narrationFile){
+      if((VIR.useMusic!==false&&((VIR.music==='file'&&VIR.musicFile)||VIR.music==='auto'))||(VIR.useNarration!==false&&VIR.narrationFile)){
         try{
           const AC=window.AudioContext||window.webkitAudioContext;
           actx=new AC();if(actx.state==='suspended')await actx.resume();
@@ -9073,13 +9087,13 @@ body.ags-lock{overflow:hidden!important}
             const gain=actx.createGain();gain.gain.value=vol;src.connect(gain);gain.connect(dest);src.start();
             return buf.duration;
           };
-          if(VIR.music!=='none'){
+          if(VIR.useMusic!==false&&(VIR.music==='auto'||(VIR.music==='file'&&VIR.musicFile))){
             try{
               const file=VIR.music==='file'&&VIR.musicFile?VIR.musicFile:txtSynth(txtGenre(VIR.genre),Math.min(60,Math.max(15,Math.round(total))),txtHash(VIR.name)%8);
               await addTrack(file,VIR.musicVolume??.22,true,'music');
             }catch(e){vMsg('⚠️ No se pudo incorporar música: '+e.message)}
           }
-          if(VIR.narrationFile){
+          if(VIR.useNarration!==false&&VIR.narrationFile){
             try{await addTrack(VIR.narrationFile,1,false,'voice')}
             catch(e){vMsg('⚠️ No se pudo incorporar la voz: '+e.message)}
           }
@@ -9096,7 +9110,7 @@ body.ags-lock{overflow:hidden!important}
         if(VIR.particles){ctx.fillStyle='rgba(255,236,170,.65)';for(let q=0;q<22;q++){const px=((q*97+t*(8+q%5))%100)/100*w,py=h-(((q*53)+t*(30+q%7*6))%100)/100*h;ctx.beginPath();ctx.arc(px,py,1.5+(q%3),0,7);ctx.fill()}}
         if(VIR.subs!=='off'){const words=vNarrationText(scenes[k].text).split(/\s+/).filter(Boolean),cur=Math.min(words.length-1,Math.floor(p*words.length)),grp=Math.floor(cur/4)*4,show=words.slice(grp,grp+4);const fs=Math.round(w*.075);ctx.font='900 '+fs+'px sans-serif';ctx.textBaseline='middle';ctx.lineJoin='round';const gap=fs*.3,widths=show.map(x=>ctx.measureText(x.toUpperCase()).width);let tw=widths.reduce((a,b)=>a+b,0)+gap*(show.length-1),maxw=w*.92,sc=tw>maxw?maxw/tw:1;if(sc<1)ctx.font='900 '+Math.floor(fs*sc)+'px sans-serif';const ws=show.map(x=>ctx.measureText(x.toUpperCase()).width),tw2=ws.reduce((a,b)=>a+b,0)+gap*(show.length-1);let x=(w-tw2)/2;const y=h*.78;show.forEach((word,j)=>{const up=word.toUpperCase();ctx.lineWidth=Math.max(4,fs*.12);ctx.strokeStyle='#000';ctx.strokeText(up,x,y);ctx.fillStyle=(VIR.subs==='karaoke'&&grp+j===cur)?'#facc15':'#fff';ctx.fillText(up,x,y);x+=ws[j]+gap})}
         await new Promise(r=>setTimeout(r,1000/24))}
-      recorder.stop();const blob=await done;stream.getTracks().forEach(t=>t.stop());if(blob.size<1000)throw Error('El navegador no produjo un archivo válido.');if(VIR.videoUrl)URL.revokeObjectURL(VIR.videoUrl);VIR.videoUrl=URL.createObjectURL(blob);vShowVideo();if(prog)prog.value=100;vMsg('✅ ¡Video listo! Reproducilo y descargalo.');
+      recorder.stop();const blob=await done;stream.getTracks().forEach(t=>t.stop());if(blob.size<1000)throw Error('El navegador no produjo un archivo válido.');if(VIR.videoUrl)URL.revokeObjectURL(VIR.videoUrl);VIR.videoUrl=URL.createObjectURL(blob);vShowVideo();if(prog)prog.value=100;vMsg('✅ Presentación WebM lista (imágenes estáticas). Esto NO es un video animado por Wan/LTX.');
      }catch(e){try{if(recorder?.state==='recording')recorder.stop()}catch{}stream?.getTracks().forEach(t=>t.stop());vMsg('⚠️ Error al crear WebM: '+(e?.message||String(e))+'. Las imágenes se conservan para reintentar.');console.error('ÁNGELA WebM',e)}finally{VIR.busy=false;try{actx&&actx.close()}catch{}}
   }
   function vShowVideo(){const o=$('ags_vOut');if(!o||!VIR.videoUrl)return;o.innerHTML=`<video controls playsinline src="${VIR.videoUrl}" style="width:100%;max-height:420px;margin-top:9px;border-radius:10px"></video><a class="ags-btn good" style="display:inline-block;margin-top:6px" download="${esc((VIR.name||'video').replace(/[^\wáéíóúñ-]+/gi,'_'))}.webm" href="${VIR.videoUrl}">⬇ Descargar video WebM</a>`}
@@ -9134,21 +9148,21 @@ body.ags-lock{overflow:hidden!important}
   if('speechSynthesis' in window)speechSynthesis.addEventListener?.('voiceschanged',viralFillNarratorVoices);
   function bindViral(){
     const root=$('ags_viral');if(!root)return;viralFillNarratorVoices();const set=(id,val)=>{const e=$(id);if(e)e.value=val};
-    set('ags_vFormat',ST.format||'vertical');set('ags_vOrigin',VIR.origin||'latam');set('ags_vSubs',VIR.subs);set('ags_vFx',VIR.fx);set('ags_vTrans',VIR.trans);set('ags_vMusic',VIR.music);set('ags_vGenre',VIR.genre);
+    set('ags_vFormat',ST.format||'vertical');set('ags_vOrigin',VIR.origin||'latam');set('ags_vSubs',VIR.subs);set('ags_vFx',VIR.fx);set('ags_vTrans',VIR.trans);set('ags_vMusic',VIR.music);const musicWarning=$('ags_vMusic');if(musicWarning&&VIR.music==='auto')musicWarning.title='Música sintetizada experimental: puede sonar metálica';set('ags_vGenre',VIR.genre);
     const on=(id,ev,fn)=>{const e=$(id);if(e)e.addEventListener(ev,fn)};
-    on('ags_vOrigin','change',e=>{VIR.origin=e.target.value;viralQueueSave();vMsg('🎭 Casting '+e.target.options[e.target.selectedIndex].text+'. Tocá Generar todas las imágenes IA para REGENERAR las anteriores con este origen.')});on('ags_vCast','input',e=>{VIR.castDetails=e.target.value;viralQueueSave()});on('ags_vEpisodeScenes','change',e=>{VIR.episodeScenes=Number(e.target.value);viralQueueSave()});on('ags_vSeriesMode','change',e=>{VIR.seriesMode=e.target.value;viralQueueSave()});on('ags_vName','input',e=>{VIR.name=e.target.value});on('ags_vFormat','change',e=>{ST.format=e.target.value;saveState()});on('ags_vCustom','input',e=>{VIR.custom=e.target.value});on('ags_vUrl','input',e=>{VIR.url=e.target.value});on('ags_vSource','input',e=>{if(VIR.source!==e.target.value){VIR.source=e.target.value;VIR.script='';viralQueueSave();vMsg('📝 Texto actualizado. Tocá Generar escenas para preparar nuevas imágenes.')}});on('ags_vScript','input',e=>{if(VIR.script!==e.target.value){VIR.script=e.target.value;viralQueueSave()}});
+    on('ags_vOrigin','change',e=>{VIR.origin=e.target.value;VIR.scenes.forEach(sc=>{if(sc.kind!=='subida'&&sc.kind!=='uploaded'){sc.url='';sc.blob=null;sc.promptSignature=null;sc.kind='pendiente'}});viralQueueSave();vRenderScenes();vMsg('🎭 Origen cambiado. Se invalidaron las imágenes generadas anteriores: tocá Generar todas las imágenes IA. Las imágenes subidas manualmente se conservan.')});on('ags_vCast','input',e=>{VIR.castDetails=e.target.value;viralQueueSave()});on('ags_vEpisodeScenes','change',e=>{VIR.episodeScenes=Number(e.target.value);viralQueueSave()});on('ags_vSeriesMode','change',e=>{VIR.seriesMode=e.target.value;viralQueueSave()});on('ags_vName','input',e=>{VIR.name=e.target.value});on('ags_vFormat','change',e=>{ST.format=e.target.value;saveState()});on('ags_vCustom','input',e=>{VIR.custom=e.target.value});on('ags_vUrl','input',e=>{VIR.url=e.target.value});on('ags_vSource','input',e=>{if(VIR.source!==e.target.value){VIR.source=e.target.value;VIR.script='';viralQueueSave();vMsg('📝 Texto actualizado. Tocá Generar escenas para preparar nuevas imágenes.')}});on('ags_vScript','input',e=>{if(VIR.script!==e.target.value){VIR.script=e.target.value;viralQueueSave()}});
     on('ags_vNarratorVoice','change',e=>{VIR.narratorVoiceURI=e.target.value;viralQueueSave();vMsg('🎙️ Voz elegida. Tocá Probar voz con el guion para escucharla.')});
     on('ags_vNarrationFile','change',e=>{const f=e.target.files?.[0];if(!f)return;VIR.narrationFile=f;if(VIR.narrationUrl)URL.revokeObjectURL(VIR.narrationUrl);VIR.narrationUrl=URL.createObjectURL(f);const a=$('ags_vNarrationPreview');if(a){a.src=VIR.narrationUrl;a.load()}const n=$('ags_vNarrationName');if(n)n.textContent='🎙️ '+f.name;viralQueueSave();vMsg('🎙️ Narración cargada. Se mezclará con la música en el WebM.')});
-    on('ags_vMusicVolume','input',e=>{VIR.musicVolume=Number(e.target.value)/100;const n=$('ags_vMusicVolumeN');if(n)n.textContent=e.target.value+'%';viralQueueSave()});
+    on('ags_vUseNarration','change',e=>{VIR.useNarration=e.target.checked;viralQueueSave();vMsg(e.target.checked?'🎙️ Narración habilitada para la exportación.':'🔇 Narración deshabilitada.');});on('ags_vUseMusic','change',e=>{VIR.useMusic=e.target.checked;viralQueueSave();vMsg(e.target.checked?'🎵 Música habilitada para la exportación.':'🔇 Música deshabilitada.');});on('ags_vMusicVolume','input',e=>{VIR.musicVolume=Number(e.target.value)/100;const n=$('ags_vMusicVolumeN');if(n)n.textContent=e.target.value+'%';viralQueueSave()});
     on('ags_vFreq','input',e=>{VIR.freq=+e.target.value;const n=$('ags_vFreqN');if(n)n.textContent=VIR.freq});
     on('ags_vSubs','change',e=>{VIR.subs=e.target.value});
-    on('ags_vFx','change',e=>{VIR.fx=e.target.value});on('ags_vTrans','change',e=>{VIR.trans=e.target.value});on('ags_vMusic','change',e=>{VIR.music=e.target.value});on('ags_vGenre','change',e=>{VIR.genre=e.target.value});on('ags_vPart','change',e=>{VIR.particles=e.target.checked});
+    on('ags_vFx','change',e=>{VIR.fx=e.target.value});on('ags_vTrans','change',e=>{VIR.trans=e.target.value});on('ags_vMusic','change',e=>{VIR.music=e.target.value;viralQueueSave();vMsg(VIR.music==='none'?'🔇 El próximo video se exportará sin música.':VIR.music==='file'?'🎵 Subí tu archivo de audio para incluirlo en el próximo video.':'⚠️ La música automática es sintetizada y puede sonar metálica. Para evitarla elegí Sin música o Subir mi audio.');});on('ags_vGenre','change',e=>{VIR.genre=e.target.value});on('ags_vPart','change',e=>{VIR.particles=e.target.checked});
     // Audio handled centrally to survive module re-render.
 
     on('ags_vFile','change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{let t=String(rd.result||'');if(t.includes('\uFFFD')){const r2=new FileReader();r2.onload=()=>{VIR.source=String(r2.result||'');set('ags_vSource',VIR.source);vMsg('📄 TXT cargado.')};r2.readAsText(f,'windows-1252');return}VIR.source=t;set('ags_vSource',t);vMsg('📄 TXT cargado. Tocá «Reescribir como guion».')};rd.readAsText(f,'utf-8')});
-    root.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const a=b.dataset.v;if(a==='choosemusic'){const input=$('ags_vMusicFile');if(input)input.click();else vMsg('⚠️ No se encontró el selector de música.')}else if(a==='playmusic'){const p=$('ags_vMusicPreview');if(!p||!VIR.musicPreviewUrl)return vMsg('⚠️ Primero elegí un MP3 o archivo de audio.');if(!p.src)p.src=VIR.musicPreviewUrl;p.play().catch(e=>vMsg('⚠️ No se puede reproducir este audio: '+e.message))}else if(a==='pausemusic'){const p=$('ags_vMusicPreview');if(p){p.pause();vMsg('⏸ Música pausada.')}}else if(a==='stopmusic'){const p=$('ags_vMusicPreview');if(p){p.pause();try{p.currentTime=0}catch{}vMsg('■ Música detenida.')}}else if(a==='style'){VIR.styleId=b.dataset.id;VIR.custom=$('ags_vCustom')?.value||VIR.custom;viralQueueSave();renderMain();vMsg('🎨 Estilo '+vStyle()[1]+' seleccionado. Para actualizar las imágenes anteriores, tocá Generar imágenes IA: se crearán en el nuevo estilo.')}else if(a==='story'){vCreateStory().catch(e=>vMsg('⚠️ Historia: '+e.message))}else if(a==='rewrite'){vMsg('✍️ Preparando guion…');vRewrite().catch(e=>vMsg('⚠️ Guion: '+e.message))}else if(a==='scenes')vMakeScenes();else if(a==='listen'){try{const t=($('ags_vScript')?.value||VIR.script||'').trim();if(!t)return vMsg('⚠️ No hay guion para escuchar.');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(vNarrationText(t));u.lang='es-AR';u.rate=.95;const v=speechSynthesis.getVoices();u.voice=v.find(x=>x.voiceURI===VIR.narratorVoiceURI)||v.find(x=>/^es-AR$/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null;speechSynthesis.speak(u)}catch(e){vMsg('⚠️ Tu navegador no tiene voz gratuita.')}}else if(a==='pausevoice'){try{if(speechSynthesis.paused){speechSynthesis.resume();vMsg('▶ Lectura reanudada.')}else if(speechSynthesis.speaking){speechSynthesis.pause();vMsg('⏸ Lectura pausada.')}else vMsg('No hay lectura activa.')}catch(e){vMsg('⚠️ '+e.message)}}else if(a==='stopvoice'){try{speechSynthesis.cancel();vMsg('■ Lectura detenida.')}catch{}}else if(a==='prompts')vExportPrompts();else if(a==='previewprompt'){if(!VIR.scenes.length)vMakeScenes();if(!VIR.scenes.length)return vMsg('⚠️ Primero generá las escenas.');const text=vBuildPrompt(VIR.scenes[0]);alert('INSTRUCCIONES DE LA PRIMERA ESCENA\n\n'+text.slice(0,2200));}else if(a==='motionprompts')vExportMotionPrompts();else if(a==='allimg'){if(!VIR.scenes.length){vMakeScenes()}vAllImages(true).catch(e=>vMsg('⚠️ Imágenes: '+e.message))}else if(a==='allcards'){if(!VIR.scenes.length){vMakeScenes()}vAllImages(false).catch(e=>vMsg('⚠️ Tarjetas: '+e.message))}else if(a==='addscene'){VIR.scenes.push(vSceneObj('Nueva escena'));vRenderScenes()}else if(a==='cancel'){VIR.cancel=true;vMsg('Cancelando…')}else if(a==='render'){vMsg('🎬 Preparando video WebM…');vRender().catch(e=>vMsg('⚠️ No se pudo crear el video: '+e.message))}else if(a==='auto')vAutoAll()});
+    root.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const a=b.dataset.v;if(a==='clearmusic'){VIR.musicFile=null;VIR.music='none';if(VIR.musicPreviewUrl?.startsWith('blob:'))URL.revokeObjectURL(VIR.musicPreviewUrl);VIR.musicPreviewUrl='';const aud=$('ags_vMusicPreview');if(aud){aud.pause();aud.removeAttribute('src');aud.load()}const fi=$('ags_vMusicFile');if(fi)fi.value='';const se=$('ags_vMusic');if(se)se.value='none';const nm=$('ags_vMusicName');if(nm)nm.textContent='Sin música cargada';viralQueueSave();vMsg('🔇 Música eliminada del proyecto. El próximo WebM no incluirá música de fondo.')}else if(a==='choosemusic'){const input=$('ags_vMusicFile');if(input)input.click();else vMsg('⚠️ No se encontró el selector de música.')}else if(a==='playmusic'){const p=$('ags_vMusicPreview');if(!p||!VIR.musicPreviewUrl)return vMsg('⚠️ Primero elegí un MP3 o archivo de audio.');if(!p.src)p.src=VIR.musicPreviewUrl;p.play().catch(e=>vMsg('⚠️ No se puede reproducir este audio: '+e.message))}else if(a==='pausemusic'){const p=$('ags_vMusicPreview');if(p){p.pause();vMsg('⏸ Música pausada.')}}else if(a==='stopmusic'){const p=$('ags_vMusicPreview');if(p){p.pause();try{p.currentTime=0}catch{}vMsg('■ Música detenida.')}}else if(a==='style'){VIR.styleId=b.dataset.id;VIR.custom=$('ags_vCustom')?.value||VIR.custom;VIR.scenes.forEach(sc=>{if(sc.kind!=='propia'&&sc.kind!=='subida'&&sc.kind!=='uploaded'){if(sc.url?.startsWith('blob:'))try{URL.revokeObjectURL(sc.url)}catch{}sc.url='';sc.blob=null;sc.kind='pendiente';sc.promptSignature=null}});viralQueueSave();renderMain();vMsg('🎨 Estilo '+vStyle()[1]+' seleccionado. Para actualizar las imágenes anteriores, tocá Generar imágenes IA: se crearán en el nuevo estilo.')}else if(a==='story'){vCreateStory().catch(e=>vMsg('⚠️ Historia: '+e.message))}else if(a==='rewrite'){vMsg('✍️ Preparando guion…');vRewrite().catch(e=>vMsg('⚠️ Guion: '+e.message))}else if(a==='scenes')vMakeScenes();else if(a==='listen'){try{const t=($('ags_vScript')?.value||VIR.script||'').trim();if(!t)return vMsg('⚠️ No hay guion para escuchar.');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(vNarrationText(t));u.lang='es-AR';u.rate=.95;const v=speechSynthesis.getVoices();u.voice=v.find(x=>x.voiceURI===VIR.narratorVoiceURI)||v.find(x=>/^es-AR$/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null;speechSynthesis.speak(u)}catch(e){vMsg('⚠️ Tu navegador no tiene voz gratuita.')}}else if(a==='pausevoice'){try{if(speechSynthesis.paused){speechSynthesis.resume();vMsg('▶ Lectura reanudada.')}else if(speechSynthesis.speaking){speechSynthesis.pause();vMsg('⏸ Lectura pausada.')}else vMsg('No hay lectura activa.')}catch(e){vMsg('⚠️ '+e.message)}}else if(a==='stopvoice'){try{speechSynthesis.cancel();vMsg('■ Lectura detenida.')}catch{}}else if(a==='prompts')vExportPrompts();else if(a==='previewprompt'){if(!VIR.scenes.length)vMakeScenes();if(!VIR.scenes.length)return vMsg('⚠️ Primero generá las escenas.');const text=vBuildPrompt(VIR.scenes[0]);alert('INSTRUCCIONES DE LA PRIMERA ESCENA\n\n'+text.slice(0,2200));}else if(a==='motionprompts')vExportMotionPrompts();else if(a==='allimg'){if(!VIR.scenes.length){vMakeScenes()}vAllImages(true).catch(e=>vMsg('⚠️ Imágenes: '+e.message))}else if(a==='allcards'){if(!VIR.scenes.length){vMakeScenes()}vAllImages(false).catch(e=>vMsg('⚠️ Tarjetas: '+e.message))}else if(a==='addscene'){VIR.scenes.push(vSceneObj('Nueva escena'));vRenderScenes()}else if(a==='cancel'){VIR.cancel=true;vMsg('Cancelando…')}else if(a==='motiontest'){vMotionTest()}else if(a==='render'){vMsg('🎬 Preparando video WebM…');vRender().catch(e=>vMsg('⚠️ No se pudo crear el video: '+e.message))}else if(a==='auto')vAutoAll()});
     // Restaurar audio tras cambios de estilo o repintado del panel.
-    if(VIR.musicFile){if(!VIR.musicPreviewUrl) VIR.musicPreviewUrl=URL.createObjectURL(VIR.musicFile);const a=$('ags_vMusicPreview'),n=$('ags_vMusicName');if(a){a.src=VIR.musicPreviewUrl;a.load();}if(n)n.textContent='🎵 '+VIR.musicFile.name+' — tocá ▶ para reproducir';}
+    if(VIR.musicFile&&VIR.music==='file'){if(!VIR.musicPreviewUrl) VIR.musicPreviewUrl=URL.createObjectURL(VIR.musicFile);const a=$('ags_vMusicPreview'),n=$('ags_vMusicName');if(a){a.src=VIR.musicPreviewUrl;a.load();}if(n)n.textContent='🎵 '+VIR.musicFile.name+' — tocá ▶ para reproducir';}
     const narration=$('ags_vNarrationPreview');if(narration&&VIR.narrationFile){if(!VIR.narrationUrl)VIR.narrationUrl=URL.createObjectURL(VIR.narrationFile);narration.src=VIR.narrationUrl}
     vRenderScenes();vShowVideo();viralRestore();
   }
@@ -9159,7 +9173,93 @@ body.ags-lock{overflow:hidden!important}
   function txtEmoji(text,seed){const t=String(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');for(const [re,e] of EMOJIS)if(re.test(t))return e;return ['🌟','🎬','💫','🔮','🌈','🚀'][seed%6]}
   function polUrl(prompt,format){const f=format||ST.format;const [w,h]=f==='horizontal'?[1024,576]:f==='square'?[768,768]:[576,1024];return 'https://image.pollinations.ai/prompt/'+encodeURIComponent(String(prompt).slice(0,400))+'?width='+w+'&height='+h+'&nologo=true&seed='+(txtHash(prompt)%100000)}
   async function generateImageForStudio(prompt,format=ST.format){const clean=String(prompt||'').trim();if(!clean)throw new Error('Falta el prompt para generar la imagen.');if(location.protocol==='file:'||!(auth?.access_token))return polUrl(clean,format);try{return await generateImageForStudioBackend(clean,format)}catch(e){return polUrl(clean,format)}}
-  async function vAutoAll(){if(VIR.busy||freeBusy)return vMsg('⏳ Ya hay una generación en curso. Esperá a que termine.');const visibleSource=$('ags_vSource')?.value?.trim();const visibleScript=$('ags_vScript')?.value?.trim();if(visibleSource&&visibleSource!==VIR.source){VIR.source=visibleSource;VIR.script=visibleScript||VIR.script}else if(visibleScript&&visibleScript!==VIR.script){VIR.script=visibleScript}if(!VIR.scenes.length){if(!(VIR.script||VIR.source).trim())return vMsg(VIR.url?'⚠️ El enlace de YouTube no contiene una transcripción accesible desde este HTML. Pegá una transcripción o resumen para crear un guion original.':'⚠️ Escribí una idea o pegá un guion arriba (paso 3) y volvé a tocar este botón.');if(!VIR.script.trim()){if(/(?:^|\n)\s*(?:INT\.|EXT\.|INTERIOR|EXTERIOR|ESCENA\s*\d+)/im.test(VIR.source)){VIR.script=VIR.source;vMsg('📝 Guion cinematográfico detectado: conservo sus escenas y diálogos originales.')}else await vCreateStory()}if(!VIR.scenes.length)vMakeScenes()}if(!VIR.scenes.length)return;await vAllImages(true);if(VIR.cancel)return;if(VIR.scenes.some(s=>!s.url)){vMsg('⚠️ No exporté el video: faltan imágenes reales. Reintentá o subí las que faltan.');return}await vRender()}
+  async function vMotionTest(){
+    const out=$('ags_motionOut');if(!out)return;
+    const engine=$('ags_motionEngine')?.value||'wan';
+    if(engine==='ltx'){out.textContent='⚠️ LTX todavía no tiene una ruta de servidor configurada. No se inició ningún trabajo ni se gastaron créditos.';return;}
+    if(!VIR.scenes.length)vMakeScenes();
+    const scene=VIR.scenes[0];if(!scene){out.textContent='⚠️ Primero generá el guion y las escenas.';return;}
+    if(location.protocol==='file:'){out.textContent='⚠️ Para probar Wan desde el servidor, publicá esta versión de prueba en Vercel. El HTML abierto como archivo no tiene una conexión autenticada con la API.';return;}
+    const manual=($('ags_motionImage')?.value||'').trim();
+    const prompt=vAnimatePrompt(scene,0);
+    const imageUrl=manual||(/^https:\/\//i.test(scene.url||'')?scene.url:'https://image.pollinations.ai/prompt/'+encodeURIComponent(vBuildPrompt(scene))+'?width=576&height=1024&nologo=true&seed=43021');
+    const button=document.querySelector('[data-v="motiontest"]');if(button)button.disabled=true;
+    try{
+      out.textContent='⏳ Enviando primera escena a Wan 2.2…';
+      const sub=await apiPost('/api/studio-video',{action:'submit',type:'image',provider:'huggingface',image_url:imageUrl,prompt,duration_seconds:3,steps:4});
+      const id=sub.request_id||sub.id||sub.job_id;if(!id)throw Error('El servidor no devolvió request_id.');
+      out.textContent='⏳ Wan recibió el trabajo. Esperando MP4…';
+      let url='';for(let i=0;i<75;i++){
+        if(VIR.cancel)throw Error('Prueba cancelada desde ÁNGELA.');
+        await vWait(8000);
+        const r=await apiGet('/api/studio-video?'+new URLSearchParams({action:'result',kind:'video',request_id:id}));
+        if(r.error||/FAILED|ERROR|CANCELLED/i.test(String(r.status||'')))throw Error(r.error||'Wan no pudo completar el video.');
+        if(/COMPLETED|SUCCESS/i.test(String(r.status||''))){url=r.video_url||r.video?.url||'';break;}
+        out.textContent='⏳ Wan procesando… '+Math.round((i+1)*8/60)+' min aprox.';
+      }
+      if(!url)throw Error('No se confirmó un MP4 dentro del tiempo de espera.');
+      out.replaceChildren();const video=document.createElement('video');video.controls=true;video.playsInline=true;video.src=url;video.style.cssText='width:100%;max-height:450px;border-radius:9px';const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='⬇️ Abrir / descargar MP4 de la primera escena';a.style.cssText='display:block;margin:8px 0;color:#93c5fd';out.append(video,a);vMsg('✅ Wan devolvió un MP4. Revisá que el movimiento sea real.');
+    }catch(e){out.textContent='⚠️ Prueba Wan: '+e.message;vMsg('⚠️ Wan: '+e.message)}finally{if(button)button.disabled=false}
+  }
+  // V12.10: secuencia automatica de clips MP4 reales, sin sustituir fallos por fotos.
+  async function vAutoMotionClips(){
+    // V12.11: nunca simular un motor ni marcar una generación como exitosa sin MP4.
+    if(location.protocol!=='file:'){
+      vMsg('🔎 Comprobando el servidor Wan 2.2 antes de enviar las escenas…');
+      let diagnostic;
+      try { diagnostic=await apiGet('/api/studio-video?action=diagnostic'); }
+      catch(e){ throw Error('No se pudo verificar /api/studio-video: '+e.message); }
+      if(diagnostic?.hfTokenConfigured===false || diagnostic?.hasHFToken===false)
+        throw Error('Falta HF_TOKEN en el servidor. No se inició ningún video.');
+    }
+    if(location.protocol==='file:'){
+      vMsg('⚠️ Las imágenes y el guion se pueden probar localmente. Wan 2.2 necesita una API activa: la animación real no puede comprobarse desde file://. No se generó ningún video falso.');
+      return;
+    }
+    const clips=[];
+    for(let i=0;i<VIR.scenes.length;i++){
+      if(VIR.cancel)throw Error('Generación cancelada.');
+      const sc=VIR.scenes[i];
+      const imageUrl=/^https:\/\//i.test(sc.url||'')?sc.url:'';
+      if(!imageUrl)throw Error('Escena '+(i+1)+': Wan necesita una imagen accesible por HTTPS.');
+      vMsg('🎬 Wan 2.2: animando escena '+(i+1)+' de '+VIR.scenes.length+'…');
+      const sub=await apiPost('/api/studio-video',{action:'submit',type:'image',provider:'huggingface',image_url:imageUrl,prompt:vAnimatePrompt(sc,i),duration_seconds:3,steps:4});
+      const id=sub.request_id||sub.id||sub.job_id;
+      if(!id)throw Error('Wan no devolvió identificador para escena '+(i+1)+'.');
+      let url='';
+      for(let n=0;n<75;n++){
+        if(VIR.cancel)throw Error('Generación cancelada.');
+        await vWait(8000);
+        const r=await apiGet('/api/studio-video?'+new URLSearchParams({action:'result',kind:'video',request_id:id}));
+        if(r.error||/FAILED|ERROR|CANCELLED/i.test(String(r.status||'')))throw Error('Escena '+(i+1)+': '+(r.error||r.status));
+        if(/COMPLETED|SUCCESS/i.test(String(r.status||''))){url=r.video_url||r.video?.url||'';break;}
+      }
+      if(!url)throw Error('Wan no devolvió MP4 para escena '+(i+1)+'.');
+      clips.push(url);
+      sc.motionVideoUrl=url;
+      vMsg('✅ Clip MP4 '+(i+1)+'/'+VIR.scenes.length+' listo.');
+    }
+    const out=$('ags_motionOut');
+    if(out){out.replaceChildren();clips.forEach((url,i)=>{const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener';link.textContent='🎬 Ver/descargar escena '+(i+1)+' (MP4)';link.style.cssText='display:block;margin:8px;color:#93c5fd';out.append(link)});}
+    if(clips.length===1){vMsg('✅ Video animado MP4 disponible.');return;}
+    try{
+      vMsg('🎞️ Uniendo '+clips.length+' clips MP4…');
+      const sub=await apiPost('/api/studio-video',{action:'merge-scenes',video_urls:clips,format:'vertical',target_fps:16});
+      const id=sub.request_id||sub.id||sub.job_id;
+      if(!id)throw Error('El servidor no devolvió un trabajo de unión.');
+      let merged='';
+      for(let n=0;n<75;n++){
+        await vWait(4000);
+        const r=await apiGet('/api/studio-video?'+new URLSearchParams({action:'result',kind:'video',request_id:id}));
+        if(r.error||/FAILED|ERROR|CANCELLED/i.test(String(r.status||'')))throw Error(r.error||r.status);
+        if(/COMPLETED|SUCCESS/i.test(String(r.status||''))){merged=r.video_url||r.video?.url||'';break;}
+      }
+      if(!merged)throw Error('La unión no devolvió MP4.');
+      if(out){const a=document.createElement('a');a.href=merged;a.target='_blank';a.rel='noopener';a.textContent='⬇️ VIDEO ANIMADO COMPLETO (MP4)';a.style.cssText='display:block;margin:12px;font-weight:bold;color:#86efac';out.prepend(a)}
+      vMsg('✅ MP4 animado completo listo. Audio final todavía pendiente de integración en este motor.');
+    }catch(e){vMsg('⚠️ Los clips MP4 individuales están listos, pero no se pudieron unir: '+e.message);}
+  }
+  async function vAutoAll(){if(VIR.busy||freeBusy)return vMsg('⏳ Ya hay una generación en curso. Esperá a que termine.');const visibleSource=$('ags_vSource')?.value?.trim();const visibleScript=$('ags_vScript')?.value?.trim();if(visibleSource&&visibleSource!==VIR.source){VIR.source=visibleSource;VIR.script=visibleScript||VIR.script}else if(visibleScript&&visibleScript!==VIR.script){VIR.script=visibleScript}if(!VIR.scenes.length){if(!(VIR.script||VIR.source).trim())return vMsg(VIR.url?'⚠️ El enlace de YouTube no contiene una transcripción accesible desde este HTML. Pegá una transcripción o resumen para crear un guion original.':'⚠️ Escribí una idea o pegá un guion arriba (paso 3) y volvé a tocar este botón.');if(!VIR.script.trim()){if(/(?:^|\n)\s*(?:INT\.|EXT\.|INTERIOR|EXTERIOR|ESCENA\s*\d+)/im.test(VIR.source)){VIR.script=VIR.source;vMsg('📝 Guion cinematográfico detectado: conservo sus escenas y diálogos originales.')}else await vCreateStory()}if(!VIR.scenes.length)vMakeScenes()}if(!VIR.scenes.length)return;await vAllImages(true);if(VIR.cancel)return;if(VIR.scenes.some(s=>!s.url)){vMsg('⚠️ No exporté el video: faltan imágenes reales. Reintentá o subí las que faltan.');return}await vAutoMotionClips().catch(e=>vMsg('⚠️ Animación real: '+e.message+'. Se conservan las imágenes y los clips ya terminados.'))}
   function freeFromMain(kind){
     if(kind==='video'){const scTxt=(ST.scenes||[]).map(s=>s.text).filter(Boolean).join('\n');const base=(scTxt||ST.script||ST.idea||'').trim();if(base){const changed=base.trim()!==(VIR.script||VIR.source||'').trim();if(changed){VIR.source=base;VIR.script=scTxt||''}}setTab('viral');setTimeout(()=>{if(base)vAutoAll();else vMsg('✍️ Escribí tu idea o pegá un guion en el paso 3 y tocá «✨ Crear todo». Es gratis y no pide inicio de sesión.')},500);return}
     if(kind==='music'){const idea=(ST.musicLyrics||ST.musicIdea||'').trim();const g=(ST.musicGenre||'').toLowerCase();const map=[['cumbia','cumbia'],['cuarteto','cuarteto'],['regue','regueton'],['rock','rock'],['balada','balada'],['folk','folklore'],['pop','pop']];const key=(map.find(m=>g.includes(m[0]))||['','epica'])[1];const sec=Math.min(60,Math.max(15,Number(ST.musicDuration)||30));setStatus('🎵 Componiendo música gratis ('+sec+' s)…','busy');setTimeout(()=>{try{const blob=txtSynth(txtGenre(key),sec,txtHash(idea+g)%8);if(ST.lastMusicUrl&&ST.lastMusicUrl.startsWith('blob:'))URL.revokeObjectURL(ST.lastMusicUrl);ST.lastMusicUrl=URL.createObjectURL(blob);ST.musicUrl=ST.lastMusicUrl;saveState();renderMain();setStatus('✅ Música instrumental gratis lista ('+sec+' s). Es instrumental; la voz cantada por IA necesita un servicio de pago.','ok')}catch(e){setStatus('⚠️ '+e.message,'error')}},60);return}
