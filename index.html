@@ -2003,6 +2003,10 @@ Player.run=async function(record){var self=this,P=S.P;
   }catch(e){console.warn('[v3.32] preparación',e)}
   try{return await runOrig.call(self,record)}catch(e){Pipe.setBusy('');toast('No pude reproducir: '+(e.message||e)+'. Probá cerrar y volver a abrir la página.',1);try{self.stop()}catch(_){}}
 };
+
+/* Cartel de la pestaña Voz: ahora el lip-sync existe (gratis, beta) */
+try{var vozOrig=tVoz;tVoz=function(){var h=vozOrig.apply(this,arguments);return String(h).replace('<span class="tag soon">Próximamente</span>','<span class="tag acc">Nuevo · beta gratis</span>').replace('Sincronizar los labios de un personaje con la voz requiere servidores con GPU pagos.','¡Ya está! Generá las voces, tocá una escena y, en el panel de la derecha, usá <b>«👄 Hacer hablar con su voz»</b>. Sincroniza hasta 8 segundos por escena (LatentSync, gratis).')};
+  SOON.forEach(function(x){if(/Lip-sync/.test(x.n))x.d='Nuevo (beta, gratis): en cada escena, «Hacer hablar con su voz».'})}catch(e){}
 // Las imágenes "cartel" no se guardan como reales: cuando llega la verdadera, la reemplaza sola (loadImg ya lo hace).
 try{renderSel()}catch(e){}
 console.info('[Estudio Viral] v3.32 cargado: sonidos de naturaleza, mi sonido, hacer hablar y reproductor seguro');
