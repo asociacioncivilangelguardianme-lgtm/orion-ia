@@ -4824,6 +4824,7 @@ function baseHTML(){
    <button class="quick" onclick="angelaGPConectarCuenta()">➕ Conectar otra cuenta Google</button>
    <button class="quick" onclick="angelaGPSeleccionarGoogle()">🖼️ Seleccionar de Google Fotos</button>
    <button class="quick" onclick="angelaGPImportarLocal()">📁 Elegir fotos/videos</button>
+   ${window.showDirectoryPicker?'<button class="quick" onclick="angelaGPCarpeta()">🗂️ Elegir carpeta entera (PC)</button>':''}
    <input id="agGPFiles" class="hidden" type="file" accept="image/*,video/*" multiple onchange="angelaGPProcesarArchivos(this.files)">
   </div>
   <div class="ag-gp-accounts">${GP.accounts.map(a=>`<span class="ag-gp-account ${isConnected(a)?'ok':'pending'}">${isConnected(a)?'🟢':'🟡'} ${esc(a.email)}${a.local?'':isConnected(a)?' · conectada':' · reconectar'}</span>`).join('')}</div>
@@ -4836,6 +4837,7 @@ function baseHTML(){
    <button class="quick" onclick="angelaGPFiltro('all')">🗂️ Ver todos</button>
    <button class="quick" onclick="angelaGPRevisionFinal()">✅ Revisar marcadas</button>
    <button class="quick" onclick="angelaGPPrepararEliminacion()">🗑️ Preparar eliminación</button>
+   ${GP.items.some(x=>x.handle)?'<button class="quick" onclick="angelaGPMoverDuplicados()">📦 Mover marcadas a carpeta _DUPLICADOS_ANGELA</button>':''}
   </div>
   <div id="agGPGroups" class="ag-gp-groups"></div>
   <div class="ag-gp-note"><b>Google Fotos:</b> cada vez que conectás una cuenta, Google te deja elegir hasta 2.000 fotos/videos para compartir con ÁNGELA. Podés repetirlo y también conectar varias cuentas. ÁNGELA compara lo cargado de todas las cuentas, pero <b>no borra automáticamente</b>: la eliminación final se hace en Google Fotos después de tu revisión.</div>
@@ -4892,6 +4894,11 @@ async function sha256(buf){const h=await crypto.subtle.digest('SHA-256',buf);ret
 async function fingerprint(file){if(!file)return null;const CH=1024*1024;if(file.size<=12*CH)return sha256(await file.arrayBuffer());const points=[0,Math.max(0,Math.floor(file.size/2)-CH/2),Math.max(0,file.size-CH)];const blobs=await Promise.all(points.map(p=>file.slice(p,p+CH).arrayBuffer()));const total=blobs.reduce((n,b)=>n+b.byteLength,0)+16,all=new Uint8Array(total);let off=0;for(const b of blobs){all.set(new Uint8Array(b),off);off+=b.byteLength}new DataView(all.buffer).setBigUint64(off,BigInt(file.size));return sha256(all.buffer)}
 async function imageHash(file){let bmp;try{bmp=await createImageBitmap(file)}catch{return {hash:null,width:0,height:0}}const c=document.createElement('canvas');c.width=8;c.height=8;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bmp,0,0,8,8);const d=x.getImageData(0,0,8,8).data;let vals=[];for(let i=0;i<d.length;i+=4)vals.push((d[i]*299+d[i+1]*587+d[i+2]*114)/1000);const avg=vals.reduce((a,b)=>a+b,0)/vals.length;let bits='';for(const v of vals)bits+=v>=avg?'1':'0';let hex='';for(let i=0;i<64;i+=4)hex+=parseInt(bits.slice(i,i+4),2).toString(16);const out={hash:hex,width:bmp.width,height:bmp.height};bmp.close?.();return out}
 function videoMeta(url){return new Promise(res=>{const v=document.createElement('video');let done=false;const finish=()=>{if(done)return;done=true;res({duration:Number.isFinite(v.duration)?v.duration:0,width:v.videoWidth||0,height:v.videoHeight||0})};v.preload='metadata';v.onloadedmetadata=finish;v.onerror=finish;v.src=url;setTimeout(finish,6000)})}
+function videoFrames(url){return new Promise(res=>{const v=document.createElement('video');v.muted=true;v.preload='auto';v.playsInline=true;const c=document.createElement('canvas');c.width=8;c.height=8;const x=c.getContext('2d',{willReadFrequently:true});const out=[];let pts=[],k=0,done=false;
+ const fin=()=>{if(done)return;done=true;try{v.removeAttribute('src');v.load()}catch{}res(out.length?out:null)};const to=setTimeout(fin,12000);
+ const grab=()=>{try{x.drawImage(v,0,0,8,8);const d=x.getImageData(0,0,8,8).data;const vals=[];for(let i=0;i<d.length;i+=4)vals.push((d[i]*299+d[i+1]*587+d[i+2]*114)/1000);const avg=vals.reduce((a,b)=>a+b,0)/vals.length;let bits='';for(const q of vals)bits+=q>=avg?'1':'0';let hex='';for(let i=0;i<64;i+=4)hex+=parseInt(bits.slice(i,i+4),2).toString(16);out.push(hex)}catch{}k++;if(k<pts.length){v.currentTime=pts[k]}else{clearTimeout(to);fin()}};
+ v.onloadedmetadata=()=>{const d=Number.isFinite(v.duration)?v.duration:0;if(!d){clearTimeout(to);return fin()}pts=[d*.2,d*.5,d*.8];v.currentTime=pts[0]};v.onseeked=grab;v.onerror=()=>{clearTimeout(to);fin()};v.src=url})}
+function framesSimilar(a,b){if(!a||!b||a.length<2||b.length<2)return false;const n=Math.min(a.length,b.length);let t=0;for(let i=0;i<n;i++)t+=ham(a[i],b[i]);return t/n<=9}
 function ham(a,b){if(!a||!b||a.length!==b.length)return 99;let n=0;for(let i=0;i<a.length;i++){let x=parseInt(a[i],16)^parseInt(b[i],16);n+=((x&1)+((x>>1)&1)+((x>>2)&1)+((x>>3)&1))}return n}
 function normName(n){return String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\.[^.]+$/,'').replace(/\b(copy|copia|duplicado|download|descarga|whatsapp|instagram|facebook|img|vid)[-_ ]*\d*\b/g,'').replace(/[^a-z0-9]/g,'')}
 function chooseKeep(arr){return [...arr].sort((a,b)=>((b.width||0)*(b.height||0)-(a.width||0)*(a.height||0))||((b.size||0)-(a.size||0))||((a.date||0)-(b.date||0)))[0]}
@@ -4908,10 +4915,10 @@ async function analyze(){
  const photos=GP.items.filter(x=>x.kind==='photo');
  for(let i=0;i<photos.length;i++){const x=photos[i];if(!x.visualHash&&x.file){const h=await imageHash(x.file);x.visualHash=h.hash;if(!x.width)x.width=h.width;if(!x.height)x.height=h.height}if(i%3===0){setStatus(`Comparando fotos ${i+1}/${photos.length}…`);await wait()}}
  const videos=GP.items.filter(x=>x.kind==='video');
- for(let i=0;i<videos.length;i++){const x=videos[i];if(!x.remoteBaseUrl&&!x.duration){const m=await videoMeta(x.url);x.duration=m.duration;x.width=x.width||m.width;x.height=x.height||m.height}if(x.remoteBaseUrl&&!x.visualHash&&x.previewFile){const h=await imageHash(x.previewFile);x.visualHash=h.hash}if(i%5===0){setStatus(`Revisando videos ${i+1}/${videos.length}…`);await wait()}}
+ for(let i=0;i<videos.length;i++){const x=videos[i];if(!x.remoteBaseUrl&&!x.duration){const m=await videoMeta(x.url);x.duration=m.duration;x.width=x.width||m.width;x.height=x.height||m.height}if(!x.remoteBaseUrl&&!x.frames&&x.url){setStatus(`Mirando adentro de los videos ${i+1}/${videos.length}…`);x.frames=await videoFrames(x.url)}if(x.remoteBaseUrl&&!x.visualHash&&x.previewFile){const h=await imageHash(x.previewFile);x.visualHash=h.hash}if(i%5===0){setStatus(`Revisando videos ${i+1}/${videos.length}…`);await wait()}}
  const pairs=[],buckets=new Map();
  for(const x of photos.filter(x=>x.visualHash)){const sigs=[0,4,8,12].map(o=>`${o}:${x.visualHash.slice(o,o+4)}`);let cand=new Set();for(const s of sigs)for(const y of buckets.get(s)||[])cand.add(y);for(const y of cand){if(exactIds.has(x.id)&&exactIds.has(y.id)&&x.contentHash===y.contentHash)continue;const ar1=(x.width||1)/(x.height||1),ar2=(y.width||1)/(y.height||1);if(Math.abs(ar1-ar2)>0.12)continue;if(ham(x.visualHash,y.visualHash)<=8)pairs.push([x,y])}for(const s of sigs){if(!buckets.has(s))buckets.set(s,[]);buckets.get(s).push(x)}}
- for(let i=0;i<videos.length;i++)for(let j=i+1;j<videos.length;j++){const a=videos[i],b=videos[j];if(exactIds.has(a.id)&&exactIds.has(b.id)&&a.contentHash===b.contentHash)continue;let similar=false;if(a.duration&&b.duration&&Math.abs(a.duration-b.duration)<=0.6){const sr=a.size&&b.size?Math.min(a.size,b.size)/Math.max(a.size,b.size):0;if(sr>.92||normName(a.name)===normName(b.name))similar=true}else if(a.remoteBaseUrl&&b.remoteBaseUrl){const sameDims=a.width&&b.width&&a.height&&b.height&&a.width===b.width&&a.height===b.height;if(normName(a.name)&&normName(a.name)===normName(b.name)&&sameDims)similar=true;else if(sameDims&&a.visualHash&&b.visualHash&&ham(a.visualHash,b.visualHash)<=4)similar=true}if(similar)pairs.push([a,b])}
+ for(let i=0;i<videos.length;i++)for(let j=i+1;j<videos.length;j++){const a=videos[i],b=videos[j];if(exactIds.has(a.id)&&exactIds.has(b.id)&&a.contentHash===b.contentHash)continue;let similar=false;const sr=a.size&&b.size?Math.min(a.size,b.size)/Math.max(a.size,b.size):0;if(a.frames&&b.frames){if(!a.duration||!b.duration||Math.abs(a.duration-b.duration)<=1.6)similar=framesSimilar(a.frames,b.frames)}else if(a.duration&&b.duration&&Math.abs(a.duration-b.duration)<=0.6){if(sr>.92||normName(a.name)===normName(b.name))similar=true}else if(a.remoteBaseUrl&&b.remoteBaseUrl){const sameDims=a.width&&b.width&&a.height&&b.height&&a.width===b.width&&a.height===b.height;if(normName(a.name)&&normName(a.name)===normName(b.name)&&sameDims)similar=true;else if(sameDims&&a.visualHash&&b.visualHash&&ham(a.visualHash,b.visualHash)<=4)similar=true}if(similar)pairs.push([a,b])}
  const similarArrays=unionGroups(GP.items,pairs).filter(a=>!a.every(x=>exactIds.has(x.id)));
  let gi=0;GP.groups=[...exactArrays.map(items=>({id:'e'+(++gi),type:'exact',items})),...similarArrays.map(items=>({id:'s'+(++gi),type:'similar',items}))];
  for(const g of GP.groups){const keep=chooseKeep(g.items);for(const x of g.items)if(x.id!==keep.id)GP.marked.add(x.id)}
@@ -4977,6 +4984,24 @@ window.angelaGPCambiarCuenta=v=>{GP.activeAccount=v;renderModule()};
 window.angelaGPImportarLocal=()=>$('agGPFiles')?.click();
 window.angelaGPProcesarArchivos=async files=>{const list=[...(files||[])];if(!list.length)return;const acct=activeAccount();setStatus(`Cargando ${list.length} archivo(s)…`);let start=GP.items.length;for(let i=0;i<list.length;i++){const f=list[i];if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;GP.items.push({id:'gp'+Date.now().toString(36)+(start+i)+Math.random().toString(36).slice(2,5),file:f,previewFile:f,url:URL.createObjectURL(f),name:f.name,size:f.size,analysisSize:f.size,date:f.lastModified||Date.now(),kind:f.type.startsWith('video/')?'video':'photo',accountId:acct.id,accountEmail:acct.email,width:0,height:0,duration:0,contentHash:null,visualHash:null});if(i%20===0)await wait()}GP.groups=[];GP.marked.clear();setStatus(`${list.length} archivo(s) cargados. Tocá “Buscar duplicados”.`);renderModule()};
 window.angelaGPAnalizar=analyze;
+const MEDIA_RE=/\.(jpe?g|png|gif|webp|heic|heif|bmp|mp4|mov|m4v|3gp|webm|mkv|avi)$/i;
+async function walkDir(dir,path,out,limit){for await(const [name,h] of dir.entries()){if(out.length>=limit)break;if(h.kind==='directory'){if(/^(_DUPLICADOS_ANGELA|\.|node_modules|\$)/i.test(name))continue;await walkDir(h,path+name+'/',out,limit)}else if(MEDIA_RE.test(name)){out.push({h,dir,path:path+name,name})}if(out.length%200===0){setStatus(`Buscando archivos en la carpeta… ${out.length}`);await wait()}}}
+window.angelaGPCarpeta=async()=>{if(!window.showDirectoryPicker){alert('Elegir una carpeta entera funciona en Chrome o Edge de computadora. En el celular usá “Elegir fotos/videos”.');return}
+ let root;try{root=await window.showDirectoryPicker({id:'angela-dup',mode:'readwrite'})}catch(e){if(e&&e.name==='AbortError')return;alert('No se pudo abrir la carpeta: '+(e.message||e));return}
+ GP.rootDir=root;const found=[];setStatus('Buscando fotos y videos en la carpeta…');renderSummary();await walkDir(root,'',found,8000);
+ const acct=activeAccount();let n=0;for(let i=0;i<found.length;i++){const f=found[i];try{const file=await f.h.getFile();const isV=/\.(mp4|mov|m4v|3gp|webm|mkv|avi)$/i.test(f.name)||file.type.startsWith('video/');
+   GP.items.push({id:'gpd'+Date.now().toString(36)+i+Math.random().toString(36).slice(2,5),file,previewFile:file,url:URL.createObjectURL(file),name:f.path,size:file.size,analysisSize:file.size,date:file.lastModified||Date.now(),kind:isV?'video':'photo',accountId:acct.id,accountEmail:'Carpeta: '+root.name,width:0,height:0,duration:0,contentHash:null,visualHash:null,handle:f.h,dirHandle:f.dir,fileName:f.name});n++}catch{}if(i%25===0){setStatus(`Cargando ${i+1}/${found.length}…`);await wait()}}
+ GP.groups=[];GP.marked.clear();GP.filter='all';setStatus(`✅ ${n} foto(s) y video(s) de la carpeta “${root.name}”${found.length>=8000?' (primeros 8.000)':''}. Tocá “🔎 Buscar duplicados”.`);renderModule()};
+window.angelaGPMoverDuplicados=async()=>{const rows=[...GP.marked].map(id=>GP.items.find(x=>x.id===id)).filter(x=>x&&x.handle&&x.dirHandle);
+ if(!rows.length){alert('No hay archivos marcados que vengan de una carpeta de la compu.');return}const total=rows.reduce((a,x)=>a+(x.size||0),0);
+ if(!confirm(`Se van a MOVER ${rows.length} archivo(s) (${fmtBytes(total)}) a una carpeta nueva llamada “_DUPLICADOS_ANGELA”, dentro de “${GP.rootDir?GP.rootDir.name:'la carpeta elegida'}”.\n\nNo se borra nada: después revisás esa carpeta y, si está todo bien, la borrás vos para liberar el espacio.\n\n¿Seguimos?`))return;
+ let ok=0,fail=0;let dest;try{dest=await GP.rootDir.getDirectoryHandle('_DUPLICADOS_ANGELA',{create:true})}catch(e){alert('No pude crear la carpeta: '+(e.message||e));return}
+ for(let i=0;i<rows.length;i++){const x=rows[i];setStatus(`Moviendo ${i+1}/${rows.length}: ${x.fileName}`);try{let name=x.fileName,c=1;while(true){try{await dest.getFileHandle(name);name=x.fileName.replace(/(\.[^.]+)?$/,m=>` (${c++})`+m)}catch{break}}
+   const fh=await dest.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(await x.handle.getFile());await w.close();await x.dirHandle.removeEntry(x.fileName);ok++;
+   GP.items=GP.items.filter(y=>y.id!==x.id);GP.marked.delete(x.id)}catch(e){fail++;console.warn('ÁNGELA mover duplicado',e)}if(i%5===0)await wait()}
+ GP.groups=GP.groups.map(g=>({...g,items:g.items.filter(y=>GP.items.some(z=>z.id===y.id))})).filter(g=>g.items.length>1);
+ setStatus(`✅ ${ok} archivo(s) movidos a “_DUPLICADOS_ANGELA”${fail?` · ${fail} no se pudieron mover`:''}. Revisá esa carpeta y borrala para liberar ${fmtBytes(total)}.`);renderModule();
+ alert(`Listo: ${ok} archivo(s) movidos a la carpeta “_DUPLICADOS_ANGELA”.\n\nAbrila en tu compu, mirá que esté todo bien y borrala (o vaciá la papelera) para liberar el espacio.`)};
 window.angelaGPFiltro=f=>{GP.filter=f;GP.reviewOnly=false;renderGroups()};
 window.angelaGPToggle=(id,on)=>{on?GP.marked.add(id):GP.marked.delete(id);renderSummary();renderGroups()};
 window.angelaGPConservarMejor=gid=>{const g=GP.groups.find(x=>x.id===gid);if(!g)return;const keep=chooseKeep(g.items);g.items.forEach(x=>x.id===keep.id?GP.marked.delete(x.id):GP.marked.add(x.id));renderSummary();renderGroups()};
@@ -10945,3 +10970,339 @@ window.ANGELAMusica={open:open,close:close,search:search,more:more,source:source
 })();
 </script>
 <!-- ===== FIN SEGURIDAD ===== -->
+
+<!-- ===== ÁNGELA · ETAPA 1 · CUIDAR LOS DATOS (PIN, COPIAS DE SEGURIDAD Y BUSCADOR) =====
+     Agregado al final: no modifica nada existente. QR, regalos y eventos quedan sin PIN.
+     Para quitarlo, borrá desde acá hasta "FIN ETAPA 1". -->
+<style id="angela-etapa1-style">
+.ae1-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.ae1-search{flex:1;min-width:220px;position:relative}
+.ae1-search input{width:100%;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:9px 12px 9px 34px;font-size:13px;color:#e2e8f0}
+.ae1-search span{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.7}
+.ae1-banner{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:12.5px;border:1px solid rgba(245,158,11,.45);background:rgba(245,158,11,.1);color:#fde68a;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ae1-banner.ok{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.08);color:#bbf7d0}
+.ae1-modal{position:fixed;inset:0;background:rgba(2,6,23,.82);z-index:99999;display:grid;place-items:center;padding:16px}
+.ae1-card{width:100%;max-width:420px;background:#0b1220;border:1px solid #334155;border-radius:18px;padding:18px;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.ae1-card h3{font-weight:800;font-size:17px;margin-bottom:6px}
+.ae1-card p{font-size:12.5px;color:#94a3b8;margin:6px 0}
+.ae1-card input{width:100%;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:11px 12px;font-size:16px;color:#e2e8f0;margin-top:8px;letter-spacing:.15em}
+.ae1-card input.txt{letter-spacing:0;font-size:14px}
+.ae1-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.ae1-row button{flex:1}
+.ae1-err{color:#fca5a5;font-size:12px;min-height:16px;margin-top:6px}
+.ae1-list{max-height:50vh;overflow:auto;margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.ae1-item{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px 10px;font-size:12px;flex-wrap:wrap}
+.ae1-res{border:1px solid #334155;border-radius:16px;padding:14px;background:rgba(2,6,23,.4)}
+.ae1-res h4{font-weight:700;color:#67e8f9;margin:10px 0 6px;font-size:13px}
+.ae1-hit{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px 10px;font-size:12px;margin-bottom:6px}
+.ae1-hit mark{background:#fde047;color:#111;border-radius:3px;padding:0 2px}
+</style>
+<script id="angela-etapa1-datos">
+(function(){'use strict';
+if(window.__angelaEtapa1)return;window.__angelaEtapa1=true;
+var PIN_KEY='ANGELA_GESTION_PIN_V1',OK_KEY='ANGELA_GESTION_OK_V1',BK_LAST='ANGELA_BK_LAST_FILE_V1',MASTER='ANGELA_MASTER_LOCAL_V1';
+var IDLE_MIN=15,KEEP_SNAPS=10;
+var EXEMPT=/qr|evento|regalo|invitad/i;
+var COCINA_TAB={cocina_raciones:'raciones',cocina_vencimientos:'venc',cocina_recetas:'recetas'};
+var NOMBRES={cocina_raciones:'🍽️ Raciones',cocina_vencimientos:'⏳ Vencimientos',cocina_recetas:'📖 Recetas',costos:'🧮 Costos y Presupuestos',stock:'📦 Inventario y Stock',pedidos:'📋 Pedidos y Clientes',parametros:'🔥 Parámetros',familias:'👨‍👩‍👧 Familias y Personas',documentos:'📁 Documentación',finanzas:'💰 Gastos e Ingresos',donantes:'💳 Donantes',empresas:'🏢 Empresas / RSE',recordatorios:'📅 Recordatorios',memoria:'🧠 Memoria local'};
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function norm(s){return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function toast(t){try{if(typeof window.showToast==='function')return window.showToast(t)}catch(e){}var d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:100000;background:#0b1220;color:#e2e8f0;border:1px solid #334155;border-radius:12px;padding:10px 14px;font-size:13px;max-width:90vw;box-shadow:0 10px 30px rgba(0,0,0,.5)';document.body.appendChild(d);setTimeout(function(){d.remove()},4200)}
+async function sha(t){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}
+function fmtBytes(n){n=+n||0;if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(0)+' KB';return (n/1048576).toFixed(1)+' MB'}
+function fecha(t){return new Date(t).toLocaleString('es-AR',{day:'numeric',month:'numeric',year:'2-digit',hour:'2-digit',minute:'2-digit'})}
+function hoy(){return new Date().toISOString().slice(0,10)}
+
+/* ================= 🔒 PIN ================= */
+function pinData(){try{return JSON.parse(localStorage.getItem(PIN_KEY)||'null')}catch(e){return null}}
+function unlocked(){if(!pinData())return true;var t=+sessionStorage.getItem(OK_KEY)||0;return t&&Date.now()-t<IDLE_MIN*60000}
+function touch(){if(pinData()&&unlocked())sessionStorage.setItem(OK_KEY,String(Date.now()))}
+function lockNow(silent){sessionStorage.removeItem(OK_KEY);var c=$('angelaGestionContenido');if(c){c.innerHTML='';c.classList.add('hidden')}renderBar();if(!silent)toast('🔒 Centro de Gestión bloqueado')}
+function modal(html){var m=document.createElement('div');m.className='ae1-modal';m.innerHTML='<div class="ae1-card">'+html+'</div>';m.addEventListener('click',function(e){if(e.target===m)m.remove()});document.body.appendChild(m);var i=m.querySelector('input');if(i)setTimeout(function(){i.focus()},50);return m}
+function askPin(then){var d=pinData();var m=modal('<h3>🔒 Centro de Gestión protegido</h3><p>Escribí tu PIN para ver los datos de las familias, documentos y cuentas.</p><input id="ae1Pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN"><div class="ae1-err" id="ae1Err"></div>'+(d&&d.hint?'<p>💡 Pista: '+esc(d.hint)+'</p>':'')+'<div class="ae1-row"><button class="quick" id="ae1Cancel">Cancelar</button><button class="quick text-cyan-300" id="ae1Ok">Entrar</button></div><p style="margin-top:10px"><a href="#" id="ae1Forgot" style="color:#93c5fd">Me olvidé el PIN</a></p>');
+  var tries=0;async function go(){var v=m.querySelector('#ae1Pin').value.trim();if(!v)return;var h=await sha(d.salt+v);if(h===d.h){sessionStorage.setItem(OK_KEY,String(Date.now()));m.remove();renderBar();if(then)then()}else{tries++;m.querySelector('#ae1Err').textContent='PIN incorrecto'+(tries>=3?'. Si no te acordás, tocá «Me olvidé el PIN».':'');m.querySelector('#ae1Pin').value=''}}
+  m.querySelector('#ae1Ok').onclick=go;m.querySelector('#ae1Pin').onkeydown=function(e){if(e.key==='Enter')go()};m.querySelector('#ae1Cancel').onclick=function(){m.remove()};
+  m.querySelector('#ae1Forgot').onclick=function(e){e.preventDefault();m.remove();forgot()}}
+function forgot(){var d=pinData();if(!d)return;if(!d.rec){modal('<h3>Me olvidé el PIN</h3><p>Este PIN se creó sin palabra de recuperación. Para sacarlo hay que <b>restaurar una copia de seguridad</b> hecha antes de poner el PIN, o pedir ayuda para borrarlo a mano.</p><div class="ae1-row"><button class="quick" onclick="this.closest(\'.ae1-modal\').remove()">Entendido</button></div>');return}
+  var m=modal('<h3>Recuperar el acceso</h3><p>Escribí la <b>palabra de recuperación</b> que elegiste al crear el PIN.</p><input id="ae1Rec" class="txt" type="text" autocomplete="off" placeholder="Palabra de recuperación"><div class="ae1-err" id="ae1Err"></div><div class="ae1-row"><button class="quick" id="ae1C">Cancelar</button><button class="quick text-cyan-300" id="ae1G">Quitar el PIN</button></div>');
+  m.querySelector('#ae1C').onclick=function(){m.remove()};
+  m.querySelector('#ae1G').onclick=async function(){var v=norm(m.querySelector('#ae1Rec').value.trim());if(!v)return;if(await sha(d.salt+'rec:'+v)===d.rec){localStorage.removeItem(PIN_KEY);sessionStorage.removeItem(OK_KEY);m.remove();renderBar();toast('PIN quitado. Podés crear uno nuevo cuando quieras.')}else m.querySelector('#ae1Err').textContent='La palabra no coincide.'}}
+function setupPin(){var has=!!pinData();
+  var m=modal('<h3>'+(has?'🔒 Cambiar o quitar el PIN':'🔒 Crear un PIN')+'</h3><p>Protege el Centro de Gestión: familias, DNI, direcciones, documentos, cuentas y donantes. QR, regalos y eventos quedan libres.</p>'+
+   '<input id="ae1P1" type="password" inputmode="numeric" maxlength="12" placeholder="PIN nuevo (4 a 12 números)"><input id="ae1P2" type="password" inputmode="numeric" maxlength="12" placeholder="Repetí el PIN">'+
+   '<input id="ae1Rc" class="txt" type="text" autocomplete="off" placeholder="Palabra de recuperación (por si te olvidás)"><input id="ae1Ht" class="txt" type="text" autocomplete="off" placeholder="Pista (opcional, la ve cualquiera)">'+
+   '<div class="ae1-err" id="ae1Err"></div><div class="ae1-row"><button class="quick" id="ae1C">Cancelar</button>'+(has?'<button class="quick text-red-300" id="ae1Del">Quitar PIN</button>':'')+'<button class="quick text-cyan-300" id="ae1S">Guardar</button></div>');
+  m.querySelector('#ae1C').onclick=function(){m.remove()};
+  if(has)m.querySelector('#ae1Del').onclick=function(){if(!confirm('¿Quitar el PIN? El Centro de Gestión quedará abierto para cualquiera que use este aparato.'))return;localStorage.removeItem(PIN_KEY);sessionStorage.removeItem(OK_KEY);m.remove();renderBar();toast('PIN quitado')};
+  m.querySelector('#ae1S').onclick=async function(){var a=m.querySelector('#ae1P1').value.trim(),b=m.querySelector('#ae1P2').value.trim(),rc=norm(m.querySelector('#ae1Rc').value.trim()),ht=m.querySelector('#ae1Ht').value.trim(),err=m.querySelector('#ae1Err');
+    if(!/^\d{4,12}$/.test(a))return err.textContent='El PIN tiene que tener entre 4 y 12 números.';if(a!==b)return err.textContent='Los dos PIN no coinciden.';
+    if(!rc&&!confirm('No pusiste palabra de recuperación. Si te olvidás el PIN, no vas a poder entrar sin restaurar una copia. ¿Seguir igual?'))return;
+    var salt=Array.from(crypto.getRandomValues(new Uint8Array(12))).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+    localStorage.setItem(PIN_KEY,JSON.stringify({h:await sha(salt+a),salt:salt,rec:rc?await sha(salt+'rec:'+rc):'',hint:ht,at:Date.now()}));sessionStorage.setItem(OK_KEY,String(Date.now()));m.remove();renderBar();toast('🔒 PIN guardado. Se pide al abrir el Centro y se bloquea solo a los '+IDLE_MIN+' minutos sin uso.')}}
+/* cada clic dentro del Centro pasa por acá */
+document.addEventListener('click',function(e){var sec=$('centroGestionAngela');if(!sec||!pinData()||unlocked())return;var t=e.target;if(!t||!sec.contains(t))return;
+  if(t.closest('.ae1-free'))return;var el=t.closest('button,label,a,input,select,[onclick]');if(!el)return;var txt=(el.textContent||'')+' '+(el.getAttribute('onclick')||'');if(EXEMPT.test(txt))return;
+  e.preventDefault();e.stopImmediatePropagation();askPin(function(){try{el.click()}catch(_){}})},true);
+document.addEventListener('pointerdown',function(e){var sec=$('centroGestionAngela');if(sec&&sec.contains(e.target))touch()},true);
+setInterval(function(){if(pinData()&&!unlocked()&&sessionStorage.getItem(OK_KEY)){lockNow(true)}},30000);
+/* si alguien abre un módulo por otro camino (por ejemplo desde el chat), también pide el PIN */
+function guardFn(name){var f=window[name];if(typeof f!=='function'||f.__ae1)return;var g=function(){var self=this,args=arguments,m=String(args[0]||'');if(pinData()&&!unlocked()&&!EXEMPT.test(m)){askPin(function(){f.apply(self,args)});return}return f.apply(self,args)};g.__ae1=true;window[name]=g}
+
+/* ================= 🛡️ COPIAS DE SEGURIDAD ================= */
+var DBP=null;function idb(){return DBP||(DBP=new Promise(function(res,rej){var r=indexedDB.open('angela_copias',1);r.onupgradeneeded=function(){var d=r.result;d.createObjectStore('snaps',{keyPath:'at'});d.createObjectStore('cfg')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}))}
+function tx(store,mode,fn){return idb().then(function(d){return new Promise(function(res,rej){var t=d.transaction(store,mode),s=t.objectStore(store),out=fn(s);t.oncomplete=function(){res(out&&out.result!==undefined?out.result:out)};t.onerror=function(){rej(t.error)}})})}
+function collect(){var keys={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k===PIN_KEY)continue;var v=localStorage.getItem(k);if(v&&v.length>8e6)continue;keys[k]=v}return{tipo:'angela-copia-completa',version:2,fecha:new Date().toISOString(),keys:keys}}
+function sig(o){var s=JSON.stringify(o.keys),h=0;for(var i=0;i<s.length;i+=7)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h}
+async function snapshot(reason){try{var o=collect(),sg=sig(o);var last=await tx('cfg','readonly',function(s){return s.get('lastSig')});if(last===sg&&reason!=='manual'&&reason!=='antes de restaurar')return false;
+  var size=JSON.stringify(o).length;await tx('snaps','readwrite',function(s){s.put({at:Date.now(),reason:reason||'automática',size:size,data:o})});await tx('cfg','readwrite',function(s){s.put(sg,'lastSig')});
+  var all=await tx('snaps','readonly',function(s){return s.getAllKeys()});all.sort(function(a,b){return a-b});while(all.length>KEEP_SNAPS){var k=all.shift();await tx('snaps','readwrite',function(s){s.delete(k)})}return true}catch(e){console.warn('[ÁNGELA copias]',e);return false}}
+function daysSinceFile(){var t=+localStorage.getItem(BK_LAST)||0;return t?Math.floor((Date.now()-t)/86400000):999}
+async function saveFile(){var o=collect(),txt=JSON.stringify(o),name='ANGELA_COPIA_'+hoy()+'.json';await snapshot('manual');
+  var dir=null;try{dir=await tx('cfg','readonly',function(s){return s.get('dir')})}catch(e){}
+  if(dir&&dir.requestPermission){try{if((await dir.requestPermission({mode:'readwrite'}))==='granted'){var fh=await dir.getFileHandle(name,{create:true}),w=await fh.createWritable();await w.write(txt);await w.close();localStorage.setItem(BK_LAST,String(Date.now()));renderBar();toast('🛡️ Copia guardada en la carpeta «'+dir.name+'»');return}}catch(e){console.warn(e)}}
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();localStorage.setItem(BK_LAST,String(Date.now()));renderBar();toast('🛡️ Copia descargada: '+name+'. Guardala en un pendrive o en Google Drive.')}
+async function pickDir(){if(!window.showDirectoryPicker)return toast('Elegir carpeta funciona en Chrome o Edge de computadora.');try{var d=await window.showDirectoryPicker({id:'angela-copias',mode:'readwrite'});await tx('cfg','readwrite',function(s){s.put(d,'dir')});toast('Carpeta elegida: '+d.name+'. Las copias se van a guardar ahí.');openBackups()}catch(e){}}
+async function restoreObj(o){var keys=null;
+  if(o&&o.tipo==='angela-copia-completa'&&o.keys)keys=o.keys;else if(o&&o.data&&typeof o.data==='object')keys={};
+  if(!keys)return alert('Ese archivo no es una copia de ÁNGELA.');
+  if(!confirm('¿Restaurar esta copia? Se reemplazan los datos actuales de ÁNGELA en este aparato.\n\nAntes de restaurar, ÁNGELA guarda una copia de cómo está ahora, por las dudas.'))return;
+  await snapshot('antes de restaurar');
+  if(o.tipo==='angela-copia-completa'){Object.keys(o.keys).forEach(function(k){try{localStorage.setItem(k,o.keys[k])}catch(e){}})}
+  else{var cur={};try{cur=JSON.parse(localStorage.getItem(MASTER)||'{}')}catch(e){}localStorage.setItem(MASTER,JSON.stringify(Object.assign(cur,o.data)))}
+  alert('Copia restaurada ✅ ÁNGELA se va a recargar.');location.reload()}
+async function openBackups(){var snaps=[];try{snaps=await tx('snaps','readonly',function(s){return s.getAll()})}catch(e){}snaps.sort(function(a,b){return b.at-a.at});
+  var dir=null;try{dir=await tx('cfg','readonly',function(s){return s.get('dir')})}catch(e){}var ds=daysSinceFile();
+  var m=modal('<h3>🛡️ Copias de seguridad</h3><p>ÁNGELA guarda <b>sola</b> una copia interna cada día que cambian los datos (las últimas '+KEEP_SNAPS+'). Pero esas viven en este mismo aparato: si se rompe o se borra el navegador, se pierden. Por eso, <b>una vez por semana guardá una copia en archivo</b> (pendrive o Google Drive).</p>'+
+   '<p>Última copia en archivo: <b>'+(ds>=999?'nunca':ds===0?'hoy':'hace '+ds+' día(s)')+'</b>'+(dir?' · Carpeta: <b>'+esc(dir.name)+'</b>':'')+'</p>'+
+   '<div class="ae1-row"><button class="quick text-cyan-300" id="ae1Save">💾 Guardar copia en archivo ahora</button></div>'+
+   (window.showDirectoryPicker?'<div class="ae1-row"><button class="quick" id="ae1Dir">📂 '+(dir?'Cambiar':'Elegir')+' carpeta para las copias (PC)</button></div><p>💡 Si en la compu tenés Google Drive instalado, elegí una carpeta de Drive: la copia se sube sola a la nube.</p>':'')+
+   '<h4 style="margin-top:12px;font-weight:700">Copias internas</h4><div class="ae1-list">'+(snaps.length?snaps.map(function(s){return '<div class="ae1-item"><span>📦 '+fecha(s.at)+' · '+esc(s.reason)+' · '+fmtBytes(s.size)+'</span><span style="display:flex;gap:6px"><button class="quick text-xs" data-dl="'+s.at+'">Descargar</button><button class="quick text-xs text-amber-300" data-rs="'+s.at+'">Restaurar</button></span></div>'}).join(''):'<p>Todavía no hay copias internas. Se hace la primera ahora.</p>')+'</div>'+
+   '<div class="ae1-row"><label class="quick" style="text-align:center;cursor:pointer">📥 Restaurar desde un archivo<input id="ae1File" type="file" accept=".json,application/json" hidden></label><button class="quick" id="ae1Close">Cerrar</button></div>');
+  m.querySelector('#ae1Save').onclick=saveFile;if(m.querySelector('#ae1Dir'))m.querySelector('#ae1Dir').onclick=function(){m.remove();pickDir()};m.querySelector('#ae1Close').onclick=function(){m.remove()};
+  m.querySelectorAll('[data-dl]').forEach(function(b){b.onclick=function(){var s=snaps.find(function(x){return String(x.at)===b.dataset.dl});var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(s.data)],{type:'application/json'}));a.download='ANGELA_COPIA_'+new Date(s.at).toISOString().slice(0,10)+'.json';a.click()}});
+  m.querySelectorAll('[data-rs]').forEach(function(b){b.onclick=function(){var s=snaps.find(function(x){return String(x.at)===b.dataset.rs});restoreObj(s.data)}});
+  m.querySelector('#ae1File').onchange=async function(){var f=this.files[0];if(!f)return;try{restoreObj(JSON.parse(await f.text()))}catch(e){alert('No pude leer ese archivo.')}};
+  if(!snaps.length)snapshot('primera copia')}
+
+/* ================= 🔍 BUSCADOR GENERAL ================= */
+function master(){var m={};try{m=JSON.parse(localStorage.getItem(MASTER)||'{}')}catch(e){}try{var c=JSON.parse(localStorage.getItem('ANGELA_COCINA_V1')||'{}');['raciones','vencimientos','recetas'].forEach(function(k){if(Array.isArray(c[k]))m['cocina_'+k]=c[k]})}catch(e){}return m}
+function recText(r){var out=[];(function walk(v){if(v==null)return;if(typeof v==='object'){for(var k in v){if(/^(id|creado|foto|imagen|data|base64|blob)$/i.test(k))continue;walk(v[k])}}else{var t=String(v).trim();if(t&&out.indexOf(t)<0)out.push(t)}})(r);return out.join(' · ')}
+function highlight(text,terms){var t=esc(text);terms.forEach(function(q){if(!q)return;try{var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig');t=t.replace(re,'<mark>$1</mark>')}catch(e){}});return t}
+function doSearch(q){var c=$('angelaGestionContenido');if(!c)return;q=(q||'').trim();if(q.length<2){c.classList.add('hidden');return}
+  var terms=norm(q).split(/\s+/).filter(Boolean),digits=q.replace(/\D/g,''),db=master(),groups=[],total=0;
+  Object.keys(db).forEach(function(mod){var arr=db[mod];if(!Array.isArray(arr)||EXEMPT.test(mod))return;var hits=[];
+    arr.forEach(function(r){var txt=recText(r),n=norm(txt),nd=txt.replace(/\D/g,'');var ok=terms.every(function(w){return n.indexOf(w)>=0})||(digits.length>=5&&nd.indexOf(digits)>=0);if(ok)hits.push(txt)});
+    if(hits.length){groups.push({mod:mod,hits:hits});total+=hits.length}});
+  c.classList.remove('hidden');
+  c.innerHTML='<div class="ae1-res"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>🔍 Resultados para «'+esc(q)+'»: '+total+'</b><button class="quick text-xs" onclick="document.getElementById(\'angelaGestionContenido\').classList.add(\'hidden\')">Cerrar</button></div>'+
+   (groups.length?groups.map(function(g){return '<h4>'+(NOMBRES[g.mod]||esc(g.mod))+' · '+g.hits.length+'</h4>'+g.hits.slice(0,30).map(function(h){return '<div class="ae1-hit"><span>'+highlight(h.slice(0,400),q.split(/\s+/))+'</span>'+(COCINA_TAB[g.mod]?'<button class="quick text-xs" onclick="AngelaCocina.open(\''+COCINA_TAB[g.mod]+'\')">Abrir</button>':NOMBRES[g.mod]?'<button class="quick text-xs" onclick="angelaAbrirGestion(\''+g.mod+'\')">Abrir</button>':'')+'</div>'}).join('')+(g.hits.length>30?'<p class="text-xs text-slate-400">…y '+(g.hits.length-30)+' más. Escribí algo más preciso.</p>':'')}).join(''):'<p class="text-xs text-slate-400 mt-2">No encontré nada. Probá con otra palabra, un apellido o el DNI sin puntos.</p>')+'</div>'}
+
+/* ================= barra dentro del Centro ================= */
+function renderBar(){var sec=$('centroGestionAngela');if(!sec)return;var bar=$('ae1Bar');
+  if(!bar){bar=document.createElement('div');bar.id='ae1Bar';var head=sec.firstElementChild;if(head&&head.nextSibling)sec.insertBefore(bar,head.nextSibling);else sec.appendChild(bar)}
+  var hasPin=!!pinData(),open=unlocked(),ds=daysSinceFile();
+  bar.innerHTML='<div class="ae1-bar"><div class="ae1-search"><span>🔍</span><input id="ae1Q" type="search" placeholder="Buscar en todo: nombre, apellido, DNI, dirección, donante…" autocomplete="off"></div>'+
+   '<button class="quick text-xs ae1-free" id="ae1PinBtn">'+(hasPin?(open?'🔓 Bloquear':'🔒 Desbloquear'):'🔒 Poner PIN')+'</button>'+
+   '<button class="quick text-xs" id="ae1BkBtn">🛡️ Copias de seguridad</button></div>'+
+   (ds>=7?'<div class="ae1-banner">📦 '+(ds>=999?'Todavía no guardaste ninguna copia en archivo.':'Hace '+ds+' días que no guardás una copia en archivo.')+' <button class="quick text-xs" id="ae1BkNow">💾 Guardar copia ahora</button></div>':'')+
+   (!hasPin?'<div class="ae1-banner">🔒 Acá están los datos de las familias (DNI, direcciones, documentos). Te recomiendo protegerlos con un PIN. <button class="quick text-xs ae1-free" id="ae1PinNow">Poner PIN</button></div>':'');
+  var q=bar.querySelector('#ae1Q'),tmr;q.oninput=function(){clearTimeout(tmr);var v=q.value;tmr=setTimeout(function(){if(pinData()&&!unlocked()){askPin(function(){doSearch(v)});return}doSearch(v)},300)};
+  bar.querySelector('#ae1PinBtn').onclick=function(e){e.stopPropagation();if(!hasPin)return setupPin();if(open)return lockNow();askPin(function(){setTimeout(function(){if(confirm('¿Querés cambiar o quitar el PIN?'))setupPin()},50)})};
+  bar.querySelector('#ae1BkBtn').onclick=function(){openBackups()};
+  if(bar.querySelector('#ae1BkNow'))bar.querySelector('#ae1BkNow').onclick=function(){saveFile()};
+  if(bar.querySelector('#ae1PinNow'))bar.querySelector('#ae1PinNow').onclick=function(e){e.stopPropagation();setupPin()}}
+
+function init(){renderBar();['angelaAbrirGestion','angelaGPAbrir','angelaExportarBackup'].forEach(guardFn);
+  setTimeout(function(){snapshot('automática')},8000);setInterval(function(){snapshot('automática')},6*3600000);
+  if(daysSinceFile()>=7&&daysSinceFile()<999&&!sessionStorage.getItem('ae1Told')){sessionStorage.setItem('ae1Told','1');setTimeout(function(){toast('🛡️ Hace '+daysSinceFile()+' días que no guardás una copia de seguridad de ÁNGELA. Está en Centro de Gestión.')},6000)}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,300)});else setTimeout(init,300);
+window.AngelaDatos={setupPin:setupPin,lock:lockNow,backups:openBackups,saveFile:saveFile,search:doSearch,snapshot:snapshot};
+console.info('[ÁNGELA] Etapa 1: PIN, copias de seguridad y buscador general');
+})();
+</script>
+<!-- ===== FIN ETAPA 1 ===== -->
+
+<!-- ===== ÁNGELA · ETAPA 2 · COCINA (RACIONES, MENÚ Y COMPRAS, RECETAS, VENCIMIENTOS, INFORME) =====
+     Agregado al final: no modifica nada existente. Guarda sus datos aparte (ANGELA_COCINA_V1)
+     y solo LEE el stock del Centro de Gestión. Para quitarlo, borrá desde acá hasta "FIN ETAPA 2". -->
+<style id="angela-etapa2-style">
+.ac2{border:1px solid #334155;border-radius:16px;padding:14px;background:rgba(2,6,23,.45);color:#e2e8f0}
+.ac2 h3{font-weight:800;color:#67e8f9;font-size:16px}
+.ac2-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.ac2-tabs button{padding:7px 11px;border-radius:10px;background:#0f172a;border:1px solid #334155;font-size:12.5px;font-weight:600;color:#94a3b8}
+.ac2-tabs button.on{background:#0e7490;border-color:#22d3ee;color:#fff}
+.ac2 .grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ac2 label{font-size:11.5px;color:#94a3b8;display:block}
+.ac2 input,.ac2 select,.ac2 textarea{width:100%;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:8px 10px;font-size:13px;color:#e2e8f0;margin-top:3px}
+.ac2 table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.ac2 th,.ac2 td{border-bottom:1px solid #1e293b;padding:6px 6px;text-align:left;vertical-align:top}
+.ac2 th{color:#94a3b8;font-weight:600}
+.ac2-card{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:10px 12px;margin-top:8px}
+.ac2-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px}
+.ac2-kpis div{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:10px;text-align:center}
+.ac2-kpis b{display:block;font-size:20px;color:#67e8f9}
+.ac2-kpis span{font-size:11.5px;color:#94a3b8}
+.ac2-bad{color:#fca5a5}.ac2-warn{color:#fde68a}.ac2-ok{color:#86efac}
+.ac2-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.ac2-note{font-size:12px;color:#94a3b8;margin-top:6px}
+.ac2-bars{display:flex;align-items:flex-end;gap:3px;height:90px;margin-top:10px;border-bottom:1px solid #334155;padding-bottom:2px}
+.ac2-bars i{flex:1;background:linear-gradient(180deg,#22d3ee,#0e7490);border-radius:3px 3px 0 0;min-height:2px;position:relative}
+.ac2-fam{max-height:180px;overflow:auto;border:1px solid #1e293b;border-radius:10px;padding:6px;margin-top:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px}
+.ac2-fam label{display:flex;gap:6px;align-items:center;color:#e2e8f0;font-size:12px}
+.ac2-fam input{width:auto;margin:0}
+@media print{body *{visibility:hidden!important}#ac2Print,#ac2Print *{visibility:visible!important}#ac2Print{position:absolute;left:0;top:0;width:100%;background:#fff!important;color:#000!important}#ac2Print *{color:#000!important;background:#fff!important;border-color:#999!important}}
+</style>
+<script id="angela-etapa2-cocina">
+(function(){'use strict';
+if(window.__angelaEtapa2)return;window.__angelaEtapa2=true;
+var KEY='ANGELA_COCINA_V1',MASTER='ANGELA_MASTER_LOCAL_V1';
+var DIAS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+var TIPOS=[['almuerzo','Almuerzo'],['merienda','Merienda'],['vianda','Vianda / para llevar'],['cena','Cena']];
+var RECETAS_BASE=[
+ {nombre:'Guiso de arroz con carne',ing:[['Arroz',0.08,'kg'],['Carne (picada o en cubos)',0.07,'kg'],['Papa',0.08,'kg'],['Cebolla',0.03,'kg'],['Zanahoria',0.03,'kg'],['Morrón',0.015,'kg'],['Puré de tomate',0.05,'l'],['Aceite',0.008,'l']]},
+ {nombre:'Guiso de lentejas',ing:[['Lentejas',0.06,'kg'],['Chorizo o carne',0.05,'kg'],['Papa',0.07,'kg'],['Cebolla',0.03,'kg'],['Zanahoria',0.03,'kg'],['Calabaza',0.05,'kg'],['Puré de tomate',0.04,'l'],['Aceite',0.008,'l']]},
+ {nombre:'Fideos con tuco',ing:[['Fideos',0.1,'kg'],['Carne picada',0.05,'kg'],['Puré de tomate',0.07,'l'],['Cebolla',0.03,'kg'],['Zanahoria',0.02,'kg'],['Aceite',0.008,'l'],['Queso rallado',0.008,'kg']]},
+ {nombre:'Polenta con salsa',ing:[['Harina de maíz (polenta)',0.08,'kg'],['Puré de tomate',0.07,'l'],['Carne picada',0.04,'kg'],['Cebolla',0.03,'kg'],['Queso',0.015,'kg'],['Aceite',0.008,'l']]},
+ {nombre:'Arroz con pollo',ing:[['Arroz',0.09,'kg'],['Pollo',0.15,'kg'],['Cebolla',0.03,'kg'],['Morrón',0.02,'kg'],['Arvejas',0.02,'kg'],['Caldo',0.2,'l'],['Aceite',0.008,'l']]},
+ {nombre:'Guiso de fideos',ing:[['Fideos (mostachol o codito)',0.08,'kg'],['Carne',0.06,'kg'],['Papa',0.07,'kg'],['Cebolla',0.03,'kg'],['Zanahoria',0.03,'kg'],['Puré de tomate',0.05,'l'],['Aceite',0.008,'l']]},
+ {nombre:'Locro',ing:[['Maíz blanco partido',0.06,'kg'],['Porotos',0.03,'kg'],['Zapallo',0.1,'kg'],['Carne / panceta / chorizo',0.08,'kg'],['Cebolla',0.03,'kg'],['Pimentón',0.002,'kg']]},
+ {nombre:'Mate cocido con pan (merienda)',ing:[['Yerba o mate cocido',0.005,'kg'],['Leche',0.2,'l'],['Azúcar',0.015,'kg'],['Pan',0.08,'kg']]},
+ {nombre:'Chocolatada con galletitas (merienda)',ing:[['Leche',0.2,'l'],['Cacao',0.012,'kg'],['Azúcar',0.012,'kg'],['Galletitas',0.05,'kg']]}];
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function norm(s){return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function hoy(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function num(v){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:0}
+function fmt(n,dec){return (+n||0).toLocaleString('es-AR',{maximumFractionDigits:dec==null?1:dec})}
+function fdate(s){if(!s)return'';var p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+function toast(t){try{if(typeof window.showToast==='function')return window.showToast(t)}catch(e){}var d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:100000;background:#0b1220;color:#e2e8f0;border:1px solid #334155;border-radius:12px;padding:10px 14px;font-size:13px;max-width:90vw';document.body.appendChild(d);setTimeout(function(){d.remove()},4200)}
+var C;function load(){try{C=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){C={}}C.raciones=C.raciones||[];C.recetas=C.recetas||[];C.menu=C.menu||{};C.vencimientos=C.vencimientos||[];C.cfg=C.cfg||{};
+  if(!C.recetas.length&&!C.cfg.seeded){C.recetas=RECETAS_BASE.map(function(r){return{id:uid(),nombre:r.nombre,ing:r.ing.map(function(i){return{n:i[0],q:i[1],u:i[2]}})}});C.cfg.seeded=true;save()}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(C))}catch(e){toast('No pude guardar: el navegador está lleno. Hacé una copia de seguridad.')}}
+function master(){try{return JSON.parse(localStorage.getItem(MASTER)||'{}')}catch(e){return{}}}
+function familias(){var f=master().familias||[];return f.map(function(r){var nm=r.nombre||r.apellido||r.titular||r.jefe||r.responsable||'';if(r.apellido&&r.nombre&&nm===r.nombre)nm=r.apellido+', '+r.nombre;if(!nm){for(var k in r)if(typeof r[k]==='string'&&k!=='id'&&k!=='creado'&&r[k].length>2){nm=r[k];break}}return{id:r.id||nm,nombre:String(nm||'(sin nombre)')}}).sort(function(a,b){return a.nombre.localeCompare(b.nombre,'es')})}
+function stockMap(){var m={};(master().stock||[]).forEach(function(s){var k=norm(s.producto);if(k)m[k]={cant:num(s.cantidad),u:s.unidad||''}});return m}
+function findStock(sm,name){var k=norm(name);if(sm[k])return sm[k];for(var s in sm){if(s.length>2&&(k.indexOf(s)>=0||s.indexOf(k)>=0))return sm[s]}return null}
+function monday(d){d=new Date(d+'T12:00:00');var w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);return d.toISOString().slice(0,10)}
+function addDays(s,n){var d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function avgRaciones(){var r=C.raciones.slice(-20);if(!r.length)return 100;return Math.round(r.reduce(function(a,x){return a+total(x)},0)/r.length)}
+function total(x){return TIPOS.reduce(function(a,t){return a+num(x[t[0]])},0)}
+var ST={tab:'raciones',mes:hoy().slice(0,7),semana:monday(hoy()),editReceta:null};
+
+function box(){var b=$('angelaGestionContenido');if(b){b.classList.remove('hidden')}return b}
+function open(tab){load();if(tab)ST.tab=tab;var b=box();if(!b)return;
+  var T=[['raciones','🍽️ Raciones de hoy'],['menu','📅 Menú y compras'],['recetas','📖 Recetas'],['venc','⏳ Vencimientos'],['informe','📊 Informe del mes']];
+  b.innerHTML='<div class="ac2"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h3>🍲 Cocina del comedor</h3><button class="quick text-xs" onclick="document.getElementById(\'angelaGestionContenido\').classList.add(\'hidden\')">Cerrar</button></div>'+
+   '<div class="ac2-tabs">'+T.map(function(t){return '<button class="'+(ST.tab===t[0]?'on':'')+'" onclick="AngelaCocina.open(\''+t[0]+'\')">'+t[1]+'</button>'}).join('')+'</div><div id="ac2Body"></div></div>';
+  ({raciones:vRaciones,menu:vMenu,recetas:vRecetas,venc:vVenc,informe:vInforme}[ST.tab]||vRaciones)($('ac2Body'));
+  try{b.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}}
+
+/* ---------- 🍽️ RACIONES ---------- */
+function vRaciones(el){var f=hoy(),r=C.raciones.find(function(x){return x.fecha===f})||{},fam=familias(),plato=(C.menu[f]&&C.menu[f].plato)||'';
+  el.innerHTML='<div class="ac2-card"><b>Registrar raciones</b><div class="grid2" style="margin-top:8px"><div><label>Fecha</label><input id="ac2F" type="date" value="'+f+'"></div>'+
+   TIPOS.map(function(t){return '<div><label>'+t[1]+'</label><input id="ac2T_'+t[0]+'" type="number" min="0" inputmode="numeric" value="'+(r[t[0]]||'')+'" placeholder="0"></div>'}).join('')+'</div>'+
+   '<div class="grid2" style="margin-top:8px"><div style="grid-column:span 2"><label>Qué se cocinó</label><input id="ac2Plato" value="'+esc(r.plato||plato)+'" placeholder="Ej: Guiso de arroz con carne"></div><div style="grid-column:span 2"><label>Notas (opcional)</label><input id="ac2Obs" value="'+esc(r.obs||'')+'" placeholder="Ej: faltó gas, llegó donación de verdura"></div></div>'+
+   (fam.length?'<details style="margin-top:8px"'+(r.familias&&r.familias.length?' open':'')+'><summary style="cursor:pointer;font-size:12.5px">👨‍👩‍👧 Marcar qué familias retiraron (opcional) · <span id="ac2FamN">'+((r.familias||[]).length)+'</span> marcadas</summary><input id="ac2FamQ" placeholder="Buscar familia…" style="margin-top:6px"><div class="ac2-fam" id="ac2Fam">'+fam.map(function(x){return '<label data-n="'+esc(norm(x.nombre))+'"><input type="checkbox" value="'+esc(x.id)+'" '+((r.familias||[]).indexOf(x.id)>=0?'checked':'')+'>'+esc(x.nombre)+'</label>'}).join('')+'</div></details>':'<p class="ac2-note">Cuando cargues familias en «Familias y Personas», vas a poder marcar cuáles retiraron.</p>')+
+   '<div class="ac2-row"><button class="quick text-cyan-300" id="ac2Save">💾 Guardar raciones</button><span id="ac2Tot" class="ac2-note"></span></div></div>'+
+   '<div class="ac2-card"><b>Últimos días</b>'+tablaRaciones(C.raciones.slice().sort(function(a,b){return b.fecha<a.fecha?-1:1}).slice(0,10))+'</div>';
+  function sum(){var t=TIPOS.reduce(function(a,x){return a+num($('ac2T_'+x[0]).value)},0);$('ac2Tot').textContent='Total: '+fmt(t,0)+' raciones'}
+  TIPOS.forEach(function(t){$('ac2T_'+t[0]).oninput=sum});sum();
+  $('ac2F').onchange=function(){var x=C.raciones.find(function(y){return y.fecha===this.value}.bind(this))||{};TIPOS.forEach(function(t){$('ac2T_'+t[0]).value=x[t[0]]||''});$('ac2Plato').value=x.plato||(C.menu[this.value]&&C.menu[this.value].plato)||'';$('ac2Obs').value=x.obs||'';sum();
+    document.querySelectorAll('#ac2Fam input').forEach(function(c){c.checked=(x.familias||[]).indexOf(c.value)>=0});if($('ac2FamN'))$('ac2FamN').textContent=(x.familias||[]).length};
+  if($('ac2FamQ'))$('ac2FamQ').oninput=function(){var q=norm(this.value);document.querySelectorAll('#ac2Fam label').forEach(function(l){l.style.display=!q||l.dataset.n.indexOf(q)>=0?'':'none'})};
+  document.querySelectorAll('#ac2Fam input').forEach(function(c){c.onchange=function(){$('ac2FamN').textContent=document.querySelectorAll('#ac2Fam input:checked').length}});
+  $('ac2Save').onclick=function(){var fe=$('ac2F').value;if(!fe)return toast('Elegí la fecha');var o={fecha:fe,plato:$('ac2Plato').value.trim(),obs:$('ac2Obs').value.trim(),familias:Array.from(document.querySelectorAll('#ac2Fam input:checked')).map(function(c){return c.value})};
+    TIPOS.forEach(function(t){o[t[0]]=num($('ac2T_'+t[0]).value)});if(!total(o))return toast('Poné al menos una cantidad de raciones');
+    C.raciones=C.raciones.filter(function(x){return x.fecha!==fe});C.raciones.push(o);save();toast('✅ Guardado: '+fmt(total(o),0)+' raciones del '+fdate(fe));open('raciones')}}
+function tablaRaciones(list){if(!list.length)return '<p class="ac2-note">Todavía no cargaste raciones.</p>';
+  return '<table><tr><th>Fecha</th><th>Total</th>'+TIPOS.map(function(t){return '<th>'+t[1].split(' ')[0]+'</th>'}).join('')+'<th>Plato</th><th></th></tr>'+list.map(function(x){return '<tr><td>'+fdate(x.fecha)+'</td><td><b>'+fmt(total(x),0)+'</b></td>'+TIPOS.map(function(t){return '<td>'+(x[t[0]]?fmt(x[t[0]],0):'')+'</td>'}).join('')+'<td>'+esc(x.plato||'')+(x.familias&&x.familias.length?'<br><span class="ac2-note">'+x.familias.length+' familias</span>':'')+'</td><td><button class="text-red-300 text-xs" onclick="AngelaCocina.delRacion(\''+x.fecha+'\')">Borrar</button></td></tr>'}).join('')+'</table>'}
+
+/* ---------- 📅 MENÚ Y COMPRAS ---------- */
+function vMenu(el){var w=ST.semana,days=[0,1,2,3,4,5].map(function(i){return addDays(w,i)}),avg=avgRaciones();
+  el.innerHTML='<div class="ac2-card"><div class="ac2-row" style="margin-top:0"><button class="quick text-xs" id="ac2Prev">◀ Semana anterior</button><b>Semana del '+fdate(w)+'</b><button class="quick text-xs" id="ac2Next">Semana siguiente ▶</button></div>'+
+   '<p class="ac2-note">Elegí el plato de cada día y cuántas raciones pensás cocinar. Promedio de los últimos días: <b>'+fmt(avg,0)+'</b> raciones.</p>'+
+   '<table><tr><th>Día</th><th>Plato</th><th>Raciones</th></tr>'+days.map(function(d,i){var m=C.menu[d]||{};return '<tr><td>'+DIAS[i]+'<br><span class="ac2-note">'+fdate(d)+'</span></td><td><select data-d="'+d+'" class="ac2Pl"><option value="">— sin cocinar —</option>'+C.recetas.map(function(r){return '<option '+(m.plato===r.nombre?'selected':'')+'>'+esc(r.nombre)+'</option>'}).join('')+(m.plato&&!C.recetas.some(function(r){return r.nombre===m.plato})?'<option selected>'+esc(m.plato)+'</option>':'')+'</select></td><td><input data-d="'+d+'" class="ac2Rc" type="number" min="0" inputmode="numeric" value="'+(m.raciones||(m.plato?avg:''))+'" placeholder="'+avg+'"></td></tr>'}).join('')+'</table>'+
+   '<div class="ac2-row"><button class="quick text-cyan-300" id="ac2Lista">🛒 Armar lista de compras</button><button class="quick text-xs" id="ac2Copiar">Copiar menú de la semana pasada</button></div><div id="ac2Compras"></div></div>';
+  function persist(){document.querySelectorAll('.ac2Pl').forEach(function(s){var d=s.dataset.d,rc=document.querySelector('.ac2Rc[data-d="'+d+'"]');if(s.value){C.menu[d]={plato:s.value,raciones:num(rc.value)||avg}}else delete C.menu[d]});save()}
+  document.querySelectorAll('.ac2Pl,.ac2Rc').forEach(function(x){x.onchange=function(){persist();if(x.classList.contains('ac2Pl')){var rc=document.querySelector('.ac2Rc[data-d="'+x.dataset.d+'"]');if(x.value&&!rc.value)rc.value=avg}}});
+  $('ac2Prev').onclick=function(){persist();ST.semana=addDays(ST.semana,-7);open('menu')};$('ac2Next').onclick=function(){persist();ST.semana=addDays(ST.semana,7);open('menu')};
+  $('ac2Copiar').onclick=function(){var n=0;for(var i=0;i<6;i++){var src=C.menu[addDays(w,i-7)];if(src){C.menu[addDays(w,i)]={plato:src.plato,raciones:src.raciones};n++}}save();toast(n?'Copié '+n+' día(s) de la semana pasada':'La semana pasada no tenía menú');open('menu')};
+  $('ac2Lista').onclick=function(){persist();lista(days)}}
+function lista(days){var need={},sm=stockMap(),plan=[];
+  days.forEach(function(d){var m=C.menu[d];if(!m||!m.plato)return;var r=C.recetas.find(function(x){return x.nombre===m.plato});plan.push(m.plato+' ('+fmt(m.raciones,0)+')');if(!r)return;
+    r.ing.forEach(function(i){var k=norm(i.n)+'|'+i.u;if(!need[k])need[k]={n:i.n,u:i.u,q:0};need[k].q+=num(i.q)*num(m.raciones)})});
+  var rows=Object.keys(need).map(function(k){return need[k]}).sort(function(a,b){return a.n.localeCompare(b.n,'es')});
+  if(!rows.length){$('ac2Compras').innerHTML='<p class="ac2-note">Elegí al menos un plato para armar la lista.</p>';return}
+  rows.forEach(function(x){var s=findStock(sm,x.n);x.hay=s?s.cant:null;x.comprar=Math.max(0,x.q-(s?s.cant:0))});
+  var txt='🛒 LISTA DE COMPRAS · semana del '+fdate(days[0])+'\n'+rows.filter(function(x){return x.comprar>0}).map(function(x){return '• '+x.n+': '+fmt(x.comprar,2)+' '+x.u}).join('\n');
+  $('ac2Compras').innerHTML='<h4 style="margin-top:12px;font-weight:700">🛒 Lista de compras de la semana</h4><p class="ac2-note">Menú: '+esc(plan.join(' · '))+'</p>'+
+   '<table><tr><th>Ingrediente</th><th>Se necesita</th><th>Hay en stock</th><th>Comprar</th></tr>'+rows.map(function(x){return '<tr><td>'+esc(x.n)+'</td><td>'+fmt(x.q,2)+' '+x.u+'</td><td>'+(x.hay==null?'<span class="ac2-note">—</span>':fmt(x.hay,2))+'</td><td class="'+(x.comprar>0?'ac2-warn':'ac2-ok')+'"><b>'+(x.comprar>0?fmt(x.comprar,2)+' '+x.u:'✅ alcanza')+'</b></td></tr>'}).join('')+'</table>'+
+   '<p class="ac2-note">"Hay en stock" sale de <b>Inventario y Stock</b> cuando el nombre coincide (por ejemplo, "Arroz"). Revisá que las unidades sean las mismas (kg, l).</p>'+
+   '<div class="ac2-row"><button class="quick text-xs" id="ac2CopyL">📋 Copiar lista</button><button class="quick text-xs" id="ac2WaL">💬 Mandar por WhatsApp</button></div>';
+  $('ac2CopyL').onclick=function(){try{navigator.clipboard.writeText(txt).then(function(){toast('Lista copiada ✅')})}catch(e){prompt('Copiá la lista:',txt)}};
+  $('ac2WaL').onclick=function(){window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank','noopener')}}
+
+/* ---------- 📖 RECETAS ---------- */
+function vRecetas(el){var e=ST.editReceta?C.recetas.find(function(r){return r.id===ST.editReceta}):null;
+  el.innerHTML='<div class="ac2-card"><b>'+(e?'✏️ Editar receta':'➕ Nueva receta')+'</b><p class="ac2-note">Las cantidades son <b>por ración</b> (por plato). ÁNGELA multiplica por las raciones del día para la lista de compras.</p>'+
+   '<div class="grid2"><div style="grid-column:span 2"><label>Nombre del plato</label><input id="ac2RN" value="'+esc(e?e.nombre:'')+'" placeholder="Ej: Guiso de mondongo"></div></div>'+
+   '<table id="ac2Ing"><tr><th>Ingrediente</th><th>Cantidad por ración</th><th>Unidad</th><th></th></tr>'+((e?e.ing:[{n:'',q:'',u:'kg'}]).map(ingRow).join(''))+'</table>'+
+   '<div class="ac2-row"><button class="quick text-xs" id="ac2AddI">➕ Ingrediente</button><button class="quick text-xs text-purple-300" id="ac2IA">✨ Pedirle los ingredientes a ÁNGELA</button><button class="quick text-cyan-300" id="ac2SaveR">💾 Guardar receta</button>'+(e?'<button class="quick text-xs" id="ac2NewR">Nueva</button>':'')+'</div></div>'+
+   '<div class="ac2-card"><b>Recetas guardadas ('+C.recetas.length+')</b><table><tr><th>Plato</th><th>Ingredientes</th><th></th></tr>'+C.recetas.map(function(r){return '<tr><td><b>'+esc(r.nombre)+'</b></td><td class="ac2-note">'+esc(r.ing.map(function(i){return i.n+' '+fmt(i.q*1000>=10&&i.u!=='u'?i.q*1000:i.q,2)+(i.u==='kg'?' g':i.u==='l'?' ml':' '+i.u)}).join(' · '))+'</td><td style="white-space:nowrap"><button class="text-cyan-300 text-xs" onclick="AngelaCocina.editReceta(\''+r.id+'\')">Editar</button> <button class="text-red-300 text-xs" onclick="AngelaCocina.delReceta(\''+r.id+'\')">Borrar</button></td></tr>'}).join('')+'</table><p class="ac2-note">Los gramos que ves son por ración. Ajustalos a cómo cocinan ustedes.</p></div>';
+  $('ac2AddI').onclick=function(){$('ac2Ing').insertAdjacentHTML('beforeend',ingRow({n:'',q:'',u:'kg'}))};
+  if($('ac2NewR'))$('ac2NewR').onclick=function(){ST.editReceta=null;open('recetas')};
+  $('ac2SaveR').onclick=function(){var nm=$('ac2RN').value.trim();if(!nm)return toast('Poné el nombre del plato');var ing=[];document.querySelectorAll('#ac2Ing tr.ing').forEach(function(tr){var n=tr.querySelector('.in').value.trim(),q=num(tr.querySelector('.iq').value),u=tr.querySelector('.iu').value;if(n&&q)ing.push({n:n,q:q,u:u})});
+    if(!ing.length)return toast('Agregá al menos un ingrediente con cantidad');if(e){e.nombre=nm;e.ing=ing}else C.recetas.push({id:uid(),nombre:nm,ing:ing});save();ST.editReceta=null;toast('Receta guardada ✅');open('recetas')};
+  $('ac2IA').onclick=async function(){var nm=$('ac2RN').value.trim();if(!nm)return toast('Primero escribí el nombre del plato');var b=this;b.disabled=true;b.textContent='⏳ Pensando…';
+    try{var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Sos cocinera de un comedor comunitario en Argentina que cocina en ollas grandes. Para el plato "'+nm+'", dame los ingredientes con la cantidad POR RACIÓN (un plato para un chico o adulto). Usá solo kg, l o u (unidades). Respondé SOLO con JSON, sin explicaciones: {"ingredientes":[{"n":"Arroz","q":0.08,"u":"kg"}]}',fresh:false})});
+      var j=await r.json();var t=String(j.reply||j.respuesta||'');var a=t.indexOf('{'),z=t.lastIndexOf('}');var o=JSON.parse(t.slice(a,z+1));var ing=(o.ingredientes||[]).filter(function(i){return i&&i.n&&num(i.q)});if(!ing.length)throw new Error('sin ingredientes');
+      document.querySelectorAll('#ac2Ing tr.ing').forEach(function(tr){tr.remove()});ing.forEach(function(i){$('ac2Ing').insertAdjacentHTML('beforeend',ingRow({n:i.n,q:num(i.q),u:/^(kg|l|u)$/.test(i.u)?i.u:'kg'}))});toast('ÁNGELA propuso '+ing.length+' ingredientes. Revisalos y guardá.')}
+    catch(err){toast(location.protocol==='file:'?'La IA funciona desde tu link de Vercel.':'ÁNGELA no pudo armar la receta ahora. Cargala a mano o probá de nuevo.')}finally{b.disabled=false;b.textContent='✨ Pedirle los ingredientes a ÁNGELA'}}}
+function ingRow(i){return '<tr class="ing"><td><input class="in" value="'+esc(i.n)+'" placeholder="Ingrediente"></td><td><input class="iq" type="number" step="0.001" min="0" value="'+(i.q===''?'':i.q)+'" placeholder="0.08"></td><td><select class="iu">'+[['kg','kg'],['l','litros'],['u','unidades']].map(function(u){return '<option value="'+u[0]+'" '+(i.u===u[0]?'selected':'')+'>'+u[1]+'</option>'}).join('')+'</select></td><td><button class="text-red-300 text-xs" onclick="this.closest(\'tr\').remove()">✕</button></td></tr>'}
+
+/* ---------- ⏳ VENCIMIENTOS ---------- */
+function estado(v){var d=Math.round((new Date(v.vence+'T12:00:00')-new Date(hoy()+'T12:00:00'))/86400000);return{d:d,cls:d<0?'ac2-bad':d<=7?'ac2-warn':'ac2-ok',txt:d<0?'❌ Vencido hace '+(-d)+' día(s)':d===0?'⚠️ Vence HOY':d<=7?'⚠️ Vence en '+d+' día(s)':'✅ '+d+' días'}}
+function vVenc(el){var list=C.vencimientos.slice().sort(function(a,b){return a.vence<b.vence?-1:1});
+  el.innerHTML='<div class="ac2-card"><b>➕ Cargar alimento</b><div class="grid2" style="margin-top:8px"><div style="grid-column:span 2"><label>Producto</label><input id="ac2VP" placeholder="Ej: Leche larga vida"></div><div><label>Cantidad</label><input id="ac2VC" placeholder="Ej: 24 cajas"></div><div><label>Vence el</label><input id="ac2VF" type="date"></div><div><label>Dónde está</label><input id="ac2VL" placeholder="Depósito, heladera…"></div></div>'+
+   '<div class="ac2-row"><button class="quick text-cyan-300" id="ac2VS">💾 Guardar</button></div></div>'+
+   '<div class="ac2-card"><b>Depósito ('+list.length+')</b>'+(list.length?'<table><tr><th>Producto</th><th>Cantidad</th><th>Vence</th><th>Estado</th><th></th></tr>'+list.map(function(v){var e=estado(v);return '<tr><td><b>'+esc(v.producto)+'</b>'+(v.lugar?'<br><span class="ac2-note">'+esc(v.lugar)+'</span>':'')+'</td><td>'+esc(v.cantidad||'')+'</td><td>'+fdate(v.vence)+'</td><td class="'+e.cls+'">'+e.txt+'</td><td style="white-space:nowrap"><button class="text-cyan-300 text-xs" onclick="AngelaCocina.usado(\''+v.id+'\')">Ya se usó</button></td></tr>'}).join('')+'</table><p class="ac2-note">Consejo: cociná primero lo que vence antes. Cuando se termina, tocá «Ya se usó».</p>':'<p class="ac2-note">No hay alimentos cargados.</p>')+'</div>';
+  $('ac2VS').onclick=function(){var p=$('ac2VP').value.trim(),f=$('ac2VF').value;if(!p||!f)return toast('Poné el producto y la fecha de vencimiento');C.vencimientos.push({id:uid(),producto:p,cantidad:$('ac2VC').value.trim(),vence:f,lugar:$('ac2VL').value.trim()});save();toast('Guardado ✅');open('venc');renderAviso()}}
+function proximos(){return C.vencimientos.filter(function(v){return estado(v).d<=7})}
+
+/* ---------- 📊 INFORME DEL MES ---------- */
+function vInforme(el){var m=ST.mes,list=C.raciones.filter(function(x){return x.fecha.slice(0,7)===m}).sort(function(a,b){return a.fecha<b.fecha?-1:1});
+  var tot=list.reduce(function(a,x){return a+total(x)},0),dias=list.length,fams={};list.forEach(function(x){(x.familias||[]).forEach(function(f){fams[f]=1})});
+  var porTipo=TIPOS.map(function(t){return[t[1],list.reduce(function(a,x){return a+num(x[t[0]])},0)]}).filter(function(x){return x[1]});var max=Math.max.apply(null,list.map(total).concat([1]));
+  var mesTxt=new Date(m+'-15T12:00:00').toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+  el.innerHTML='<div class="ac2-row" style="margin-top:0"><label style="display:flex;gap:6px;align-items:center">Mes <input id="ac2M" type="month" value="'+m+'" style="width:auto"></label><button class="quick text-xs" id="ac2Pr">🖨️ Imprimir / guardar PDF</button><button class="quick text-xs" id="ac2Csv">📥 Bajar planilla (Excel)</button></div>'+
+   '<div id="ac2Print" class="ac2-card"><h3 style="color:#67e8f9">Comedor Ángel Guardián · Informe de raciones · '+esc(mesTxt)+'</h3>'+
+   '<div class="ac2-kpis"><div><b>'+fmt(tot,0)+'</b><span>raciones en el mes</span></div><div><b>'+dias+'</b><span>días de cocina</span></div><div><b>'+fmt(dias?tot/dias:0,0)+'</b><span>promedio por día</span></div><div><b>'+(Object.keys(fams).length||'—')+'</b><span>familias distintas marcadas</span></div></div>'+
+   (porTipo.length?'<p class="ac2-note" style="margin-top:8px">'+porTipo.map(function(x){return x[0]+': <b>'+fmt(x[1],0)+'</b>'}).join(' · ')+'</p>':'')+
+   (list.length?'<div class="ac2-bars" title="Raciones por día">'+list.map(function(x){return '<i style="height:'+Math.round(total(x)/max*100)+'%" title="'+fdate(x.fecha)+': '+total(x)+'"></i>'}).join('')+'</div>'+tablaRaciones(list).replace(/<td><button[^<]*<\/button><\/td>/g,'<td></td>'):'<p class="ac2-note">No hay raciones cargadas en este mes.</p>')+
+   '<p class="ac2-note">Asociación Civil Ángel Guardián para la Niñez de Merlo · generado con ÁNGELA el '+fdate(hoy())+'</p></div>';
+  $('ac2M').onchange=function(){ST.mes=this.value;open('informe')};
+  $('ac2Pr').onclick=function(){window.print()};
+  $('ac2Csv').onclick=function(){var rows=[['Fecha','Total'].concat(TIPOS.map(function(t){return t[1]}),['Plato','Familias marcadas','Notas'])].concat(list.map(function(x){return[fdate(x.fecha),total(x)].concat(TIPOS.map(function(t){return num(x[t[0]])}),[x.plato||'',(x.familias||[]).length,x.obs||''])}));rows.push(['TOTAL',tot]);
+    var csv='\ufeff'+rows.map(function(r){return r.map(function(c){c=String(c);return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(';')}).join('\n');var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='ANGELA_raciones_'+m+'.csv';a.click()}}
+
+/* ---------- botón en el Centro y aviso de vencimientos ---------- */
+function renderAviso(){load();var sec=$('centroGestionAngela');if(!sec)return;var grid=sec.querySelector('.grid');
+  if(grid&&!$('ac2Btn')){var b=document.createElement('button');b.id='ac2Btn';b.className='quick';b.textContent='🍲 Cocina: raciones, menú y vencimientos';b.onclick=function(){open()};grid.insertBefore(b,grid.firstChild)}
+  var p=proximos(),av=$('ac2Aviso');if(!p.length){if(av)av.remove();return}
+  if(!av){av=document.createElement('div');av.id='ac2Aviso';av.className='ae1-banner';av.style.cssText+='margin-top:10px;padding:10px 12px;border-radius:12px;font-size:12.5px;border:1px solid rgba(245,158,11,.45);background:rgba(245,158,11,.1);color:#fde68a';var ref=$('ae1Bar')||sec.firstElementChild;ref.parentNode.insertBefore(av,ref.nextSibling)}
+  var venc=p.filter(function(v){return estado(v).d<0}).length;av.innerHTML='⏳ '+(venc?'<b>'+venc+' alimento(s) vencido(s)</b>'+(p.length>venc?' y ':''):'')+(p.length>venc?'<b>'+(p.length-venc)+' vencen esta semana</b>':'')+': '+esc(p.slice(0,4).map(function(v){return v.producto}).join(', '))+(p.length>4?'…':'')+' <button class="quick text-xs" onclick="AngelaCocina.open(\'venc\')">Ver</button>'}
+window.AngelaCocina={open:open,
+  delRacion:function(f){if(!confirm('¿Borrar las raciones del '+fdate(f)+'?'))return;C.raciones=C.raciones.filter(function(x){return x.fecha!==f});save();open()},
+  editReceta:function(id){ST.editReceta=id;open('recetas')},
+  delReceta:function(id){var r=C.recetas.find(function(x){return x.id===id});if(!r||!confirm('¿Borrar la receta «'+r.nombre+'»?'))return;C.recetas=C.recetas.filter(function(x){return x.id!==id});save();open('recetas')},
+  usado:function(id){C.vencimientos=C.vencimientos.filter(function(x){return x.id!==id});save();open('venc');renderAviso()},
+  data:function(){load();return C}};
+function init(){load();renderAviso();var p=proximos();if(p.length&&!sessionStorage.getItem('ac2Told')){sessionStorage.setItem('ac2Told','1');setTimeout(function(){toast('⏳ Hay '+p.length+' alimento(s) vencidos o por vencer esta semana. Mirá Cocina → Vencimientos.')},7000)}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,400)});else setTimeout(init,400);
+console.info('[ÁNGELA] Etapa 2: cocina (raciones, menú y compras, recetas, vencimientos, informe)');
+})();
+</script>
+<!-- ===== FIN ETAPA 2 ===== -->
+
