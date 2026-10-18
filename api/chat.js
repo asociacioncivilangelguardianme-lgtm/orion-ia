@@ -2,7 +2,7 @@
 // Variables de entorno necesarias:
 // GEMINI_API_KEY
 // OPENROUTER_API_KEY
-// GEMINI_MODEL=gemini-2.5-flash
+// GEMINI_MODEL (opcional; si falla, usa modelos de reserva)
 // OPENROUTER_MODELS=openrouter/free
 // AI_PROVIDER_ORDER=gemini,openrouter
 // Opcionales: ALLOWED_ORIGIN, SITE_URL, OPENROUTER_WEB=true
@@ -111,7 +111,9 @@ async function fetchTimeout(url,options={},timeout=30000){
 }
 function geminiModels(){
   const raw=clean(process.env.GEMINI_MODELS||process.env.GEMINI_MODEL||"gemini-3.6-flash",500);
-  return [...new Set(raw.split(",").map(x=>x.trim()).filter(Boolean))].slice(0,3);
+  // Modelos de reserva: si Google retira uno (error 404) o se queda sin cupo, prueba el siguiente.
+  const reserva=["gemini-3.5-flash","gemini-flash-latest","gemini-3.5-flash-lite","gemini-flash-lite-latest"];
+  return [...new Set([...raw.split(",").map(x=>x.trim()).filter(Boolean),...reserva])].slice(0,6);
 }
 function openRouterModels(){
   const raw=clean(process.env.OPENROUTER_MODELS||process.env.OPENROUTER_MODEL||"openrouter/free",1000);
