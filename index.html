@@ -11306,3 +11306,77 @@ console.info('[ÁNGELA] Etapa 2: cocina (raciones, menú y compras, recetas, ven
 </script>
 <!-- ===== FIN ETAPA 2 ===== -->
 
+
+<!-- ===== ÁNGELA · VISTA DEL CELULAR (menú lateral, barra de abajo) =====
+     Agregado al final: no modifica nada de arriba. En la computadora todo queda igual.
+     Para quitarlo, borrá desde acá hasta "FIN VISTA DEL CELULAR". -->
+<style>
+#agmTop,#agmNav,#agmBack{display:none}
+@media (max-width:1023px){
+  body.agm{padding-top:58px;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+  #agmTop{display:flex;position:fixed;top:0;left:0;right:0;height:56px;z-index:9000;align-items:center;gap:10px;padding:0 12px;background:rgba(8,10,20,.94);backdrop-filter:blur(10px);border-bottom:1px solid rgba(148,163,184,.18)}
+  #agmTop .agm-burger{width:42px;height:42px;border-radius:12px;background:rgba(51,65,85,.6);color:#fff;font-size:20px;display:grid;place-items:center;flex:none}
+  #agmTop .agm-title{font-weight:800;font-size:17px;color:#fff;letter-spacing:.3px;flex:1;min-width:0}
+  #agmTop .agm-title small{display:block;font-size:10.5px;font-weight:600;color:#67e8f9;letter-spacing:0}
+  #agmTop .agm-clock{font-weight:800;font-size:15px;color:#e2e8f0;flex:none}
+  #agmNav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:rgba(10,12,22,.97);backdrop-filter:blur(10px);border-top:1px solid rgba(148,163,184,.18);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  #agmNav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:#94a3b8;padding:4px 0;background:none;border:0}
+  #agmNav button .i{font-size:21px;line-height:26px;width:40px;height:30px;display:grid;place-items:center;border-radius:10px}
+  #agmNav button.on{color:#fff}#agmNav button.on .i{background:linear-gradient(135deg,#7c3aed,#06b6d4)}
+  /* menú lateral: se abre con ☰ */
+  body.agm>div>aside:first-child{position:fixed!important;top:0;left:0;bottom:0;width:min(300px,84vw);z-index:9100;overflow-y:auto;background:#0b0f1c;padding:10px 8px 90px;transform:translateX(-105%);transition:transform .25s ease;margin:0!important;box-shadow:12px 0 40px rgba(0,0,0,.5)}
+  body.agm.agm-open>div>aside:first-child{transform:none}
+  body.agm>div>aside:first-child #photoNav{position:static!important;height:auto!important;min-height:0!important;width:auto!important}
+  #agmBack{position:fixed;inset:0;z-index:9090;background:rgba(0,0,0,.55)}
+  body.agm.agm-open #agmBack{display:block}
+  body.agm.agm-open{overflow:hidden}
+  /* accesos rápidos y reloj: al final, en una tarjeta */
+  body.agm>div>aside:last-child #photoClock{display:none}
+  /* cartel de versión: arriba de la barra */
+  .agm-ver{display:none!important}
+  /* botones e inputs más cómodos */
+  #centroGestionAngela .quick{min-height:48px}
+  #entradaChat{font-size:16px}
+}
+</style>
+<div id="agmTop"><button class="agm-burger" onclick="AGM.menu()" aria-label="Abrir menú">☰</button><div class="agm-title">ÁNGELA<small>Asistente del comedor</small></div><div class="agm-clock" id="agmClock"></div></div>
+<div id="agmBack" onclick="AGM.menu(false)"></div>
+<nav id="agmNav" aria-label="Secciones">
+  <button data-k="inicio" onclick="AGM.go('inicio')"><span class="i">🏠</span>Inicio</button>
+  <button data-k="studio" onclick="AGM.go('studio')"><span class="i">🎬</span>Studio</button>
+  <button data-k="voces" onclick="AGM.go('voces')"><span class="i">🎙️</span>Voces</button>
+  <button data-k="gestion" onclick="AGM.go('gestion')"><span class="i">🧩</span>Gestión</button>
+  <button data-k="menu" onclick="AGM.menu()"><span class="i">☰</span>Más</button>
+</nav>
+<script id="agm">
+(function(){'use strict';if(window.AGM)return;
+var mq=window.matchMedia('(max-width:1023px)');
+function $$(s){return document.querySelector(s)}
+function setOn(k){document.querySelectorAll('#agmNav button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-k')===k)})}
+function apply(){document.body.classList.toggle('agm',mq.matches);if(!mq.matches)document.body.classList.remove('agm-open')}
+function clock(){var c=$$('#agmClock');if(!c)return;var d=new Date();c.textContent=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}
+function markVersion(){document.querySelectorAll('body>div').forEach(function(d){try{var t=(d.textContent||'').trim();if(getComputedStyle(d).position==='fixed'&&/ÁNGELA V\d/.test(t)&&t.length<60){d.classList.add('agm-ver');var m=t.match(/V[\d.]+/),s=$$('#agmTop .agm-title small');if(m&&s)s.textContent='Versión '+m[0].slice(1)+' · asistente del comedor'}}catch(e){}})}
+function scrollTo(el){if(!el)return;var y=el.getBoundingClientRect().top+window.scrollY-66;window.scrollTo({top:y,behavior:'smooth'})}
+window.AGM={
+  menu:function(open){var b=document.body;if(open===undefined)open=!b.classList.contains('agm-open');b.classList.toggle('agm-open',!!open);setOn(open?'menu':'')},
+  go:function(k){AGM.menu(false);setOn(k);
+    if(k==='inicio'){window.scrollTo({top:0,behavior:'smooth'})}
+    else if(k==='studio'){try{window.ANGELAStudio&&ANGELAStudio.open()}catch(e){}}
+    else if(k==='voces'){var v=$$('#vozcMenuBtn');if(v)v.click()}
+    else if(k==='gestion'){scrollTo($$('#centroGestionAngela'))}
+    else if(k==='accesos'){scrollTo($$('#angelaRightUtilities')||$$('#photoClock'))}}
+};
+/* tocar una opción del menú lateral lo cierra solo */
+document.addEventListener('click',function(e){if(!document.body.classList.contains('agm-open'))return;var t=e.target.closest&&e.target.closest('body>div>aside:first-child button');if(t)setTimeout(function(){AGM.menu(false)},60)},true);
+/* acceso a "Accesos y clima" desde el menú lateral */
+function addAccess(){var nav=$$('#photoNav');if(!nav||nav.querySelector('.agm-acc'))return;var b=document.createElement('button');b.className='angela-photo-btn agm-acc';b.innerHTML='<span class="ico">⏰</span>Accesos rápidos y clima';b.onclick=function(){AGM.go('accesos')};
+  var user=nav.querySelector('.angela-photo-user');nav.insertBefore(b,user||null)}
+/* al volver arriba de todo, se marca Inicio; al llegar a Gestión, Gestión */
+var ticking=false;window.addEventListener('scroll',function(){if(ticking||!mq.matches||document.body.classList.contains('agm-open'))return;ticking=true;requestAnimationFrame(function(){ticking=false;var g=$$('#centroGestionAngela');if(!g)return;var r=g.getBoundingClientRect();setOn(r.top<window.innerHeight*.5&&r.bottom>120?'gestion':window.scrollY<200?'inicio':'')})},{passive:true});
+(mq.addEventListener?mq.addEventListener.bind(mq,'change'):mq.addListener.bind(mq))(apply);
+function start(){apply();addAccess();markVersion();clock();setInterval(clock,20000);setOn('inicio');setTimeout(markVersion,2500)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+console.info('[ÁNGELA] vista del celular: menú lateral y barra de abajo');
+})();
+</script>
+<!-- ===== FIN VISTA DEL CELULAR ===== -->
