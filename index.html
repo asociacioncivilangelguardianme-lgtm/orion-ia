@@ -4825,7 +4825,7 @@ function baseHTML(){
    <button class="quick" onclick="angelaGPConectarCuenta()">➕ Conectar otra cuenta Google</button>
    <button class="quick" onclick="angelaGPSeleccionarGoogle()">🖼️ Seleccionar de Google Fotos</button>
    <button class="quick" onclick="angelaGPImportarLocal()">📁 Elegir fotos/videos</button>
-   ${window.showDirectoryPicker?'<button class="quick" onclick="angelaGPCarpeta()">🗂️ Elegir carpeta entera (PC)</button>':''}
+   ${window.showDirectoryPicker?'<button class="quick" onclick="angelaGPCarpeta()">🗂️ Marcar carpeta y buscar repetidas solo (PC)</button>':''}
    <input id="agGPFiles" class="hidden" type="file" accept="image/*,video/*" multiple onchange="angelaGPProcesarArchivos(this.files)">
   </div>
   <div class="ag-gp-accounts">${GP.accounts.map(a=>`<span class="ag-gp-account ${isConnected(a)?'ok':'pending'}">${isConnected(a)?'🟢':'🟡'} ${esc(a.email)}${a.local?'':isConnected(a)?' · conectada':' · reconectar'}</span>`).join('')}</div>
@@ -4983,7 +4983,7 @@ async function runPicker(acct,token){
 window.angelaGPAbrir=()=>renderModule();
 window.angelaGPCambiarCuenta=v=>{GP.activeAccount=v;renderModule()};
 window.angelaGPImportarLocal=()=>$('agGPFiles')?.click();
-window.angelaGPProcesarArchivos=async files=>{const list=[...(files||[])];if(!list.length)return;const acct=activeAccount();setStatus(`Cargando ${list.length} archivo(s)…`);let start=GP.items.length;for(let i=0;i<list.length;i++){const f=list[i];if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;GP.items.push({id:'gp'+Date.now().toString(36)+(start+i)+Math.random().toString(36).slice(2,5),file:f,previewFile:f,url:URL.createObjectURL(f),name:f.name,size:f.size,analysisSize:f.size,date:f.lastModified||Date.now(),kind:f.type.startsWith('video/')?'video':'photo',accountId:acct.id,accountEmail:acct.email,width:0,height:0,duration:0,contentHash:null,visualHash:null});if(i%20===0)await wait()}GP.groups=[];GP.marked.clear();setStatus(`${list.length} archivo(s) cargados. Tocá “Buscar duplicados”.`);renderModule()};
+window.angelaGPProcesarArchivos=async files=>{const list=[...(files||[])];if(!list.length)return;const acct=activeAccount();setStatus(`Cargando ${list.length} archivo(s)…`);let start=GP.items.length;for(let i=0;i<list.length;i++){const f=list[i];if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;GP.items.push({id:'gp'+Date.now().toString(36)+(start+i)+Math.random().toString(36).slice(2,5),file:f,previewFile:f,url:URL.createObjectURL(f),name:f.name,size:f.size,analysisSize:f.size,date:f.lastModified||Date.now(),kind:f.type.startsWith('video/')?'video':'photo',accountId:acct.id,accountEmail:acct.email,width:0,height:0,duration:0,contentHash:null,visualHash:null});if(i%20===0)await wait()}GP.groups=[];GP.marked.clear();renderModule();await analyze()};
 window.angelaGPAnalizar=analyze;
 const MEDIA_RE=/\.(jpe?g|png|gif|webp|heic|heif|bmp|mp4|mov|m4v|3gp|webm|mkv|avi)$/i;
 async function walkDir(dir,path,out,limit){for await(const [name,h] of dir.entries()){if(out.length>=limit)break;if(h.kind==='directory'){if(/^(_DUPLICADOS_ANGELA|\.|node_modules|\$)/i.test(name))continue;await walkDir(h,path+name+'/',out,limit)}else if(MEDIA_RE.test(name)){out.push({h,dir,path:path+name,name})}if(out.length%200===0){setStatus(`Buscando archivos en la carpeta… ${out.length}`);await wait()}}}
@@ -4992,16 +4992,31 @@ window.angelaGPCarpeta=async()=>{if(!window.showDirectoryPicker){alert('Elegir u
  GP.rootDir=root;const found=[];setStatus('Buscando fotos y videos en la carpeta…');renderSummary();await walkDir(root,'',found,8000);
  const acct=activeAccount();let n=0;for(let i=0;i<found.length;i++){const f=found[i];try{const file=await f.h.getFile();const isV=/\.(mp4|mov|m4v|3gp|webm|mkv|avi)$/i.test(f.name)||file.type.startsWith('video/');
    GP.items.push({id:'gpd'+Date.now().toString(36)+i+Math.random().toString(36).slice(2,5),file,previewFile:file,url:URL.createObjectURL(file),name:f.path,size:file.size,analysisSize:file.size,date:file.lastModified||Date.now(),kind:isV?'video':'photo',accountId:acct.id,accountEmail:'Carpeta: '+root.name,width:0,height:0,duration:0,contentHash:null,visualHash:null,handle:f.h,dirHandle:f.dir,fileName:f.name});n++}catch{}if(i%25===0){setStatus(`Cargando ${i+1}/${found.length}…`);await wait()}}
- GP.groups=[];GP.marked.clear();GP.filter='all';setStatus(`✅ ${n} foto(s) y video(s) de la carpeta “${root.name}”${found.length>=8000?' (primeros 8.000)':''}. Tocá “🔎 Buscar duplicados”.`);renderModule()};
-window.angelaGPMoverDuplicados=async()=>{const rows=[...GP.marked].map(id=>GP.items.find(x=>x.id===id)).filter(x=>x&&x.handle&&x.dirHandle);
- if(!rows.length){alert('No hay archivos marcados que vengan de una carpeta de la compu.');return}const total=rows.reduce((a,x)=>a+(x.size||0),0);
- if(!confirm(`Se van a MOVER ${rows.length} archivo(s) (${fmtBytes(total)}) a una carpeta nueva llamada “_DUPLICADOS_ANGELA”, dentro de “${GP.rootDir?GP.rootDir.name:'la carpeta elegida'}”.\n\nNo se borra nada: después revisás esa carpeta y, si está todo bien, la borrás vos para liberar el espacio.\n\n¿Seguimos?`))return;
- let ok=0,fail=0;let dest;try{dest=await GP.rootDir.getDirectoryHandle('_DUPLICADOS_ANGELA',{create:true})}catch(e){alert('No pude crear la carpeta: '+(e.message||e));return}
+ GP.groups=[];GP.marked.clear();GP.filter='all';renderModule();
+ if(!n){setStatus(`No encontré fotos ni videos en la carpeta “${root.name}”.`);renderModule();alert('No encontré fotos ni videos en esa carpeta.');return}
+ // V12.82: al marcar la carpeta, ÁNGELA busca las repetidas sola y las deja listas para borrar.
+ await analyze();
+ if(!GP.groups.length){alert(`Revisé ${n} foto(s) y video(s) de “${root.name}”.\n\nNo hay repetidas. ¡Está todo limpio!`);return}
+ const exactIds=new Set(GP.groups.filter(g=>g.type==='exact').flatMap(g=>g.items.map(x=>x.id)));
+ const exactRows=[...GP.marked].filter(id=>exactIds.has(id)).map(id=>GP.items.find(x=>x.id===id)).filter(x=>x&&x.handle&&x.dirHandle);
+ const simCount=[...GP.marked].filter(id=>!exactIds.has(id)).length;
+ if(!exactRows.length){setStatus(`✅ Revisé ${n} archivo(s). No hay copias idénticas, pero marqué ${simCount} parecida(s). Miralas abajo y tocá “📦 Mover marcadas…”.`);renderSummary();setTimeout(()=>$('agGPGroups')?.scrollIntoView({behavior:'smooth',block:'start'}),120);return}
+ const exTotal=exactRows.reduce((a,x)=>a+(x.size||0),0);
+ if(!confirm(`Revisé ${n} foto(s) y video(s) de “${root.name}”.\n\nEncontré ${exactRows.length} REPETIDA(S) IDÉNTICA(S) (${fmtBytes(exTotal)}).\nDe cada una se queda la mejor copia en su lugar.\n\nLas repetidas las paso a la carpeta “_DUPLICADOS_ANGELA” para que después la borres.${simCount?`\n\nAdemás marqué ${simCount} foto(s)/video(s) PARECIDOS: esos no los toco, quedan abajo para que los mires.`:''}\n\n¿Las paso ya?`)){setStatus(`✅ ${exactRows.length} repetida(s) marcada(s). Cuando quieras, tocá “📦 Mover marcadas a carpeta _DUPLICADOS_ANGELA”.`);renderSummary();return}
+ const r=await window.angelaGPMoverDuplicados({rows:exactRows,auto:true});
+ if(simCount)GP.filter='similar';renderModule();
+ setStatus(`✅ Listo: ${r.ok} repetida(s) en “_DUPLICADOS_ANGELA” (${fmtBytes(r.total)})${r.fail?` · ${r.fail} no se pudieron mover`:''}.${simCount?` Quedan ${simCount} parecida(s) marcadas abajo para revisar.`:''}`);renderSummary();
+ alert(`Listo ✅\n\n${r.ok} repetida(s) quedaron en la carpeta “_DUPLICADOS_ANGELA”, dentro de “${root.name}”.\n\nAbrila, mirá que esté bien y borrala para liberar ${fmtBytes(r.total)}.${simCount?`\n\nAbajo te dejé ${simCount} parecida(s) para que las mires vos.`:''}`)};
+window.angelaGPMoverDuplicados=async(opt)=>{opt=opt||{};const rows=(opt.rows||[...GP.marked].map(id=>GP.items.find(x=>x.id===id))).filter(x=>x&&x.handle&&x.dirHandle);
+ if(!rows.length){if(!opt.auto)alert('No hay archivos marcados que vengan de una carpeta de la compu.');return {ok:0,fail:0,total:0}}const total=rows.reduce((a,x)=>a+(x.size||0),0);
+ if(!opt.auto&&!confirm(`Se van a MOVER ${rows.length} archivo(s) (${fmtBytes(total)}) a una carpeta nueva llamada “_DUPLICADOS_ANGELA”, dentro de “${GP.rootDir?GP.rootDir.name:'la carpeta elegida'}”.\n\nNo se borra nada: después revisás esa carpeta y, si está todo bien, la borrás vos para liberar el espacio.\n\n¿Seguimos?`))return;
+ let ok=0,fail=0;let dest;try{dest=await GP.rootDir.getDirectoryHandle('_DUPLICADOS_ANGELA',{create:true})}catch(e){alert('No pude crear la carpeta: '+(e.message||e));return {ok:0,fail:rows.length,total:0}}
  for(let i=0;i<rows.length;i++){const x=rows[i];setStatus(`Moviendo ${i+1}/${rows.length}: ${x.fileName}`);try{let name=x.fileName,c=1;while(true){try{await dest.getFileHandle(name);name=x.fileName.replace(/(\.[^.]+)?$/,m=>` (${c++})`+m)}catch{break}}
    const fh=await dest.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(await x.handle.getFile());await w.close();await x.dirHandle.removeEntry(x.fileName);ok++;
    GP.items=GP.items.filter(y=>y.id!==x.id);GP.marked.delete(x.id)}catch(e){fail++;console.warn('ÁNGELA mover duplicado',e)}if(i%5===0)await wait()}
  GP.groups=GP.groups.map(g=>({...g,items:g.items.filter(y=>GP.items.some(z=>z.id===y.id))})).filter(g=>g.items.length>1);
  setStatus(`✅ ${ok} archivo(s) movidos a “_DUPLICADOS_ANGELA”${fail?` · ${fail} no se pudieron mover`:''}. Revisá esa carpeta y borrala para liberar ${fmtBytes(total)}.`);renderModule();
+ if(opt.auto)return {ok,fail,total};
  alert(`Listo: ${ok} archivo(s) movidos a la carpeta “_DUPLICADOS_ANGELA”.\n\nAbrila en tu compu, mirá que esté todo bien y borrala (o vaciá la papelera) para liberar el espacio.`)};
 window.angelaGPFiltro=f=>{GP.filter=f;GP.reviewOnly=false;renderGroups()};
 window.angelaGPToggle=(id,on)=>{on?GP.marked.add(id):GP.marked.delete(id);renderSummary();renderGroups()};
