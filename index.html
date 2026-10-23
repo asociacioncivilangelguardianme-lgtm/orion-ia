@@ -4825,7 +4825,7 @@ function baseHTML(){
    <button class="quick" onclick="angelaGPConectarCuenta()">➕ Conectar otra cuenta Google</button>
    <button class="quick" onclick="angelaGPSeleccionarGoogle()">🖼️ Seleccionar de Google Fotos</button>
    <button class="quick" onclick="angelaGPImportarLocal()">📁 Elegir fotos/videos</button>
-   ${window.showDirectoryPicker?'<button class="quick" onclick="angelaGPCarpeta()">🗂️ Marcar carpeta y buscar repetidas solo (PC)</button>':''}
+   ${window.showDirectoryPicker?'<button class="quick" onclick="angelaGPCarpeta()">🗂️ Buscar repetidas en mi carpeta (PC)</button><button class="quick" onclick="angelaGPOtraCarpeta()">📂 Cambiar carpeta</button>':''}
    <input id="agGPFiles" class="hidden" type="file" accept="image/*,video/*" multiple onchange="angelaGPProcesarArchivos(this.files)">
   </div>
   <div class="ag-gp-accounts">${GP.accounts.map(a=>`<span class="ag-gp-account ${isConnected(a)?'ok':'pending'}">${isConnected(a)?'🟢':'🟡'} ${esc(a.email)}${a.local?'':isConnected(a)?' · conectada':' · reconectar'}</span>`).join('')}</div>
@@ -4987,8 +4987,15 @@ window.angelaGPProcesarArchivos=async files=>{const list=[...(files||[])];if(!li
 window.angelaGPAnalizar=analyze;
 const MEDIA_RE=/\.(jpe?g|png|gif|webp|heic|heif|bmp|mp4|mov|m4v|3gp|webm|mkv|avi)$/i;
 async function walkDir(dir,path,out,limit){for await(const [name,h] of dir.entries()){if(out.length>=limit)break;if(h.kind==='directory'){if(/^(_DUPLICADOS_ANGELA|\.|node_modules|\$)/i.test(name))continue;await walkDir(h,path+name+'/',out,limit)}else if(MEDIA_RE.test(name)){out.push({h,dir,path:path+name,name})}if(out.length%200===0){setStatus(`Buscando archivos en la carpeta… ${out.length}`);await wait()}}}
-window.angelaGPCarpeta=async()=>{if(!window.showDirectoryPicker){alert('Elegir una carpeta entera funciona en Chrome o Edge de computadora. En el celular usá “Elegir fotos/videos”.');return}
- let root;try{root=await window.showDirectoryPicker({id:'angela-dup',mode:'readwrite'})}catch(e){if(e&&e.name==='AbortError')return;alert('No se pudo abrir la carpeta: '+(e.message||e));return}
+// V12.83: ÁNGELA recuerda la carpeta de fotos para no tener que elegirla cada vez.
+function gpDirDB(){return new Promise((res,rej)=>{const r=indexedDB.open('ANGELA_GP_DIR',1);r.onupgradeneeded=()=>r.result.createObjectStore('h');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function gpDirGet(){try{const db=await gpDirDB();return await new Promise(res=>{const q=db.transaction('h').objectStore('h').get('root');q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}catch{return null}}
+async function gpDirSet(h){try{const db=await gpDirDB();db.transaction('h','readwrite').objectStore('h').put(h,'root')}catch{}}
+window.angelaGPOtraCarpeta=()=>window.angelaGPCarpeta(true);
+window.angelaGPCarpeta=async(nueva)=>{if(!window.showDirectoryPicker){alert('Elegir una carpeta entera funciona en Chrome o Edge de computadora. En el celular usá “Elegir fotos/videos”.');return}
+ let root=null;
+ if(nueva!==true){const saved=await gpDirGet();if(saved){try{let st=await saved.queryPermission({mode:'readwrite'});if(st!=='granted')st=await saved.requestPermission({mode:'readwrite'});if(st==='granted')root=saved}catch{}}}
+ if(!root){try{root=await window.showDirectoryPicker({id:'angela-dup',mode:'readwrite'})}catch(e){if(e&&e.name==='AbortError')return;alert('No se pudo abrir la carpeta: '+(e.message||e));return}await gpDirSet(root)}
  GP.rootDir=root;const found=[];setStatus('Buscando fotos y videos en la carpeta…');renderSummary();await walkDir(root,'',found,8000);
  const acct=activeAccount();let n=0;for(let i=0;i<found.length;i++){const f=found[i];try{const file=await f.h.getFile();const isV=/\.(mp4|mov|m4v|3gp|webm|mkv|avi)$/i.test(f.name)||file.type.startsWith('video/');
    GP.items.push({id:'gpd'+Date.now().toString(36)+i+Math.random().toString(36).slice(2,5),file,previewFile:file,url:URL.createObjectURL(file),name:f.path,size:file.size,analysisSize:file.size,date:file.lastModified||Date.now(),kind:isV?'video':'photo',accountId:acct.id,accountEmail:'Carpeta: '+root.name,width:0,height:0,duration:0,contentHash:null,visualHash:null,handle:f.h,dirHandle:f.dir,fileName:f.name});n++}catch{}if(i%25===0){setStatus(`Cargando ${i+1}/${found.length}…`);await wait()}}
