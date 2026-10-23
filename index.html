@@ -4827,6 +4827,8 @@ function baseHTML(){
    <button class="quick" onclick="angelaGPImportarLocal()">📁 Elegir fotos/videos</button>
    ${window.showDirectoryPicker?'<button class="quick" onclick="angelaGPCarpeta()">🗂️ Buscar repetidas en mi carpeta (PC)</button><button class="quick" onclick="angelaGPOtraCarpeta()">📂 Cambiar carpeta</button>':''}
    <input id="agGPFiles" class="hidden" type="file" accept="image/*,video/*" multiple onchange="angelaGPProcesarArchivos(this.files)">
+   ${window.showDirectoryPicker?'':'<button class="quick" onclick="document.getElementById(\'agGPFolderMob\').click()">📂 Elegir carpeta entera (celular)</button>'}
+   <input id="agGPFolderMob" class="hidden" type="file" webkitdirectory multiple onchange="angelaGPProcesarArchivos(this.files)">
   </div>
   <div class="ag-gp-accounts">${GP.accounts.map(a=>`<span class="ag-gp-account ${isConnected(a)?'ok':'pending'}">${isConnected(a)?'🟢':'🟡'} ${esc(a.email)}${a.local?'':isConnected(a)?' · conectada':' · reconectar'}</span>`).join('')}</div>
   <div class="ag-gp-status"><span id="agGPStatus">${esc(GP.status)}</span><span>${connected} cuenta(s) Google conectada(s)</span></div>
