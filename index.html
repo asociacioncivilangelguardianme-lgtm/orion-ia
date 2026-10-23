@@ -1,3 +1,4 @@
+<!-- V12.81 PRUEBA: nuevo módulo HERRAMIENTAS (música por género, grilla de radio, dictado, textos, olla, cartel, leer foto, notas, traductor). Agregado al final; QR, regalos y eventos sin tocar. -->
 <!-- V12.73 PRUEBA: casting automático, origen según guion y prompt por fotograma. Sin cambios en Vercel. -->
 <!-- V12.67 PRUEBA · inyectores de estilo, opciones con generador compartido, corrección de caché y ajuste de duración de narración. No despliega Vercel. -->
 <!-- V12.58 PRUEBA: recuperado flujo de generación de imágenes V11.73 (reintentos y tiempos), Vercel sin cambios -->
@@ -11305,6 +11306,600 @@ console.info('[ÁNGELA] Etapa 2: cocina (raciones, menú y compras, recetas, ven
 })();
 </script>
 <!-- ===== FIN ETAPA 2 ===== -->
+
+<!-- ===== ÁNGELA · HERRAMIENTAS (módulo nuevo, agregado al final; no modifica nada existente) =====
+     Ordenar música por género, grilla de la radio, dictar y leer en voz alta, textos para publicar,
+     cartel rápido, leer fotos de papeles, calculadora de olla, notas y traductor.
+     Guarda sus datos aparte (ANGELA_HERRAMIENTAS_V1). La copia de seguridad de ÁNGELA ya los incluye.
+     Para quitarlo, borrá desde este comentario hasta "FIN HERRAMIENTAS". -->
+<style id="herr-style">
+#herrOverlay{position:fixed;inset:0;z-index:99992;background:#0F0F12;color:#ededf5;font-family:Inter,system-ui,sans-serif;display:none;overflow:auto;-webkit-overflow-scrolling:touch}
+#herrOverlay.on{display:block}
+#herrOverlay *{box-sizing:border-box}
+.herr-top{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;background:#141419;border-bottom:1px solid #272733}
+.herr-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;min-width:0}
+.herr-logo{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#7c5cff,#22d3ee);font-size:18px;flex:none}
+.herr-brand small{display:block;font-weight:500;font-size:11.5px;color:#9b9bb2}
+.herr-wrap{max-width:1150px;margin:0 auto;padding:20px}
+.herr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.herr-tile{text-align:left;background:#18181f;border:1px solid #272733;border-radius:14px;padding:16px;color:#ededf5;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,transform .15s}
+.herr-tile:hover{border-color:#7c5cff;transform:translateY(-1px)}
+.herr-tile .i{font-size:26px}
+.herr-tile b{font-size:15px}
+.herr-tile span{font-size:12.5px;color:#9b9bb2;line-height:1.4}
+.herr-sec{font-size:12px;font-weight:700;color:#7c7c96;text-transform:uppercase;letter-spacing:.6px;margin:18px 2px 10px}
+.herr-card{background:#18181f;border:1px solid #272733;border-radius:12px;padding:16px;margin-bottom:14px}
+.herr-card h3{margin:0 0 4px;font-size:15.5px}
+.herr-sub{color:#9b9bb2;font-size:12.5px;margin:0 0 12px;line-height:1.45}
+.herr-lbl{font-size:12px;font-weight:600;color:#9b9bb2;margin:10px 0 5px;display:block}
+.herr-inp,.herr-ta,.herr-sel{width:100%;background:#141419;border:1px solid #353545;border-radius:9px;padding:10px 11px;color:#ededf5;font:inherit;font-size:14px;outline:none}
+.herr-inp:focus,.herr-ta:focus,.herr-sel:focus{border-color:#7c5cff;box-shadow:0 0 0 3px rgba(124,92,255,.14)}
+.herr-ta{min-height:130px;resize:vertical;line-height:1.5}
+.herr-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.herr-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.herr-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media(max-width:860px){.herr-2{grid-template-columns:1fr}}
+.herr-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border-radius:9px;background:#1f1f29;border:1px solid #353545;color:#ededf5;font:inherit;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;min-height:42px}
+.herr-btn:hover{border-color:#7c5cff}
+.herr-btn.pri{background:#7c5cff;border-color:#7c5cff;color:#fff}
+.herr-btn.grad{background:linear-gradient(135deg,#7c5cff,#b14cff);border:0;color:#fff;box-shadow:0 8px 24px rgba(124,92,255,.3)}
+.herr-btn.rec{background:#ef4444;border-color:#ef4444;color:#fff}
+.herr-btn.sm{padding:6px 10px;font-size:12px;min-height:32px}
+.herr-btn:disabled{opacity:.5;cursor:not-allowed}
+.herr-info{background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);border-radius:9px;padding:9px 12px;font-size:12.5px;color:#d6ccff;margin-top:10px;line-height:1.45}
+.herr-warn{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35);color:#fde3a7}
+.herr-ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:#bbf7d0}
+.herr-prog{height:7px;border-radius:6px;background:#272733;overflow:hidden;margin-top:10px}
+.herr-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7c5cff,#22d3ee);transition:width .25s}
+.herr-status{font-size:12.5px;color:#9b9bb2;margin-top:8px;min-height:18px;line-height:1.45}
+.herr-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.herr-tbl th,.herr-tbl td{border-bottom:1px solid #24242e;padding:7px 6px;text-align:left;vertical-align:middle}
+.herr-tbl th{color:#9b9bb2;font-weight:600;position:sticky;top:0;background:#18181f}
+.herr-tbl input,.herr-tbl select{background:#141419;border:1px solid #353545;border-radius:7px;padding:5px 7px;color:#ededf5;font:inherit;font-size:12.5px;width:100%}
+.herr-scroll{max-height:55vh;overflow:auto;border:1px solid #272733;border-radius:10px;margin-top:10px}
+.herr-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.herr-chip{padding:6px 11px;border-radius:999px;background:#1f1f29;border:1px solid #353545;font-size:12.5px;color:#cfcfe0;cursor:pointer}
+.herr-chip.on{background:rgba(124,92,255,.18);border-color:#7c5cff;color:#fff}
+.herr-chip b{color:#a78bfa;margin-left:4px}
+.herr-mini{font-size:11.5px;color:#6c6c84;margin-top:6px;line-height:1.4}
+.herr-out{white-space:pre-wrap;background:#141419;border:1px solid #353545;border-radius:9px;padding:12px;font-size:14px;line-height:1.5;margin-top:8px}
+.herr-opt{background:#141419;border:1px solid #353545;border-radius:10px;padding:12px;margin-top:10px}
+.herr-opt p{white-space:pre-wrap;margin:0 0 8px;font-size:14px;line-height:1.5}
+.herr-day{border:1px solid #272733;border-radius:10px;padding:10px;margin-top:10px;background:#141419}
+.herr-day h4{margin:0 0 6px;font-size:14px;color:#a78bfa}
+.herr-slot{display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px solid #22222c;font-size:13px}
+.herr-slot:first-of-type{border-top:0}
+.herr-slot .h{font-weight:700;color:#22d3ee;min-width:92px}
+.herr-slot .p{flex:1;min-width:0}
+.herr-slot.now{background:rgba(34,211,238,.08);border-radius:8px;padding:6px}
+.herr-live{display:inline-block;font-size:10.5px;font-weight:800;background:#ef4444;color:#fff;border-radius:999px;padding:2px 8px;margin-left:6px}
+.herr-canvas{width:100%;max-width:420px;border-radius:12px;border:1px solid #272733;display:block;margin:0 auto;background:#000}
+.herr-note{border:1px solid #272733;border-radius:10px;padding:11px;background:#141419;margin-top:8px}
+.herr-note.pin{border-color:#7c5cff}
+.herr-note.due{border-color:#f59e0b}
+.herr-note b{font-size:14px}
+.herr-note p{white-space:pre-wrap;margin:6px 0;font-size:13.5px;line-height:1.45;color:#d6d6e6}
+.herr-x{background:none;border:0;color:#9b9bb2;cursor:pointer;font-size:13px;padding:4px 6px}
+.herr-x:hover{color:#ef4444}
+.herr-sw{width:26px;height:26px;border-radius:50%;border:2px solid #353545;cursor:pointer}
+.herr-sw.on{border-color:#fff}
+.herr-back{display:none}
+#herrOverlay.inTool .herr-back{display:inline-flex}
+#herrToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#1f1f29;border:1px solid #7c5cff;color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;display:none;max-width:90vw;text-align:center}
+@media(max-width:700px){.herr-wrap{padding:12px}.herr-top{padding:10px 12px}.herr-brand small{display:none}.herr-grid{grid-template-columns:1fr 1fr;gap:9px}.herr-tile{padding:12px}.herr-tile span{display:none}.herr-hm{display:none}.herr-btn{flex:1 1 auto}}
+</style>
+
+<div id="herrOverlay" aria-hidden="true">
+  <div class="herr-top">
+    <div class="herr-brand"><div class="herr-logo" id="herrLogo">🧰</div><div><span id="herrTitle">Herramientas</span><small id="herrSubtitle">Para el comedor, la radio y el día a día · gratis</small></div></div>
+    <div class="herr-row" style="margin:0;flex-wrap:nowrap">
+      <button class="herr-btn herr-back" onclick="ANGELAHerr.home()">←<span class="herr-hm"> Herramientas</span></button>
+      <button class="herr-btn" onclick="ANGELAHerr.close()">✕ Volver</button>
+    </div>
+  </div>
+  <div class="herr-wrap" id="herrBody"></div>
+</div>
+<div id="herrToast"></div>
+
+<script id="angela-herramientas-v1">
+(function(){'use strict';
+if(window.ANGELAHerr)return;
+var KEY='ANGELA_HERRAMIENTAS_V1';
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function num(v){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:0}
+function fmt(n,d){return Number(n||0).toLocaleString('es-AR',{maximumFractionDigits:d==null?2:d})}
+var D={};
+function load(){try{D=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){D={}}D.artistas=D.artistas||{};D.grilla=Array.isArray(D.grilla)?D.grilla:[];D.notas=Array.isArray(D.notas)?D.notas:[];D.firma=D.firma||'Comedor Ángel Guardián · Merlo'}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('⚠️ No se pudo guardar (memoria del navegador llena).')}}
+var tT;function toast(m){var t=$('herrToast');if(!t)return alert(m);t.textContent=m;t.style.display='block';clearTimeout(tT);tT=setTimeout(function(){t.style.display='none'},3800)}
+function copy(txt){try{navigator.clipboard.writeText(txt).then(function(){toast('Copiado ✅')},function(){prompt('Copiá el texto:',txt)})}catch(e){prompt('Copiá el texto:',txt)}}
+function wa(txt){window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank','noopener')}
+function saveBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+function isFile(){return location.protocol==='file:'}
+/* pide texto a la IA de ÁNGELA (el mismo /api/chat que usa el chat) */
+function askIA(msg,att){
+  var body={message:msg,fresh:false};if(att)body.attachments=att;
+  return fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+   .then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||('Error '+r.status));var t=String(j.reply||j.respuesta||'').trim();if(!t)throw new Error('vacío');return t})});
+}
+function iaErr(){return isFile()?'La IA funciona desde tu link de Vercel (no abriendo el archivo directo).':'ÁNGELA no pudo responder ahora. Probá de nuevo en un ratito.'}
+
+/* ================= PANTALLA PRINCIPAL ================= */
+var TOOLS=[
+ ['Para la radio y los videos',[
+  ['musica','🎼','Ordenar música por género','Elegís la carpeta de la radio y ÁNGELA separa los temas en carpetas por género.'],
+  ['grilla','📻','Grilla de la radio','La programación de la semana, con lo que está al aire ahora.'],
+  ['voz','🎤','Dictar y leer en voz alta','Hablás y lo escribe solo. O pegás un texto y lo lee.'],
+  ['textos','✍️','Textos para publicar','Contás de qué trata el video y te propone textos y hashtags.']]],
+ ['Para el comedor',[
+  ['olla','🍲','Calculadora de olla','"Guiso para 150": cuánto de cada cosa poner.'],
+  ['cartel','🖼️','Cartel y volante rápido','Escribís el evento y te arma la imagen para Instagram o para imprimir.']]],
+ ['Para el día a día',[
+  ['ocr','📷','Leer foto de un papel','Foto de una boleta o una lista escrita a mano → texto.'],
+  ['notas','📝','Notas y recordatorios','Anotaciones rápidas, con aviso el día que elijas.'],
+  ['traductor','🌍','Traductor','Para entender textos o tutoriales en otro idioma.']]]
+];
+var CUR='';
+function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').textContent=title;$('herrSubtitle').textContent=sub}
+function home(){
+  stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
+  var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
+  h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
+  $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
+}
+function go(k){
+  stopAll();var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
+  CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
+  ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
+}
+function stopAll(){try{if(REC.r){REC.on=false;REC.r.stop()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(M.busy)M.cancel=true}
+
+/* ================= 🎼 ORDENAR MÚSICA POR GÉNERO ================= */
+var M={files:[],busy:false,cancel:false,filter:'',src:null};
+var AUDIO=/\.(mp3|flac|m4a|aac|ogg|opus|wav|wma)$/i;
+var V1=['Blues','Classic Rock','Country','Dance','Disco','Funk','Grunge','Hip-Hop','Jazz','Metal','New Age','Oldies','Other','Pop','R&B','Rap','Reggae','Rock','Techno','Industrial','Alternative','Ska','Death Metal','Pranks','Soundtrack','Euro-Techno','Ambient','Trip-Hop','Vocal','Jazz+Funk','Fusion','Trance','Classical','Instrumental','Acid','House','Game','Sound Clip','Gospel','Noise','AlternRock','Bass','Soul','Punk','Space','Meditative','Instrumental Pop','Instrumental Rock','Ethnic','Gothic','Darkwave','Techno-Industrial','Electronic','Pop-Folk','Eurodance','Dream','Southern Rock','Comedy','Cult','Gangsta','Top 40','Christian Rap','Pop/Funk','Jungle','Native American','Cabaret','New Wave','Psychadelic','Rave','Showtunes','Trailer','Lo-Fi','Tribal','Acid Punk','Acid Jazz','Polka','Retro','Musical','Rock & Roll','Hard Rock','Folk','Folk-Rock','National Folk','Swing','Fast Fusion','Bebob','Latin','Revival','Celtic','Bluegrass','Avantgarde','Gothic Rock','Progressive Rock','Psychedelic Rock','Symphonic Rock','Slow Rock','Big Band','Chorus','Easy Listening','Acoustic','Humour','Speech','Chanson','Opera','Chamber Music','Sonata','Symphony','Booty Bass','Primus','Porn Groove','Satire','Slow Jam','Club','Tango','Samba','Folklore','Ballad','Power Ballad','Rhythmic Soul','Freestyle','Duet','Punk Rock','Drum Solo','A capella','Euro-House','Dance Hall','Goa','Drum & Bass','Club-House','Hardcore','Terror','Indie','BritPop','Negerpunk','Polsk Punk','Beat','Christian Gangsta Rap','Heavy Metal','Black Metal','Crossover','Contemporary Christian','Christian Rock','Merengue','Salsa','Thrash Metal','Anime','JPop','Synthpop'];
+var GEN=[
+ [/cumbia|villera|santafesin|sonidera/,'Cumbia'],[/cuarteto/,'Cuarteto'],
+ [/folk|folcl|chacarera|zamba|chamam|carnavalito|huayno|criollo|gato|malambo/,'Folklore'],
+ [/tango|milonga|vals criollo/,'Tango'],
+ [/gospel|christian|cristian|religio|worship|alabanza|adoraci|catol|evangel|umbanda|candombl|orix|oxum|ogum|iemanj|sacr|misa|himno/,'Religiosa'],
+ [/reggaet|urban|trap|dembow|perreo/,'Reggaetón y Urbano'],
+ [/salsa|merengue|bachata|tropical|latin|vallenato|son cubano|guaracha|bolero tropical/,'Tropical y Latina'],
+ [/rom[aá]nt|balad|bolero|ballad|love/,'Romántica'],
+ [/reggae|ska|dance ?hall/,'Reggae'],
+ [/rap|hip.?hop|freestyle/,'Rap y Hip Hop'],
+ [/metal|punk|hardcore|grunge|rock|alternative|alternrock|indie|britpop/,'Rock'],
+ [/electr|dance|house|techno|trance|edm|club|rave|dubstep|drum|jungle|eurodance|synth/,'Electrónica'],
+ [/jazz|blues|swing|bebob|big band/,'Jazz y Blues'],
+ [/classical|cl[aá]sic|opera|symphon|sonata|chamber|orquest/,'Clásica'],
+ [/infantil|children|kids|ni[nñ]os|canciones de cuna/,'Infantil'],
+ [/soundtrack|banda sonora|bso|ost/,'Bandas de Sonido'],
+ [/ambient|new age|medit|relax|lo-?fi|instrumental|piano/,'Instrumental y Relax'],
+ [/pop|top 40|oldies|retro|vocal|r&b|soul|funk|disco/,'Pop'],
+ [/speech|spoken|hablad|comedy|humou?r|podcast|cortina|jingle|separador|locuci/,'Cortinas y Locución']
+];
+var GLIST=['Cumbia','Cuarteto','Folklore','Tango','Rock','Pop','Romántica','Reggaetón y Urbano','Tropical y Latina','Religiosa','Electrónica','Rap y Hip Hop','Reggae','Jazz y Blues','Clásica','Infantil','Instrumental y Relax','Bandas de Sonido','Cortinas y Locución','Sin género'];
+function normG(raw){
+  var s=String(raw||'').trim();if(!s)return'';
+  s=s.replace(/^\((\d+)\)\s*/,function(m,n){return V1[+n]?V1[+n]+' ':''}).replace(/^(\d+)$/,function(m,n){return V1[+n]||''}).replace(/\(RX\)|\(CR\)/g,'').trim();
+  if(!s)return'';var low=s.toLowerCase();
+  for(var i=0;i<GEN.length;i++)if(GEN[i][0].test(low))return GEN[i][1];
+  if(/^(other|otro|otros|unknown|desconocido|genre|g[eé]nero|misc)$/i.test(s))return'';
+  return s.charAt(0).toUpperCase()+s.slice(1,40);
+}
+function folderGuess(path){var parts=path.split('/').slice(0,-1).reverse();for(var i=0;i<parts.length;i++){var low=parts[i].toLowerCase();for(var j=0;j<GEN.length;j++)if(GEN[j][0].test(low))return GEN[j][1]}return''}
+function artKey(a){return String(a||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function safeName(s){return String(s||'Sin género').replace(/[\\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,60)||'Sin género'}
+/* --- leer etiquetas sin internet --- */
+function decTxt(b,enc){
+  try{
+    if(enc===0)return new TextDecoder('latin1').decode(b);
+    if(enc===3)return new TextDecoder('utf-8').decode(b);
+    if(enc===1){if(b.length>=2&&b[0]===0xFE&&b[1]===0xFF)return new TextDecoder('utf-16be').decode(b.subarray(2));if(b.length>=2&&b[0]===0xFF&&b[1]===0xFE)return new TextDecoder('utf-16le').decode(b.subarray(2));return new TextDecoder('utf-16le').decode(b)}
+    if(enc===2)return new TextDecoder('utf-16be').decode(b);
+  }catch(e){}return'';
+}
+function clip(s){return String(s||'').replace(/\u0000[\s\S]*$/,'').replace(/[\u0000-\u001f]/g,'').trim()}
+function readId3v2(u){
+  if(u.length<10||u[0]!==0x49||u[1]!==0x44||u[2]!==0x33)return null;
+  var ver=u[3],flags=u[5],size=(u[6]&127)<<21|(u[7]&127)<<14|(u[8]&127)<<7|(u[9]&127),p=10,end=Math.min(u.length,10+size),out={};
+  if(flags&0x40){var ex=ver===4?((u[10]&127)<<21|(u[11]&127)<<14|(u[12]&127)<<7|(u[13]&127)):(u[10]<<24|u[11]<<16|u[12]<<8|u[13])+4;p+=ex}
+  var map=ver===2?{TCO:'genre',TP1:'artist',TT2:'title'}:{TCON:'genre',TPE1:'artist',TIT2:'title'};
+  while(p<end-6){
+    var id,fs,hs;
+    if(ver===2){id=String.fromCharCode(u[p],u[p+1],u[p+2]);fs=u[p+3]<<16|u[p+4]<<8|u[p+5];hs=6}
+    else{id=String.fromCharCode(u[p],u[p+1],u[p+2],u[p+3]);fs=ver===4?((u[p+4]&127)<<21|(u[p+5]&127)<<14|(u[p+6]&127)<<7|(u[p+7]&127)):(u[p+4]*16777216+(u[p+5]<<16|u[p+6]<<8|u[p+7]));hs=10}
+    if(!/^[A-Z0-9]{3,4}$/.test(id)||fs<=0||p+hs+fs>u.length)break;
+    var k=map[id];if(k&&!out[k]){var b=u.subarray(p+hs,p+hs+fs);out[k]=clip(decTxt(b.subarray(1),b[0]))}
+    p+=hs+fs;
+  }
+  return out;
+}
+function readId3v1(u){if(u.length<128)return null;var o=u.length-128;if(u[o]!==0x54||u[o+1]!==0x41||u[o+2]!==0x47)return null;var dec=new TextDecoder('latin1');var g=u[o+127];return{title:clip(dec.decode(u.subarray(o+3,o+33))),artist:clip(dec.decode(u.subarray(o+33,o+63))),genre:V1[g]||''}}
+function readFlac(u){
+  if(u.length<8||String.fromCharCode(u[0],u[1],u[2],u[3])!=='fLaC')return null;var p=4,out={};
+  while(p+4<=u.length){var last=u[p]&128,type=u[p]&127,len=u[p+1]<<16|u[p+2]<<8|u[p+3];p+=4;
+    if(type===4&&p+len<=u.length){var dv=new DataView(u.buffer,u.byteOffset+p,len),q=0,vl=dv.getUint32(q,true);q+=4+vl;var n=dv.getUint32(q,true);q+=4;var dec=new TextDecoder('utf-8');
+      for(var i=0;i<n&&q+4<=len;i++){var l=dv.getUint32(q,true);q+=4;var s=dec.decode(new Uint8Array(u.buffer,u.byteOffset+p+q,Math.min(l,len-q)));q+=l;var e=s.indexOf('=');if(e<0)continue;var k=s.slice(0,e).toUpperCase(),v=s.slice(e+1);if(k==='GENRE'&&!out.genre)out.genre=v;if(k==='ARTIST'&&!out.artist)out.artist=v;if(k==='TITLE'&&!out.title)out.title=v}
+      return out}
+    p+=len;if(last)break}
+  return out;
+}
+function readTags(file){
+  var head=file.slice(0,Math.min(file.size,600*1024));
+  return head.arrayBuffer().then(function(ab){
+    var u=new Uint8Array(ab),t=null;
+    if(/\.flac$/i.test(file.name))t=readFlac(u);
+    else{t=readId3v2(u);
+      if(u.length>=10&&u[0]===0x49&&u[1]===0x44&&u[2]===0x33){var size=(u[6]&127)<<21|(u[7]&127)<<14|(u[8]&127)<<7|(u[9]&127);
+        if(size+10>u.length&&size<12*1024*1024)return file.slice(0,size+10).arrayBuffer().then(function(b2){return readId3v2(new Uint8Array(b2))||{}})}}
+    if((!t||!t.genre)&&/\.mp3$/i.test(file.name)&&file.size>128)return file.slice(file.size-128).arrayBuffer().then(function(b){var v1=readId3v1(new Uint8Array(b))||{};t=t||{};return{genre:t.genre||v1.genre,artist:t.artist||v1.artist,title:t.title||v1.title}});
+    return t||{};
+  }).catch(function(){return{}});
+}
+function nameArtist(name){var b=name.replace(/\.[^.]+$/,'');var m=b.split(/\s+[-–—]\s+/);return m.length>1?m[0].replace(/^\d+[\s.\-_]+/,'').trim():''}
+function vMusica(el){
+  var can=!!window.showDirectoryPicker;
+  el.innerHTML='<div class="herr-card"><h3>1 · Elegí la carpeta donde está la música de la radio</h3>'+
+   '<p class="herr-sub">ÁNGELA mira la etiqueta de cada tema (artista y género) y te muestra cómo quedaría. <b>No borra ni mueve nada</b>: cuando aprobás, copia los temas a carpetas nuevas.</p>'+
+   (can?'':'<div class="herr-info herr-warn">⚠️ Este navegador no deja copiar a carpetas. Podés ver la clasificación y bajar la lista, pero para copiar usá <b>Chrome o Edge en la computadora</b>.</div>')+
+   '<div class="herr-row"><button class="herr-btn grad" id="hmPick">📂 Elegir carpeta de música</button><label class="herr-mini" style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="hmSub" checked style="accent-color:#7c5cff"> Mirar también las subcarpetas</label></div>'+
+   '<input type="file" id="hmInput" webkitdirectory multiple style="display:none">'+
+   '<div class="herr-prog"><i id="hmProg"></i></div><div class="herr-status" id="hmStatus"></div></div>'+
+   '<div id="hmResult"></div>';
+  $('hmPick').onclick=pickMusic;
+  $('hmInput').onchange=function(){var fl=[].slice.call(this.files||[]).filter(function(f){return AUDIO.test(f.name)});if(!fl.length)return toast('No encontré temas de música en esa carpeta.');M.src=null;scanList(fl.map(function(f){return{file:f,path:f.webkitRelativePath||f.name}}))};
+  if(M.files.length)renderMusic();
+}
+function pickMusic(){
+  if(M.busy)return;
+  if(!window.showDirectoryPicker){$('hmInput').click();return}
+  window.showDirectoryPicker({id:'angela-musica',mode:'read'}).then(function(dir){M.src=dir;return collectFiles(dir,$('hmSub').checked)}).then(function(list){if(!list)return;if(!list.length)return toast('No encontré temas de música en esa carpeta.');scanList(list)})
+  .catch(function(e){if(e&&e.name==='AbortError')return;toast('No se pudo abrir la carpeta: '+(e&&e.message||e))});
+}
+function collectFiles(dir,deep){
+  var out=[];$('hmStatus').textContent='Buscando temas en la carpeta…';
+  function walk(d,pre){
+    var it=d.values(),chain=Promise.resolve();
+    function step(){return it.next().then(function(r){if(r.done)return;var h=r.value;
+      if(h.kind==='file'&&AUDIO.test(h.name)){return h.getFile().then(function(f){out.push({file:f,path:pre+h.name});if(out.length%50===0)$('hmStatus').textContent='Encontrados '+out.length+' temas…'}).then(step)}
+      if(h.kind==='directory'&&deep&&!/^m[uú]sica por g[eé]nero$/i.test(h.name))return walk(h,pre+h.name+'/').then(step);
+      return step()})}
+    return chain.then(step);
+  }
+  return walk(dir,'').then(function(){return out});
+}
+function scanList(list){
+  M.busy=true;M.cancel=false;M.files=[];M.filter='';var i=0,n=list.length;$('hmPick').disabled=true;
+  function next(){
+    if(M.cancel||i>=n){M.busy=false;$('hmPick').disabled=false;$('hmProg').style.width='100%';$('hmStatus').innerHTML=(M.cancel?'Revisión cortada. ':'')+'✅ Revisé <b>'+M.files.length+'</b> temas.';renderMusic();return}
+    var it=list[i++];
+    return readTags(it.file).then(function(t){
+      var artist=clip(t.artist)||nameArtist(it.file.name),tag=normG(t.genre),mem=D.artistas[artKey(artist)],fg=folderGuess(it.path);
+      var g=mem||tag||fg||'Sin género',why=mem?'recordado':tag?'etiqueta':fg?'carpeta':'—';
+      M.files.push({file:it.file,path:it.path,name:it.file.name,artist:artist,title:clip(t.title),tag:clip(t.genre),genre:g,why:why});
+      if(i%15===0||i===n){$('hmProg').style.width=(i/n*100)+'%';$('hmStatus').textContent='Leyendo '+i+' de '+n+'…'}
+    }).then(function(){return i%40===0?new Promise(function(r){setTimeout(r,0)}):null}).then(next);
+  }
+  next();
+}
+function counts(){var c={};M.files.forEach(function(f){c[f.genre]=(c[f.genre]||0)+1});return c}
+function renderMusic(){
+  var box=$('hmResult');if(!box)return;var c=counts(),keys=Object.keys(c).sort(function(a,b){return a==='Sin género'?1:b==='Sin género'?-1:c[b]-c[a]});
+  var opts=GLIST.slice();keys.forEach(function(k){if(opts.indexOf(k)<0)opts.splice(opts.length-1,0,k)});
+  var list=M.files.filter(function(f){return !M.filter||f.genre===M.filter}),show=list.slice(0,400);
+  box.innerHTML='<div class="herr-card"><h3>2 · Revisá cómo quedaría</h3><p class="herr-sub">Tocá un género para ver sus temas. Si alguno está mal, cambialo en la lista. Si tildás <b>"todo el artista"</b>, ÁNGELA se acuerda para la próxima vez.</p>'+
+   '<div class="herr-chips"><span class="herr-chip '+(M.filter?'':'on')+'" data-g="">Todos<b>'+M.files.length+'</b></span>'+keys.map(function(k){return '<span class="herr-chip '+(M.filter===k?'on':'')+'" data-g="'+esc(k)+'">'+esc(k)+'<b>'+c[k]+'</b></span>'}).join('')+'</div>'+
+   (c['Sin género']?'<div class="herr-info herr-warn">🤔 Hay <b>'+c['Sin género']+'</b> temas sin género (suele pasar con música bajada de YouTube). Podés ponérselo acá o dejarlos en la carpeta "Sin género".</div>':'')+
+   '<div class="herr-row"><label class="herr-mini" style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="hmAllArt" checked style="accent-color:#7c5cff"> Al cambiar un género, cambiar <b>&nbsp;todo el artista</b></label></div>'+
+   '<div class="herr-scroll"><table class="herr-tbl"><tr><th>Tema</th><th>Artista</th><th style="width:190px">Género</th><th>Por</th></tr>'+show.map(function(f){var idx=M.files.indexOf(f);return '<tr><td>'+esc(f.title||f.name)+'<div class="herr-mini" style="margin:0">'+esc(f.path)+'</div></td><td>'+esc(f.artist||'—')+'</td><td><select data-i="'+idx+'">'+opts.map(function(o){return '<option '+(o===f.genre?'selected':'')+'>'+esc(o)+'</option>'}).join('')+'<option value="__otro">✏️ Otro…</option></select></td><td class="herr-mini">'+f.why+'</td></tr>'}).join('')+'</table></div>'+
+   (list.length>show.length?'<p class="herr-mini">Se muestran los primeros 400 de '+list.length+'. Tocá un género arriba para ver el resto.</p>':'')+'</div>'+
+   '<div class="herr-card"><h3>3 · Copiar a carpetas por género</h3><p class="herr-sub">Elegí dónde crear las carpetas (puede ser la misma carpeta de la radio u otra, por ejemplo un pendrive). ÁNGELA crea <b>"Música por género"</b> con una carpeta por cada género y <b>copia</b> los temas. Los originales quedan donde estaban.</p>'+
+   '<label class="herr-mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="hmM3u" checked style="accent-color:#7c5cff"> Crear también una lista (.m3u) por género para cargar en RadioBOSS</label>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="hmCopy" '+(window.showDirectoryPicker?'':'disabled')+'>📁 Elegir destino y copiar '+M.files.length+' temas</button><button class="herr-btn" id="hmCsv">📄 Bajar la lista (Excel)</button><button class="herr-btn" id="hmStop" style="display:none">⏹️ Parar</button></div>'+
+   '<div class="herr-prog"><i id="hcProg"></i></div><div class="herr-status" id="hcStatus"></div></div>';
+  box.querySelectorAll('.herr-chip').forEach(function(ch){ch.onclick=function(){M.filter=ch.getAttribute('data-g');renderMusic()}});
+  box.querySelectorAll('select[data-i]').forEach(function(s){s.onchange=function(){var f=M.files[+s.getAttribute('data-i')],g=s.value;
+    if(g==='__otro'){g=prompt('Escribí el género:','');if(!g){s.value=f.genre;return}g=g.trim().slice(0,40)}
+    var all=$('hmAllArt').checked&&f.artist;if(all){var k=artKey(f.artist);M.files.forEach(function(x){if(artKey(x.artist)===k){x.genre=g;x.why='recordado'}});D.artistas[k]=g;save();toast('Listo: todo '+f.artist+' va en '+g)}else{f.genre=g;f.why='a mano'}renderMusic()}});
+  $('hmCsv').onclick=function(){var rows=[['Genero','Artista','Titulo','Archivo','Carpeta original']].concat(M.files.map(function(f){return[f.genre,f.artist,f.title,f.name,f.path]}));var csv='\ufeff'+rows.map(function(r){return r.map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"'}).join(';')}).join('\r\n');saveBlob(new Blob([csv],{type:'text/csv'}),'musica_por_genero.csv')};
+  $('hmCopy').onclick=copyMusic;$('hmStop').onclick=function(){M.cancel=true};
+}
+function copyMusic(){
+  if(M.busy||!M.files.length)return;
+  window.showDirectoryPicker({id:'angela-musica-destino',mode:'readwrite'}).then(function(dest){
+    M.busy=true;M.cancel=false;$('hmCopy').disabled=true;$('hmStop').style.display='';
+    var st=$('hcStatus'),pr=$('hcProg'),n=M.files.length,i=0,ok=0,skip=0,fail=[],dirs={},m3u={};
+    return dest.getDirectoryHandle('Música por género',{create:true}).then(function(root){
+      function gdir(g){var nm=safeName(g);if(!dirs[nm])dirs[nm]=root.getDirectoryHandle(nm,{create:true});return dirs[nm]}
+      function exists(dir,name){return dir.getFileHandle(name).then(function(h){return h.getFile()}).catch(function(){return null})}
+      function next(){
+        if(M.cancel||i>=n)return Promise.resolve();
+        var f=M.files[i++];pr.style.width=(i/n*100)+'%';st.textContent='Copiando '+i+' de '+n+': '+f.name;
+        var gname=safeName(f.genre);
+        return gdir(f.genre).then(function(dir){
+          return exists(dir,f.name).then(function(ex){
+            var name=f.name;
+            if(ex&&ex.size===f.file.size){skip++;(m3u[gname]=m3u[gname]||[]).push(gname+'/'+name);return}
+            if(ex){var b=f.name.replace(/(\.[^.]+)$/,''),e=(f.name.match(/\.[^.]+$/)||[''])[0];name=b+' ('+i+')'+e}
+            return dir.getFileHandle(name,{create:true}).then(function(h){return h.createWritable()}).then(function(w){return w.write(f.file).then(function(){return w.close()})}).then(function(){ok++;(m3u[gname]=m3u[gname]||[]).push(gname+'/'+name)});
+          });
+        }).catch(function(e){fail.push(f.name+' → '+(e&&e.message||e))}).then(next);
+      }
+      return next().then(function(){
+        if(!$('hmM3u').checked)return;
+        var ks=Object.keys(m3u);return ks.reduce(function(p,g){return p.then(function(){return root.getFileHandle(g+'.m3u',{create:true}).then(function(h){return h.createWritable()}).then(function(w){var t='#EXTM3U\r\n'+m3u[g].map(function(x){return x.replace(/\//g,'\\')}).join('\r\n')+'\r\n';return w.write(new Blob([t],{type:'audio/x-mpegurl'})).then(function(){return w.close()})})})},Promise.resolve());
+      }).then(function(){
+        pr.style.width='100%';
+        st.innerHTML=(M.cancel?'⏹️ Copia cortada. ':'✅ ¡Listo! ')+'Copiados <b>'+ok+'</b> temas'+(skip?', <b>'+skip+'</b> ya estaban':'')+' en la carpeta <b>"Música por género"</b>.'+($('hmM3u').checked?' También dejé una lista .m3u por género para abrir en RadioBOSS.':'')+(fail.length?'<br>⚠️ '+fail.length+' no se pudieron copiar: '+esc(fail.slice(0,3).join(' · ')):'');
+        toast(M.cancel?'Copia cortada':'✅ Música ordenada por género');
+      });
+    });
+  }).catch(function(e){if(e&&e.name==='AbortError')return;$('hcStatus').textContent='⚠️ No se pudo copiar: '+(e&&e.message||e)}).then(function(){M.busy=false;var b=$('hmCopy');if(b)b.disabled=false;var s=$('hmStop');if(s)s.style.display='none'});
+}
+
+/* ================= 📻 GRILLA DE LA RADIO ================= */
+var DIAS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+function hm(t){var m=String(t||'').match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):-1}
+function onAir(s,now){var d=(now.getDay()+6)%7,mins=now.getHours()*60+now.getMinutes(),a=hm(s.desde),b=hm(s.hasta);if(s.dias.indexOf(d)<0)return false;if(b<=a)return mins>=a||mins<b;return mins>=a&&mins<b}
+function vGrilla(el){
+  var now=new Date(),cur=D.grilla.filter(function(s){return onAir(s,now)});
+  el.innerHTML='<div class="herr-card" style="'+(cur.length?'border-color:#ef4444':'')+'"><h3>🔴 Ahora al aire</h3><p class="herr-sub" style="margin:0">'+(cur.length?cur.map(function(s){return '<b>'+esc(s.programa)+'</b>'+(s.conductor?' con '+esc(s.conductor):'')+' · '+esc(s.desde)+' a '+esc(s.hasta)}).join('<br>'):'No hay ningún programa cargado para este horario. Suena la música de RadioBOSS.')+'</p></div>'+
+   '<div class="herr-card"><h3 id="hgTitle">➕ Agregar programa</h3><div class="herr-cols">'+
+    '<div><label class="herr-lbl">Nombre del programa</label><input class="herr-inp" id="hgP" placeholder="Ej: Mañanas del comedor"></div>'+
+    '<div><label class="herr-lbl">Conduce</label><input class="herr-inp" id="hgC" placeholder="Ej: Eva y Martín"></div>'+
+    '<div><label class="herr-lbl">Desde</label><input class="herr-inp" id="hgD" type="time" value="09:00"></div>'+
+    '<div><label class="herr-lbl">Hasta</label><input class="herr-inp" id="hgH" type="time" value="10:00"></div>'+
+    '<div><label class="herr-lbl">Música / lista</label><input class="herr-inp" id="hgM" placeholder="Ej: Cumbia, Folklore…"></div></div>'+
+    '<label class="herr-lbl">Días</label><div class="herr-chips" id="hgDias" style="margin-top:0">'+DIAS.map(function(d,i){return '<span class="herr-chip '+(i<5?'on':'')+'" data-d="'+i+'">'+d.slice(0,3)+'</span>'}).join('')+'</div>'+
+    '<div class="herr-row"><button class="herr-btn pri" id="hgSave">💾 Guardar programa</button><button class="herr-btn" id="hgNew" style="display:none">Cancelar edición</button></div></div>'+
+   '<div class="herr-card"><h3>🗓️ Programación de la semana</h3><div class="herr-row" style="margin-top:4px"><button class="herr-btn sm" id="hgCopy">📋 Copiar</button><button class="herr-btn sm" id="hgWa">💬 WhatsApp</button><button class="herr-btn sm" id="hgPrint">🖨️ Imprimir</button></div><div id="hgList"></div></div>';
+  var edit=null;
+  $('hgDias').querySelectorAll('.herr-chip').forEach(function(c){c.onclick=function(){c.classList.toggle('on')}});
+  function fill(s){edit=s?s.id:null;$('hgTitle').textContent=s?'✏️ Editar programa':'➕ Agregar programa';$('hgNew').style.display=s?'':'none';$('hgP').value=s?s.programa:'';$('hgC').value=s?s.conductor:'';$('hgD').value=s?s.desde:'09:00';$('hgH').value=s?s.hasta:'10:00';$('hgM').value=s?s.musica:'';$('hgDias').querySelectorAll('.herr-chip').forEach(function(c){c.classList.toggle('on',s?s.dias.indexOf(+c.getAttribute('data-d'))>=0:+c.getAttribute('data-d')<5)})}
+  $('hgNew').onclick=function(){fill(null)};
+  $('hgSave').onclick=function(){var p=$('hgP').value.trim();if(!p)return toast('Poné el nombre del programa');var dias=[].map.call($('hgDias').querySelectorAll('.herr-chip.on'),function(c){return +c.getAttribute('data-d')});if(!dias.length)return toast('Elegí al menos un día');
+    var o={id:edit||uid(),programa:p,conductor:$('hgC').value.trim(),desde:$('hgD').value,hasta:$('hgH').value,musica:$('hgM').value.trim(),dias:dias};
+    var ix=D.grilla.findIndex(function(x){return x.id===o.id});if(ix>=0)D.grilla[ix]=o;else D.grilla.push(o);save();toast('Programa guardado ✅');vGrilla(el)};
+  function txt(){return '📻 PROGRAMACIÓN DE LA RADIO\n'+DIAS.map(function(d,i){var l=day(i);return l.length?'\n'+d.toUpperCase()+'\n'+l.map(function(s){return '• '+s.desde+' a '+s.hasta+' · '+s.programa+(s.conductor?' (con '+s.conductor+')':'')}).join('\n'):''}).join('')}
+  function day(i){return D.grilla.filter(function(s){return s.dias.indexOf(i)>=0}).sort(function(a,b){return hm(a.desde)-hm(b.desde)})}
+  var today=(now.getDay()+6)%7;
+  $('hgList').innerHTML=D.grilla.length?DIAS.map(function(d,i){var l=day(i);if(!l.length)return'';return '<div class="herr-day"><h4>'+d+(i===today?' · hoy':'')+'</h4>'+l.map(function(s){var live=i===today&&onAir(s,now);return '<div class="herr-slot'+(live?' now':'')+'"><span class="h">'+esc(s.desde)+' – '+esc(s.hasta)+'</span><span class="p"><b>'+esc(s.programa)+'</b>'+(live?'<span class="herr-live">AL AIRE</span>':'')+'<br><span class="herr-mini">'+esc([s.conductor&&'Conduce: '+s.conductor,s.musica&&'Música: '+s.musica].filter(Boolean).join(' · '))+'</span></span><button class="herr-x" data-e="'+s.id+'">✏️</button><button class="herr-x" data-x="'+s.id+'">🗑️</button></div>'}).join('')+'</div>'}).join(''):'<p class="herr-sub">Todavía no cargaste programas. Empezá arriba.</p>';
+  $('hgList').querySelectorAll('[data-e]').forEach(function(b){b.onclick=function(){fill(D.grilla.find(function(x){return x.id===b.getAttribute('data-e')}));el.parentNode.scrollTop=0}});
+  $('hgList').querySelectorAll('[data-x]').forEach(function(b){b.onclick=function(){if(!confirm('¿Borrar este programa de la grilla?'))return;D.grilla=D.grilla.filter(function(x){return x.id!==b.getAttribute('data-x')});save();vGrilla(el)}});
+  $('hgCopy').onclick=function(){copy(txt())};$('hgWa').onclick=function(){wa(txt())};
+  $('hgPrint').onclick=function(){var w=window.open('','_blank');if(!w)return toast('Permití las ventanas emergentes para imprimir');w.document.write('<html><head><title>Grilla de la radio</title><style>body{font-family:Arial,sans-serif;padding:20px}h1{font-size:22px}h2{font-size:16px;margin:16px 0 6px;border-bottom:2px solid #333}p{margin:4px 0;font-size:14px}</style></head><body><h1>📻 Programación de la radio</h1>'+DIAS.map(function(d,i){var l=day(i);return l.length?'<h2>'+d+'</h2>'+l.map(function(s){return '<p><b>'+esc(s.desde)+' a '+esc(s.hasta)+'</b> · '+esc(s.programa)+(s.conductor?' (con '+esc(s.conductor)+')':'')+'</p>'}).join(''):''}).join('')+'<p style="margin-top:20px;color:#666">'+esc(D.firma)+'</p></body></html>');w.document.close();setTimeout(function(){w.print()},400)};
+}
+
+/* ================= 🎤 DICTAR Y LEER EN VOZ ALTA ================= */
+var REC={r:null,on:false,base:''};
+function vVoz(el){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>🎤 Dictar: hablás y ÁNGELA escribe</h3><p class="herr-sub">Ideal para guiones, subtítulos o anotar ideas sin tipear.</p>'+
+   (SR?'':'<div class="herr-info herr-warn">⚠️ Este navegador no tiene dictado. Usá <b>Chrome</b> (en la compu o en el celular).</div>')+
+   '<div class="herr-row"><button class="herr-btn rec" id="hvRec" '+(SR?'':'disabled')+'>🎙️ Empezar a dictar</button><select class="herr-sel" id="hvLang" style="width:auto"><option value="es-AR">Español (Argentina)</option><option value="es-ES">Español (España)</option><option value="pt-BR">Portugués</option><option value="en-US">Inglés</option></select></div>'+
+   '<div class="herr-status" id="hvSt"></div><textarea class="herr-ta" id="hvTxt" placeholder="Acá aparece lo que vas diciendo…"></textarea>'+
+   '<div class="herr-row"><button class="herr-btn sm" id="hvCopy">📋 Copiar</button><button class="herr-btn sm" id="hvDl">💾 Bajar .txt</button><button class="herr-btn sm" id="hvToRead">🔊 Pasar a "Leer en voz alta"</button><button class="herr-btn sm" id="hvClr">🧹 Borrar</button></div>'+
+   '<p class="herr-mini">Decí "punto", "coma" o "nueva línea" y ÁNGELA los pone.</p></div>'+
+   '<div class="herr-card"><h3>🔊 Leer en voz alta</h3><p class="herr-sub">Pegá un texto y ÁNGELA lo lee. Sirve para practicar una locución o escuchar un texto largo.</p>'+
+   '<textarea class="herr-ta" id="hsTxt" placeholder="Pegá o escribí el texto acá…"></textarea>'+
+   '<label class="herr-lbl">Voz</label><select class="herr-sel" id="hsVoice"></select>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Velocidad <span id="hsRv">1</span></label><input type="range" id="hsRate" min="0.6" max="1.6" step="0.1" value="1" style="width:100%;accent-color:#7c5cff"></div><div><label class="herr-lbl">Tono <span id="hsPv">1</span></label><input type="range" id="hsPitch" min="0.5" max="1.5" step="0.1" value="1" style="width:100%;accent-color:#7c5cff"></div></div>'+
+   '<div class="herr-row"><button class="herr-btn pri" id="hsPlay">▶️ Leer</button><button class="herr-btn" id="hsPause">⏸️ Pausa</button><button class="herr-btn" id="hsStop">⏹️ Parar</button></div>'+
+   '<p class="herr-mini">Para que el texto quede grabado con <b>tu voz</b>, usá <b>Voces del Comedor</b>.</p></div></div>';
+  /* dictado */
+  if(SR){$('hvRec').onclick=function(){if(REC.on){REC.on=false;REC.r.stop();return}
+    var r=new SR();REC.r=r;r.lang=$('hvLang').value;r.continuous=true;r.interimResults=true;REC.base=$('hvTxt').value;if(REC.base&&!/\s$/.test(REC.base))REC.base+=' ';
+    r.onresult=function(e){var fin='',tmp='';for(var i=e.resultIndex;i<e.results.length;i++){var t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t;else tmp+=t}
+      if(fin){fin=fin.replace(/\s*\bnueva l[ií]nea\b\s*/gi,'\n').replace(/\s*\bpunto y aparte\b\s*/gi,'.\n').replace(/\s*\bpunto\b/gi,'.').replace(/\s*\bcoma\b/gi,',').replace(/\s*\bsigno de pregunta\b/gi,'?');REC.base+=fin.trim()+' '}
+      $('hvTxt').value=REC.base+tmp;$('hvTxt').scrollTop=1e6};
+    r.onerror=function(e){$('hvSt').textContent=e.error==='not-allowed'?'⚠️ Hay que darle permiso al micrófono (tocá el candadito de la barra de direcciones).':e.error==='no-speech'?'No se escuchó nada… seguí hablando.':'⚠️ '+e.error};
+    r.onend=function(){if(REC.on){try{r.start()}catch(e){}return}$('hvRec').textContent='🎙️ Empezar a dictar';$('hvRec').classList.add('rec');$('hvSt').textContent='Dictado detenido.'};
+    try{r.start();REC.on=true;$('hvRec').textContent='⏹️ Parar de dictar';$('hvSt').textContent='🔴 Escuchando… hablá tranquilo.'}catch(e){toast('No se pudo empezar el dictado')}}}
+  $('hvCopy').onclick=function(){copy($('hvTxt').value)};
+  $('hvDl').onclick=function(){saveBlob(new Blob([$('hvTxt').value],{type:'text/plain;charset=utf-8'}),'dictado_angela.txt')};
+  $('hvClr').onclick=function(){if(confirm('¿Borrar el texto dictado?')){$('hvTxt').value='';REC.base=''}};
+  $('hvToRead').onclick=function(){$('hsTxt').value=$('hvTxt').value;toast('Texto pasado ✅')};
+  /* lectura */
+  var sel=$('hsVoice');
+  function voices(){var vs=(window.speechSynthesis&&speechSynthesis.getVoices())||[];vs=vs.filter(function(v){return /^(es|pt|en)/i.test(v.lang)}).sort(function(a,b){var s=function(v){return /es-AR/i.test(v.lang)?0:/^es/i.test(v.lang)?1:2};return s(a)-s(b)});
+    sel.innerHTML=vs.length?vs.map(function(v,i){return '<option value="'+i+'">'+esc(v.name+' ('+v.lang+')')+'</option>'}).join(''):'<option>Voz del sistema</option>';sel._v=vs}
+  voices();if(window.speechSynthesis)speechSynthesis.onvoiceschanged=voices;
+  $('hsRate').oninput=function(){$('hsRv').textContent=this.value};$('hsPitch').oninput=function(){$('hsPv').textContent=this.value};
+  $('hsPlay').onclick=function(){if(!window.speechSynthesis)return toast('Este navegador no puede leer en voz alta');var t=$('hsTxt').value.trim();if(!t)return toast('Escribí o pegá un texto primero');
+    if(speechSynthesis.paused){speechSynthesis.resume();return}speechSynthesis.cancel();
+    (t.match(/[^.!?\n]{1,220}[.!?\n]*|[^.!?\n]+/g)||[t]).forEach(function(part){var u=new SpeechSynthesisUtterance(part);var v=sel._v&&sel._v[+sel.value];if(v){u.voice=v;u.lang=v.lang}else u.lang='es-AR';u.rate=+$('hsRate').value;u.pitch=+$('hsPitch').value;speechSynthesis.speak(u)})};
+  $('hsPause').onclick=function(){try{speechSynthesis.pause()}catch(e){}};$('hsStop').onclick=function(){try{speechSynthesis.cancel()}catch(e){}};
+}
+
+/* ================= ✍️ TEXTOS PARA PUBLICAR ================= */
+function vTextos(el){
+  el.innerHTML='<div class="herr-card"><h3>Contale a ÁNGELA de qué trata</h3><p class="herr-sub">Te propone 3 textos listos para copiar y pegar, con hashtags.</p>'+
+   '<label class="herr-lbl">¿De qué trata el video o la foto?</label><textarea class="herr-ta" id="htQ" style="min-height:90px" placeholder="Ej: Hoy Eva cocinó guiso de lentejas a leña para 180 vecinos y los chicos ayudaron a servir."></textarea>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">¿Dónde lo vas a publicar?</label><select class="herr-sel" id="htRed"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>YouTube</option><option>WhatsApp (estado o grupo)</option></select></div>'+
+   '<div><label class="herr-lbl">¿Qué tono?</label><select class="herr-sel" id="htTono"><option>Emotivo, que llegue al corazón</option><option>Alegre y cercano</option><option>Informativo, claro</option><option>Pedido de ayuda o donaciones</option><option>Agradecimiento</option><option>Religioso, de fe</option></select></div>'+
+   '<div><label class="herr-lbl">Firma o cuenta</label><input class="herr-inp" id="htFirma" value="'+esc(D.firma)+'"></div></div>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="htGo">✨ Escribir textos</button></div><div class="herr-status" id="htSt"></div></div><div id="htOut"></div>';
+  $('htGo').onclick=function(){var q=$('htQ').value.trim();if(!q)return toast('Contá primero de qué trata');var red=$('htRed').value,tono=$('htTono').value,firma=$('htFirma').value.trim();D.firma=firma||D.firma;save();
+    var b=this;b.disabled=true;$('htSt').textContent='⏳ ÁNGELA está escribiendo…';
+    var msg='Sos community manager de un comedor comunitario argentino ('+firma+'). Escribí 3 opciones distintas de texto para publicar en '+red+'. Tono: '+tono+'. Tema: "'+q+'". Usá español rioplatense (vos), frases cortas, algunos emojis, sin inventar datos que no te di. '+(/tiktok/i.test(red)?'Que sean cortas, con gancho en la primera línea. ':'')+(/youtube/i.test(red)?'Incluí un título corto y una descripción. ':'')+'Al final de cada opción poné entre 5 y 10 hashtags. Separá cada opción con una línea que diga solo ===. No agregues explicaciones antes ni después.';
+    askIA(msg).then(function(t){showOpts(t.split(/\n?\s*={3,}\s*\n?/).map(function(x){return x.replace(/^\s*(opci[oó]n\s*\d+[:.)-]?)\s*/i,'').trim()}).filter(Boolean));$('htSt').textContent=''})
+    .catch(function(){showOpts(plantilla(q,tono,firma));$('htSt').innerHTML='⚠️ '+esc(iaErr())+' Te dejo opciones armadas igual.'})
+    .then(function(){b.disabled=false})};
+  function showOpts(list){$('htOut').innerHTML='<div class="herr-card"><h3>Opciones</h3>'+list.map(function(t,i){return '<div class="herr-opt"><p>'+esc(t)+'</p><div class="herr-row" style="margin:0"><button class="herr-btn sm" data-c="'+i+'">📋 Copiar</button><button class="herr-btn sm" data-w="'+i+'">💬 WhatsApp</button></div></div>'}).join('')+'</div>';
+    $('htOut').querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){copy(list[+b.getAttribute('data-c')])}});$('htOut').querySelectorAll('[data-w]').forEach(function(b){b.onclick=function(){wa(list[+b.getAttribute('data-w')])}})}
+  function plantilla(q,tono,f){var h='#ComedorComunitario #Merlo #Solidaridad #ManosQueAyudan #Comunidad #OllaPopular';
+    return['💛 '+q+'\n\nCada plato es un abrazo para nuestra comunidad. Gracias a todos los que hacen posible este trabajo día a día.\n\n'+f+'\n'+h,
+     '🍲 Así fue hoy en el comedor: '+q+'\n\n¿Querés sumarte? Escribinos por mensaje privado 🙌\n\n'+f+'\n'+h+' #Voluntariado',
+     '🙏 '+q+'\n\nSi podés colaborar con alimentos, garrafas o tu tiempo, toda ayuda suma. ¡Compartí para que llegue a más gente!\n\n'+f+'\n'+h+' #Donaciones']}
+}
+
+/* ================= 🍲 CALCULADORA DE OLLA ================= */
+function cocina(){try{var c=JSON.parse(localStorage.getItem('ANGELA_COCINA_V1')||'{}');return Array.isArray(c.recetas)?c.recetas:[]}catch(e){return[]}}
+function cant(q,u){if(u==='kg')return q<1?fmt(q*1000,0)+' g':fmt(q,2)+' kg';if(u==='l')return q<1?fmt(q*1000,0)+' ml':fmt(q,2)+' litros';return fmt(Math.ceil(q*10)/10,1)+' u.'}
+function vOlla(el){
+  var rec=cocina();
+  el.innerHTML='<div class="herr-card"><h3>¿Qué van a cocinar y para cuántos?</h3>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Plato</label><select class="herr-sel" id="hoSel">'+rec.map(function(r,i){return '<option value="'+i+'">'+esc(r.nombre)+'</option>'}).join('')+'<option value="__ia">✨ Otro plato (le pregunto a ÁNGELA)</option></select></div>'+
+   '<div id="hoOtroBox" style="display:none"><label class="herr-lbl">¿Qué plato?</label><input class="herr-inp" id="hoOtro" placeholder="Ej: Arroz con pollo"></div>'+
+   '<div><label class="herr-lbl">Personas (raciones)</label><input class="herr-inp" id="hoN" type="number" min="1" value="150"></div>'+
+   '<div><label class="herr-lbl">Tamaño de la olla (litros)</label><input class="herr-inp" id="hoOl" type="number" min="1" value="100"></div></div>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="hoGo">🧮 Calcular</button></div><div class="herr-status" id="hoSt"></div>'+
+   (rec.length?'':'<div class="herr-info">💡 Si cargás tus recetas en <b>Centro de Gestión → Cocina → Recetas</b>, aparecen acá con las cantidades que usan ustedes.</div>')+'</div><div id="hoOut"></div>';
+  function sync(){$('hoOtroBox').style.display=$('hoSel').value==='__ia'?'':'none'}$('hoSel').onchange=sync;sync();
+  $('hoGo').onclick=function(){var n=Math.max(1,Math.round(num($('hoN').value))),ol=Math.max(1,num($('hoOl').value)),v=$('hoSel').value;
+    if(v!=='__ia')return show(rec[+v].nombre,rec[+v].ing,n,ol);
+    var nm=$('hoOtro').value.trim();if(!nm)return toast('Escribí qué plato');var b=this;b.disabled=true;$('hoSt').textContent='⏳ ÁNGELA está calculando…';
+    askIA('Sos cocinera de un comedor comunitario en Argentina que cocina en ollas grandes. Para el plato "'+nm+'", dame los ingredientes con la cantidad POR RACIÓN (un plato). Usá solo kg, l o u (unidades). Respondé SOLO con JSON, sin explicaciones: {"ingredientes":[{"n":"Arroz","q":0.08,"u":"kg"}]}')
+    .then(function(t){var a=t.indexOf('{'),z=t.lastIndexOf('}');var o=JSON.parse(t.slice(a,z+1));var ing=(o.ingredientes||[]).filter(function(i){return i&&i.n&&num(i.q)}).map(function(i){return{n:i.n,q:num(i.q),u:/^(kg|l|u)$/.test(i.u)?i.u:'kg'}});if(!ing.length)throw 0;$('hoSt').textContent='';show(nm,ing,n,ol,true)})
+    .catch(function(){$('hoSt').textContent='⚠️ '+iaErr()}).then(function(){b.disabled=false})};
+  function show(nm,ing,n,ol,ia){var vol=n*0.35,ollas=Math.ceil(vol/(ol*0.85));
+    var txt='🍲 '+nm.toUpperCase()+' para '+n+' personas\n'+ing.map(function(i){return '• '+i.n+': '+cant(num(i.q)*n,i.u)}).join('\n')+'\n\nOllas de '+fmt(ol,0)+' L: '+ollas;
+    $('hoOut').innerHTML='<div class="herr-card"><h3>🍲 '+esc(nm)+' · '+n+' personas</h3><table class="herr-tbl"><tr><th>Ingrediente</th><th>Por persona</th><th>Total</th></tr>'+ing.map(function(i){return '<tr><td>'+esc(i.n)+'</td><td class="herr-mini">'+cant(num(i.q),i.u)+'</td><td><b>'+cant(num(i.q)*n,i.u)+'</b></td></tr>'}).join('')+'</table>'+
+     '<div class="herr-info">🫕 Calculando unos 350 ml por plato, van a necesitar <b>'+ollas+' olla'+(ollas>1?'s':'')+'</b> de '+fmt(ol,0)+' litros (llenándolas hasta el 85%).</div>'+
+     (ia?'<div class="herr-info herr-warn">Estas cantidades las propuso ÁNGELA. Ajustalas a cómo cocinan ustedes y, si te sirve, guardala en Cocina → Recetas.</div>':'')+
+     '<div class="herr-row"><button class="herr-btn sm" id="hoCopy">📋 Copiar</button><button class="herr-btn sm" id="hoWa">💬 WhatsApp</button></div></div>';
+    $('hoCopy').onclick=function(){copy(txt)};$('hoWa').onclick=function(){wa(txt)}}
+}
+
+/* ================= 🖼️ CARTEL Y VOLANTE ================= */
+var CT={img:null,fmt:'post',theme:0};
+var FMTS={post:[1080,1350,'Instagram (vertical)'],story:[1080,1920,'Historia / Estado'],sq:[1080,1080,'Cuadrado'],a4:[1240,1754,'Hoja A4 para imprimir']};
+var THEMES=[['#7c3aed','#06b6d4','#ffffff','#fde047'],['#b91c1c','#f59e0b','#ffffff','#fef3c7'],['#065f46','#10b981','#ffffff','#fde047'],['#1e3a8a','#3b82f6','#ffffff','#fbbf24'],['#fafaf9','#e7e5e4','#1c1917','#b91c1c']];
+function vCartel(el){
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>Datos del cartel</h3>'+
+   '<label class="herr-lbl">Título grande</label><input class="herr-inp hc" id="hcT" value="GRAN OLLA SOLIDARIA">'+
+   '<label class="herr-lbl">Frase de abajo</label><input class="herr-inp hc" id="hcS" value="¡Te esperamos con un plato caliente!">'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Día</label><input class="herr-inp hc" id="hcF" value="Sábado 1 de noviembre"></div><div><label class="herr-lbl">Hora</label><input class="herr-inp hc" id="hcH" value="12:00 hs"></div></div>'+
+   '<label class="herr-lbl">Lugar</label><input class="herr-inp hc" id="hcL" value="'+esc(D.firma)+'">'+
+   '<label class="herr-lbl">Texto extra (opcional)</label><textarea class="herr-ta hc" id="hcX" style="min-height:70px" placeholder="Ej: Traé tu táper · Habrá juegos para los chicos"></textarea>'+
+   '<label class="herr-lbl">Foto de fondo (opcional)</label><div class="herr-row" style="margin-top:0"><button class="herr-btn" id="hcImgB">🖼️ Elegir foto</button><button class="herr-btn sm" id="hcNoImg">Quitar foto</button><span class="herr-mini" id="hcImgN" style="margin:0"></span></div><input type="file" accept="image/*" id="hcImg" style="display:none">'+
+   '<label class="herr-lbl">Formato</label><select class="herr-sel" id="hcFmt">'+Object.keys(FMTS).map(function(k){return '<option value="'+k+'" '+(k===CT.fmt?'selected':'')+'>'+FMTS[k][2]+'</option>'}).join('')+'</select>'+
+   '<label class="herr-lbl">Colores</label><div class="herr-row" style="margin-top:0" id="hcTh">'+THEMES.map(function(t,i){return '<span class="herr-sw '+(i===CT.theme?'on':'')+'" data-t="'+i+'" style="background:linear-gradient(135deg,'+t[0]+','+t[1]+')"></span>'}).join('')+'</div>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="hcDl">💾 Bajar imagen</button><button class="herr-btn" id="hcShare">📤 Compartir</button></div></div>'+
+   '<div class="herr-card"><h3>Así queda</h3><canvas id="hcCv" class="herr-canvas"></canvas></div></div>';
+  el.querySelectorAll('.hc').forEach(function(i){i.oninput=draw});$('hcFmt').onchange=function(){CT.fmt=this.value;draw()};
+  $('hcTh').querySelectorAll('.herr-sw').forEach(function(s){s.onclick=function(){CT.theme=+s.getAttribute('data-t');$('hcTh').querySelectorAll('.herr-sw').forEach(function(x){x.classList.toggle('on',x===s)});draw()}});
+  $('hcImgB').onclick=function(){$('hcImg').click()};$('hcImg').onchange=function(){var f=this.files&&this.files[0];if(!f)return;$('hcImgN').textContent=f.name;var im=new Image();im.onload=function(){CT.img=im;draw()};im.src=URL.createObjectURL(f)};
+  $('hcNoImg').onclick=function(){CT.img=null;$('hcImg').value='';$('hcImgN').textContent='';draw()};
+  $('hcDl').onclick=function(){$('hcCv').toBlob(function(b){saveBlob(b,'cartel_'+(($('hcT').value||'angela').toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30))+'.png')},'image/png')};
+  $('hcShare').onclick=function(){$('hcCv').toBlob(function(b){var f=new File([b],'cartel.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f]}).catch(function(){});else{saveBlob(b,'cartel.png');toast('Tu navegador no comparte directo: la bajé para que la subas.')}},'image/png')};
+  draw();
+}
+function wrap(ctx,text,maxW){var words=String(text||'').split(/\s+/),lines=[],l='';words.forEach(function(w){var t=l?l+' '+w:w;if(ctx.measureText(t).width>maxW&&l){lines.push(l);l=w}else l=t});if(l)lines.push(l);return lines}
+function fitText(ctx,text,maxW,maxH,start,weight){var s=start;for(;s>28;s-=4){ctx.font=weight+' '+s+'px Inter,Arial,sans-serif';var ls=wrap(ctx,text,maxW);if(ls.length*s*1.08<=maxH&&ls.every(function(x){return ctx.measureText(x).width<=maxW}))return{size:s,lines:ls}}ctx.font=weight+' '+s+'px Inter,Arial,sans-serif';return{size:s,lines:wrap(ctx,text,maxW)}}
+function draw(){
+  var cv=$('hcCv');if(!cv)return;var f=FMTS[CT.fmt],W=f[0],H=f[1],th=THEMES[CT.theme],ctx=cv.getContext('2d');cv.width=W;cv.height=H;
+  var g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,th[0]);g.addColorStop(1,th[1]);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  if(CT.img){var im=CT.img,r=Math.max(W/im.width,H/im.height),w=im.width*r,h=im.height*r;ctx.drawImage(im,(W-w)/2,(H-h)/2,w,h);var o=ctx.createLinearGradient(0,0,0,H);o.addColorStop(0,'rgba(0,0,0,.35)');o.addColorStop(.45,'rgba(0,0,0,.25)');o.addColorStop(1,'rgba(0,0,0,.82)');ctx.fillStyle=o;ctx.fillRect(0,0,W,H)}
+  else{ctx.globalAlpha=.12;ctx.fillStyle=th[2];for(var i=0;i<7;i++){ctx.beginPath();ctx.arc(W*(.1+.15*i),H*(.15+.11*(i%3)),60+i*25,0,7);ctx.fill()}ctx.globalAlpha=1}
+  var tc=CT.img?'#ffffff':th[2],ac=th[3],pad=W*.08,mw=W-pad*2;ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.shadowColor=CT.img?'rgba(0,0,0,.6)':'rgba(0,0,0,.18)';ctx.shadowBlur=CT.img?18:8;
+  var T=fitText(ctx,($('hcT').value||'').toUpperCase(),mw,H*.32,Math.round(W*.13),'900'),y=H*(CT.fmt==='story'?.2:.12);
+  ctx.fillStyle=tc;ctx.font='900 '+T.size+'px Inter,Arial,sans-serif';T.lines.forEach(function(l){ctx.fillText(l,W/2,y);y+=T.size*1.08});
+  y+=H*.025;ctx.fillStyle=ac;ctx.fillRect(W/2-W*.12,y,W*.24,Math.max(8,W*.008));y+=H*.04;
+  var S=fitText(ctx,$('hcS').value||'',mw,H*.14,Math.round(W*.058),'700');ctx.fillStyle=tc;ctx.font='700 '+S.size+'px Inter,Arial,sans-serif';S.lines.forEach(function(l){ctx.fillText(l,W/2,y);y+=S.size*1.15});
+  var X=$('hcX').value.trim();if(X){y+=H*.02;var XX=fitText(ctx,X,mw,H*.12,Math.round(W*.042),'500');ctx.font='500 '+XX.size+'px Inter,Arial,sans-serif';XX.lines.forEach(function(l){ctx.fillText(l,W/2,y);y+=XX.size*1.2})}
+  ctx.shadowBlur=0;var bh=H*.2,by=H-bh-H*.05;ctx.fillStyle=CT.img?'rgba(0,0,0,.55)':'rgba(255,255,255,.16)';if(CT.theme===4&&!CT.img)ctx.fillStyle='rgba(0,0,0,.06)';
+  var rx=W*.04;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(pad,by,mw,bh,rx);else ctx.rect(pad,by,mw,bh);ctx.fill();
+  var fd=[$('hcF').value,$('hcH').value].filter(Boolean).join(' · ');var cy=by+bh*.18;
+  if(fd){var F=fitText(ctx,'📅 '+fd,mw*.9,bh*.4,Math.round(W*.05),'800');ctx.fillStyle=ac;ctx.font='800 '+F.size+'px Inter,Arial,sans-serif';F.lines.forEach(function(l){ctx.fillText(l,W/2,cy);cy+=F.size*1.1})}
+  var L=$('hcL').value;if(L){cy+=bh*.06;var LL=fitText(ctx,'📍 '+L,mw*.92,by+bh-cy-bh*.08,Math.round(W*.045),'600');ctx.fillStyle=tc;ctx.font='600 '+LL.size+'px Inter,Arial,sans-serif';LL.lines.forEach(function(l){ctx.fillText(l,W/2,cy);cy+=LL.size*1.15})}
+}
+
+/* ================= 📷 LEER FOTO DE UN PAPEL ================= */
+var OC={file:null};
+function vOcr(el){
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>Sacá o elegí la foto</h3><p class="herr-sub">Una boleta, una lista de mercadería, una planilla escrita a mano, un cartel…</p>'+
+   '<div class="herr-row" style="margin-top:0"><button class="herr-btn grad" id="hxCam">📷 Sacar foto</button><button class="herr-btn" id="hxGal">🖼️ Elegir de la galería</button></div>'+
+   '<input type="file" accept="image/*" capture="environment" id="hxCamI" style="display:none"><input type="file" accept="image/*" id="hxGalI" style="display:none">'+
+   '<img id="hxPrev" style="display:none;width:100%;max-height:360px;object-fit:contain;border-radius:10px;margin-top:12px;background:#000">'+
+   '<div class="herr-row"><button class="herr-btn pri" id="hxIA" disabled>✨ Leer con ÁNGELA (mejor para letra a mano)</button><button class="herr-btn" id="hxTs" disabled>🔤 Leer sin IA (letra de imprenta)</button></div>'+
+   '<div class="herr-prog"><i id="hxProg"></i></div><div class="herr-status" id="hxSt"></div></div>'+
+   '<div class="herr-card"><h3>Texto</h3><textarea class="herr-ta" id="hxTxt" style="min-height:260px" placeholder="Acá aparece lo que dice la foto. Podés corregirlo."></textarea>'+
+   '<div class="herr-row"><button class="herr-btn sm" id="hxCopy">📋 Copiar</button><button class="herr-btn sm" id="hxDl">💾 Bajar .txt</button><button class="herr-btn sm" id="hxWa">💬 WhatsApp</button></div></div></div>';
+  function pick(f){if(!f)return;OC.file=f;$('hxPrev').src=URL.createObjectURL(f);$('hxPrev').style.display='block';$('hxIA').disabled=false;$('hxTs').disabled=false;$('hxSt').textContent='Foto lista. Elegí cómo leerla.'}
+  $('hxCam').onclick=function(){$('hxCamI').click()};$('hxGal').onclick=function(){$('hxGalI').click()};
+  $('hxCamI').onchange=function(){pick(this.files[0])};$('hxGalI').onchange=function(){pick(this.files[0])};
+  $('hxIA').onclick=function(){if(!OC.file)return;var b=this;b.disabled=true;$('hxSt').textContent='⏳ Achicando la foto y leyendo…';$('hxProg').style.width='30%';
+    shrink(OC.file,1600).then(function(d){$('hxProg').style.width='60%';return askIA('Transcribí TODO el texto que se ve en esta imagen, tal cual está escrito, respetando renglones y números. Si es una lista o tabla, mantené una línea por renglón. No agregues comentarios ni explicaciones.',[{name:'foto.jpg',type:'image/jpeg',data:d}])})
+    .then(function(t){$('hxTxt').value=t.replace(/^```[a-z]*\n?|```$/g,'').trim();$('hxSt').textContent='✅ Listo. Revisá que esté bien.';$('hxProg').style.width='100%'})
+    .catch(function(){$('hxSt').textContent='⚠️ '+iaErr()+' Probá con "Leer sin IA".';$('hxProg').style.width='0'}).then(function(){b.disabled=false})};
+  $('hxTs').onclick=function(){if(!OC.file)return;var b=this;b.disabled=true;$('hxSt').textContent='⏳ La primera vez baja el lector de español (unos segundos)…';
+    loadTess().then(function(T){return T.recognize(OC.file,'spa',{logger:function(m){if(m.status==='recognizing text'){$('hxProg').style.width=Math.round(m.progress*100)+'%';$('hxSt').textContent='Leyendo… '+Math.round(m.progress*100)+'%'}}})})
+    .then(function(r){$('hxTxt').value=(r&&r.data&&r.data.text||'').trim();$('hxSt').textContent=$('hxTxt').value?'✅ Listo. Revisá que esté bien.':'No encontré texto. Probá con una foto más clara o con "Leer con ÁNGELA".';$('hxProg').style.width='100%'})
+    .catch(function(){$('hxSt').textContent='⚠️ No se pudo cargar el lector. Revisá la conexión a internet.'}).then(function(){b.disabled=false})};
+  $('hxCopy').onclick=function(){copy($('hxTxt').value)};$('hxWa').onclick=function(){wa($('hxTxt').value)};
+  $('hxDl').onclick=function(){saveBlob(new Blob([$('hxTxt').value],{type:'text/plain;charset=utf-8'}),'texto_de_foto.txt')};
+}
+function shrink(file,max){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var r=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*r);c.height=Math.round(im.height*r);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.85).split(',')[1])};im.onerror=rej;im.src=URL.createObjectURL(file)})}
+var tessP=null;function loadTess(){if(window.Tesseract)return Promise.resolve(window.Tesseract);if(!tessP)tessP=new Promise(function(res,rej){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=function(){window.Tesseract?res(window.Tesseract):rej()};s.onerror=function(){tessP=null;rej()};document.head.appendChild(s)});return tessP}
+
+/* ================= 📝 NOTAS Y RECORDATORIOS ================= */
+function due(n){return n.aviso&&!n.hecho&&new Date(n.aviso).getTime()<=Date.now()}
+function vNotas(el){
+  el.innerHTML='<div class="herr-card"><h3 id="hnTitle">➕ Nueva nota</h3><input class="herr-inp" id="hnT" placeholder="Título (ej: Pedir garrafa)">'+
+   '<textarea class="herr-ta" id="hnX" style="min-height:90px;margin-top:8px" placeholder="Escribí acá…"></textarea>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Avisarme (opcional)</label><input class="herr-inp" id="hnA" type="datetime-local"></div></div>'+
+   '<div class="herr-row"><button class="herr-btn pri" id="hnSave">💾 Guardar</button><button class="herr-btn" id="hnCancel" style="display:none">Cancelar</button></div>'+
+   '<p class="herr-mini">El aviso aparece cuando tenés ÁNGELA abierta. Para que suene aunque esté cerrada, usá el recordatorio del celular.</p></div>'+
+   '<div class="herr-card"><div class="herr-row" style="margin-top:0"><input class="herr-inp" id="hnQ" placeholder="🔍 Buscar en las notas" style="flex:1"></div><div id="hnList"></div></div>';
+  var edit=null;
+  function fill(n){edit=n?n.id:null;$('hnTitle').textContent=n?'✏️ Editar nota':'➕ Nueva nota';$('hnT').value=n?n.t:'';$('hnX').value=n?n.x:'';$('hnA').value=n&&n.aviso?n.aviso:'';$('hnCancel').style.display=n?'':'none'}
+  $('hnCancel').onclick=function(){fill(null)};
+  $('hnSave').onclick=function(){var t=$('hnT').value.trim(),x=$('hnX').value.trim();if(!t&&!x)return toast('Escribí algo primero');var a=$('hnA').value;
+    if(edit){var n=D.notas.find(function(z){return z.id===edit});if(n){n.t=t;n.x=x;if(n.aviso!==a)n.hecho=false;n.aviso=a}}else D.notas.unshift({id:uid(),t:t,x:x,aviso:a,fecha:Date.now(),pin:false,hecho:false});
+    save();if(a&&window.Notification&&Notification.permission==='default')try{Notification.requestPermission()}catch(e){}fill(null);list();toast('Nota guardada ✅');checkDue()};
+  $('hnQ').oninput=list;
+  function list(){var q=$('hnQ').value.toLowerCase().trim(),l=D.notas.filter(function(n){return !q||(n.t+' '+n.x).toLowerCase().indexOf(q)>=0}).sort(function(a,b){return(b.pin-a.pin)||(due(b)-due(a))||b.fecha-a.fecha});
+    $('hnList').innerHTML=l.length?l.map(function(n){return '<div class="herr-note'+(n.pin?' pin':'')+(due(n)?' due':'')+'"><div style="display:flex;gap:6px;align-items:flex-start"><b style="flex:1">'+(n.pin?'📌 ':'')+esc(n.t||'(sin título)')+'</b><button class="herr-x" data-p="'+n.id+'" title="Fijar">📌</button><button class="herr-x" data-e="'+n.id+'">✏️</button><button class="herr-x" data-x="'+n.id+'">🗑️</button></div>'+(n.x?'<p>'+esc(n.x)+'</p>':'')+
+      '<div class="herr-mini" style="margin:0">'+new Date(n.fecha).toLocaleDateString('es-AR')+(n.aviso?' · ⏰ '+new Date(n.aviso).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+(n.hecho?' ✅':due(n)?' · <b style="color:#fbbf24">¡es ahora!</b> <button class="herr-btn sm" data-h="'+n.id+'">Listo</button>':''):'')+'</div></div>'}).join(''):'<p class="herr-sub" style="margin-top:10px">'+(q?'No encontré notas con eso.':'Todavía no hay notas.')+'</p>';
+    $('hnList').querySelectorAll('[data-x]').forEach(function(b){b.onclick=function(){if(!confirm('¿Borrar esta nota?'))return;D.notas=D.notas.filter(function(n){return n.id!==b.getAttribute('data-x')});save();list()}});
+    $('hnList').querySelectorAll('[data-e]').forEach(function(b){b.onclick=function(){fill(D.notas.find(function(n){return n.id===b.getAttribute('data-e')}));$('herrOverlay').scrollTop=0}});
+    $('hnList').querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){var n=D.notas.find(function(z){return z.id===b.getAttribute('data-p')});n.pin=!n.pin;save();list()}});
+    $('hnList').querySelectorAll('[data-h]').forEach(function(b){b.onclick=function(){var n=D.notas.find(function(z){return z.id===b.getAttribute('data-h')});n.hecho=true;save();list()}})}
+  list();
+}
+function checkDue(){load();D.notas.forEach(function(n){if(due(n)&&!n.avisado){n.avisado=true;save();toast('⏰ Recordatorio: '+(n.t||n.x).slice(0,80));try{if(window.Notification&&Notification.permission==='granted')new Notification('ÁNGELA · Recordatorio',{body:(n.t+(n.x?'\n'+n.x:'')).slice(0,200),icon:'icon-192.png'})}catch(e){}}})}
+
+/* ================= 🌍 TRADUCTOR ================= */
+var LANGS=[['es','Español','es-AR'],['en','Inglés','en-US'],['pt','Portugués','pt-BR'],['it','Italiano','it-IT'],['fr','Francés','fr-FR'],['de','Alemán','de-DE']];
+function vTrad(el){
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>Texto original</h3><textarea class="herr-ta" id="htrIn" style="min-height:200px" placeholder="Pegá el texto en cualquier idioma…"></textarea>'+
+   '<div class="herr-row"><label class="herr-lbl" style="margin:0">Pasar a</label><select class="herr-sel" id="htrTo" style="width:auto">'+LANGS.map(function(l){return '<option value="'+l[0]+'">'+l[1]+'</option>'}).join('')+'</select><button class="herr-btn grad" id="htrGo">🌍 Traducir</button></div><div class="herr-status" id="htrSt"></div></div>'+
+   '<div class="herr-card"><h3>Traducción</h3><textarea class="herr-ta" id="htrOut" style="min-height:200px" placeholder="Acá aparece la traducción…"></textarea>'+
+   '<div class="herr-row"><button class="herr-btn sm" id="htrCopy">📋 Copiar</button><button class="herr-btn sm" id="htrSay">🔊 Escuchar</button><button class="herr-btn sm" id="htrGoogle">↗️ Abrir en Google Traductor</button></div></div></div>';
+  function L(){var v=$('htrTo').value;return LANGS.find(function(l){return l[0]===v})}
+  $('htrGo').onclick=function(){var t=$('htrIn').value.trim();if(!t)return toast('Pegá un texto primero');var b=this;b.disabled=true;$('htrSt').textContent='⏳ Traduciendo…';
+    askIA('Traducí el siguiente texto al '+L()[1].toLowerCase()+(L()[0]==='es'?' rioplatense (Argentina)':'')+'. Respondé SOLO con la traducción, sin comillas ni explicaciones:\n\n'+t).then(function(r){$('htrOut').value=r;$('htrSt').textContent=''})
+    .catch(function(){$('htrSt').innerHTML='⚠️ '+esc(iaErr())+' Podés usar el botón de Google Traductor.'}).then(function(){b.disabled=false})};
+  $('htrCopy').onclick=function(){copy($('htrOut').value)};
+  $('htrSay').onclick=function(){var t=$('htrOut').value.trim();if(!t||!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang=L()[2];var v=speechSynthesis.getVoices().find(function(x){return x.lang.replace('_','-').indexOf(L()[0])===0});if(v)u.voice=v;speechSynthesis.speak(u)};
+  $('htrGoogle').onclick=function(){window.open('https://translate.google.com/?sl=auto&tl='+L()[0]+'&text='+encodeURIComponent($('htrIn').value),'_blank','noopener')};
+}
+
+/* ================= ABRIR / CERRAR Y BOTÓN EN EL MENÚ ================= */
+function open(k){load();$('herrOverlay').classList.add('on');$('herrOverlay').setAttribute('aria-hidden','false');if(k)go(k);else if(!CUR)home()}
+function close(){stopAll();$('herrOverlay').classList.remove('on');$('herrOverlay').setAttribute('aria-hidden','true')}
+function addMenu(){
+  if(document.getElementById('herrMenuBtn'))return;
+  var ref=document.getElementById('mlibMenuBtn')||document.getElementById('vozcMenuBtn')||document.getElementById('agStudioMainBtn');if(!ref)return;
+  var b=document.createElement('button');b.id='herrMenuBtn';b.className='angela-photo-btn';b.innerHTML='<span class="ico">🧰</span> Herramientas';b.onclick=function(){open()};
+  ref.parentNode.insertBefore(b,ref.nextSibling);
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&$('herrOverlay').classList.contains('on'))close()});
+function start(){load();addMenu();checkDue()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+setTimeout(addMenu,1900);setTimeout(addMenu,4000);setInterval(checkDue,60000);
+
+window.ANGELAHerr={open:open,close:close,home:home,go:go,_normG:normG,_readId3v2:readId3v2};
+console.info('[ÁNGELA] Herramientas: música por género, grilla de radio, dictado, textos, olla, cartel, leer foto, notas, traductor');
+})();
+</script>
+<!-- ===== FIN HERRAMIENTAS ===== -->
+
 
 
 <!-- ===== ÁNGELA · VISTA DEL CELULAR (menú lateral, barra de abajo) =====
