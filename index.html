@@ -1,3 +1,4 @@
+<!-- V12.85: nuevo TALLER 3D dentro de Herramientas (llavero, cartel, QR, litofanía, marco, caja → STL). -->
 <!-- V12.81 PRUEBA: nuevo módulo HERRAMIENTAS (música por género, grilla de radio, dictado, textos, olla, cartel, leer foto, notas, traductor). Agregado al final; QR, regalos y eventos sin tocar. -->
 <!-- V12.73 PRUEBA: casting automático, origen según guion y prompt por fotograma. Sin cambios en Vercel. -->
 <!-- V12.67 PRUEBA · inyectores de estilo, opciones con generador compartido, corrección de caché y ajuste de duración de narración. No despliega Vercel. -->
@@ -11470,15 +11471,18 @@ function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').tex
 function home(){
   stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
   var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
+  if(window.ANGELA3D)h+='<div class="herr-sec" id="t3dSec">🖨️ Taller 3D · piezas para la impresora 3D</div><div class="herr-grid">'+ANGELA3D.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>';
   h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
   $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
 }
 function go(k){
-  stopAll();var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
+  stopAll();
+  if(window.ANGELA3D&&ANGELA3D.has(k)){var t3=ANGELA3D.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],'Taller 3D · '+t3[3]);$('herrOverlay').scrollTop=0;ANGELA3D.view(k,$('herrBody'));return}
+  var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
   CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
   ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
 }
-function stopAll(){try{if(REC.r){REC.on=false;REC.r.stop()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(M.busy)M.cancel=true}
+function stopAll(){try{window.ANGELA3D&&ANGELA3D.stop()}catch(e){}try{if(REC.r){REC.on=false;REC.r.stop()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(M.busy)M.cancel=true}
 
 /* ================= 🎼 ORDENAR MÚSICA POR GÉNERO ================= */
 var M={files:[],busy:false,cancel:false,filter:'',src:null};
@@ -11999,3 +12003,344 @@ console.info('[ÁNGELA] vista del celular: menú lateral y barra de abajo');
 })();
 </script>
 <!-- ===== FIN VISTA DEL CELULAR ===== -->
+
+<!-- ===== V12.85: TALLER 3D (piezas para imprimir en 3D: llavero, cartel, QR, litofanía, marco, caja). Agregado al final; no toca nada existente. ===== -->
+<style id="angela-taller3d-style">
+.t3d-view{width:100%;height:340px;border-radius:12px;border:1px solid #272733;background:radial-gradient(circle at 50% 30%,#23233a,#101016);position:relative;overflow:hidden;touch-action:none}
+.t3d-view canvas{display:block;width:100%!important;height:100%!important}
+.t3d-msg{position:absolute;inset:0;display:grid;place-items:center;color:#9b9bb2;font-size:13px;text-align:center;padding:16px;pointer-events:none}
+.t3d-dims{font-size:12.5px;color:#cfcfe0;margin-top:8px;line-height:1.5}
+.t3d-dims b{color:#22d3ee}
+.t3d-cols{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.t3d-cols input[type=color]{width:38px;height:30px;border:1px solid #353545;border-radius:7px;background:#141419;padding:2px}
+.t3d-range{display:flex;align-items:center;gap:8px}
+.t3d-range input{flex:1;accent-color:#7c5cff}
+.t3d-range output{min-width:52px;text-align:right;font-size:12.5px;color:#cfcfe0}
+@media(max-width:700px){.t3d-view{height:280px}}
+</style>
+<script id="angela-taller3d-v1">
+(function(){'use strict';
+if(window.ANGELA3D)return;
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function num(v,d){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:d}
+function fmt(n){return Number(n||0).toLocaleString('es-AR',{maximumFractionDigits:1})}
+function toast(m){var t=$('herrToast');if(!t)return alert(m);t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},3800)}
+function saveBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+function slug(s){return String(s||'pieza').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'').slice(0,30)||'pieza'}
+function loadScript(src){return new Promise(function(res,rej){var s=document.querySelector('script[src="'+src+'"]');if(s){if(s.dataset.ok)return res();s.addEventListener('load',function(){res()});s.addEventListener('error',rej);return}s=document.createElement('script');s.src=src;s.onload=function(){s.dataset.ok='1';res()};s.onerror=rej;document.head.appendChild(s)})}
+
+/* ================= MOTOR: de un mapa de alturas a una malla cerrada ================= */
+function Mesh(){this.a=[];}
+Mesh.prototype.tri=function(p,q,r){this.a.push(p[0],p[1],p[2],q[0],q[1],q[2],r[0],r[1],r[2])};
+Mesh.prototype.quad=function(p0,p1,p2,p3,n){ // orientar según la normal pedida
+  var ux=p1[0]-p0[0],uy=p1[1]-p0[1],uz=p1[2]-p0[2],vx=p2[0]-p0[0],vy=p2[1]-p0[1],vz=p2[2]-p0[2];
+  var cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx;
+  if(cx*n[0]+cy*n[1]+cz*n[2]<0){this.tri(p0,p2,p1);this.tri(p0,p3,p2)}else{this.tri(p0,p1,p2);this.tri(p0,p2,p3)}};
+Mesh.prototype.count=function(){return this.a.length/9};
+/* polígono plano (con puntos en los bordes) → triángulos en abanico desde el centro: así la malla queda cerrada, sin costuras */
+Mesh.prototype.poly=function(P,n){var cx=0,cy=0,cz=0,k;for(k=0;k<P.length;k++){cx+=P[k][0];cy+=P[k][1];cz+=P[k][2]}var C=[cx/P.length,cy/P.length,cz/P.length];
+  var a=P[0],b=P[1],ux=a[0]-C[0],uy=a[1]-C[1],uz=a[2]-C[2],vx=b[0]-C[0],vy=b[1]-C[1],vz=b[2]-C[2],rev=((uy*vz-uz*vy)*n[0]+(uz*vx-ux*vz)*n[1]+(ux*vy-uy*vx)*n[2])<0;
+  for(k=0;k<P.length;k++){var p=P[k],q=P[(k+1)%P.length];if(rev)this.tri(C,q,p);else this.tri(C,p,q)}};
+/* G: alturas (mm) por celda, W x H celdas, c = tamaño de celda (mm), z0 = altura de arranque */
+function extrude(G,W,H,c,z0,mesh){
+  mesh=mesh||new Mesh();
+  function h(i,j){return(i<0||j<0||i>=W||j>=H)?0:G[j*W+i]}
+  function X(i){return i*c}function Y(j){return(H-j)*c}
+  var lv={0:1},LV,i,j,k,w,hh,ok,v;for(i=0;i<G.length;i++)if(G[i]>0)lv[G[i]]=1;LV=Object.keys(lv).map(Number).sort(function(a,b){return a-b});
+  function rectXY(i0,j0,i1,j1,z){var P=[],t;for(t=i0;t<i1;t++)P.push([X(t),Y(j0),z]);for(t=j0;t<j1;t++)P.push([X(i1),Y(t),z]);for(t=i1;t>i0;t--)P.push([X(t),Y(j1),z]);for(t=j1;t>j0;t--)P.push([X(i0),Y(t),z]);return P}
+  function zs(lo,hi,up){var o=LV.filter(function(q){return q>lo&&q<hi});return up?o:o.reverse()}
+  // pared en x = X(i), celdas s..e (en j), de lo a hi
+  function wallX(i,s,e,lo,hi,d){var P=[],t;for(t=s;t<e;t++)P.push([X(i),Y(t),z0+lo]);P.push([X(i),Y(e),z0+lo]);zs(lo,hi,1).forEach(function(q){P.push([X(i),Y(e),z0+q])});for(t=e;t>s;t--)P.push([X(i),Y(t),z0+hi]);P.push([X(i),Y(s),z0+hi]);zs(lo,hi,0).forEach(function(q){P.push([X(i),Y(s),z0+q])});mesh.poly(P,[d,0,0])}
+  function wallY(j,s,e,lo,hi,d){var P=[],t;for(t=s;t<e;t++)P.push([X(t),Y(j),z0+lo]);P.push([X(e),Y(j),z0+lo]);zs(lo,hi,1).forEach(function(q){P.push([X(e),Y(j),z0+q])});for(t=e;t>s;t--)P.push([X(t),Y(j),z0+hi]);P.push([X(s),Y(j),z0+hi]);zs(lo,hi,0).forEach(function(q){P.push([X(s),Y(j),z0+q])});mesh.poly(P,[0,d,0])}
+  var vis=new Uint8Array(W*H);
+  // caras de arriba (rectángulos de igual altura)
+  for(j=0;j<H;j++)for(i=0;i<W;i++){v=G[j*W+i];if(v<=0||vis[j*W+i])continue;
+    w=1;while(i+w<W&&!vis[j*W+i+w]&&G[j*W+i+w]===v)w++;
+    hh=1;ok=true;while(ok&&j+hh<H){for(k=0;k<w;k++){var q=(j+hh)*W+i+k;if(vis[q]||G[q]!==v){ok=false;break}}if(ok)hh++}
+    for(var a=0;a<hh;a++)for(k=0;k<w;k++)vis[(j+a)*W+i+k]=1;
+    mesh.poly(rectXY(i,j,i+w,j+hh,z0+v),[0,0,1]);}
+  // caras de abajo
+  vis.fill(0);
+  for(j=0;j<H;j++)for(i=0;i<W;i++){if(G[j*W+i]<=0||vis[j*W+i])continue;
+    w=1;while(i+w<W&&!vis[j*W+i+w]&&G[j*W+i+w]>0)w++;
+    hh=1;ok=true;while(ok&&j+hh<H){for(k=0;k<w;k++){var q2=(j+hh)*W+i+k;if(vis[q2]||G[q2]<=0){ok=false;break}}if(ok)hh++}
+    for(var b=0;b<hh;b++)for(k=0;k<w;k++)vis[(j+b)*W+i+k]=1;
+    mesh.poly(rectXY(i,j,i+w,j+hh,z0),[0,0,-1]);}
+  // paredes verticales (entre columnas)
+  for(i=0;i<=W;i++){var run=null;
+    for(j=0;j<=H;j++){var s=null;if(j<H){var l=h(i-1,j),r=h(i,j);if(l!==r)s={lo:Math.min(l,r),hi:Math.max(l,r),d:l>r?1:-1}}
+      if(run&&s&&s.lo===run.lo&&s.hi===run.hi&&s.d===run.d){run.e=j+1;continue}
+      if(run)wallX(i,run.s,run.e,run.lo,run.hi,run.d);
+      run=s?{lo:s.lo,hi:s.hi,d:s.d,s:j,e:j+1}:null}}
+  // paredes horizontales (entre filas)
+  for(j=0;j<=H;j++){var rn=null;
+    for(i=0;i<=W;i++){var t=null;if(i<W){var up=h(i,j-1),dn=h(i,j);if(up!==dn)t={lo:Math.min(up,dn),hi:Math.max(up,dn),d:up>dn?-1:1}}
+      if(rn&&t&&t.lo===rn.lo&&t.hi===rn.hi&&t.d===rn.d){rn.e=i+1;continue}
+      if(rn)wallY(j,rn.s,rn.e,rn.lo,rn.hi,rn.d);
+      rn=t?{lo:t.lo,hi:t.hi,d:t.d,s:i,e:i+1}:null}}
+  return mesh;
+}
+/* superficie suave (litofanía): alturas por vértice (W+1)x(H+1) */
+function surface(V,W,H,c){
+  var m=new Mesh(),i,j;function P(i,j){return[i*c,(H-j)*c,V[j*(W+1)+i]]}
+  for(j=0;j<H;j++)for(i=0;i<W;i++){var a=P(i,j),b=P(i+1,j),d=P(i+1,j+1),e=P(i,j+1);m.tri(a,e,d);m.tri(a,d,b)}
+  // costados
+  for(i=0;i<W;i++){var t1=P(i,0),t2=P(i+1,0);m.quad([t1[0],t1[1],0],[t2[0],t2[1],0],t2,t1,[0,1,0]);var b1=P(i,H),b2=P(i+1,H);m.quad([b1[0],b1[1],0],[b2[0],b2[1],0],b2,b1,[0,-1,0])}
+  for(j=0;j<H;j++){var l1=P(0,j),l2=P(0,j+1);m.quad([l1[0],l1[1],0],[l2[0],l2[1],0],l2,l1,[-1,0,0]);var r1=P(W,j),r2=P(W,j+1);m.quad([r1[0],r1[1],0],[r2[0],r2[1],0],r2,r1,[1,0,0])}
+  // base: abanico desde el centro hacia el borde (sin huecos)
+  var ring=[];for(i=0;i<=W;i++)ring.push([i*c,H*c]);for(j=1;j<=H;j++)ring.push([W*c,(H-j)*c]);for(i=W-1;i>=0;i--)ring.push([i*c,0]);for(j=H-1;j>=1;j--)ring.push([0,(H-j)*c]);
+  var C=[W*c/2,H*c/2,0];for(i=0;i<ring.length;i++){var p=ring[i],q=ring[(i+1)%ring.length];m.tri(C,[p[0],p[1],0],[q[0],q[1],0])}
+  return m;
+}
+function stl(meshes,name){
+  var n=0;meshes.forEach(function(m){n+=m.count()});
+  var buf=new ArrayBuffer(84+n*50),dv=new DataView(buf),o=84,hdr='ANGELA Taller 3D - '+name;
+  for(var k=0;k<80;k++)dv.setUint8(k,k<hdr.length?(hdr.charCodeAt(k)&127):32);
+  dv.setUint32(80,n,true);
+  meshes.forEach(function(m){var a=m.a;for(var t=0;t<a.length;t+=9){
+    var ux=a[t+3]-a[t],uy=a[t+4]-a[t+1],uz=a[t+5]-a[t+2],vx=a[t+6]-a[t],vy=a[t+7]-a[t+1],vz=a[t+8]-a[t+2];
+    var nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,L=Math.hypot(nx,ny,nz)||1;
+    dv.setFloat32(o,nx/L,true);dv.setFloat32(o+4,ny/L,true);dv.setFloat32(o+8,nz/L,true);o+=12;
+    for(var q=0;q<9;q++){dv.setFloat32(o,a[t+q],true);o+=4}o+=2}});
+  return new Blob([buf],{type:'model/stl'});
+}
+
+/* ================= AYUDAS 2D ================= */
+var FONTS=[['Fredoka','Redonda gordita (recomendada)','700'],['Lilita One','Gruesa divertida','400'],['Bebas Neue','Alta tipo cartel','400'],['Pacifico','Cursiva unida','400'],['Dancing Script','Manuscrita','700'],['Arial Black','Clásica gruesa','900']];
+var fontsAsked=false;
+function askFonts(){if(fontsAsked)return;fontsAsked=true;var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Lilita+One&family=Bebas+Neue&family=Pacifico&family=Dancing+Script:wght@700&display=swap';document.head.appendChild(l)}
+function fontInfo(name){for(var i=0;i<FONTS.length;i++)if(FONTS[i][0]===name)return FONTS[i];return FONTS[0]}
+function ensureFont(name){var f=fontInfo(name);try{return document.fonts.load(f[2]+' 60px "'+f[0]+'"').catch(function(){})}catch(e){return Promise.resolve()}}
+/* texto → máscara (1 = letra). Devuelve {m,W,H} recortada al dibujo */
+function textMask(text,font,capMM,c){
+  var f=fontInfo(font),lines=String(text||'').split('\n').map(function(s){return s.trim()}).filter(Boolean);if(!lines.length)lines=['ÁNGELA'];
+  var px=Math.max(8,Math.round(capMM/c/0.7)),cv=document.createElement('canvas'),x=cv.getContext('2d');
+  x.font=f[2]+' '+px+'px "'+f[0]+'", "Arial Black", sans-serif';
+  var lw=lines.map(function(s){return x.measureText(s).width}),lh=px*1.12;
+  cv.width=Math.ceil(Math.max.apply(null,lw)+px*0.6);cv.height=Math.ceil(lh*lines.length+px*0.6);
+  x=cv.getContext('2d',{willReadFrequently:true});x.font=f[2]+' '+px+'px "'+f[0]+'", "Arial Black", sans-serif';x.fillStyle='#000';x.textAlign='center';x.textBaseline='middle';
+  lines.forEach(function(s,k){x.fillText(s,cv.width/2,px*0.3+lh*(k+0.5))});
+  var d=x.getImageData(0,0,cv.width,cv.height).data,W=cv.width,H=cv.height,m=new Uint8Array(W*H),x0=W,y0=H,x1=-1,y1=-1;
+  for(var j=0;j<H;j++)for(var i=0;i<W;i++)if(d[(j*W+i)*4+3]>110){m[j*W+i]=1;if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j}
+  if(x1<0)return{m:new Uint8Array(1),W:1,H:1};
+  var w=x1-x0+1,h=y1-y0+1,o=new Uint8Array(w*h);for(j=0;j<h;j++)for(i=0;i<w;i++)o[j*w+i]=m[(j+y0)*W+i+x0];
+  return{m:o,W:w,H:h};
+}
+function pad(M,l,t,r,b){var W=M.W+l+r,H=M.H+t+b,o=new Uint8Array(W*H);for(var j=0;j<M.H;j++)for(var i=0;i<M.W;i++)o[(j+t)*W+i+l]=M.m[j*M.W+i];return{m:o,W:W,H:H}}
+/* distancia (en celdas) a la letra más cercana: transformada euclídea exacta */
+function edt(m,W,H){
+  var INF=1e20,f=new Float64Array(Math.max(W,H)),d=new Float64Array(Math.max(W,H)),v=new Int32Array(Math.max(W,H)),z=new Float64Array(Math.max(W,H)+1),G=new Float64Array(W*H),i,j;
+  for(i=0;i<W*H;i++)G[i]=m[i]?0:INF;
+  function dt(n){var k=0;v[0]=0;z[0]=-INF;z[1]=INF;for(var q=1;q<n;q++){var s=((f[q]+q*q)-(f[v[k]]+v[k]*v[k]))/(2*q-2*v[k]);while(s<=z[k]){k--;s=((f[q]+q*q)-(f[v[k]]+v[k]*v[k]))/(2*q-2*v[k])}k++;v[k]=q;z[k]=s;z[k+1]=INF}k=0;for(q=0;q<n;q++){while(z[k+1]<q)k++;d[q]=(q-v[k])*(q-v[k])+f[v[k]]}}
+  for(i=0;i<W;i++){for(j=0;j<H;j++)f[j]=G[j*W+i];dt(H);for(j=0;j<H;j++)G[j*W+i]=d[j]}
+  for(j=0;j<H;j++){for(i=0;i<W;i++)f[i]=G[j*W+i];dt(W);for(i=0;i<W;i++)G[j*W+i]=Math.sqrt(d[i])}
+  return G;
+}
+function roundRect(W,H,x0,y0,x1,y1,r,out){out=out||new Uint8Array(W*H);for(var j=Math.max(0,Math.floor(y0));j<Math.min(H,Math.ceil(y1));j++)for(var i=Math.max(0,Math.floor(x0));i<Math.min(W,Math.ceil(x1));i++){var cx=i+.5,cy=j+.5,dx=Math.max(x0+r-cx,0,cx-(x1-r)),dy=Math.max(y0+r-cy,0,cy-(y1-r));if(dx*dx+dy*dy<=r*r)out[j*W+i]=1}return out}
+function circle(W,H,cx,cy,r,out,val){for(var j=Math.max(0,Math.floor(cy-r));j<Math.min(H,Math.ceil(cy+r));j++)for(var i=Math.max(0,Math.floor(cx-r));i<Math.min(W,Math.ceil(cx+r));i++){var dx=i+.5-cx,dy=j+.5-cy;if(dx*dx+dy*dy<=r*r)out[j*W+i]=val}}
+
+/* ================= VISTA 3D (three.js) ================= */
+var V={r:null,s:null,cam:null,ctl:null,raf:0,group:null,el:null,ro:null};
+function three(){if(window.THREE&&THREE.OrbitControls)return Promise.resolve();return loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js').then(function(){return loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js')})}
+function stopView(){cancelAnimationFrame(V.raf);try{V.ro&&V.ro.disconnect()}catch(e){}try{V.r&&V.r.dispose()}catch(e){}V.r=null;V.el=null}
+function show(el,parts){
+  var msg=el.querySelector('.t3d-msg');
+  three().then(function(){
+    if(!document.body.contains(el))return;
+    if(V.el!==el){stopView();V.el=el;
+      var r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));el.appendChild(r.domElement);V.r=r;
+      V.s=new THREE.Scene();V.s.add(new THREE.HemisphereLight(0xffffff,0x334,0.85));var dl=new THREE.DirectionalLight(0xffffff,0.75);dl.position.set(1,-1.4,2);V.s.add(dl);var dl2=new THREE.DirectionalLight(0xffffff,0.3);dl2.position.set(-1,1,1);V.s.add(dl2);
+      V.cam=new THREE.PerspectiveCamera(35,1,0.1,5000);V.cam.up.set(0,0,1);V.ctl=new THREE.OrbitControls(V.cam,r.domElement);V.ctl.enableDamping=true;
+      var size=function(){var w=el.clientWidth||300,h=el.clientHeight||300;r.setSize(w,h,false);V.cam.aspect=w/h;V.cam.updateProjectionMatrix()};size();
+      try{V.ro=new ResizeObserver(size);V.ro.observe(el)}catch(e){}
+      (function loop(){V.raf=requestAnimationFrame(loop);V.ctl.update();r.render(V.s,V.cam)})();}
+    if(V.group){V.s.remove(V.group);V.group.traverse(function(o){if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()})}
+    var g=new THREE.Group(),box=new THREE.Box3();
+    parts.forEach(function(p){var geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(p.mesh.a,3));geo.computeVertexNormals();
+      var mat=new THREE.MeshStandardMaterial({color:p.color,roughness:.55,metalness:.05,flatShading:!p.smooth,side:THREE.DoubleSide});g.add(new THREE.Mesh(geo,mat))});
+    box.setFromObject(g);var ctr=box.getCenter(new THREE.Vector3()),sz=box.getSize(new THREE.Vector3());g.position.set(-ctr.x,-ctr.y,-box.min.z);V.s.add(g);V.group=g;
+    var R=Math.max(sz.x,sz.y,sz.z*2,10);V.cam.position.set(R*0.25,-R*1.35,R*1.05);V.ctl.target.set(0,0,sz.z/2);V.ctl.update();
+    if(msg)msg.style.display='none';
+  }).catch(function(){if(msg){msg.style.display='grid';msg.textContent='No se pudo cargar la vista 3D (falta internet). Igual podés bajar los archivos.'}});
+}
+
+/* ================= HERRAMIENTAS ================= */
+var S={};try{S=JSON.parse(localStorage.getItem('ANGELA_T3D_V1')||'{}')||{}}catch(e){S={}}
+function remember(k,o){S[k]=o;try{localStorage.setItem('ANGELA_T3D_V1',JSON.stringify(S))}catch(e){}}
+var CUR={parts:[],name:'pieza',tool:''},timer=0;
+function rng(id,lbl,min,max,step,val,unit){return '<label class="herr-lbl">'+lbl+'</label><div class="t3d-range"><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'"><output id="'+id+'O">'+val+' '+unit+'</output></div>'}
+function sel(id,lbl,opts,val){return '<label class="herr-lbl">'+lbl+'</label><select class="herr-sel" id="'+id+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(String(o[0])===String(val)?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select>'}
+function colors(c1,c2,two){return '<label class="herr-lbl">Colores (solo para ver cómo queda)</label><div class="t3d-cols"><span class="herr-mini" style="margin:0">Base</span><input type="color" id="tC1" value="'+c1+'">'+(two?'<span class="herr-mini" style="margin:0">'+two+'</span><input type="color" id="tC2" value="'+c2+'">':'')+'</div>'}
+function layout(el,form,tips){
+  el.innerHTML='<div class="herr-2"><div class="herr-card">'+form+'</div><div><div class="herr-card"><div class="t3d-view" id="t3dView"><div class="t3d-msg">Armando la vista 3D…</div></div><div class="herr-mini">👆 Arrastrá para girar · dos dedos o la ruedita para acercar.</div><div class="t3d-dims" id="t3dDims"></div><div class="herr-row" id="t3dDl"></div></div>'+(tips?'<div class="herr-card herr-info" style="font-size:12.5px;line-height:1.55">'+tips+'</div>':'')+'</div></div>';
+  el.querySelectorAll('input,select,textarea').forEach(function(x){x.addEventListener('input',function(){var o=$(x.id+'O');if(o&&x.type==='range')o.textContent=x.value+' '+(o.textContent.split(' ')[1]||'');clearTimeout(timer);timer=setTimeout(function(){CUR.build&&CUR.build()},x.type==='text'||x.tagName==='TEXTAREA'?450:180)})});
+}
+function val(id,d){var e=$(id);return e?num(e.value,d):d}
+function str(id,d){var e=$(id);return e?e.value:d}
+function dims(parts,extra){var mx=[1e9,1e9,1e9],Mx=[-1e9,-1e9,-1e9],n=0;parts.forEach(function(p){var a=p.mesh.a;n+=p.mesh.count();for(var i=0;i<a.length;i+=3)for(var k=0;k<3;k++){if(a[i+k]<mx[k])mx[k]=a[i+k];if(a[i+k]>Mx[k])Mx[k]=a[i+k]}});
+  var big=Math.max(Mx[0]-mx[0],Mx[1]-mx[1])>220;$('t3dDims').innerHTML='📏 Medida: <b>'+fmt(Mx[0]-mx[0])+' × '+fmt(Mx[1]-mx[1])+' × '+fmt(Mx[2]-mx[2])+' mm</b> (ancho × alto × espesor)'+(big?'<br>⚠️ <b>Ojo:</b> pasa los 22 cm; en muchas impresoras no entra. Achicá el tamaño.':'')+(extra?'<br>'+extra:'');
+  return [Mx[0]-mx[0],Mx[1]-mx[1]];}
+function downloads(parts,name,twoNote){
+  var d=$('t3dDl');if(!d)return;var h='<button class="herr-btn grad" data-k="all">⬇️ Bajar STL (pieza entera)</button>';
+  if(parts.length>1)parts.forEach(function(p,i){h+='<button class="herr-btn sm" data-k="'+i+'">⬇️ Solo '+esc(p.label)+'</button>'});
+  d.innerHTML=h;d.querySelectorAll('button').forEach(function(b){b.onclick=function(){var k=b.dataset.k;
+    if(k==='all'){var whole=CUR.whole||parts.map(function(p){return p.mesh});saveBlob(stl(whole,name),slug(name)+'.stl')}
+    else{var p=parts[+k];saveBlob(stl([p.mesh],name+' '+p.label),slug(name)+'_'+slug(p.label)+'.stl')}
+    toast('Archivo STL listo ✅ Abrilo en el programa de tu impresora (Cura, Orca, Bambu, Prusa…).')}});
+}
+function layerTip(zMM,what){var n=Math.round(zMM/0.2);return '🎨 <b>Dos colores con una sola boquilla:</b> en el programa de la impresora poné una <b>pausa / cambio de filamento a los '+fmt(zMM)+' mm</b> (capa '+(n+1)+' si imprimís a 0,2 mm). Ahí cambiás al color '+(what||'de las letras')+'.'}
+
+/* --- Llavero y cartel con letras --- */
+function vTexto(el,kind){
+  askFonts();var st=S[kind]||{},isK=kind==='llavero';
+  var form='<h3>'+(isK?'🔑 Llavero con nombre':'🪧 Cartel con letras en relieve')+'</h3><p class="herr-sub">'+(isK?'Escribí un nombre y bajá el llavero listo para imprimir, en uno o dos colores.':'Para la puerta del comedor, una mesa o un regalo. Letras en relieve sobre una placa.')+'</p>'+
+   '<label class="herr-lbl">Texto '+(isK?'':'(Enter = otra línea)')+'</label>'+(isK?'<input class="herr-inp" id="tT" value="'+esc(st.t||'Eva')+'">':'<textarea class="herr-ta" id="tT" style="min-height:70px">'+esc(st.t||'Comedor\nÁngel Guardián')+'</textarea>')+
+   sel('tF','Letra',FONTS.map(function(f){return[f[0],f[0]+' · '+f[1]]}),st.f||(isK?'Pacifico':'Fredoka'))+
+   rng('tS','Tamaño de las letras',isK?8:15,isK?30:80,1,st.s||(isK?16:16),'mm')+
+   sel('tB','Forma de la base',[['contorno','Sigue el contorno de las letras'],['rect','Rectángulo con puntas redondas']],st.b||(isK?'contorno':'rect'))+
+   sel('tH','Agujero',[['argolla','Argolla al costado (llavero)'],['dos','Dos agujeros arriba (para colgar)'],['no','Sin agujero']],st.h||(isK?'argolla':'dos'))+
+   '<div class="herr-cols"><div>'+rng('tBh','Espesor de la base',1.2,6,0.2,st.bh||(isK?2.4:3),'mm')+'</div><div>'+rng('tTh','Alto de las letras',0.6,4,0.2,st.th||(isK?1.2:1.6),'mm')+'</div></div>'+
+   rng('tM','Borde alrededor de las letras',1,10,0.5,st.m||(isK?2.5:5),'mm')+
+   colors(st.c1||'#f5f5f5',st.c2||'#7c3aed','Letras');
+  layout(el,form,'💡 <b>Consejos:</b> la letra <b>Pacifico</b> o <b>Fredoka</b> salen en una sola pieza porque las letras se tocan. Para llaveros, letras de 14 mm o más se leen bien. La pieza sale <b>acostada</b>, lista para imprimir sin soportes.');
+  CUR.build=function(){
+    var o={t:str('tT'),f:str('tF'),s:val('tS',16),b:str('tB'),h:str('tH'),bh:val('tBh',2.4),th:val('tTh',1.2),m:val('tM',2.5),c1:str('tC1'),c2:str('tC2')};remember(kind,o);
+    ensureFont(o.f).then(function(){
+      var c=Math.min(0.3,Math.max(isK?0.15:0.2,o.s/100)),T=textMask(o.t,o.f,o.s,c),mc=o.m/c,ringR=4.5/c,holeR=2/c,top=o.h==='dos'?8/c:0;
+      var L=Math.ceil(mc+2+(o.h==='argolla'?ringR*1.6:0)),R=Math.ceil(mc+2),Tp=Math.ceil(mc+2+top),B=Math.ceil(mc+2);
+      var P=pad(T,L,Tp,R,B),W=P.W,H=P.H,base=new Uint8Array(W*H),i;
+      if(o.b==='contorno'){var D=edt(P.m,W,H);for(i=0;i<W*H;i++)if(D[i]<=mc)base[i]=1;if(top){roundRect(W,H,L-mc,2,L+T.W+mc,Tp+T.H*0.5,Math.min(3/c,top),base)}}
+      else roundRect(W,H,L-mc,Tp-mc-top,L+T.W+mc,Tp+T.H+mc,Math.min(4/c,(T.H+2*mc)/2),base);
+      var cy=Tp+T.H/2;
+      if(o.h==='argolla'){var cx=L-mc-ringR*0.55;circle(W,H,cx,cy,ringR,base,1);for(var j=Math.floor(cy-ringR*0.7);j<cy+ringR*0.7;j++)for(i=Math.floor(cx);i<L;i++)if(j>=0&&j<H)base[j*W+i]=1;circle(W,H,cx,cy,holeR,base,0);circle(W,H,cx,cy,holeR,P.m,0)}
+      if(o.h==='dos'){var hy=Tp-mc-top/2;circle(W,H,L-mc+5/c,hy,holeR,base,0);circle(W,H,L+T.W+mc-5/c,hy,holeR,base,0)}
+      var gb=new Float32Array(W*H),gt=new Float32Array(W*H),gw=new Float32Array(W*H);
+      for(i=0;i<W*H;i++){if(base[i]){gb[i]=o.bh;gw[i]=o.bh;if(P.m[i]){gt[i]=o.th;gw[i]=o.bh+o.th}}}
+      var mb=extrude(gb,W,H,c,0),mt=extrude(gt,W,H,c,o.bh);
+      CUR.parts=[{mesh:mb,color:o.c1,label:'base'},{mesh:mt,color:o.c2,label:'letras'}];CUR.whole=[extrude(gw,W,H,c,0)];CUR.name=(isK?'Llavero ':'Cartel ')+o.t.replace(/\n/g,' ');
+      dims(CUR.parts,layerTip(o.bh));show($('t3dView'),CUR.parts);downloads(CUR.parts,CUR.name);
+    });
+  };CUR.build();
+}
+
+/* --- QR en relieve --- */
+function vQR(el){
+  askFonts();var st=S.qr||{};
+  var form='<h3>🔳 QR en relieve</h3><p class="herr-sub">Convertí un link o un texto en un QR para imprimir: llavero, cartelito para la mesa o para la puerta del comedor.</p>'+
+   '<label class="herr-lbl">Link o texto del QR</label><input class="herr-inp" id="qT" value="'+esc(st.t||'https://www.instagram.com/comedorangelguardian_ok/')+'">'+
+   '<label class="herr-lbl">Texto abajo (opcional)</label><input class="herr-inp" id="qL" value="'+esc(st.l==null?'Seguinos':st.l)+'">'+
+   rng('qS','Tamaño del QR',25,120,1,st.s||45,'mm')+
+   sel('qH','Agujero',[['arriba','Agujero arriba (llavero)'],['no','Sin agujero']],st.h||'arriba')+
+   '<div class="herr-cols"><div>'+rng('qB','Espesor de la base',1.2,5,0.2,st.b||2,'mm')+'</div><div>'+rng('qR','Alto de los cuadraditos',0.4,2,0.2,st.r||0.8,'mm')+'</div></div>'+
+   colors(st.c1||'#ffffff',st.c2||'#111111','QR');
+  layout(el,form,'⚠️ <b>Para que el celular lo lea, imprimilo en dos colores</b> (base blanca y QR negro). En un solo color casi nunca se lee. Si el link es largo, hacé el QR más grande (50 mm o más).');
+  CUR.build=function(){
+    var o={t:str('qT')||'https://',l:str('qL'),s:val('qS',45),h:str('qH'),b:val('qB',2),r:val('qR',0.8),c1:str('tC1'),c2:str('tC2')};remember('qr',o);
+    loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js').then(function(){return ensureFont('Fredoka')}).then(function(){
+      var q;try{q=qrcode(0,'M');q.addData(unescape(encodeURIComponent(o.t)));q.make()}catch(e){toast('El texto es muy largo para un QR.');return}
+      var n=q.getModuleCount(),k=4,c=o.s/(n*k),quiet=2*k,lab=null,labH=0;
+      if(o.l.trim()){lab=textMask(o.l.trim(),'Fredoka',Math.max(4,o.s*0.13),c);if(lab.W>n*k+2*quiet-2*k){lab=textMask(o.l.trim(),'Fredoka',Math.max(3,o.s*0.13*(n*k+quiet)/lab.W),c)}labH=lab.H+k*2}
+      var holeH=o.h==='arriba'?Math.round(7/c):0,W=n*k+2*quiet,H=n*k+2*quiet+labH+holeH,base=new Uint8Array(W*H),dots=new Uint8Array(W*H),i,j;
+      roundRect(W,H,0,0,W,H,Math.min(3/c,W/8),base);
+      if(holeH){circle(W,H,W/2,holeH*0.55,2/c,base,0)}
+      for(var r=0;r<n;r++)for(var cc=0;cc<n;cc++)if(q.isDark(r,cc))for(j=0;j<k;j++)for(i=0;i<k;i++)dots[(holeH+quiet+r*k+j)*W+quiet+cc*k+i]=1;
+      if(lab){var ox=Math.round((W-lab.W)/2),oy=holeH+quiet+n*k+k;for(j=0;j<lab.H;j++)for(i=0;i<lab.W;i++)if(lab.m[j*lab.W+i]&&oy+j<H)dots[(oy+j)*W+ox+i]=1}
+      var gb=new Float32Array(W*H),gt=new Float32Array(W*H),gw=new Float32Array(W*H);for(i=0;i<W*H;i++)if(base[i]){gb[i]=o.b;gw[i]=o.b;if(dots[i]){gt[i]=o.r;gw[i]=o.b+o.r}}
+      CUR.parts=[{mesh:extrude(gb,W,H,c,0),color:o.c1,label:'base'},{mesh:extrude(gt,W,H,c,o.b),color:o.c2,label:'QR'}];CUR.whole=[extrude(gw,W,H,c,0)];CUR.name='QR '+(o.l||'');
+      dims(CUR.parts,layerTip(o.b,'del QR'));show($('t3dView'),CUR.parts);downloads(CUR.parts,CUR.name);
+    }).catch(function(){toast('No se pudo cargar el creador de QR (falta internet).')});
+  };CUR.build();
+}
+
+/* --- Litofanía --- */
+var LI={img:null};
+function vLito(el){
+  var st=S.lito||{};
+  var form='<h3>💡 Litofanía (foto con luz)</h3><p class="herr-sub">Subí una foto (por ejemplo, de Eva cocinando o del comedor) y se convierte en una placa. Con una luz atrás aparece la foto.</p>'+
+   '<div class="herr-row" style="margin-top:0"><button class="herr-btn grad" id="lB">🖼️ Elegir foto</button><span class="herr-mini" id="lN" style="margin:0">'+(LI.img?'Foto cargada ✅':'Todavía no elegiste foto')+'</span></div><input type="file" accept="image/*" id="lF" style="display:none">'+
+   rng('lW','Ancho de la placa',50,180,5,st.w||100,'mm')+
+   '<div class="herr-cols"><div>'+rng('lMin','Parte más fina',0.6,1.6,0.1,st.mn||0.8,'mm')+'</div><div>'+rng('lMax','Parte más gruesa',2,5,0.2,st.mx||3,'mm')+'</div></div>'+
+   rng('lC','Contraste',0.6,2,0.1,st.ct||1.1,'×')+
+   sel('lBd','Marco',[['3','Marco de 3 mm'],['5','Marco de 5 mm'],['0','Sin marco']],st.bd||'3')+
+   colors(st.c1||'#f8f4ea','',false);
+  layout(el,form,'💡 <b>Imprimila en blanco</b>, parada (vertical) y con <b>relleno al 100%</b>. Mirada sin luz parece una placa con relieve; con una lámpara o el sol atrás aparece la foto.');
+  $('lB').onclick=function(){$('lF').click()};
+  $('lF').onchange=function(){var f=this.files&&this.files[0];if(!f)return;var im=new Image();im.onload=function(){LI.img=im;$('lN').textContent='Foto cargada ✅ '+f.name;CUR.build()};im.src=URL.createObjectURL(f)};
+  CUR.build=function(){
+    var o={w:val('lW',100),mn:val('lMin',0.8),mx:val('lMax',3),ct:val('lC',1.1),bd:str('lBd'),c1:str('tC1')};remember('lito',o);
+    if(!LI.img){$('t3dDims').innerHTML='Elegí una foto para ver la litofanía.';$('t3dDl').innerHTML='';var m=$('t3dView').querySelector('.t3d-msg');if(m){m.style.display='grid';m.textContent='📷 Elegí una foto para empezar'}return}
+    var hmm=Math.min(180,o.w*LI.img.height/LI.img.width),c=Math.max(0.25,Math.sqrt(o.w*hmm/150000)),W=Math.round(o.w/c),H=Math.round(hmm/c)
+    var cv=document.createElement('canvas');cv.width=W+1;cv.height=H+1;var x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(LI.img,0,0,W+1,H+1);var d=x.getImageData(0,0,W+1,H+1).data,V2=new Float32Array((W+1)*(H+1)),bd=num(o.bd,3)/c;
+    for(var j=0;j<=H;j++)for(var i=0;i<=W;i++){var p=(j*(W+1)+i)*4,L=(d[p]*0.299+d[p+1]*0.587+d[p+2]*0.114)/255;L=Math.min(1,Math.max(0,(L-0.5)*o.ct+0.5));var z=o.mn+(1-L)*(o.mx-o.mn);if(bd&&(i<bd||j<bd||i>W-bd||j>H-bd))z=o.mx+0.6;V2[j*(W+1)+i]=z}
+    var m=surface(V2,W,H,c);CUR.parts=[{mesh:m,color:o.c1,label:'litofanía',smooth:true}];CUR.whole=null;CUR.name='Litofania';
+    dims(CUR.parts,'Cara con relieve hacia vos, luz atrás.');show($('t3dView'),CUR.parts);downloads(CUR.parts,CUR.name);
+  };CUR.build();
+}
+
+/* --- Marco de foto --- */
+function vMarco(el){
+  var st=S.marco||{};
+  var form='<h3>🖼️ Marco de foto</h3><p class="herr-sub">Un portarretrato a la medida de tu foto. La foto entra por atrás (pegala con cinta).</p>'+
+   sel('mS','Medida de la foto',[['10x15','10 × 15 cm (la común)'],['9x13','9 × 13 cm'],['13x18','13 × 18 cm'],['10x10','10 × 10 cm (cuadrada)'],['6x9','6 × 9 cm (chiquita)']],st.s||'10x15')+
+   sel('mO','Posición',[['v','Parada (vertical)'],['h','Acostada (horizontal)']],st.o||'v')+
+   rng('mB','Ancho del marco',8,30,1,st.b||14,'mm')+
+   rng('mT','Espesor',3,8,0.5,st.t||5,'mm')+
+   rng('mR','Esquinas redondeadas',0,15,1,st.r==null?6:st.r,'mm')+
+   colors(st.c1||'#d97706','',false);
+  layout(el,form,'🖨️ Se imprime <b>con el frente apoyado en la cama</b> (así queda liso y el hueco para la foto queda arriba). No necesita soportes. Si tu impresora es chica, mirá que la medida entre en la cama.');
+  CUR.build=function(){
+    var o={s:str('mS'),o:str('mO'),b:val('mB',14),t:val('mT',5),r:val('mR',6),c1:str('tC1')};remember('marco',o);
+    var ps=o.s.split('x').map(Number),pw=ps[0]*10,ph=ps[1]*10;if(o.o==='h'){var tmp=pw;pw=ph;ph=tmp}
+    var c=0.5,tol=0.8,lap=4,W=Math.round((pw+2*tol+2*o.b)/c),H=Math.round((ph+2*tol+2*o.b)/c),outer=roundRect(W,H,0,0,W,H,o.r/c),g=new Float32Array(W*H),i,j;
+    var px0=o.b/c,py0=o.b/c,px1=W-o.b/c,py1=H-o.b/c,wx0=px0+(tol+lap)/c,wy0=py0+(tol+lap)/c,wx1=px1-(tol+lap)/c,wy1=py1-(tol+lap)/c;
+    for(j=0;j<H;j++)for(i=0;i<W;i++){if(!outer[j*W+i])continue;var x=i+.5,y=j+.5;if(x>wx0&&x<wx1&&y>wy0&&y<wy1)continue;g[j*W+i]=(x>px0&&x<px1&&y>py0&&y<py1)?1.2:o.t}
+    CUR.parts=[{mesh:extrude(g,W,H,c,0),color:o.c1,label:'marco'}];CUR.whole=null;CUR.name='Marco '+o.s;
+    dims(CUR.parts,'Hueco para la foto de '+fmt(pw/10)+' × '+fmt(ph/10)+' cm · se ve '+fmt((pw-2*lap)/10)+' × '+fmt((ph-2*lap)/10)+' cm.');show($('t3dView'),CUR.parts);downloads(CUR.parts,CUR.name);
+  };CUR.build();
+}
+
+/* --- Caja / bandeja con divisiones --- */
+function vCaja(el){
+  var st=S.caja||{};
+  var form='<h3>📦 Caja o bandeja con divisiones</h3><p class="herr-sub">Para ordenar cajones, cubiertos, tornillos, tapitas o lo que quieras. Ponés las medidas y cuántas divisiones.</p>'+
+   '<div class="herr-cols"><div>'+rng('cW','Ancho',30,250,5,st.w||120,'mm')+'</div><div>'+rng('cL','Largo',30,250,5,st.l||80,'mm')+'</div></div>'+
+   rng('cH','Alto',8,100,1,st.h||30,'mm')+
+   '<div class="herr-cols"><div>'+rng('cX','Divisiones a lo ancho',1,8,1,st.x||3,'')+'</div><div>'+rng('cY','Divisiones a lo largo',1,8,1,st.y||2,'')+'</div></div>'+
+   '<div class="herr-cols"><div>'+rng('cP','Grosor de paredes',1.2,4,0.4,st.p||1.6,'mm')+'</div><div>'+rng('cF','Grosor del piso',0.8,4,0.4,st.f||1.2,'mm')+'</div></div>'+
+   colors(st.c1||'#22c55e','',false);
+  layout(el,form,'🖨️ Sale <b>con la boca para arriba</b>, sin soportes. Para un cajón, medí el ancho y largo por dentro y restale 1 mm para que entre justo.');
+  CUR.build=function(){
+    var o={w:val('cW',120),l:val('cL',80),h:val('cH',30),x:Math.round(val('cX',3)),y:Math.round(val('cY',2)),p:val('cP',1.6),f:val('cF',1.2),c1:str('tC1')};remember('caja',o);
+    var c=0.4,W=Math.round(o.w/c),H=Math.round(o.l/c),pc=Math.max(1,Math.round(o.p/c)),R=Math.min(4/c,W/4,H/4),outer=roundRect(W,H,0,0,W,H,R),inner=roundRect(W,H,pc,pc,W-pc,H-pc,Math.max(0,R-pc)),g=new Float32Array(W*H),i,j,k;
+    for(i=0;i<W*H;i++)if(outer[i])g[i]=inner[i]?o.f:o.h;
+    for(k=1;k<o.x;k++){var xc=Math.round(pc+(W-2*pc)*k/o.x-pc/2);for(j=0;j<H;j++)for(i=xc;i<xc+pc;i++)if(inner[j*W+i])g[j*W+i]=o.h}
+    for(k=1;k<o.y;k++){var yc=Math.round(pc+(H-2*pc)*k/o.y-pc/2);for(j=yc;j<yc+pc;j++)for(i=0;i<W;i++)if(inner[j*W+i])g[j*W+i]=o.h}
+    CUR.parts=[{mesh:extrude(g,W,H,c,0),color:o.c1,label:'caja'}];CUR.whole=null;CUR.name='Caja '+o.w+'x'+o.l+'x'+o.h;
+    var cw=(o.w-o.p*(o.x+1))/o.x,cl=(o.l-o.p*(o.y+1))/o.y;
+    dims(CUR.parts,(o.x*o.y)+' compartimentos de '+fmt(cw)+' × '+fmt(cl)+' mm por dentro.');show($('t3dView'),CUR.parts);downloads(CUR.parts,CUR.name);
+  };CUR.build();
+}
+
+var VIEWS={t3d_llavero:function(el){vTexto(el,'llavero')},t3d_cartel:function(el){vTexto(el,'cartel')},t3d_qr:vQR,t3d_lito:vLito,t3d_marco:vMarco,t3d_caja:vCaja};
+var TILES=[['t3d_llavero','🔑','Llavero con nombre','Escribí un nombre y bajá el llavero listo, en uno o dos colores.'],
+ ['t3d_cartel','🪧','Cartel con letras','Letras en relieve sobre una placa, con agujeros para colgar.'],
+ ['t3d_qr','🔳','QR en relieve','Un link (Instagram, alias para donar) convertido en QR para imprimir.'],
+ ['t3d_lito','💡','Litofanía','Una foto que aparece cuando le ponés luz atrás.'],
+ ['t3d_marco','🖼️','Marco de foto','Portarretrato a la medida de tu foto.'],
+ ['t3d_caja','📦','Caja con divisiones','Organizador de cajón o bandeja con compartimentos.']];
+function view(k,el){stopView();CUR={parts:[],name:'pieza'};var f=VIEWS[k];if(!f)return false;f(el);return true}
+window.ANGELA3D={view:view,stop:function(){stopView();clearTimeout(timer)},tiles:TILES,has:function(k){return!!VIEWS[k]},_extrude:extrude,_stl:stl,_surface:surface};
+
+/* botón en el menú: abre Herramientas en la parte del Taller 3D */
+function addMenu(){
+  if($('t3dMenuBtn'))return;var ref=$('herrMenuBtn');if(!ref)return;
+  var b=document.createElement('button');b.id='t3dMenuBtn';b.className='angela-photo-btn';b.innerHTML='<span class="ico">🖨️</span> Taller 3D';
+  b.onclick=function(){if(!window.ANGELAHerr)return;ANGELAHerr.open();ANGELAHerr.home();setTimeout(function(){var s=$('t3dSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})},80)};
+  ref.parentNode.insertBefore(b,ref.nextSibling);
+}
+setTimeout(addMenu,2400);setTimeout(addMenu,4500);setTimeout(addMenu,8000);
+console.info('[ÁNGELA] Taller 3D: llavero, cartel, QR, litofanía, marco y caja (STL)');
+})();
+</script>
+<!-- ===== FIN TALLER 3D ===== -->
