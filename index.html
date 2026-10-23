@@ -1,3 +1,4 @@
+<!-- V12.86: nuevo módulo CÁMARAS (DVR Hikvision en vivo por go2rtc + cámara de la PC) dentro de Herramientas. -->
 <!-- V12.85: nuevo TALLER 3D dentro de Herramientas (llavero, cartel, QR, litofanía, marco, caja → STL). -->
 <!-- V12.81 PRUEBA: nuevo módulo HERRAMIENTAS (música por género, grilla de radio, dictado, textos, olla, cartel, leer foto, notas, traductor). Agregado al final; QR, regalos y eventos sin tocar. -->
 <!-- V12.73 PRUEBA: casting automático, origen según guion y prompt por fotograma. Sin cambios en Vercel. -->
@@ -11471,18 +11472,18 @@ function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').tex
 function home(){
   stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
   var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
-  if(window.ANGELA3D)h+='<div class="herr-sec" id="t3dSec">🖨️ Taller 3D · piezas para la impresora 3D</div><div class="herr-grid">'+ANGELA3D.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>';
+  [window.ANGELACam,window.ANGELA3D].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
   h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
   $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
 }
 function go(k){
   stopAll();
-  if(window.ANGELA3D&&ANGELA3D.has(k)){var t3=ANGELA3D.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],'Taller 3D · '+t3[3]);$('herrOverlay').scrollTop=0;ANGELA3D.view(k,$('herrBody'));return}
+  var EX=[window.ANGELACam,window.ANGELA3D].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
   var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
   CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
   ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
 }
-function stopAll(){try{window.ANGELA3D&&ANGELA3D.stop()}catch(e){}try{if(REC.r){REC.on=false;REC.r.stop()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(M.busy)M.cancel=true}
+function stopAll(){try{window.ANGELA3D&&ANGELA3D.stop()}catch(e){}try{window.ANGELACam&&ANGELACam.stop()}catch(e){}try{if(REC.r){REC.on=false;REC.r.stop()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(M.busy)M.cancel=true}
 
 /* ================= 🎼 ORDENAR MÚSICA POR GÉNERO ================= */
 var M={files:[],busy:false,cancel:false,filter:'',src:null};
@@ -12330,7 +12331,7 @@ var TILES=[['t3d_llavero','🔑','Llavero con nombre','Escribí un nombre y baj�
  ['t3d_marco','🖼️','Marco de foto','Portarretrato a la medida de tu foto.'],
  ['t3d_caja','📦','Caja con divisiones','Organizador de cajón o bandeja con compartimentos.']];
 function view(k,el){stopView();CUR={parts:[],name:'pieza'};var f=VIEWS[k];if(!f)return false;f(el);return true}
-window.ANGELA3D={view:view,stop:function(){stopView();clearTimeout(timer)},tiles:TILES,has:function(k){return!!VIEWS[k]},_extrude:extrude,_stl:stl,_surface:surface};
+window.ANGELA3D={sec:'🖨️ Taller 3D · piezas para la impresora 3D',secId:'t3dSec',short:'Taller 3D',view:view,stop:function(){stopView();clearTimeout(timer)},tiles:TILES,has:function(k){return!!VIEWS[k]},_extrude:extrude,_stl:stl,_surface:surface};
 
 /* botón en el menú: abre Herramientas en la parte del Taller 3D */
 function addMenu(){
@@ -12344,3 +12345,135 @@ console.info('[ÁNGELA] Taller 3D: llavero, cartel, QR, litofanía, marco y caja
 })();
 </script>
 <!-- ===== FIN TALLER 3D ===== -->
+
+<!-- ===== V12.86: CÁMARAS EN VIVO (DVR Hikvision por go2rtc en la PC + cámara USB). Agregado al final; no toca nada existente. ===== -->
+<style id="angela-camaras-style">
+.cam-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.cam-grid{display:grid;gap:6px;background:#000;border-radius:12px;padding:6px}
+.cam-grid:fullscreen{border-radius:0;padding:4px;align-content:center;height:100vh}
+.cam-cell{position:relative;aspect-ratio:16/9;background:#0b0b10;border-radius:8px;overflow:hidden}
+.cam-cell iframe,.cam-cell video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;object-fit:contain}
+.cam-hit{position:absolute;inset:0;background:transparent;border:0;cursor:zoom-in}
+.cam-name{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:6px;pointer-events:none}
+.cam-big{aspect-ratio:auto;height:min(72vh,56vw)}
+.cam-grid:fullscreen .cam-big{height:calc(100vh - 8px)}
+.cam-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:6px;vertical-align:middle}
+.cam-dot.ok{background:#22c55e;box-shadow:0 0 8px #22c55e}
+.cam-steps{margin:8px 0 0;padding-left:20px;font-size:13.5px;line-height:1.6;color:#d6d6e6}
+.cam-steps li{margin-bottom:6px}
+.cam-steps code{background:#141419;border:1px solid #353545;border-radius:5px;padding:1px 6px;font-size:12.5px}
+</style>
+<script id="angela-camaras-v1">
+(function(){'use strict';
+if(window.ANGELACam)return;
+var BASE='http://127.0.0.1:1984',KEY='ANGELA_CAM_V1';
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function toast(m){var t=$('herrToast');if(!t)return alert(m);t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},4000)}
+function saveBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+var C={};function load(){try{C=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){C={}}C.ip=C.ip||'';C.user=C.user||'admin';C.port=C.port||554;C.n=C.n||16;C.mode=C.mode||'dvr';C.names=Array.isArray(C.names)?C.names:[];C.grid=C.grid||16;C.page=C.page||0}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(C))}catch(e){}}
+function camName(k){return(C.names[k-1]||'').trim()||('Cámara '+k)}
+function chan(k){return C.mode==='ip'?(32+k):k}
+var STREAMS=[];
+
+/* ---------- ¿está prendido el puente (go2rtc)? ---------- */
+function ping(){return new Promise(function(res){var done=false,ctl=window.AbortController?new AbortController():null;var to=setTimeout(function(){if(!done){done=true;try{ctl&&ctl.abort()}catch(e){}res(false)}},3500);
+  fetch(BASE+'/api/streams',{cache:'no-store',signal:ctl&&ctl.signal}).then(function(r){return r.ok?r.json():null}).then(function(j){if(done)return;done=true;clearTimeout(to);res(j||false)}).catch(function(){if(done)return;done=true;clearTimeout(to);res(false)})})}
+
+/* ---------- VER CÁMARAS ---------- */
+var BIG=0;
+function stop(){var el=$('camWrap');if(el)el.querySelectorAll('iframe').forEach(function(f){f.src='about:blank'});var v=$('camPcVideo');if(v&&v.srcObject){v.srcObject.getTracks().forEach(function(t){t.stop()});v.srcObject=null}}
+function vVer(el){
+  load();BIG=0;
+  el.innerHTML='<div class="cam-bar"><span id="camSt" class="herr-mini" style="margin:0"><span class="cam-dot"></span>Buscando el puente de las cámaras…</span></div><div id="camWrap"></div>';
+  ping().then(function(j){
+    if(!document.body.contains(el))return;
+    if(j){STREAMS=Object.keys(j);$('camSt').innerHTML='<span class="cam-dot ok"></span>Cámaras conectadas';draw();return}
+    $('camSt').innerHTML='<span class="cam-dot"></span>El puente de las cámaras no está prendido';
+    $('camWrap').innerHTML='<div class="herr-card"><h3>📹 Falta prender el puente</h3><p class="herr-sub">Para ver el DVR, en esta PC tiene que estar abierto el programita <b>go2rtc</b> (es el "puente" entre el DVR y ÁNGELA).</p>'+
+      '<ol class="cam-steps"><li>Andá a la carpeta <b>Cámaras ÁNGELA</b> y hacé doble clic en <code>Iniciar cámaras.bat</code>.</li><li>Si Windows pregunta por el <b>firewall</b>, tocá <b>Permitir</b>.</li><li>Si Chrome pregunta si ÁNGELA puede <b>acceder a dispositivos de tu red</b>, tocá <b>Permitir</b>.</li><li>Volvé acá y tocá <b>🔄 Probar de nuevo</b>.</li></ol>'+
+      '<div class="herr-row"><button class="herr-btn grad" id="camRetry">🔄 Probar de nuevo</button><button class="herr-btn" id="camCfg">⚙️ Es la primera vez: configurar</button><button class="herr-btn" id="camForce">Mostrar igual</button></div></div>';
+    $('camRetry').onclick=function(){vVer(el)};$('camCfg').onclick=function(){ANGELAHerr.go('cam_config')};$('camForce').onclick=function(){STREAMS=[];draw()};
+  });
+  function draw(){
+    var n=Math.max(1,Math.min(32,+C.n||16)),g=+C.grid||16,pages=Math.ceil(n/g);if(C.page>=pages)C.page=0;
+    var bar='<div class="cam-bar">'+[1,4,9,16].filter(function(x){return x===1||x<=Math.max(4,n)}).map(function(x){return '<button class="herr-btn sm'+(x===g&&!BIG?' pri':'')+'" data-g="'+x+'">'+(x===1?'1 grande':x===4?'2×2':x===9?'3×3':'4×4')+'</button>'}).join('')+
+      (pages>1&&!BIG?'<button class="herr-btn sm" id="camPrev">◀</button><span class="herr-mini" style="margin:0">Página '+(C.page+1)+' de '+pages+'</span><button class="herr-btn sm" id="camNext">▶</button>':'')+
+      '<button class="herr-btn sm" id="camFull">⛶ Pantalla completa</button><button class="herr-btn sm" id="camReload">🔄 Recargar</button><a class="herr-btn sm" href="'+BASE+'/" target="_blank" rel="noopener">↗️ Ventana aparte</a></div>';
+    var cells='',cols;
+    if(BIG){cols=1;cells='<div class="cam-cell cam-big"><iframe allow="autoplay; fullscreen" src="'+BASE+'/stream.html?src=cam'+BIG+'"></iframe><span class="cam-name">'+esc(camName(BIG))+' · calidad alta</span></div>'}
+    else{cols=Math.round(Math.sqrt(g));for(var k=C.page*g+1;k<=Math.min(n,(C.page+1)*g);k++){var src=STREAMS.length&&STREAMS.indexOf('cam'+k+'_sub')<0?'cam'+k:'cam'+k+'_sub';
+      cells+='<div class="cam-cell"><iframe loading="lazy" allow="autoplay" src="'+BASE+'/stream.html?src='+src+'"></iframe><button class="cam-hit" data-k="'+k+'" title="Ver grande"></button><span class="cam-name">'+esc(camName(k))+'</span></div>'}}
+    $('camWrap').innerHTML=bar+(BIG?'<div class="cam-bar"><button class="herr-btn sm grad" id="camBack">← Volver a todas</button>'+(BIG>1?'<button class="herr-btn sm" id="camBp">◀ Anterior</button>':'')+(BIG<n?'<button class="herr-btn sm" id="camBn">Siguiente ▶</button>':'')+'</div>':'')+'<div class="cam-grid" id="camGrid" style="grid-template-columns:repeat('+cols+',minmax(0,1fr))">'+cells+'</div><div class="herr-mini">Tocá una cámara para verla grande. Si alguna queda en negro, esperá unos segundos o tocá 🔄.</div>';
+    $('camWrap').querySelectorAll('[data-g]').forEach(function(b){b.onclick=function(){C.grid=+b.dataset.g;C.page=0;BIG=0;save();draw()}});
+    $('camWrap').querySelectorAll('.cam-hit').forEach(function(b){b.onclick=function(){BIG=+b.dataset.k;draw()}});
+    if($('camPrev'))$('camPrev').onclick=function(){C.page=(C.page-1+pages)%pages;save();draw()};
+    if($('camNext'))$('camNext').onclick=function(){C.page=(C.page+1)%pages;save();draw()};
+    if($('camBack'))$('camBack').onclick=function(){BIG=0;draw()};
+    if($('camBp'))$('camBp').onclick=function(){BIG--;draw()};
+    if($('camBn'))$('camBn').onclick=function(){BIG++;draw()};
+    $('camReload').onclick=draw;
+    $('camFull').onclick=function(){var gr=$('camGrid');try{(gr.requestFullscreen||gr.webkitRequestFullscreen).call(gr)}catch(e){}};
+  }
+}
+
+/* ---------- CONFIGURAR (primera vez) ---------- */
+function yq(u){return "'"+u.replace(/'/g,"''")+"'"}
+function enc(s){return encodeURIComponent(s).replace(/'/g,'%27')}
+function vConfig(el){
+  load();
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>⚙️ Datos del DVR Hikvision</h3><p class="herr-sub">Esto se hace <b>una sola vez</b>. La contraseña <b>no se guarda en ÁNGELA</b>: va solamente al archivo que bajás a tu PC.</p>'+
+   '<label class="herr-lbl">Dirección del DVR (IP)</label><input class="herr-inp" id="cIp" placeholder="Ej: 192.168.1.64" value="'+esc(C.ip)+'">'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Usuario</label><input class="herr-inp" id="cUser" value="'+esc(C.user)+'"></div><div><label class="herr-lbl">Contraseña del DVR</label><input class="herr-inp" id="cPass" type="password" autocomplete="off" placeholder="La que usás en el DVR"></div></div>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Cantidad de cámaras</label><input class="herr-inp" id="cN" type="number" min="1" max="32" value="'+esc(C.n)+'"></div><div><label class="herr-lbl">Puerto RTSP</label><input class="herr-inp" id="cPort" type="number" value="'+esc(C.port)+'"></div></div>'+
+   '<label class="herr-lbl">Tipo de cámaras</label><select class="herr-sel" id="cMode"><option value="dvr"'+(C.mode==='dvr'?' selected':'')+'>De cable al DVR (lo normal)</option><option value="ip"'+(C.mode==='ip'?' selected':'')+'>Cámaras IP en un DVR híbrido (canales desde el 33)</option></select>'+
+   '<label class="herr-lbl">Nombres de las cámaras (una por línea, opcional)</label><textarea class="herr-ta" id="cNames" style="min-height:110px" placeholder="Puerta&#10;Cocina&#10;Patio&#10;Salón">'+esc(C.names.join('\n'))+'</textarea>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="cYaml">⬇️ 1. Bajar go2rtc.yaml</button><button class="herr-btn pri" id="cBat">⬇️ 2. Bajar Iniciar cámaras.bat</button></div><div class="herr-status" id="cSt"></div></div>'+
+   '<div class="herr-card"><h3>📋 Pasos (una sola vez)</h3><ol class="cam-steps">'+
+   '<li>En tu PC creá una carpeta llamada <b>Cámaras ÁNGELA</b> (por ejemplo en Documentos).</li>'+
+   '<li>Bajá el programa gratis <b>go2rtc</b>: <a href="https://github.com/AlexxIT/go2rtc/releases/latest" target="_blank" rel="noopener" style="color:#a78bfa">abrí esta página</a> y tocá el archivo que termina en <code>win64.zip</code>. Abrí el zip y copiá <code>go2rtc.exe</code> a la carpeta.</li>'+
+   '<li>Completá los datos de acá al lado y bajá los dos archivos (<code>go2rtc.yaml</code> e <code>Iniciar cámaras.bat</code>). Movelos a la misma carpeta.</li>'+
+   '<li>Hacé doble clic en <code>Iniciar cámaras.bat</code>. Si Windows pregunta por el firewall, tocá <b>Permitir</b>.</li>'+
+   '<li>Volvé a ÁNGELA → <b>📹 Ver cámaras en vivo</b>.</li></ol>'+
+   '<div class="herr-info" style="margin-top:10px;font-size:12.5px;line-height:1.55">🔎 <b>¿No sabés la IP del DVR?</b> En el monitor del DVR: Menú → Configuración → Red. También aparece en el router, en la lista de equipos conectados.<br>🔁 <b>Para que arranque solo con Windows:</b> apretá Windows+R, escribí <code>shell:startup</code> y copiá ahí un acceso directo de <code>Iniciar cámaras.bat</code>.<br>🏠 Funciona en la PC que está en la misma red que el DVR. Desde afuera de casa seguí usando la app Hik-Connect.</div></div></div>';
+  function read(){C.ip=$('cIp').value.trim();C.user=$('cUser').value.trim()||'admin';C.n=Math.max(1,Math.min(32,parseInt($('cN').value,10)||16));C.port=parseInt($('cPort').value,10)||554;C.mode=$('cMode').value;C.names=$('cNames').value.split('\n');save()}
+  ['cIp','cUser','cN','cPort','cMode','cNames'].forEach(function(id){$(id).addEventListener('change',read)});
+  $('cYaml').onclick=function(){read();var pw=$('cPass').value;
+    if(!/^[\w.-]+$/.test(C.ip)){$('cSt').textContent='⚠️ Escribí la IP del DVR (por ejemplo 192.168.1.64).';$('cIp').focus();return}
+    if(!pw){$('cSt').textContent='⚠️ Escribí la contraseña del DVR. No se guarda en ÁNGELA.';$('cPass').focus();return}
+    var auth=enc(C.user)+':'+enc(pw)+'@',y='# ÁNGELA · Cámaras Hikvision (go2rtc)\n# OJO: este archivo tiene la contraseña del DVR. No lo compartas.\napi:\n  listen: "127.0.0.1:1984"\n  origin: "*"\nrtsp:\n  listen: "127.0.0.1:8554"\nstreams:\n';
+    for(var k=1;k<=C.n;k++){var ch=chan(k),u='rtsp://'+auth+C.ip+':'+C.port+'/Streaming/Channels/';y+='  cam'+k+': '+yq(u+ch+'01')+'\n  cam'+k+'_sub: '+yq(u+ch+'02')+'\n'}
+    saveBlob(new Blob([y],{type:'text/yaml'}),'go2rtc.yaml');$('cPass').value='';
+    $('cSt').textContent='✅ go2rtc.yaml listo con '+C.n+' cámaras. Ahora bajá el paso 2.'};
+  $('cBat').onclick=function(){var b=['@echo off','title ANGELA - Camaras','cd /d "%~dp0"','if not exist go2rtc.exe (','  echo Falta go2rtc.exe en esta carpeta.','  pause','  exit /b',')','if not exist go2rtc.yaml (','  echo Falta go2rtc.yaml en esta carpeta.','  pause','  exit /b',')','start "ANGELA camaras" /min go2rtc.exe','echo Camaras prendidas. Ya podes volver a ANGELA.','timeout /t 4 >nul'].join('\r\n')+'\r\n';
+    saveBlob(new Blob([b],{type:'application/octet-stream'}),'Iniciar cámaras.bat');$('cSt').textContent='✅ Iniciar cámaras.bat listo. Ponelo en la misma carpeta que go2rtc.exe y go2rtc.yaml.'};
+}
+
+/* ---------- CÁMARA DE LA PC (USB / webcam) ---------- */
+function vPc(el){
+  el.innerHTML='<div class="herr-card"><h3>🎥 Cámara conectada a la PC</h3><p class="herr-sub">Una webcam o cámara USB. Chrome te va a pedir permiso la primera vez.</p><div class="herr-row" style="margin-top:0"><select class="herr-sel" id="pcSel" style="width:auto;min-width:220px"><option value="">Cámara principal</option></select><button class="herr-btn grad" id="pcGo">▶️ Ver</button><button class="herr-btn" id="pcFull">⛶ Pantalla completa</button></div>'+
+   '<div class="cam-grid" style="margin-top:10px"><div class="cam-cell cam-big"><video id="camPcVideo" autoplay playsinline muted></video></div></div><div class="herr-status" id="pcSt"></div></div>';
+  function list(){if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)return;navigator.mediaDevices.enumerateDevices().then(function(d){var v=d.filter(function(x){return x.kind==='videoinput'});if(v.length)$('pcSel').innerHTML=v.map(function(x,i){return '<option value="'+esc(x.deviceId)+'">'+esc(x.label||('Cámara '+(i+1)))+'</option>'}).join('')}).catch(function(){})}
+  function go(){stop();if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('pcSt').textContent='Este navegador no deja usar la cámara.';return}
+    var id=$('pcSel').value;navigator.mediaDevices.getUserMedia({video:id?{deviceId:{exact:id},width:{ideal:1920}}:{width:{ideal:1920}},audio:false}).then(function(s){var v=$('camPcVideo');if(!v){s.getTracks().forEach(function(t){t.stop()});return}v.srcObject=s;$('pcSt').textContent='🟢 En vivo';list()}).catch(function(e){$('pcSt').textContent='No se pudo abrir la cámara: '+(e&&e.name==='NotAllowedError'?'falta el permiso (tocá el candado al lado del link y permití la cámara).':(e&&e.message||e))})}
+  $('pcGo').onclick=go;$('pcSel').onchange=go;$('pcFull').onclick=function(){var v=$('camPcVideo');try{(v.requestFullscreen||v.webkitRequestFullscreen).call(v)}catch(e){}};list();
+}
+
+var VIEWS={cam_ver:vVer,cam_config:vConfig,cam_pc:vPc};
+var TILES=[['cam_ver','📹','Ver cámaras en vivo','Las cámaras del DVR Hikvision juntas, en la PC. Tocás una y se ve grande.'],
+ ['cam_config','⚙️','Configurar cámaras','Primera vez: datos del DVR y el puente para la PC.'],
+ ['cam_pc','🎥','Cámara de la PC','Ver una webcam o cámara USB conectada.']];
+window.ANGELACam={sec:'📹 Cámaras de seguridad',secId:'camSec',short:'Cámaras',tiles:TILES,has:function(k){return!!VIEWS[k]},view:function(k,el){stop();VIEWS[k](el)},stop:stop,_ping:ping};
+
+function addMenu(){
+  if($('camMenuBtn'))return;var ref=$('t3dMenuBtn')||$('herrMenuBtn');if(!ref)return;
+  var b=document.createElement('button');b.id='camMenuBtn';b.className='angela-photo-btn';b.innerHTML='<span class="ico">📹</span> Cámaras';
+  b.onclick=function(){if(!window.ANGELAHerr)return;load();ANGELAHerr.open();ANGELAHerr.go(C.ip?'cam_ver':'cam_config')};
+  ref.parentNode.insertBefore(b,ref.nextSibling);
+}
+setTimeout(addMenu,2800);setTimeout(addMenu,5000);setTimeout(addMenu,8500);
+console.info('[ÁNGELA] Cámaras: DVR Hikvision por go2rtc y cámara de la PC');
+})();
+</script>
+<!-- ===== FIN CÁMARAS ===== -->
