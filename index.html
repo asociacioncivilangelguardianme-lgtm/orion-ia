@@ -11472,13 +11472,13 @@ function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').tex
 function home(){
   stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
   var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
-  [window.ANGELACam,window.ANGELA3D].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
+  [window.ANGELACam,window.ANGELA3D,window.ANGELAPro].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
   h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
   $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
 }
 function go(k){
   stopAll();
-  var EX=[window.ANGELACam,window.ANGELA3D].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
+  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELAPro].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
   var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
   CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
   ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
@@ -12477,3 +12477,210 @@ console.info('[ÁNGELA] Cámaras: DVR Hikvision por go2rtc y cámara de la PC');
 })();
 </script>
 <!-- ===== FIN CÁMARAS ===== -->
+
+<!-- ===== ÁNGELA · GESTIÓN PRO V1 =====
+     Suma en Herramientas la sección «💼 Gestión profesional»:
+     🧾 Constancia de donación · 📊 Rendición del mes · 💼 Presupuestos del taller · 🙋 Voluntarios y turnos · 📢 Publicidad en la radio.
+     Lee (sin tocar) los Donantes y Gastos e Ingresos del Centro de Gestión y las Raciones de la Cocina del comedor.
+     Guarda lo suyo en ANGELA_GESTION_PRO_V1 (entra en la copia de seguridad). No toca QR, regalos ni eventos.
+     Para quitarlo, borrá desde acá hasta "FIN GESTIÓN PRO V1". -->
+<style id="agp-style">
+.agp-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}
+.agp-kpi{background:#141419;border:1px solid #272733;border-radius:12px;padding:12px}
+.agp-kpi small{display:block;color:#9b9bb2;font-size:11.5px}.agp-kpi b{font-size:20px}
+.agp-kpi.g b{color:#4ade80}.agp-kpi.r b{color:#f87171}.agp-kpi.c b{color:#22d3ee}
+.agp-days{display:flex;gap:5px;flex-wrap:wrap}
+.agp-days label{display:inline-flex;align-items:center;gap:4px;padding:5px 9px;border:1px solid #353545;border-radius:999px;font-size:12px;cursor:pointer}
+.agp-days input{accent-color:#7c5cff}
+.agp-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;background:#272733;color:#cfcfe0}
+.agp-pill.ok{background:rgba(34,197,94,.18);color:#86efac}.agp-pill.warn{background:rgba(245,158,11,.18);color:#fcd34d}.agp-pill.bad{background:rgba(239,68,68,.18);color:#fca5a5}
+.agp-now{background:rgba(34,211,238,.1);border-radius:8px}
+</style>
+<script id="angela-gestion-pro-v1">
+(function(){'use strict';if(window.ANGELAPro)return;
+var KEY='ANGELA_GESTION_PRO_V1',MASTER='ANGELA_MASTER_LOCAL_V1',COCINA='ANGELA_COCINA_V1';
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function num(v){var s=String(v==null?'':v).trim().replace(/[$\s]/g,'');if(s.indexOf(',')>=0)s=s.replace(/\./g,'').replace(',','.');else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');var n=parseFloat(s);return isFinite(n)?n:0}
+function money(n){return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(+n||0)}
+function pad(n,l){return String(n).padStart(l||2,'0')}
+function today(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function month(){return today().slice(0,7)}
+function fdate(s){if(!s)return '';var p=String(s).slice(0,10).split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:s}
+var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function mname(m){var p=String(m).split('-');return MESES[(+p[1]||1)-1]+' '+p[0]}
+var DIAS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var D;
+function load(){try{D=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){D={}}
+ D.cfg=Object.assign({inst:'Comedor Ángel Guardián',dir:'Merlo, Buenos Aires',cuit:'',resp:'',alias:(localStorage.getItem('comedor_alias')||'ac.angel.guardian'),tel:'',valorHora:0,taller:'Taller Ángel Guardián'},D.cfg||{});
+ ['recibos','presu','vol','ads'].forEach(function(k){if(!Array.isArray(D[k]))D[k]=[]});D.turnos=D.turnos&&typeof D.turnos==='object'?D.turnos:{};D.nR=+D.nR||1;D.nP=+D.nP||1}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('⚠️ No se pudo guardar (memoria llena).')}}
+function master(){try{return JSON.parse(localStorage.getItem(MASTER)||'{}')||{}}catch(e){return {}}}
+function cocina(){try{return JSON.parse(localStorage.getItem(COCINA)||'{}')||{}}catch(e){return {}}}
+function toast(m){var t=$('herrToast');if(!t)return alert(m);t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},3800)}
+function copy(txt){try{navigator.clipboard.writeText(txt).then(function(){toast('Copiado ✅')},function(){prompt('Copiá el texto:',txt)})}catch(e){prompt('Copiá el texto:',txt)}}
+function waNum(t){var d=String(t||'').replace(/\D/g,'');if(!d)return '';if(d.indexOf('54')===0)return d;d=d.replace(/^0/,'');if(/^(11|15)/.test(d)&&d.length===10)return '549'+d;if(d.indexOf('15')===2&&d.length===12)d=d.slice(0,2)+d.slice(4);return '549'+d}
+function wa(txt,tel){var n=waNum(tel);window.open('https://wa.me/'+n+'?text='+encodeURIComponent(txt),'_blank','noopener')}
+function printDoc(title,body){var w=window.open('','_blank');if(!w)return toast('El navegador bloqueó la ventana. Permití ventanas emergentes para ÁNGELA.');
+ w.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:28px;font-size:14px}h1{font-size:20px;margin:0}h2{font-size:15px;margin:18px 0 6px}.hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:14px}.mut{color:#555;font-size:12px}.box{border:1px solid #999;border-radius:8px;padding:12px;margin:10px 0}table{width:100%;border-collapse:collapse;margin-top:6px}th,td{border-bottom:1px solid #ccc;padding:6px;text-align:left;font-size:13px}th{background:#f2f2f2}.r{text-align:right}.big{font-size:22px;font-weight:bold}.firma{margin-top:56px;width:240px;border-top:1px solid #111;text-align:center;padding-top:4px;font-size:12px}.nota{font-size:11px;color:#555;margin-top:18px}@media print{button{display:none}}</style></head><body>'+body+'<p style="margin-top:24px"><button onclick="window.print()" style="padding:10px 16px;font-size:14px">🖨️ Imprimir o guardar PDF</button></p></body></html>');
+ w.document.close();setTimeout(function(){try{w.focus();w.print()}catch(e){}},400)}
+function header(sub){var c=D.cfg;return '<div class="hd"><div><h1>'+esc(c.inst)+'</h1><div class="mut">'+esc(c.dir)+(c.cuit?' · CUIT '+esc(c.cuit):'')+(c.tel?' · Tel. '+esc(c.tel):'')+'</div></div><div class="mut" style="text-align:right">'+sub+'</div></div>'}
+function cfgBox(fields){var c=D.cfg;return '<details class="herr-card"><summary style="cursor:pointer;font-weight:700">⚙️ Datos de la institución (salen en los papeles)</summary><div class="herr-cols" style="margin-top:8px">'+
+ fields.map(function(f){return '<div><label class="herr-lbl">'+f[1]+'</label><input class="herr-inp" value="'+esc(c[f[0]])+'" placeholder="'+esc(f[2]||'')+'" onchange="ANGELAPro.cfg(\''+f[0]+'\',this.value)"></div>'}).join('')+'</div></details>'}
+var EL=null;function rerender(){if(EL&&CURK)VIEWS[CURK](EL)}var CURK='';
+
+/* ================= 🧾 CONSTANCIA DE DONACIÓN ================= */
+function vRecibo(el){var c=D.cfg,ms=master(),dn=(ms.donantes||[]).slice(0,40);
+ el.innerHTML=cfgBox([['inst','Institución'],['dir','Dirección / localidad'],['cuit','CUIT (opcional)','Si tienen'],['resp','Quién firma','Nombre y cargo'],['tel','Teléfono'],['alias','Alias']])+
+ '<div class="herr-card"><h3>Nueva constancia</h3><p class="herr-sub">Para darle a quien dona: un papel con número, fecha y lo que dio. Genera confianza y sirve para rendir cuentas.</p>'+
+ (dn.length?'<label class="herr-lbl">Traer de Donantes (Centro de Gestión)</label><select class="herr-sel" id="agpDn" onchange="ANGELAPro.fromDon(this.value)"><option value="">— Elegí un donante —</option>'+dn.map(function(d,i){return '<option value="'+i+'">'+esc(d.nombre||'(sin nombre)')+' · '+money(d.monto)+' · '+fdate(d.fecha)+'</option>'}).join('')+'</select>':'')+
+ '<div class="herr-cols"><div><label class="herr-lbl">Fecha</label><input class="herr-inp" type="date" id="agpF" value="'+today()+'"></div><div><label class="herr-lbl">Quién dona</label><input class="herr-inp" id="agpN" placeholder="Nombre o comercio"></div><div><label class="herr-lbl">DNI / CUIT (opcional)</label><input class="herr-inp" id="agpDni"></div></div>'+
+ '<div class="herr-cols"><div><label class="herr-lbl">Qué donó</label><select class="herr-sel" id="agpT" onchange="ANGELAPro.tipoR(this.value)"><option value="dinero">💵 Dinero</option><option value="mercaderia">📦 Mercadería</option></select></div><div id="agpMW"><label class="herr-lbl">Monto</label><input class="herr-inp" id="agpM" inputmode="decimal" placeholder="Ej: 15000"></div><div><label class="herr-lbl">Cómo</label><select class="herr-sel" id="agpMed"><option>Transferencia al alias</option><option>Efectivo</option><option>Mercado Pago</option><option>En mano (mercadería)</option></select></div></div>'+
+ '<label class="herr-lbl">Detalle (para mercadería: qué y cuánto)</label><input class="herr-inp" id="agpDet" placeholder="Ej: 10 pan dulces, 5 sidras">'+
+ '<label class="herr-lbl">Para qué</label><input class="herr-inp" id="agpC" value="'+esc(D.lastConcepto||'Campaña Cajas Navideñas Solidarias')+'">'+
+ '<div class="herr-row"><button class="herr-btn grad" onclick="ANGELAPro.newRecibo()">🧾 Generar constancia N° '+pad(D.nR,4)+'</button></div></div>'+
+ '<div class="herr-card"><h3>Constancias hechas ('+D.recibos.length+')</h3>'+(D.recibos.length?'<div class="herr-scroll"><table class="herr-tbl"><tr><th>N°</th><th>Fecha</th><th>Quién</th><th>Qué</th><th></th></tr>'+
+  D.recibos.slice().reverse().map(function(r){return '<tr><td>'+pad(r.n,4)+'</td><td>'+fdate(r.fecha)+'</td><td>'+esc(r.nombre)+'</td><td>'+(r.tipo==='dinero'?money(r.monto):esc(r.detalle))+'</td><td style="white-space:nowrap"><button class="herr-btn sm" onclick="ANGELAPro.printR(\''+r.id+'\')">🖨️</button> <button class="herr-btn sm" onclick="ANGELAPro.waR(\''+r.id+'\')">💬</button> <button class="herr-x" onclick="ANGELAPro.delR(\''+r.id+'\')">✕</button></td></tr>'}).join('')+'</table></div>':'<p class="herr-mini">Todavía no hiciste ninguna.</p>')+'</div>'}
+function fromDon(i){var d=(master().donantes||[])[+i];if(!d)return;$('agpN').value=d.nombre||'';$('agpM').value=d.monto||'';if(d.fecha)$('agpF').value=String(d.fecha).slice(0,10);$('agpT').value='dinero';tipoR('dinero')}
+function tipoR(v){var w=$('agpMW');if(w)w.style.display=v==='dinero'?'':'none'}
+function newRecibo(){var r={id:uid(),n:D.nR,fecha:$('agpF').value||today(),nombre:$('agpN').value.trim(),dni:$('agpDni').value.trim(),tipo:$('agpT').value,monto:num($('agpM').value),medio:$('agpMed').value,detalle:$('agpDet').value.trim(),concepto:$('agpC').value.trim()};
+ if(!r.nombre)return toast('Escribí quién dona');if(r.tipo==='dinero'&&!r.monto)return toast('Poné el monto');if(r.tipo!=='dinero'&&!r.detalle)return toast('Escribí qué mercadería donó');
+ D.recibos.push(r);D.nR++;D.lastConcepto=r.concepto;save();printR(r.id);rerender();toast('🧾 Constancia N° '+pad(r.n,4)+' guardada')}
+function findR(id){return D.recibos.filter(function(x){return x.id===id})[0]}
+function printR(id){var r=findR(id),c=D.cfg;if(!r)return;
+ printDoc('Constancia de donación N° '+pad(r.n,4),header('<b style="font-size:16px;color:#111">CONSTANCIA DE DONACIÓN</b><br>N° '+pad(r.n,4)+'<br>Fecha: '+fdate(r.fecha))+
+  '<p>Dejamos constancia de que recibimos de <b>'+esc(r.nombre)+'</b>'+(r.dni?' (DNI/CUIT '+esc(r.dni)+')':'')+' la siguiente donación:</p>'+
+  '<div class="box">'+(r.tipo==='dinero'?'<div class="big">'+money(r.monto)+'</div><div class="mut">'+esc(r.medio)+'</div>':'<div class="big">Mercadería</div><div>'+esc(r.detalle)+'</div>')+(r.tipo==='dinero'&&r.detalle?'<div class="mut">'+esc(r.detalle)+'</div>':'')+'</div>'+
+  (r.concepto?'<p>Destino: <b>'+esc(r.concepto)+'</b>.</p>':'')+'<p>¡Muchas gracias por ayudarnos a seguir acompañando a las familias del barrio! 💛</p>'+
+  '<div class="firma">'+esc(c.resp||'Firma y aclaración')+'<br>'+esc(c.inst)+'</div>'+
+  '<p class="nota">Esta constancia acredita la donación recibida. No es una factura ni un comprobante fiscal.'+(c.alias?' Para seguir ayudando: alias '+esc(c.alias)+'.':'')+'</p>')}
+function waR(id){var r=findR(id),c=D.cfg;if(!r)return;wa('¡Hola '+r.nombre+'! 💛 Te confirmamos que recibimos tu donación'+(r.tipo==='dinero'?' de '+money(r.monto):': '+r.detalle)+' el '+fdate(r.fecha)+(r.concepto?' para '+r.concepto:'')+'. Constancia N° '+pad(r.n,4)+'.\n\n¡Gracias por ayudarnos a acompañar a las familias! — '+c.inst)}
+function delR(id){if(!confirm('¿Borrar esta constancia? (el número no se vuelve a usar)'))return;D.recibos=D.recibos.filter(function(x){return x.id!==id});save();rerender()}
+
+/* ================= 📊 RENDICIÓN DEL MES ================= */
+var RM=month();
+function racTot(x){return ['almuerzo','merienda','vianda','cena'].reduce(function(a,k){return a+num(x[k])},0)}
+function datos(m){var ms=master(),fin=(ms.finanzas||[]).filter(function(x){return String(x.fecha||'').slice(0,7)===m}),
+  ing=fin.filter(function(x){return x.tipo==='Ingreso'}),gas=fin.filter(function(x){return x.tipo==='Gasto'}),
+  rec=D.recibos.filter(function(r){return String(r.fecha).slice(0,7)===m}),rac=(cocina().raciones||[]).filter(function(x){return String(x.fecha||'').slice(0,7)===m});
+ var sI=ing.reduce(function(a,x){return a+num(x.monto)},0),sG=gas.reduce(function(a,x){return a+num(x.monto)},0),sR=rac.reduce(function(a,x){return a+racTot(x)},0),
+  sD=rec.filter(function(r){return r.tipo==='dinero'}).reduce(function(a,r){return a+r.monto},0);
+ return {ing:ing,gas:gas,rec:rec,rac:rac,sI:sI,sG:sG,sR:sR,sD:sD,dias:rac.length}}
+function vRend(el){var d=datos(RM);
+ el.innerHTML='<div class="herr-card"><h3>Rendición de '+esc(mname(RM))+'</h3><p class="herr-sub">Junta lo que cargaste en <b>Gastos e Ingresos</b>, las <b>constancias de donación</b> y las <b>raciones</b> de la cocina. Sirve para mostrarle a los donantes y al municipio en qué se usó todo.</p>'+
+  '<div class="herr-row"><input class="herr-inp" type="month" value="'+RM+'" style="max-width:200px" onchange="ANGELAPro.mes(this.value)"></div>'+
+  '<div class="agp-kpis"><div class="agp-kpi g"><small>Ingresos</small><b>'+money(d.sI)+'</b></div><div class="agp-kpi r"><small>Gastos</small><b>'+money(d.sG)+'</b></div><div class="agp-kpi"><small>Saldo</small><b>'+money(d.sI-d.sG)+'</b></div><div class="agp-kpi c"><small>Raciones servidas</small><b>'+d.sR.toLocaleString('es-AR')+'</b></div><div class="agp-kpi"><small>Constancias de donación</small><b>'+d.rec.length+'</b></div></div>'+
+  (!d.ing.length&&!d.gas.length?'<div class="herr-info herr-warn">No hay ingresos ni gastos cargados en '+esc(mname(RM))+'. Se cargan en Centro de Gestión → 💰 Gastos e Ingresos.</div>':'')+
+  '<div class="herr-row"><button class="herr-btn grad" onclick="ANGELAPro.printRend()">🖨️ Imprimir / guardar PDF</button><button class="herr-btn" onclick="ANGELAPro.redes()">📣 Texto para redes</button></div></div>'+
+  (d.gas.length?'<div class="herr-card"><h3>En qué se gastó</h3><div class="herr-scroll"><table class="herr-tbl"><tr><th>Fecha</th><th>Concepto</th><th class="r">Monto</th></tr>'+d.gas.map(function(x){return '<tr><td>'+fdate(x.fecha)+'</td><td>'+esc(x.concepto)+'</td><td>'+money(x.monto)+'</td></tr>'}).join('')+'</table></div></div>':'')}
+function printRend(){var d=datos(RM),c=D.cfg;
+ function tbl(rows,cols){return rows.length?'<table><tr>'+cols.map(function(c){return '<th>'+c[0]+'</th>'}).join('')+'</tr>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td'+(c[2]?' class="r"':'')+'>'+c[1](r)+'</td>'}).join('')+'</tr>'}).join('')+'</table>':'<p class="mut">Sin movimientos.</p>'}
+ printDoc('Rendición '+mname(RM),header('<b style="font-size:16px;color:#111">RENDICIÓN DE CUENTAS</b><br>'+esc(mname(RM)))+
+  '<table><tr><th>Ingresos</th><th>Gastos</th><th>Saldo</th><th>Raciones servidas</th></tr><tr><td class="big">'+money(d.sI)+'</td><td class="big">'+money(d.sG)+'</td><td class="big">'+money(d.sI-d.sG)+'</td><td class="big">'+d.sR.toLocaleString('es-AR')+'</td></tr></table>'+
+  '<h2>Ingresos</h2>'+tbl(d.ing,[['Fecha',function(x){return fdate(x.fecha)}],['Concepto',function(x){return esc(x.concepto)}],['Monto',function(x){return money(x.monto)},1]])+
+  '<h2>Gastos</h2>'+tbl(d.gas,[['Fecha',function(x){return fdate(x.fecha)}],['Concepto',function(x){return esc(x.concepto)}],['Monto',function(x){return money(x.monto)},1]])+
+  '<h2>Donaciones con constancia</h2>'+tbl(d.rec,[['N°',function(r){return pad(r.n,4)}],['Fecha',function(r){return fdate(r.fecha)}],['Quién',function(r){return esc(r.nombre)}],['Qué',function(r){return r.tipo==='dinero'?money(r.monto):esc(r.detalle)},1]])+
+  '<h2>Raciones servidas</h2><p>'+d.sR.toLocaleString('es-AR')+' raciones en '+d.dias+' día(s) de cocina.</p>'+
+  '<div class="firma">'+esc(c.resp||'Firma y aclaración')+'<br>'+esc(c.inst)+'</div><p class="nota">Rendición armada con ÁNGELA a partir de los datos cargados por la institución.</p>')}
+function redes(){var d=datos(RM),c=D.cfg;var t='💛 Así fue '+mname(RM)+' en el '+c.inst+':\n\n'+(d.sR?'🍲 Servimos '+d.sR.toLocaleString('es-AR')+' raciones'+(d.dias?' en '+d.dias+' días de cocina':'')+'.\n':'')+(d.sG?'🛒 Invertimos '+money(d.sG)+' en alimentos e insumos.\n':'')+(d.rec.length?'🙌 Recibimos '+d.rec.length+' donaciones con constancia.\n':'')+'\nTodo esto es posible gracias a ustedes. ¡Gracias por confiar!'+(c.alias?'\n\nPara seguir ayudando: alias '+c.alias:'')+'\n\n#ComedorAngelGuardian #Merlo #Solidaridad';copy(t)}
+
+/* ================= 💼 PRESUPUESTOS DEL TALLER ================= */
+var ESTP=['Presupuestado','Aceptado','En proceso','Listo','Entregado','Cancelado'];
+function calcP(p){var cost=num(p.mat)+num(p.horas)*num(p.valorHora)+num(p.otros);var tot=Math.round(cost*(1+num(p.gan)/100));var cant=Math.max(1,num(p.cant)||1);return {cost:cost,tot:tot,uni:Math.round(tot/cant),sena:Math.round(tot*num(p.sena)/100)}}
+function vPresu(el){var c=D.cfg;
+ el.innerHTML=cfgBox([['taller','Nombre del taller'],['tel','Teléfono / WhatsApp'],['dir','Dirección']])+
+ '<div class="herr-card"><h3>Nuevo presupuesto</h3><p class="herr-sub">Láser, 3D, sublimación o lo que sea: ponés lo que te cuesta y ÁNGELA te da el precio justo, con un presupuesto lindo para mandar.</p>'+
+ '<div class="herr-cols"><div><label class="herr-lbl">Cliente</label><input class="herr-inp" id="apC"></div><div><label class="herr-lbl">WhatsApp del cliente</label><input class="herr-inp" id="apT" placeholder="11 2345-6789"></div><div><label class="herr-lbl">Cantidad</label><input class="herr-inp" id="apQ" value="1" inputmode="numeric" oninput="ANGELAPro.calc()"></div></div>'+
+ '<label class="herr-lbl">Trabajo</label><input class="herr-inp" id="apW" placeholder="Ej: 50 llaveros de MDF grabados con logo">'+
+ '<div class="herr-cols"><div><label class="herr-lbl">Materiales ($)</label><input class="herr-inp" id="apM" inputmode="decimal" oninput="ANGELAPro.calc()"></div><div><label class="herr-lbl">Horas de máquina</label><input class="herr-inp" id="apH" inputmode="decimal" oninput="ANGELAPro.calc()"></div><div><label class="herr-lbl">Valor hora de máquina ($)</label><input class="herr-inp" id="apV" inputmode="decimal" value="'+(c.valorHora||'')+'" oninput="ANGELAPro.calc()" onchange="ANGELAPro.cfg(\'valorHora\',this.value)"></div></div>'+
+ '<div class="herr-cols"><div><label class="herr-lbl">Otros gastos ($)</label><input class="herr-inp" id="apO" inputmode="decimal" oninput="ANGELAPro.calc()" placeholder="Envío, diseño…"></div><div><label class="herr-lbl">Ganancia %</label><input class="herr-inp" id="apG" value="'+(D.lastGan||50)+'" inputmode="decimal" oninput="ANGELAPro.calc()"></div><div><label class="herr-lbl">Seña %</label><input class="herr-inp" id="apS" value="50" inputmode="decimal" oninput="ANGELAPro.calc()"></div></div>'+
+ '<label class="herr-lbl">Entrega estimada</label><input class="herr-inp" type="date" id="apE" style="max-width:220px">'+
+ '<div class="agp-kpis" id="apK"></div>'+
+ '<div class="herr-row"><button class="herr-btn grad" onclick="ANGELAPro.newP()">💾 Guardar y armar presupuesto</button></div></div>'+
+ '<div class="herr-card"><h3>Presupuestos y pedidos ('+D.presu.length+')</h3>'+(D.presu.length?'<div class="herr-scroll"><table class="herr-tbl"><tr><th>N°</th><th>Cliente</th><th>Trabajo</th><th>Total</th><th>Estado</th><th>Entrega</th><th></th></tr>'+
+  D.presu.slice().reverse().map(function(p){var k=calcP(p),late=p.entrega&&p.entrega<today()&&['Entregado','Cancelado'].indexOf(p.estado)<0;
+   return '<tr><td>'+pad(p.n,4)+'</td><td>'+esc(p.cliente)+'</td><td>'+esc(p.trabajo)+'</td><td>'+money(k.tot)+'</td><td><select onchange="ANGELAPro.estP(\''+p.id+'\',this.value)">'+ESTP.map(function(e){return '<option'+(p.estado===e?' selected':'')+'>'+e+'</option>'}).join('')+'</select></td><td>'+(p.entrega?(late?'<span class="agp-pill bad">'+fdate(p.entrega)+' ⚠️</span>':fdate(p.entrega)):'—')+'</td><td style="white-space:nowrap"><button class="herr-btn sm" onclick="ANGELAPro.printP(\''+p.id+'\')">🖨️</button> <button class="herr-btn sm" onclick="ANGELAPro.waP(\''+p.id+'\')">💬</button> <button class="herr-x" onclick="ANGELAPro.delP(\''+p.id+'\')">✕</button></td></tr>'}).join('')+'</table></div>':'<p class="herr-mini">Todavía no hay presupuestos.</p>')+'</div>';
+ calc()}
+function formP(){return {cliente:$('apC').value.trim(),tel:$('apT').value.trim(),cant:num($('apQ').value)||1,trabajo:$('apW').value.trim(),mat:num($('apM').value),horas:num($('apH').value),valorHora:num($('apV').value),otros:num($('apO').value),gan:num($('apG').value),sena:num($('apS').value),entrega:$('apE').value}}
+function calc(){var k=$('apK');if(!k)return;var p=formP(),c=calcP(p);k.innerHTML='<div class="agp-kpi"><small>Te cuesta</small><b>'+money(c.cost)+'</b></div><div class="agp-kpi g"><small>Precio total</small><b>'+money(c.tot)+'</b></div><div class="agp-kpi"><small>Por unidad</small><b>'+money(c.uni)+'</b></div><div class="agp-kpi c"><small>Seña</small><b>'+money(c.sena)+'</b></div>'}
+function newP(){var p=formP();if(!p.cliente||!p.trabajo)return toast('Poné el cliente y el trabajo');p.id=uid();p.n=D.nP++;p.fecha=today();p.estado='Presupuestado';D.presu.push(p);D.lastGan=p.gan;save();printP(p.id);rerender();toast('💼 Presupuesto N° '+pad(p.n,4)+' guardado')}
+function findP(id){return D.presu.filter(function(x){return x.id===id})[0]}
+function estP(id,v){var p=findP(id);if(!p)return;p.estado=v;save();toast('Estado: '+v);if(v==='Listo'&&p.tel&&confirm('¿Le avisás por WhatsApp a '+p.cliente+' que está listo?'))wa('¡Hola '+p.cliente+'! Tu pedido «'+p.trabajo+'» ya está listo para retirar. 🙌 — '+D.cfg.taller,p.tel)}
+function printP(id){var p=findP(id),c=D.cfg;if(!p)return;var k=calcP(p),inst=c.inst;D.cfg.inst=c.taller||c.inst;
+ try{printDoc('Presupuesto N° '+pad(p.n,4),header('<b style="font-size:16px;color:#111">PRESUPUESTO</b><br>N° '+pad(p.n,4)+'<br>Fecha: '+fdate(p.fecha)+'<br>Válido por 7 días')+
+  '<p>Cliente: <b>'+esc(p.cliente)+'</b>'+(p.tel?' · '+esc(p.tel):'')+'</p><table><tr><th>Trabajo</th><th class="r">Cantidad</th><th class="r">Precio unitario</th><th class="r">Total</th></tr><tr><td>'+esc(p.trabajo)+'</td><td class="r">'+(p.cant||1)+'</td><td class="r">'+money(k.uni)+'</td><td class="r"><b>'+money(k.tot)+'</b></td></tr></table>'+
+  '<div class="box"><div class="big">Total: '+money(k.tot)+'</div>'+(k.sena?'<div>Seña para empezar ('+p.sena+'%): <b>'+money(k.sena)+'</b> · Saldo al retirar: <b>'+money(k.tot-k.sena)+'</b></div>':'')+(p.entrega?'<div>Entrega estimada: <b>'+fdate(p.entrega)+'</b></div>':'')+'</div>'+
+  '<p class="nota">Precio expresado en pesos. Presupuesto válido por 7 días desde la fecha.</p>')}finally{D.cfg.inst=inst}}
+function waP(id){var p=findP(id),c=D.cfg;if(!p)return;var k=calcP(p);wa('¡Hola '+p.cliente+'! Te paso el presupuesto N° '+pad(p.n,4)+':\n\n🛠️ '+p.trabajo+'\nCantidad: '+(p.cant||1)+'\nPrecio por unidad: '+money(k.uni)+'\n*Total: '+money(k.tot)+'*'+(k.sena?'\nSeña para empezar: '+money(k.sena):'')+(p.entrega?'\nEntrega estimada: '+fdate(p.entrega):'')+'\n\nVálido por 7 días. ¡Cualquier duda consultame! — '+(c.taller||c.inst),p.tel)}
+function delP(id){if(!confirm('¿Borrar este presupuesto?'))return;D.presu=D.presu.filter(function(x){return x.id!==id});save();rerender()}
+
+/* ================= 🙋 VOLUNTARIOS Y TURNOS ================= */
+var WK=0;
+function weekDays(off){var d=new Date();d.setHours(12,0,0,0);var dow=d.getDay();var mon=new Date(d);mon.setDate(d.getDate()-((dow+6)%7)+off*7);var out=[];for(var i=0;i<7;i++){var x=new Date(mon);x.setDate(mon.getDate()+i);out.push(x)}return out}
+function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function turnoOf(f,vid){return (D.turnos[f]||[]).filter(function(t){return t.vid===vid})[0]}
+function hrsMes(vid,m){var h=0;Object.keys(D.turnos).forEach(function(f){if(f.slice(0,7)!==m)return;D.turnos[f].forEach(function(t){if(t.vid===vid&&t.ok)h+=num(t.horas)})});return h}
+function vVol(el){var vs=D.vol.filter(function(v){return v.activo!==false}),days=weekDays(WK),m=month();
+ var h='<div class="herr-card"><h3>Sumar voluntario/a</h3><div class="herr-cols"><div><label class="herr-lbl">Nombre</label><input class="herr-inp" id="avN"></div><div><label class="herr-lbl">WhatsApp</label><input class="herr-inp" id="avT"></div><div><label class="herr-lbl">Tarea</label><input class="herr-inp" id="avK" placeholder="Cocina, reparto, limpieza…"></div><div><label class="herr-lbl">Horas por turno</label><input class="herr-inp" id="avH" value="3" inputmode="decimal"></div></div>'+
+  '<label class="herr-lbl">Días que viene</label><div class="agp-days" id="avD">'+[1,2,3,4,5,6,0].map(function(i){return '<label><input type="checkbox" value="'+i+'">'+DIAS[i]+'</label>'}).join('')+'</div>'+
+  '<div class="herr-row"><button class="herr-btn grad" onclick="ANGELAPro.addV()">➕ Agregar</button></div></div>';
+ h+='<div class="herr-card"><div class="herr-row" style="margin-top:0;justify-content:space-between"><h3 style="margin:0">Semana del '+fdate(iso(days[0]))+'</h3><div><button class="herr-btn sm" onclick="ANGELAPro.wk(-1)">◀</button> <button class="herr-btn sm" onclick="ANGELAPro.wk(0)">Hoy</button> <button class="herr-btn sm" onclick="ANGELAPro.wk(1)">▶</button></div></div>'+
+  '<p class="herr-sub">Tildá quién vino cada día: así quedan registradas sus horas.</p>'+
+  days.map(function(d){var f=iso(d),dow=d.getDay(),who=vs.filter(function(v){return (v.dias||[]).indexOf(dow)>=0||turnoOf(f,v.id)});
+   return '<div class="herr-day'+(f===today()?' agp-now':'')+'"><h4>'+DIAS[dow]+' '+fdate(f).slice(0,5)+(f===today()?' · HOY':'')+'</h4>'+(who.length?who.map(function(v){var t=turnoOf(f,v.id);return '<div class="herr-slot"><label style="display:flex;gap:6px;align-items:center;flex:1"><input type="checkbox" '+(t&&t.ok?'checked':'')+' onchange="ANGELAPro.vino(\''+f+'\',\''+v.id+'\',this.checked)"> <b>'+esc(v.nombre)+'</b> <span class="herr-mini" style="margin:0">'+esc(v.tarea||'')+'</span></label>'+(v.tel?'<button class="herr-btn sm" onclick="ANGELAPro.avisar(\''+v.id+'\',\''+f+'\')">💬 Avisar</button>':'')+'</div>'}).join(''):'<div class="herr-mini">Nadie anotado.</div>')+'</div>'}).join('')+'</div>';
+ h+='<div class="herr-card"><h3>Equipo ('+vs.length+') · horas de '+esc(mname(m))+'</h3>'+(D.vol.length?'<div class="herr-scroll"><table class="herr-tbl"><tr><th>Nombre</th><th>Tarea</th><th>Días</th><th>Horas del mes</th><th></th></tr>'+D.vol.map(function(v){return '<tr style="'+(v.activo===false?'opacity:.5':'')+'"><td>'+esc(v.nombre)+'</td><td>'+esc(v.tarea||'')+'</td><td>'+(v.dias||[]).map(function(i){return DIAS[i]}).join(' ')+'</td><td><b>'+fmtH(hrsMes(v.id,m))+'</b></td><td style="white-space:nowrap"><button class="herr-btn sm" title="Constancia de horas" onclick="ANGELAPro.certV(\''+v.id+'\')">📄</button> <button class="herr-btn sm" onclick="ANGELAPro.togV(\''+v.id+'\')">'+(v.activo===false?'Activar':'Pausar')+'</button> <button class="herr-x" onclick="ANGELAPro.delV(\''+v.id+'\')">✕</button></td></tr>'}).join('')+'</table></div>':'<p class="herr-mini">Todavía no hay voluntarios.</p>')+'</div>';
+ el.innerHTML=h}
+function fmtH(h){return (Math.round(h*10)/10).toLocaleString('es-AR')+' h'}
+function addV(){var n=$('avN').value.trim();if(!n)return toast('Escribí el nombre');var dias=Array.from(document.querySelectorAll('#avD input:checked')).map(function(c){return +c.value});D.vol.push({id:uid(),nombre:n,tel:$('avT').value.trim(),tarea:$('avK').value.trim(),horas:num($('avH').value)||3,dias:dias,activo:true});save();rerender();toast('🙋 '+n+' sumado/a al equipo')}
+function findV(id){return D.vol.filter(function(x){return x.id===id})[0]}
+function vino(f,vid,ok){var v=findV(vid);if(!v)return;var L=D.turnos[f]=D.turnos[f]||[];var t=turnoOf(f,vid);if(!t){t={vid:vid,horas:v.horas||3};L.push(t)}t.ok=!!ok;save();var sc=document.getElementById('herrOverlay'),y=sc?sc.scrollTop:0;rerender();if(sc)sc.scrollTop=y;toast(ok?'✅ '+v.nombre+': '+fmtH(t.horas)+' registradas':'Turno desmarcado')}
+function avisar(vid,f){var v=findV(vid);if(!v)return;var d=new Date(f+'T12:00:00');wa('¡Hola '+v.nombre+'! 💛 Te recordamos tu turno en el '+D.cfg.inst+' el '+DIAS[d.getDay()]+' '+fdate(f)+(v.tarea?' ('+v.tarea+')':'')+'. ¡Gracias por sumarte!',v.tel)}
+function togV(id){var v=findV(id);if(!v)return;v.activo=v.activo===false;save();rerender()}
+function delV(id){if(!confirm('¿Borrar a este voluntario? Sus horas registradas se pierden.'))return;D.vol=D.vol.filter(function(x){return x.id!==id});save();rerender()}
+function certV(id){var v=findV(id),c=D.cfg;if(!v)return;var fs=[];Object.keys(D.turnos).sort().forEach(function(f){D.turnos[f].forEach(function(t){if(t.vid===id&&t.ok)fs.push([f,num(t.horas)])})});var tot=fs.reduce(function(a,x){return a+x[1]},0);
+ if(!fs.length)return toast('Todavía no hay turnos registrados de '+v.nombre);
+ printDoc('Constancia de voluntariado',header('<b style="font-size:16px;color:#111">CONSTANCIA DE VOLUNTARIADO</b><br>Fecha: '+fdate(today()))+
+  '<p>Dejamos constancia de que <b>'+esc(v.nombre)+'</b> colabora como voluntario/a en nuestra institución'+(v.tarea?' en tareas de <b>'+esc(v.tarea)+'</b>':'')+', con un total de <b>'+fmtH(tot)+'</b> registradas entre el '+fdate(fs[0][0])+' y el '+fdate(fs[fs.length-1][0])+' ('+fs.length+' turnos).</p>'+
+  '<p>Agradecemos profundamente su compromiso con la comunidad. 💛</p><div class="firma">'+esc(c.resp||'Firma y aclaración')+'<br>'+esc(c.inst)+'</div>')}
+
+/* ================= 📢 PUBLICIDAD EN LA RADIO ================= */
+function horasOf(a){return String(a.horarios||'').split(/[^0-9:]+/).map(function(x){var p=x.split(':');return p[0]===''?null:{h:+p[0],m:+(p[1]||0)}}).filter(function(x){return x&&x.h>=0&&x.h<24})}
+function activoAd(a,f){return (!a.desde||a.desde<=f)&&(!a.hasta||a.hasta>=f)&&a.activo!==false}
+function vAds(el){var f=today(),m=month(),now=new Date(),act=D.ads.filter(function(a){return activoAd(a,f)});
+ var slots=[];act.forEach(function(a){horasOf(a).forEach(function(x){slots.push({t:x.h*60+x.m,lbl:pad(x.h)+':'+pad(x.m),a:a})})});slots.sort(function(a,b){return a.t-b.t});var nm=now.getHours()*60+now.getMinutes();
+ var debe=act.filter(function(a){return num(a.monto)>0&&(a.pagos||[]).indexOf(m)<0});
+ el.innerHTML='<div class="herr-card"><h3>📻 Avisos de hoy ('+slots.length+')</h3><p class="herr-sub">Lo que hay que pasar al aire hoy, en orden. Lo que toca ahora está resaltado.</p>'+
+  (slots.length?slots.map(function(s){var cur=s.t<=nm&&nm<s.t+60;return '<div class="herr-slot'+(cur?' now':'')+'"><span class="h">'+s.lbl+(cur?' <span class="herr-live">AHORA</span>':'')+'</span><span class="p"><b>'+esc(s.a.comercio)+'</b><br><span class="herr-mini" style="margin:0">'+esc(s.a.texto||'')+'</span></span><button class="herr-btn sm" onclick="ANGELAPro.leer(\''+s.a.id+'\')">🔊</button></div>'}).join(''):'<p class="herr-mini">No hay avisos para hoy. Cargá un anunciante abajo.</p>')+'</div>'+
+  (debe.length?'<div class="herr-info herr-warn">💰 Falta cobrar '+esc(mname(m))+' a: '+debe.map(function(a){return '<b>'+esc(a.comercio)+'</b> ('+money(a.monto)+')'}).join(', ')+'</div>':'')+
+  '<div class="herr-card"><h3>Nuevo anunciante</h3><div class="herr-cols"><div><label class="herr-lbl">Comercio</label><input class="herr-inp" id="aaC"></div><div><label class="herr-lbl">Contacto</label><input class="herr-inp" id="aaP"></div><div><label class="herr-lbl">WhatsApp</label><input class="herr-inp" id="aaT"></div><div><label class="herr-lbl">Precio por mes ($)</label><input class="herr-inp" id="aaM" inputmode="decimal"></div></div>'+
+  '<label class="herr-lbl">Texto del aviso (lo que lee el locutor)</label><textarea class="herr-ta" id="aaX" style="min-height:70px" placeholder="Ej: Panadería El Trigal, en Av. Libertador 1200. ¡Facturas calentitas todos los días!"></textarea>'+
+  '<div class="herr-cols"><div><label class="herr-lbl">Horarios (separados por coma)</label><input class="herr-inp" id="aaH" placeholder="9, 13:30, 18"></div><div><label class="herr-lbl">Desde</label><input class="herr-inp" type="date" id="aaD" value="'+f+'"></div><div><label class="herr-lbl">Hasta</label><input class="herr-inp" type="date" id="aaU"></div></div>'+
+  '<div class="herr-row"><button class="herr-btn grad" onclick="ANGELAPro.addA()">➕ Agregar anunciante</button></div></div>'+
+  '<div class="herr-card"><h3>Anunciantes ('+D.ads.length+')</h3>'+(D.ads.length?'<div class="herr-scroll"><table class="herr-tbl"><tr><th>Comercio</th><th>Horarios</th><th>Vigencia</th><th>Precio</th><th>'+esc(MESES[now.getMonth()])+'</th><th></th></tr>'+
+   D.ads.map(function(a){var pago=(a.pagos||[]).indexOf(m)>=0;return '<tr style="'+(activoAd(a,f)?'':'opacity:.55')+'"><td><b>'+esc(a.comercio)+'</b><br><span class="herr-mini" style="margin:0">'+esc(a.contacto||'')+'</span></td><td>'+esc(a.horarios||'')+'</td><td>'+(a.desde?fdate(a.desde):'')+(a.hasta?' → '+fdate(a.hasta):'')+'</td><td>'+money(a.monto)+'</td><td>'+(num(a.monto)?(pago?'<span class="agp-pill ok">Pagado</span>':'<button class="herr-btn sm" onclick="ANGELAPro.pagar(\''+a.id+'\')">Marcar pagado</button>'):'—')+'</td><td style="white-space:nowrap">'+(pago?'<button class="herr-btn sm" title="Recibo" onclick="ANGELAPro.reciboA(\''+a.id+'\')">🧾</button> ':'')+(a.tel&&!pago&&num(a.monto)?'<button class="herr-btn sm" title="Recordar pago" onclick="ANGELAPro.cobrar(\''+a.id+'\')">💬</button> ':'')+'<button class="herr-x" onclick="ANGELAPro.delA(\''+a.id+'\')">✕</button></td></tr>'}).join('')+'</table></div>':'<p class="herr-mini">Todavía no hay anunciantes.</p>')+
+  '<div class="herr-row"><button class="herr-btn" onclick="ANGELAPro.guion()">📋 Copiar todos los avisos (para el locutor)</button></div></div>'}
+function addA(){var a={id:uid(),comercio:$('aaC').value.trim(),contacto:$('aaP').value.trim(),tel:$('aaT').value.trim(),monto:num($('aaM').value),texto:$('aaX').value.trim(),horarios:$('aaH').value.trim(),desde:$('aaD').value,hasta:$('aaU').value,pagos:[],activo:true};
+ if(!a.comercio)return toast('Escribí el comercio');if(!horasOf(a).length)return toast('Poné al menos un horario, por ejemplo: 9, 13, 18');D.ads.push(a);save();rerender();toast('📢 '+a.comercio+' agregado')}
+function findA(id){return D.ads.filter(function(x){return x.id===id})[0]}
+function pagar(id){var a=findA(id),m=month();if(!a)return;a.pagos=a.pagos||[];if(a.pagos.indexOf(m)<0)a.pagos.push(m);save();rerender();toast('✅ '+a.comercio+': '+mname(m)+' pagado')}
+function cobrar(id){var a=findA(id);if(!a)return;wa('¡Hola'+(a.contacto?' '+a.contacto:'')+'! Te escribimos de la radio por el aviso de '+a.comercio+' de '+mname(month())+' ('+money(a.monto)+'). Cuando puedas, nos avisás. ¡Gracias por acompañarnos! 📻'+(D.cfg.alias?'\nAlias: '+D.cfg.alias:''),a.tel)}
+function reciboA(id){var a=findA(id),m=month();if(!a)return;printDoc('Recibo de publicidad',header('<b style="font-size:16px;color:#111">RECIBO</b><br>Fecha: '+fdate(today()))+
+ '<p>Recibimos de <b>'+esc(a.comercio)+'</b>'+(a.contacto?' ('+esc(a.contacto)+')':'')+' la suma de <b>'+money(a.monto)+'</b> en concepto de <b>publicidad radial de '+esc(mname(m))+'</b>.</p><div class="box">Horarios del aviso: '+esc(a.horarios)+'</div><div class="firma">'+esc(D.cfg.resp||'Firma y aclaración')+'<br>'+esc(D.cfg.inst)+'</div><p class="nota">Este recibo no es una factura.</p>')}
+function leer(id){var a=findA(id);if(!a)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(a.texto||a.comercio);u.lang='es-AR';speechSynthesis.speak(u)}catch(e){toast('Este navegador no puede leer en voz alta')}}
+function guion(){var f=today(),act=D.ads.filter(function(a){return activoAd(a,f)});if(!act.length)return toast('No hay avisos activos');copy(act.map(function(a){return '📢 '+a.comercio+' ('+a.horarios+')\n'+(a.texto||'')}).join('\n\n'))}
+function delA(id){if(!confirm('¿Borrar este anunciante?'))return;D.ads=D.ads.filter(function(x){return x.id!==id});save();rerender()}
+
+/* ================= registro en Herramientas ================= */
+var TILES=[['agp_recibo','🧾','Constancia de donación','Papel con número para quien dona, imprimible o por WhatsApp.'],['agp_rend','📊','Rendición del mes','Ingresos, gastos, donaciones y raciones en un informe para mostrar.'],['agp_presu','💼','Presupuestos del taller','Precio justo con tiempo de máquina, presupuesto y seguimiento del pedido.'],['agp_vol','🙋','Voluntarios y turnos','Quién viene cada día, avisos por WhatsApp y horas registradas.'],['agp_ads','📢','Publicidad en la radio','Anunciantes, horarios de los avisos y cobros del mes.']];
+var VIEWS={agp_recibo:vRecibo,agp_rend:vRend,agp_presu:vPresu,agp_vol:vVol,agp_ads:vAds};
+window.ANGELAPro={sec:'💼 Gestión profesional',secId:'agpSec',short:'Gestión',tiles:TILES,has:function(k){return !!VIEWS[k]},view:function(k,el){load();EL=el;CURK=k;VIEWS[k](el)},stop:function(){try{speechSynthesis.cancel()}catch(e){}},
+ cfg:function(k,v){load();D.cfg[k]=k==='valorHora'?num(v):v;save()},fromDon:fromDon,tipoR:tipoR,newRecibo:newRecibo,printR:printR,waR:waR,delR:delR,
+ mes:function(v){RM=v||month();rerender()},printRend:printRend,redes:redes,calc:calc,newP:newP,estP:estP,printP:printP,waP:waP,delP:delP,
+ addV:addV,wk:function(d){WK=d===0?0:WK+d;rerender()},vino:vino,avisar:avisar,togV:togV,delV:delV,certV:certV,
+ addA:addA,pagar:pagar,cobrar:cobrar,reciboA:reciboA,leer:leer,guion:guion,delA:delA,_load:load,_D:function(){return D},_waNum:waNum};
+load();
+})();
+</script>
+<!-- ===== FIN GESTIÓN PRO V1 ===== -->
+
