@@ -856,6 +856,7 @@ aside, .sidebar, .left-sidebar, .angela-photo-sidebar{
     <button class="quick" onclick="angelaAbrirGestion('empresas')">🏢 Empresas / RSE</button>
     <button class="quick" onclick="angelaAbrirGestion('recordatorios')">📅 Recordatorios</button>
     <button class="quick" onclick="angelaAbrirGestion('memoria')">🧠 Memoria local</button>
+    <button class="quick" onclick="angelaAbrirGestion('biblioteca')">📚 Biblioteca de libros</button>
     <button class="quick" onclick="angelaAbrirGestion('googlephotos')">📸 Google Fotos · Duplicados</button>
     <button class="quick" onclick="angelaAbrirGestion('estado')">🟢 Estado de conexiones</button>
   </div>
@@ -12684,3 +12685,109 @@ load();
 </script>
 <!-- ===== FIN GESTIÓN PRO V1 ===== -->
 
+<!-- ===== BIBLIOTECA DE LIBROS V1 ===== -->
+<style>
+.abl-wrap{background:rgba(15,23,42,.6);border:1px solid rgba(217,164,65,.45);border-radius:18px;padding:16px}
+.abl-book{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.abl-cover{width:120px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.5);border:1px solid #8a6420}
+.abl-info{flex:1;min-width:200px}
+.abl-info h4{color:#f0c060;font-weight:700;font-size:17px;margin:0}
+.abl-info p{color:#cbd5e1;font-size:13px;margin:6px 0}
+.abl-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.abl-btn{background:#d9a441;color:#1a1208;font-weight:700;border-radius:10px;padding:10px 14px;font-size:14px;min-height:44px;border:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.abl-btn.sec{background:#1e293b;color:#f3e6c8;border:1px solid #8a6420}
+.abl-caps{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.abl-cap{background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:10px;padding:9px 10px;font-size:13px;text-align:left;cursor:pointer;min-height:44px}
+.abl-cap:hover{border-color:#d9a441}
+#ablLector{position:fixed;inset:0;z-index:99999;background:#0b0805;display:none;flex-direction:column}
+#ablLector.on{display:flex}
+.abl-top{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#120d08;border-bottom:1px solid #8a6420;flex-wrap:wrap}
+.abl-top b{color:#f0c060;font-size:14px;flex:1;min-width:120px}
+.abl-top select{background:#1e293b;color:#f3e6c8;border:1px solid #8a6420;border-radius:8px;padding:8px;font-size:13px;max-width:60vw}
+.abl-pages{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:10px 0}
+.abl-pages canvas{display:block;margin:0 auto 10px;max-width:100%;height:auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.6)}
+.abl-msg{color:#f3e6c8;text-align:center;padding:30px 16px;font-size:14px}
+</style>
+<script>
+(function(){
+const LIBROS=[{
+ id:'batuque',
+ titulo:'Batuque Jeje-Nagô: los Orixás y sus pasajes',
+ desc:'De Bará a Oxalá. Historia del Batuque, las naciones, la casa de religión, cada Orixá con sus pasajes, ofrendas, rezas, cuadro de consulta y glosario.',
+ pdf:'libros/batuque-jeje-nago.pdf',
+ tapa:'libros/batuque-jeje-nago-tapa.jpg',
+ archivo:'Batuque-Jeje-Nago-Los-Orixas-y-sus-pasajes.pdf',
+ caps:[['Presentación e índice',2],['1 · Origen del Batuque',3],['2 · Las naciones y Jeje-Nagô',5],['3 · La casa de religión',7],['4 · Axé, Orí y Bori',8],
+  ['5 · Bará y sus pasajes',10],['6 · Ogum y sus pasajes',12],['7 · Oiá y sus pasajes',13],['8 · Xangô y sus pasajes',15],['9 · Odé y Otim',17],
+  ['10 · Obá',18],['11 · Ossanha',19],['12 · Xapanã y sus pasajes',21],['13 · Oxum y sus pasajes',22],['14 · Iemanjá y sus pasajes',24],
+  ['15 · Oxalá y sus pasajes',26],['16 · Ofrendas y comidas de santo',27],['17 · El tambor, las rezas y las cantigas',29],
+  ['18 · Cuadro de consulta rápida',31],['19 · Glosario',32]]
+}];
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function abrirBiblioteca(){
+ const box=document.getElementById('angelaGestionContenido');if(!box)return;
+ box.classList.remove('hidden');
+ box.innerHTML='<div class="abl-wrap"><div class="flex justify-between items-center mb-3"><h3 class="font-bold" style="color:#f0c060">📚 Biblioteca de libros</h3><button onclick="this.closest(\'#angelaGestionContenido\').classList.add(\'hidden\')" class="text-xs bg-slate-700 px-3 py-2 rounded-lg">Cerrar</button></div>'+
+ LIBROS.map(l=>'<div class="abl-book"><img class="abl-cover" src="'+l.tapa+'" alt="Tapa"><div class="abl-info"><h4>'+esc(l.titulo)+'</h4><p>'+esc(l.desc)+'</p><div class="abl-btns"><button class="abl-btn" onclick="angelaLeerLibro(\''+l.id+'\',1)">📖 Leer</button><a class="abl-btn sec" href="'+l.pdf+'" download="'+l.archivo+'">⬇️ Descargar PDF</a></div></div></div>'+
+ '<div class="text-xs mt-4" style="color:#f0c060">Índice · tocá un capítulo para ir directo</div><div class="abl-caps">'+l.caps.map(c=>'<button class="abl-cap" onclick="angelaLeerLibro(\''+l.id+'\','+c[1]+')">'+esc(c[0])+'</button>').join('')+'</div>').join('')+
+ '</div>';
+ box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+let PDF=null,PDF_ID=null,TOKEN=0;
+function lector(){
+ let el=document.getElementById('ablLector');
+ if(el)return el;
+ el=document.createElement('div');el.id='ablLector';
+ el.innerHTML='<div class="abl-top"><button class="abl-btn sec" id="ablCerrar">✕ Cerrar</button><b id="ablTitulo"></b><select id="ablIr"></select><a class="abl-btn" id="ablBajar">⬇️ PDF</a></div><div class="abl-pages" id="ablPaginas"></div>';
+ document.body.appendChild(el);
+ el.querySelector('#ablCerrar').onclick=()=>{el.classList.remove('on');document.body.style.overflow=''};
+ el.querySelector('#ablIr').onchange=e=>irA(+e.target.value);
+ return el;
+}
+function irA(n){const c=document.getElementById('ablPag'+n);if(c)c.scrollIntoView({block:'start'})}
+window.angelaLeerLibro=async function(id,pag){
+ const l=LIBROS.find(x=>x.id===id);if(!l)return;
+ const el=lector();el.classList.add('on');document.body.style.overflow='hidden';
+ el.querySelector('#ablTitulo').textContent=l.titulo;
+ const bajar=el.querySelector('#ablBajar');bajar.href=l.pdf;bajar.setAttribute('download',l.archivo);
+ const sel=el.querySelector('#ablIr');sel.innerHTML='<option value="1">Ir a…</option>'+l.caps.map(c=>'<option value="'+c[1]+'">'+esc(c[0])+'</option>').join('');
+ const cont=el.querySelector('#ablPaginas');
+ if(PDF&&PDF_ID===id){irA(pag);return}
+ cont.innerHTML='<div class="abl-msg">⏳ Abriendo el libro…</div>';
+ const t=++TOKEN;
+ try{
+  if(!window.pdfjsLib)throw new Error('sin lector');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  PDF=await pdfjsLib.getDocument({url:l.pdf}).promise;PDF_ID=id;
+  if(t!==TOKEN)return;
+  cont.innerHTML='';
+  const ancho=Math.min(cont.clientWidth-16,900),dpr=Math.min(window.devicePixelRatio||1,2);
+  const lista=[];
+  for(let i=1;i<=PDF.numPages;i++){
+   const c=document.createElement('canvas');c.id='ablPag'+i;c.style.width=ancho+'px';c.style.height=Math.round(ancho*1.414)+'px';
+   cont.appendChild(c);lista.push(c);
+  }
+  const dibujar=async c=>{
+   if(c.dataset.ok)return;c.dataset.ok='1';
+   const p=await PDF.getPage(+c.id.replace('ablPag',''));
+   const v1=p.getViewport({scale:1}),esc2=ancho/v1.width,v=p.getViewport({scale:esc2*dpr});
+   c.width=v.width;c.height=v.height;c.style.height=Math.round(v.height/dpr)+'px';
+   await p.render({canvasContext:c.getContext('2d'),viewport:v}).promise;
+  };
+  if('IntersectionObserver' in window){
+   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)dibujar(e.target)}),{root:cont,rootMargin:'800px 0px'});
+   lista.forEach(c=>io.observe(c));
+  }else{for(const c of lista)await dibujar(c)}
+  await dibujar(lista[pag-1]||lista[0]);
+  irA(pag);
+ }catch(e){
+  PDF=null;PDF_ID=null;
+  cont.innerHTML='<div class="abl-msg">No se pudo mostrar el libro acá adentro.<br><br><a class="abl-btn" href="'+l.pdf+'#page='+pag+'" target="_blank" rel="noopener">📖 Abrir el libro en otra pestaña</a></div>';
+ }
+};
+const prev=window.angelaAbrirGestion;
+window.angelaAbrirGestion=function(m){if(m==='biblioteca')return abrirBiblioteca();return prev?.(m)};
+window.angelaAbrirBiblioteca=abrirBiblioteca;
+})();
+</script>
+<!-- ===== FIN BIBLIOTECA DE LIBROS V1 ===== -->
