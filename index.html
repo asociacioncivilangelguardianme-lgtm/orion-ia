@@ -10015,7 +10015,10 @@ body.ags-lock{overflow:hidden!important}
     const r=await request(`/storage/v1/object/${encodeURIComponent(c.bucket)}/${encoded}`,{method:'POST',headers:{'Content-Type':'text/html;charset=utf-8','x-upsert':'false','cache-control':'3600'},body:blob});
     if(!r.ok)throw new Error(`Supabase Storage HTTP ${r.status}: ${(await r.text()).slice(0,130)}`);
     const publicUrl=`${c.url}/storage/v1/object/public/${encodeURIComponent(c.bucket)}/${encoded}`;
-    return{url:publicUrl,projectId:path,provider:'Supabase',contentType:'text/html'};
+    // Supabase entrega los .html como texto plano: el QR abre la página "abridora" de ÁNGELA, que lo muestra bien armado.
+    const site=(location.protocol==='http:'||location.protocol==='https:')?location.origin:'https://orion-ia-sooty.vercel.app';
+    const viewerUrl=`${site}/regalo.html?u=${encodeURIComponent(publicUrl)}`;
+    return{url:viewerUrl,rawUrl:publicUrl,projectId:path,provider:'Supabase',contentType:'text/html'};
   }
   async function connectPrompt(){
     const current=saved();

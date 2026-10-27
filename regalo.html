@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Abriendo tu regalo</title>
+</head>
+<body style="margin:0;font-family:Georgia,serif;background:#fff7ed;color:#7c2d12">
+<p id="m" style="text-align:center;padding:60px 20px;font-size:20px">🎁 Abriendo tu regalo…</p>
+<script>
+(async () => {
+  const m = document.getElementById('m');
+  const u = new URLSearchParams(location.search).get('u');
+  // Solo acepta links de Supabase
+  if (!u || !/^https:\/\/xbbmqfapcfqndwanfkvh\.supabase\.co\/storage\/v1\/object\/public\//i.test(u)) {
+    m.textContent = 'El link del regalo no es válido.';
+    return;
+  }
+  try {
+    const r = await fetch(u, { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    const buf = await r.arrayBuffer();
+    const html = new TextDecoder('utf-8').decode(buf); // arregla las ñ y tildes
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (e) {
+    m.textContent = 'No se pudo abrir el regalo. Probá de nuevo en un rato.';
+  }
+})();
+</script>
+</body>
+</html>
