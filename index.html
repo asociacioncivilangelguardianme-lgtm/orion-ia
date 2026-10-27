@@ -12714,22 +12714,31 @@ const LIBROS=[{
  id:'batuque',
  titulo:'Batuque Jeje-Nagô: los Orixás y sus pasajes',
  desc:'De Bará a Oxalá. Historia del Batuque, las naciones, la casa de religión, cada Orixá con sus pasajes, ofrendas, rezas, cuadro de consulta y glosario.',
- pdf:'libros/batuque-jeje-nago.pdf',
- tapa:'libros/batuque-jeje-nago-tapa.jpg',
+ pdf:'libros/batuque-jeje-nago.pdf?v=2',
+ tapa:'libros/batuque-jeje-nago-tapa.jpg?v=2',
  archivo:'Batuque-Jeje-Nago-Los-Orixas-y-sus-pasajes.pdf',
  caps:[['Presentación e índice',2],['1 · Origen del Batuque',3],['2 · Las naciones y Jeje-Nagô',5],['3 · La casa de religión',7],['4 · Axé, Orí y Bori',8],
   ['5 · Bará y sus pasajes',10],['6 · Ogum y sus pasajes',12],['7 · Oiá y sus pasajes',13],['8 · Xangô y sus pasajes',15],['9 · Odé y Otim',17],
   ['10 · Obá',18],['11 · Ossanha',19],['12 · Xapanã y sus pasajes',21],['13 · Oxum y sus pasajes',22],['14 · Iemanjá y sus pasajes',24],
   ['15 · Oxalá y sus pasajes',26],['16 · Ofrendas y comidas de santo',27],['17 · El tambor, las rezas y las cantigas',29],
   ['18 · Cuadro de consulta rápida',31],['19 · Glosario',32]]
+},{
+ id:'buzios',
+ titulo:'El juego de búzios: las caídas y sus significados',
+ desc:'Qué son los búzios, el axé de búzios en el Batuque, la mesa de juego, caídas abiertas y cerradas, el juego de 4 búzios y las 16 caídas una por una.',
+ pdf:'libros/buzios.pdf',
+ tapa:'libros/buzios-tapa.jpg',
+ archivo:'El-juego-de-buzios-Las-caidas-y-sus-significados.pdf',
+ caps:[['Presentación e índice',2],['1 · Qué son los búzios',3],['2 · El juego en el Batuque',4],['3 · La mesa de juego',5],
+  ['4 · Caídas abiertas y cerradas',6],['5 · El juego de 4 búzios',7],['6 · Las 16 caídas',7],['7 · Cuadro de las 16 caídas',10],['8 · Glosario',12]]
 }];
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function abrirBiblioteca(){
  const box=document.getElementById('angelaGestionContenido');if(!box)return;
  box.classList.remove('hidden');
  box.innerHTML='<div class="abl-wrap"><div class="flex justify-between items-center mb-3"><h3 class="font-bold" style="color:#f0c060">📚 Biblioteca de libros</h3><button onclick="this.closest(\'#angelaGestionContenido\').classList.add(\'hidden\')" class="text-xs bg-slate-700 px-3 py-2 rounded-lg">Cerrar</button></div>'+
- LIBROS.map(l=>'<div class="abl-book"><img class="abl-cover" src="'+l.tapa+'" alt="Tapa"><div class="abl-info"><h4>'+esc(l.titulo)+'</h4><p>'+esc(l.desc)+'</p><div class="abl-btns"><button class="abl-btn" onclick="angelaLeerLibro(\''+l.id+'\',1)">📖 Leer</button><a class="abl-btn sec" href="'+l.pdf+'" download="'+l.archivo+'">⬇️ Descargar PDF</a></div></div></div>'+
- '<div class="text-xs mt-4" style="color:#f0c060">Índice · tocá un capítulo para ir directo</div><div class="abl-caps">'+l.caps.map(c=>'<button class="abl-cap" onclick="angelaLeerLibro(\''+l.id+'\','+c[1]+')">'+esc(c[0])+'</button>').join('')+'</div>').join('')+
+ LIBROS.map((l,i)=>'<div class="abl-book"'+(i?' style="margin-top:22px;padding-top:18px;border-top:1px solid rgba(217,164,65,.35)"':'')+'><img class="abl-cover" src="'+l.tapa+'" alt="Tapa"><div class="abl-info"><h4>'+esc(l.titulo)+'</h4><p>'+esc(l.desc)+'</p><div class="abl-btns"><button class="abl-btn" onclick="angelaLeerLibro(\''+l.id+'\',1)">📖 Leer</button><a class="abl-btn sec" href="'+l.pdf+'" download="'+l.archivo+'">⬇️ Descargar PDF</a></div></div></div>'+
+ '<details class="mt-3"><summary class="abl-btn sec" style="list-style:none;width:fit-content">📑 Ver índice ('+l.caps.length+')</summary><div class="abl-caps">'+l.caps.map(c=>'<button class="abl-cap" onclick="angelaLeerLibro(\''+l.id+'\','+c[1]+')">'+esc(c[0])+'</button>').join('')+'</div></details>').join('')+
  '</div>';
  box.scrollIntoView({behavior:'smooth',block:'start'});
 }
