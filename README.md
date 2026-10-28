@@ -27,6 +27,8 @@ Todo lo que el comedor necesita organizar, guardado en la propia computadora:
 - 🧮 **Costos y presupuestos**, 📦 **inventario y stock**, 📋 **pedidos y clientes**.
 - 📸 **Google Fotos**: encuentra fotos duplicadas.
 - 🎟️ **Tarjetas y códigos QR** para eventos.
+- 🎁 **Regalos QR**: más de 35 ocasiones (también Halloween, Familia, Pascuas y campañas del comedor), **carta digital** con sobre interactivo que se abre deslizando el dedo, música, fotos tipo polaroid, contador de días y versículo.
+- 🎉 **Eventos QR**: ubicación con botón "Cómo llegar", confirmación por WhatsApp, cuenta regresiva, trivia, ruleta de premios, "Mis retos" con puntos y **carpeta de recuerdos (.zip)**.
 
 ## 🧰 Herramientas del taller
 - 🖼️ **Editor de imágenes**: blanco y negro, line art, stencil, tramados para grabar, quitar fondo, recortar, mejorar nitidez y resolución.
