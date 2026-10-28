@@ -7549,7 +7549,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       '.cx-cal{position:absolute;background:#fff;box-shadow:0 6px 14px rgba(0,0,0,.2);padding:8px;font:11px Arial,sans-serif;color:#333;text-align:center}',
       '.cx-cal b{display:block;color:#c0263c;font-size:20px}.cx-cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:4px}.cx-cal .g span{padding:2px 0}.cx-cal .g .h{color:#c0263c;font-weight:900}',
       '.cx-live{display:inline-flex;align-items:center;gap:6px;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:4px 10px;font:800 12px Arial,sans-serif;margin-bottom:6px}','.cx-live i{width:8px;height:8px;border-radius:50%;background:#dc2626;animation:cxBlink 1.2s steps(1) infinite}','.cx-log{margin-top:10px;display:grid;gap:5px;text-align:left}','.cx-log div{background:#f8fafc;border-radius:10px;padding:7px 10px;font:600 13px Arial,sans-serif;color:#334155;animation:cxPop .4s ease}','.cx-log small{color:#94a3b8;font-weight:400;margin-left:6px}','.cx-share{margin-top:12px;width:100%}',
-      '.cx-fechas{background:#f1f5f9;border-radius:12px;padding:8px 10px;font:700 14px Arial,sans-serif;color:#334155;margin:6px 0 4px}','.cx-fechas .est{color:var(--cx-acc);margin-top:3px}','.cx-cerrada .cx-share{display:none}',
+      '.cx-fechas{background:#f1f5f9;border-radius:12px;padding:8px 10px;font:700 14px Arial,sans-serif;color:#334155;margin:6px 0 4px}','.cx-fechas .est{color:var(--cx-acc);margin-top:3px}','.cx-fechas .cd{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}','.cx-fechas .cd div{background:#fff;border-radius:10px;padding:6px 2px;text-align:center}','.cx-fechas .cd b{display:block;font-size:22px;color:var(--cx-acc);font-variant-numeric:tabular-nums}','.cx-fechas .cd small{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#64748b}','.cx-cerrada .cx-share{display:none}',
       '.cx-albumbar{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font:700 14px Arial,sans-serif}',
       '.cx-albumbar button{border:0;border-radius:999px;padding:9px 15px;background:var(--cx-acc);color:#fff;font:700 14px Arial,sans-serif;cursor:pointer}.cx-albumbar button:disabled{opacity:.35}'
     ].join('\n');
@@ -7764,10 +7764,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     var d0 = desde ? new Date(String(desde).slice(0, 10) + 'T00:00:00') : null, d1 = hasta ? new Date(String(hasta).slice(0, 10) + 'T23:59:59') : null, now = Date.now();
     function f(d) { return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }); }
     function cuanto(ms) { var hs = Math.ceil(ms / 3600000); return hs <= 24 ? hs + (hs === 1 ? ' hora' : ' horas') : Math.ceil(ms / 86400000) + ' días'; }
-    var txt = d0 && d1 ? '📅 Del ' + f(d0) + ' al ' + f(d1) : d1 ? '📅 Hasta el ' + f(d1) : '📅 Desde el ' + f(d0), est = '';
+    var txt = (d0 ? '<div>🟢 Empieza: ' + f(d0) + '</div>' : '') + (d1 ? '<div>🏁 Termina: ' + f(d1) + '</div>' : ''), est = '', meta = 0;
     goal.classList.remove('cx-cerrada');
-    if (d0 && now < d0) est = '⏳ Empieza en ' + cuanto(d0 - now);
-    else if (d1 && now <= d1) est = '⏳ Quedan ' + cuanto(d1 - now) + ' para sumarte';
+    if (d0 && now < d0) { est = '⏳ Falta para que empiece'; meta = d0.getTime(); }
+    else if (d1 && now <= d1) { est = '⏳ Quedan para sumarte'; meta = d1.getTime(); }
     else if (d1 && now > d1) {
       est = '🏁 La campaña terminó. ¡Gracias a todos los que ayudaron! ' + (sym || '💛');
       goal.classList.add('cx-cerrada');
@@ -7775,7 +7775,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       if (msg && sp && !msg.closest('.cx-log')) msg.textContent = 'Juntamos ' + sp.textContent + '. ¡Gracias!';
       var lv = goal.querySelector('.cx-live'); if (lv) { lv.innerHTML = '<span>🏁 Campaña terminada</span>'; lv.style.background = '#e2e8f0'; lv.style.color = '#334155'; }
     }
-    box.innerHTML = '<div>' + txt + '</div>' + (est ? '<div class="est">' + est + '</div>' : '');
+    box.innerHTML = txt + (est ? '<div class="est">' + est + '</div>' : '') + (meta ? '<div class="cd"></div>' : '');
+    clearInterval(goal._cxCd);
+    if (meta) {
+      var cd = box.querySelector('.cd');
+      var tick = function () {
+        var s2 = Math.max(0, Math.floor((meta - Date.now()) / 1000));
+        if (!s2) { clearInterval(goal._cxCd); CX.fechasMeta(goal, desde, hasta, sym); return; }
+        var v = [Math.floor(s2 / 86400), Math.floor(s2 % 86400 / 3600), Math.floor(s2 % 3600 / 60), s2 % 60], l = ['días', 'horas', 'min', 'seg'];
+        cd.innerHTML = v.map(function (x, i) { return '<div><b>' + x + '</b><small>' + l[i] + '</small></div>'; }).join('');
+      };
+      tick(); goal._cxCd = setInterval(tick, 1000);
+    }
   };
 
   /* ---------- Meta en vivo: el mismo link muestra cuánto se va juntando ---------- */
@@ -8631,7 +8642,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
           </select>
         </div>
         <div class="angqr-field"><label>Nombre del evento / homenajeado</label><input id="agqr_evName" placeholder="Ej: Casamiento de Ana y Juan"></div>
-        <div class="angqr-field"><label>Fecha</label><input id="agqr_evDate" placeholder="Ej: 18/10/2026"></div>
+        <div class="angqr-field"><label>Fecha (como querés que se lea)</label><input id="agqr_evDate" placeholder="Ej: Sábado 20 de diciembre"></div>
         <div class="angqr-field"><label>Horario / lugar (opcional)</label><input id="agqr_evWhen" placeholder="Ej: 20:30 hs · Salón Los Robles"></div><div class="angqr-field"><label>📍 Dirección (para el botón «Cómo llegar»)</label><input id="agqr_evAddress" placeholder="Ej: Calle 123, Mariano Acosta, Merlo"></div><div class="angqr-field"><label>📅 Empieza (día y hora)</label><input id="agqr_evStart" type="datetime-local"></div><div class="angqr-field"><label>🏁 Termina (día y hora)</label><input id="agqr_evEnd" type="datetime-local"><div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Antes de empezar muestra la cuenta regresiva; durante el evento, «¡Está pasando ahora!»; y cuando termina, el agradecimiento y la galería.</div></div><div class="angqr-field" style="grid-column:1/-1"><label>🚌 Cómo llegar · indicaciones (opcional)</label><textarea id="agqr_evHowTo" rows="3" placeholder="Ej: Bajás del colectivo 322 en la plaza y caminás dos cuadras. Es el portón verde."></textarea></div><div class="angqr-field"><label>📲 WhatsApp para confirmar asistencia</label><input id="agqr_evWhats" placeholder="Ej: 5491112345678 (con 549, sin espacios)"><div style="font-size:.69rem;color:#94a3b8;margin-top:5px">El invitado toca «Voy» y se le abre WhatsApp con el mensaje escrito para vos. Si lo dejás vacío, elige a quién mandarlo.</div></div>
         <div class="angqr-field"><label>Estilo</label>
           <select id="agqr_evStyle"><option value="elegante">✨ Elegante</option><option value="romantico">🌹 Romántico</option><option value="fiesta">🎉 Fiesta</option><option value="suave">🤍 Suave</option><option value="colorido">🌈 Colorido</option></select>
