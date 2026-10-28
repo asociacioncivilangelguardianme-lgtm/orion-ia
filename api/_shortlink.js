@@ -23,12 +23,19 @@ module.exports = async function shortLink(req, res) {
   const publicUrl = `${base}/storage/v1/object/public/${BUCKET}/regalos/${day}/${m[4]}/index.html`;
 
   let title = 'Tenés una sorpresa 🎁';
+  let desc = 'Tocá para abrir tu sorpresa. Hecho con ÁNGELA 👼';
   try {
     const r = await fetch(publicUrl, { headers: { Range: 'bytes=0-6000' } });
     if (r.ok || r.status === 206) {
       const head = Buffer.from(await r.arrayBuffer()).toString('utf8');
       const t = head.match(/<title>([^<]{1,140})<\/title>/i);
       if (t) title = t[1].replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+      const oc = (head.match(/name="angela-ocasion" content="([a-z]+)"/) || [])[1] || '';
+      const para = ((head.match(/name="angela-para" content="([^"]{1,60})"/) || [])[1] || '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+      // Regalos: la vista previa de WhatsApp no revela la sorpresa. Comedor y campañas sí dicen de dónde son.
+      if (oc === 'campana') { title = 'Campaña · Comedor Ángel Guardián: ' + title; desc = 'Tocá para ver la campaña y sumarte 💛'; }
+      else if (oc === 'comedor') { title = 'Comedor Ángel Guardián: ' + title; }
+      else if (oc) { title = '🎁 Una sorpresa para ' + (para || 'vos'); }
     } else if (r.status === 404 || r.status === 400) {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -39,27 +46,93 @@ module.exports = async function shortLink(req, res) {
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'orion-ia-sooty.vercel.app';
   const origin = `https://${host}`;
   const img = `${origin}/icon-512.png`;
-  const desc = 'Tocá para abrir tu sorpresa. Hecho con ÁNGELA 👼';
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=300');
-  res.end(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  res.end(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(title)}</title>
 <meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${esc(img)}"><meta property="og:image:width" content="512"><meta property="og:image:height" content="512">
 <meta property="og:url" content="${esc(origin + '/r/' + code)}"><meta name="twitter:card" content="summary"><meta name="description" content="${esc(desc)}">
-</head><body style="margin:0;font-family:Georgia,serif;background:#fff7ed;color:#7c2d12">
-<p id="m" style="text-align:center;padding:60px 20px;font-size:20px">🎁 Abriendo tu regalo…</p>
-<script>
-(async () => {
-  const m = document.getElementById('m');
-  try {
-    const r = await fetch(${JSON.stringify(publicUrl)}, { cache: 'no-store' });
-    if (!r.ok) throw new Error(r.status);
-    const html = new TextDecoder('utf-8').decode(await r.arrayBuffer());
-    document.open(); document.write(html); document.close();
-  } catch (e) {
-    m.textContent = 'No se pudo abrir el regalo. Probá de nuevo en un rato.';
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:Georgia,'Times New Roman',serif;color:#fff;background:linear-gradient(160deg,#3b0764,#be185d);overflow:hidden;transition:background 1s ease}
+#fx{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+#fx span{position:absolute;top:-10vh;font-size:26px;opacity:.85;animation:caer linear infinite}
+@keyframes caer{to{transform:translateY(120vh) rotate(360deg)}}
+.c{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.ico{font-size:92px;line-height:1;animation:salto 1.6s ease-in-out infinite;filter:drop-shadow(0 12px 18px rgba(0,0,0,.35))}
+@keyframes salto{0%,100%{transform:translateY(0) rotate(0)}20%{transform:translateY(-18px) rotate(-6deg)}40%{transform:translateY(0) rotate(5deg)}60%{transform:translateY(-8px) rotate(-3deg)}}
+.k{font:700 12px Arial,sans-serif;letter-spacing:.22em;text-transform:uppercase;opacity:.85;margin:22px 0 8px}
+h1{font-size:clamp(26px,7vw,40px);line-height:1.12;margin:0 0 10px;text-shadow:0 3px 16px rgba(0,0,0,.35);max-width:22ch}
+.sub{font-size:17px;opacity:.9;margin:0 0 26px;max-width:30ch;font-style:italic}
+.dots{font:700 15px Arial,sans-serif;opacity:.9}
+.dots i{display:inline-block;animation:pt 1.2s infinite;font-style:normal}.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes pt{0%,100%{opacity:.2}50%{opacity:1}}
+#go{display:none;border:0;border-radius:999px;padding:18px 34px;font:800 20px Arial,sans-serif;color:#222;background:#fff;box-shadow:0 0 0 0 rgba(255,255,255,.7),0 14px 30px rgba(0,0,0,.3);cursor:pointer;animation:latir 1.4s ease-in-out infinite}
+@keyframes latir{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,.7),0 14px 30px rgba(0,0,0,.3)}70%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(255,255,255,0),0 14px 30px rgba(0,0,0,.3)}100%{transform:scale(1)}}
+.mano{display:none;font-size:44px;margin-top:10px;animation:toca 1.2s ease-in-out infinite}
+@keyframes toca{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.err{display:none;background:rgba(0,0,0,.25);padding:14px 16px;border-radius:14px;font:600 15px Arial,sans-serif;max-width:32ch}
+.boom span{position:fixed;left:50%;top:50%;font-size:34px;animation:vuela 1s ease-out forwards;z-index:5}
+@keyframes vuela{from{transform:translate(-50%,-50%) scale(.4);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.3);opacity:0}}
+@media (prefers-reduced-motion:reduce){#fx,.ico,#go,.mano{animation:none!important}}
+</style>
+</head><body>
+<div id="fx" aria-hidden="true"></div>
+<div class="c">
+  <div class="ico" id="ico">🎁</div>
+  <div class="k" id="k">Tenés una sorpresa</div>
+  <h1 id="t">Preparando tu regalo</h1>
+  <p class="sub" id="s">Esperá un segundito…</p>
+  <div class="dots" id="dots">Cargando<i>.</i><i>.</i><i>.</i></div>
+  <button id="go" type="button">🎁 Abrir mi regalo</button>
+  <div class="mano" id="mano" aria-hidden="true">👆</div>
+  <div class="err" id="err"></div>
+</div>
+<script>var SRC=${JSON.stringify(publicUrl)};
+
+var TEMAS={
+ navidad:{bg:'linear-gradient(160deg,#0f5132,#7a1020)',e:['❄️','⭐','❄️','✨','🎄'],i:'🎄',k:'Llegó un regalo de Navidad',b:'🎄 Abrir mi regalo',s:'Un regalo de Navidad te está esperando'},
+ anionuevo:{bg:'linear-gradient(160deg,#0b1026,#3b2f7a)',e:['🎆','✨','🥂','⭐'],i:'🥂',k:'Feliz Año Nuevo',b:'🎆 Abrir mi sorpresa',s:'Alguien te preparó algo para empezar el año'},
+ halloween:{bg:'linear-gradient(165deg,#1a0f24 40%,#c2410c)',e:['🦇','🎃','👻','🕸️'],i:'🎃',k:'¿Dulce o truco?',b:'🎃 Abrir si te animás',s:'Algo te está esperando… si te animás'},
+ cumple:{bg:'linear-gradient(150deg,#db2777,#f97316)',e:['🎈','🎉','✨','🎊'],i:'🎂',k:'¡Feliz cumpleaños!',b:'🎁 Abrir mi regalo',s:'Alguien preparó algo especial por tu día'},
+ amor:{bg:'linear-gradient(160deg,#9f1239,#e11d48)',e:['❤️','💕','🌹','✨'],i:'💌',k:'Hay algo para vos',b:'💌 Abrir la carta',s:'Alguien escribió algo pensando en vos'},
+ madre:{bg:'linear-gradient(160deg,#be185d,#f9a8d4)',e:['🌷','💐','🌸','💗'],i:'💐',k:'Para una mamá especial',b:'🌷 Abrir mi regalo',s:'Algo hecho con mucho amor'},
+ padre:{bg:'linear-gradient(160deg,#0e3a5c,#3a7ca5)',e:['💙','⚽','🧉','⭐'],i:'🧉',k:'Para un papá especial',b:'💙 Abrir mi regalo',s:'Algo hecho con mucho cariño'},
+ nino:{bg:'linear-gradient(150deg,#0284c7,#16a34a)',e:['🎈','🧸','⭐','🪁'],i:'🧸',k:'¡Una sorpresa para vos!',b:'🎈 Abrir mi sorpresa',s:'Hay una sorpresa esperándote'},
+ pascuas:{bg:'linear-gradient(160deg,#f59e0b,#16a34a)',e:['🐣','🥚','🌼','🐰'],i:'🐣',k:'¡Felices Pascuas!',b:'🥚 Abrir mi huevo',s:'Encontraste un huevo sorpresa'},
+ bebe:{bg:'linear-gradient(160deg,#38bdf8,#f9a8d4)',e:['☁️','⭐','🍼','🤍'],i:'🍼',k:'Una dulce sorpresa',b:'☁️ Abrir',s:'Algo muy tierno te espera'},
+ fe:{bg:'linear-gradient(170deg,#1c1917,#a16207)',e:['✨','🕯️','⭐','✨'],i:'🕯️',k:'Un mensaje especial',b:'✨ Abrir el mensaje',s:'Un mensaje preparado con respeto y cariño'},
+ campana:{bg:'linear-gradient(170deg,#0f4f8a,#b45309)',e:['💛','⭐','👼','🍲'],i:'🍲',k:'Campaña · Comedor Ángel Guardián',b:'💛 Ver la campaña',s:'Mirá cómo podés ayudar'},
+ comedor:{bg:'linear-gradient(170deg,#0f4f8a,#b45309)',e:['💛','⭐','👼','💛'],i:'👼',k:'Comedor Ángel Guardián',b:'💛 Abrir el mensaje',s:'Un mensaje del comedor para vos'},
+ evento:{bg:'linear-gradient(150deg,#4c1d95,#be185d)',e:['🎉','✨','🎊','⭐'],i:'🎉',k:'¡Estás invitado!',b:'🎉 Entrar al evento',s:'Mirá todos los detalles y participá'},
+ base:{bg:'linear-gradient(160deg,#3b0764,#be185d)',e:['✨','💝','⭐','🎀'],i:'🎁',k:'Tenés una sorpresa',b:'🎁 Abrir mi regalo',s:'Alguien preparó algo especial para vos'}
+};
+var ALIAS={quince:'cumple',graduacion:'cumple',pareja:'amor',aniversario:'amor',sanvalentin:'amor',propuesta:'amor',casamiento:'amor',amistad:'amor',familia:'amor',abuelos:'madre',nacimiento:'bebe',babyshower:'bebe',bautismo:'fe',comunion:'fe',umbanda:'fe',nacion:'fe',quimbanda:'fe',xeixe:'fe',homenaje:'fe'};
+function el(i){return document.getElementById(i)}
+function lluvia(lista){var fx=el('fx');fx.innerHTML='';for(var n=0;n<22;n++){var s=document.createElement('span');s.textContent=lista[n%lista.length];s.style.left=Math.round(Math.random()*96)+'%';s.style.fontSize=(16+Math.round(Math.random()*20))+'px';s.style.animationDuration=(6+Math.random()*7).toFixed(1)+'s';s.style.animationDelay=(-Math.random()*10).toFixed(1)+'s';fx.appendChild(s)}}
+function tema(html){var m=html.match(/name="angela-ocasion" content="([a-z]+)"/)||html.match(/occasion-([a-z]+)/);var k=m?m[1]:'';if(!k&&html.indexOf('id="journey"')>-1)k='evento';k=ALIAS[k]||k;var t=TEMAS[k]||TEMAS.base;t.key=TEMAS[k]?k:'base';return t}
+function limpio(x){return String(x||'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>')}
+function aplicar(t){document.body.style.background=t.bg;el('ico').textContent=t.i;el('k').textContent=t.k;el('go').textContent=t.b;lluvia(t.e)}
+function boom(t){var b=document.createElement('div');b.className='boom';document.body.appendChild(b);for(var n=0;n<16;n++){var s=document.createElement('span');s.textContent=t.e[n%t.e.length];var a=Math.random()*6.28,d=90+Math.random()*170;s.style.setProperty('--dx',Math.round(Math.cos(a)*d)+'px');s.style.setProperty('--dy',Math.round(Math.sin(a)*d)+'px');b.appendChild(s)}}
+lluvia(TEMAS.base.e);
+(async function(){
+  try{
+    if(!SRC)throw new Error('link');
+    var r=await fetch(SRC,{cache:'no-store'});
+    if(!r.ok)throw new Error(r.status);
+    var html=new TextDecoder('utf-8').decode(await r.arrayBuffer());
+    var t=tema(html);aplicar(t);
+    var tt=html.match(/<title>([^<]{1,140})<.title>/i),pp=html.match(/name="angela-para" content="([^"]{1,60})"/),para=pp?limpio(pp[1]):'';
+    var publico=t.key==='campana'||t.key==='comedor'||t.key==='evento';
+    el('t').textContent=publico?(tt?limpio(tt[1]):t.k):(para?'Una sorpresa para '+para:'Una sorpresa para vos');
+    el('s').textContent=t.s+' · Tocá el botón';
+    el('dots').style.display='none';el('go').style.display='inline-block';el('mano').style.display='block';
+    el('go').onclick=function(){el('go').disabled=true;boom(t);setTimeout(function(){document.open();document.write(html);document.close()},650)};
+  }catch(e){
+    el('dots').style.display='none';el('t').textContent='No se pudo abrir';el('s').textContent='';
+    var er=el('err');er.style.display='block';er.textContent=String(e&&e.message)==='link'?'El link del regalo no es válido.':'No pudimos abrir el regalo. Revisá la conexión a Internet y probá de nuevo en un rato.';
   }
 })();
 </script></body></html>`);
