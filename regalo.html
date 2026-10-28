@@ -44,10 +44,11 @@ h1{font-size:clamp(26px,7vw,40px);line-height:1.12;margin:0 0 10px;text-shadow:0
   <div class="mano" id="mano" aria-hidden="true">👆</div>
   <div class="err" id="err"></div>
 </div>
-<div class="pie">👼 Comedor Ángel Guardián · Merlo<small>Hecho con amor · link seguro de ÁNGELA</small></div>
+<div class="pie" id="pie" style="display:none"></div>
 <script>
 // Solo acepta links de Supabase de ÁNGELA
 var SRC=(function(){var u=new URLSearchParams(location.search).get("u")||"";return /^https:\/\/xbbmqfapcfqndwanfkvh\.supabase\.co\/storage\/v1\/object\/public\//i.test(u)?u:""})();
+
 
 
 
@@ -87,6 +88,7 @@ lluvia(TEMAS.base.e);
     var publico=t.key==='campana'||t.key==='comedor'||t.key==='evento';
     el('t').textContent=publico?(tt?limpio(tt[1]):t.k):(para?'Una sorpresa para '+para:'Una sorpresa para vos');
     el('s').textContent=t.s+' · Tocá el botón';
+    var pie=el('pie');pie.innerHTML=(t.key==='campana'||t.key==='comedor')?'👼 Comedor Ángel Guardián · Merlo<small>Link seguro · hecho con ÁNGELA</small>':'💝 Hecho con mucho cariño<small>Link seguro</small>';pie.style.display='block';
     el('dots').style.display='none';el('go').style.display='inline-block';el('mano').style.display='block';
     el('go').onclick=function(){el('go').disabled=true;boom(t);setTimeout(function(){document.open();document.write(html);document.close()},650)};
   }catch(e){

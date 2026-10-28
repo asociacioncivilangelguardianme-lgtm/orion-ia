@@ -23,20 +23,26 @@ module.exports = async function shortLink(req, res) {
   const publicUrl = `${base}/storage/v1/object/public/${BUCKET}/regalos/${day}/${m[4]}/index.html`;
 
   let title = 'Tenés una sorpresa 🎁';
-  let desc = 'Hecho con amor desde el Comedor Ángel Guardián 👼 Tocá para abrir tu sorpresa.';
-  let ogImg = 'og-comedor.jpg';
+  let desc = 'Alguien preparó algo especial para vos 💝 Tocá para abrir tu sorpresa.';
+  let ogImg = 'og/base.jpg';
   try {
     const r = await fetch(publicUrl, { headers: { Range: 'bytes=0-6000' } });
     if (r.ok || r.status === 206) {
       const head = Buffer.from(await r.arrayBuffer()).toString('utf8');
       const t = head.match(/<title>([^<]{1,140})<\/title>/i);
       if (t) title = t[1].replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+      if (!/name="angela-ocasion"/.test(head) && /id="journey"/.test(head)) { ogImg = 'og/evento.jpg'; desc = '¡Estás invitado! 🎉 Mirá los detalles y confirmá.'; }
       const oc = (head.match(/name="angela-ocasion" content="([a-z]+)"/) || [])[1] || '';
       const para = ((head.match(/name="angela-para" content="([^"]{1,60})"/) || [])[1] || '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
       // Regalos: la vista previa de WhatsApp no revela la sorpresa. Comedor y campañas sí dicen de dónde son.
       if (oc === 'campana') { title = 'Campaña · Comedor Ángel Guardián: ' + title; desc = 'Tocá para ver la campaña y sumarte 💛'; ogImg = 'og-campana.jpg'; }
-      else if (oc === 'comedor') { title = 'Comedor Ángel Guardián: ' + title; }
-      else if (oc) { title = '🎁 Una sorpresa para ' + (para || 'vos'); }
+      else if (oc === 'comedor') { title = 'Comedor Ángel Guardián: ' + title; desc = 'Un mensaje del Comedor Ángel Guardián 👼'; ogImg = 'og-comedor.jpg'; }
+      else if (oc) {
+        title = '🎁 Una sorpresa para ' + (para || 'vos');
+        const G = { pareja: 'amor', aniversario: 'amor', sanvalentin: 'amor', propuesta: 'amor', casamiento: 'amor', amistad: 'amistad', cumple: 'cumple', quince: 'cumple', graduacion: 'cumple', familia: 'familia', abuelos: 'familia', casanueva: 'familia', viaje: 'familia', mascota: 'familia', mascotarecuerdo: 'familia', navidad: 'navidad', anionuevo: 'anionuevo', halloween: 'halloween', madre: 'madre', padre: 'padre', nino: 'nino', pascuas: 'pascuas', nacimiento: 'bebe', babyshower: 'bebe', bautismo: 'fe', comunion: 'fe', umbanda: 'fe', nacion: 'fe', quimbanda: 'fe', xeixe: 'fe', homenaje: 'fe' };
+        const D = { amor: 'Alguien pensó en vos 💌 Tocá para abrir.', amistad: 'Una sorpresa de tu mejor amiga 💖 Tocá para abrir.', cumple: '¡Feliz cumpleaños! 🎂 Tocá para abrir tu regalo.', navidad: '¡Feliz Navidad! 🎄 Tocá para abrir tu regalo.', madre: 'Un regalo con mucho amor 💐 Tocá para abrir.', padre: 'Un regalo para vos 💙 Tocá para abrir.', halloween: '¿Dulce o truco? 🎃 Abrilo si te animás.' };
+        const g = G[oc]; if (g) { ogImg = 'og/' + g + '.jpg'; if (D[g]) desc = D[g]; }
+      }
     } else if (r.status === 404 || r.status === 400) {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -95,8 +101,9 @@ h1{font-size:clamp(26px,7vw,40px);line-height:1.12;margin:0 0 10px;text-shadow:0
   <div class="mano" id="mano" aria-hidden="true">👆</div>
   <div class="err" id="err"></div>
 </div>
-<div class="pie">👼 Comedor Ángel Guardián · Merlo<small>Hecho con amor · link seguro de ÁNGELA</small></div>
+<div class="pie" id="pie" style="display:none"></div>
 <script>var SRC=${JSON.stringify(publicUrl)};
+
 
 var TEMAS={
  navidad:{bg:'linear-gradient(160deg,#0f5132,#7a1020)',e:['❄️','⭐','❄️','✨','🎄'],i:'🎄',k:'Llegó un regalo de Navidad',b:'🎄 Abrir mi regalo',s:'Un regalo de Navidad te está esperando'},
@@ -134,6 +141,7 @@ lluvia(TEMAS.base.e);
     var publico=t.key==='campana'||t.key==='comedor'||t.key==='evento';
     el('t').textContent=publico?(tt?limpio(tt[1]):t.k):(para?'Una sorpresa para '+para:'Una sorpresa para vos');
     el('s').textContent=t.s+' · Tocá el botón';
+    var pie=el('pie');pie.innerHTML=(t.key==='campana'||t.key==='comedor')?'👼 Comedor Ángel Guardián · Merlo<small>Link seguro · hecho con ÁNGELA</small>':'💝 Hecho con mucho cariño<small>Link seguro</small>';pie.style.display='block';
     el('dots').style.display='none';el('go').style.display='inline-block';el('mano').style.display='block';
     el('go').onclick=function(){el('go').disabled=true;boom(t);setTimeout(function(){document.open();document.write(html);document.close()},650)};
   }catch(e){
