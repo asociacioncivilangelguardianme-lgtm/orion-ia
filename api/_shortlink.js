@@ -64,3 +64,34 @@ module.exports = async function shortLink(req, res) {
 })();
 </script></body></html>`);
 };
+
+// ÁNGELA · Meta en vivo de las campañas: devuelve el último estado guardado
+// (/api/supabase-config?camp=ID). Cada actualización es un archivo nuevo en
+// campanas/ID/, así no hace falta permiso para sobrescribir.
+module.exports.campaign = async function campaign(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  const id = String((req.query && req.query.camp) || '').toLowerCase();
+  if (!/^[a-z0-9]{6,24}$/.test(id)) { res.statusCode = 400; return res.end(JSON.stringify({ error: 'Campaña no válida' })); }
+  const base = String(process.env.SUPABASE_URL || PROJECT_URL).replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+  try {
+    const l = await fetch(`${base}/storage/v1/object/list/${BUCKET}`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: `campanas/${id}/`, limit: 1, offset: 0, sortBy: { column: 'name', order: 'desc' } })
+    });
+    const arr = l.ok ? await l.json() : [];
+    const name = Array.isArray(arr) && arr[0] && arr[0].name;
+    if (!name) { res.statusCode = 404; return res.end(JSON.stringify({ error: 'Todavía no hay datos de esta campaña' })); }
+    const f = await fetch(`${base}/storage/v1/object/public/${BUCKET}/campanas/${id}/${encodeURIComponent(name)}`, { cache: 'no-store' });
+    if (!f.ok) { res.statusCode = 502; return res.end(JSON.stringify({ error: 'No se pudo leer la campaña' })); }
+    const data = JSON.parse(Buffer.from(await f.arrayBuffer()).toString('utf8'));
+    res.statusCode = 200;
+    return res.end(JSON.stringify(data));
+  } catch (e) {
+    res.statusCode = 500;
+    return res.end(JSON.stringify({ error: 'Error leyendo la campaña' }));
+  }
+};

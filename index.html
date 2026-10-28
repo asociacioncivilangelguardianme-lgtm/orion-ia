@@ -7548,6 +7548,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       '.cx-tv::after{content:"";position:absolute;right:8px;top:14px;width:14px;height:14px;border-radius:50%;background:#ddd;box-shadow:0 22px 0 #ddd,0 44px 0 #bbb}',
       '.cx-cal{position:absolute;background:#fff;box-shadow:0 6px 14px rgba(0,0,0,.2);padding:8px;font:11px Arial,sans-serif;color:#333;text-align:center}',
       '.cx-cal b{display:block;color:#c0263c;font-size:20px}.cx-cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:4px}.cx-cal .g span{padding:2px 0}.cx-cal .g .h{color:#c0263c;font-weight:900}',
+      '.cx-live{display:inline-flex;align-items:center;gap:6px;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:4px 10px;font:800 12px Arial,sans-serif;margin-bottom:6px}','.cx-live i{width:8px;height:8px;border-radius:50%;background:#dc2626;animation:cxBlink 1.2s steps(1) infinite}','.cx-log{margin-top:10px;display:grid;gap:5px;text-align:left}','.cx-log div{background:#f8fafc;border-radius:10px;padding:7px 10px;font:600 13px Arial,sans-serif;color:#334155;animation:cxPop .4s ease}','.cx-log small{color:#94a3b8;font-weight:400;margin-left:6px}','.cx-share{margin-top:12px;width:100%}',
       '.cx-albumbar{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font:700 14px Arial,sans-serif}',
       '.cx-albumbar button{border:0;border-radius:999px;padding:9px 15px;background:var(--cx-acc);color:#fff;font:700 14px Arial,sans-serif;cursor:pointer}.cx-albumbar button:disabled{opacity:.35}'
     ].join('\n');
@@ -7616,7 +7617,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     baseInside(host, cfg);
     [].slice.call(host.children, antes).forEach(function (n) {
       var h = n.querySelector && n.querySelector('h3'); if (!h || n.id) return; var t = h.textContent;
-      if (/mensaje|habl/i.test(t)) n.id = 'cx-sec-habla'; else if (/álbum/i.test(t)) n.id = 'cx-sec-libro'; else if (/razones/i.test(t)) n.id = 'cx-sec-razones'; else if (/historia/i.test(t)) n.id = 'cx-sec-historia';
+      if (/gracias a/i.test(t)) n.id = 'cx-sec-muro'; else if (/mensaje|habl/i.test(t)) n.id = 'cx-sec-habla'; else if (/álbum/i.test(t)) n.id = 'cx-sec-libro'; else if (/razones/i.test(t)) n.id = 'cx-sec-razones'; else if (/historia/i.test(t)) n.id = 'cx-sec-historia';
     });
 
     /* Chat simulado */
@@ -7745,6 +7746,43 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         o.innerHTML = '<img alt="Comprobante de agradecimiento" src="' + url + '"><a class="cx-btn" style="display:inline-block;margin-top:10px;text-decoration:none" download="comprobante-gracias.png" href="' + url + '">⬇ Descargar</a><p class="cx-hint">Si no se descarga, mantené apretada la imagen y elegí guardar.</p>';
       };
     }
+
+    /* Meta en vivo */
+    if (cfg.vivo) CX.vivo(host, cfg);
+  };
+
+  /* ---------- Meta en vivo: el mismo link muestra cuánto se va juntando ---------- */
+  CX.vivo = function (host, cfg) {
+    var url = cfg.vivo && cfg.vivo.url; if (!url) return;
+    var goal = host.querySelector('.cx-goal'); if (!goal) return;
+    var sym = cfg.sym || '❤', live = el('div', 'cx-live', '<i></i><span>En vivo</span>'), log = el('div', 'cx-log');
+    goal.insertBefore(live, goal.firstChild); goal.appendChild(log);
+    var sh = el('button', 'cx-btn cx-share', '📲 Compartir para que más gente sume'); sh.type = 'button'; goal.appendChild(sh);
+    sh.onclick = function () { var u = location.href, t = 'Mirá cuánto llevamos juntado y sumate: '; if (navigator.share) navigator.share({ title: D.title, text: t, url: u }).catch(function () {}); else W.open('https://wa.me/?text=' + encodeURIComponent(t + u), '_blank'); };
+    function num(v) { v = Math.round((parseFloat(v) || 0) * 10) / 10; return v.toLocaleString('es-AR'); }
+    function hace(iso) { var m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)); return !iso || isNaN(m) ? '' : m < 1 ? 'recién' : m < 60 ? 'hace ' + m + ' min' : m < 1440 ? 'hace ' + Math.round(m / 60) + ' h' : 'hace ' + Math.round(m / 1440) + ' días'; }
+    var ultimo = '';
+    function pintar(d) {
+      var tot = parseFloat(d.total) || 0, act = parseFloat(d.actual) || 0; if (!tot) return;
+      var pct = Math.max(0, Math.min(100, Math.round(act / tot * 100))), u = d.unidad || '';
+      var sp = goal.querySelectorAll('.nums span'); if (sp[0]) sp[0].textContent = num(act) + ' de ' + num(tot) + ' ' + u; if (sp[1]) sp[1].textContent = pct + '%';
+      var b = goal.querySelector('.bar i'); if (b) b.style.width = pct + '%';
+      var ps = goal.querySelectorAll('p'); var msg = ps[ps.length - 1]; if (msg && !msg.closest('.cx-log')) msg.textContent = pct >= 100 ? '¡Lo logramos! Gracias a todos ' + sym : 'Faltan ' + num(Math.max(0, tot - act)) + ' ' + u + '. ¡Sumate!';
+      if (d.titulo) { var h = goal.querySelector('h3'); if (h) h.textContent = '🎯 ' + d.titulo; }
+      var sopa = goal.querySelector('.sopa'); if (sopa) sopa.setAttribute('y', (110 - Math.min(1, act / tot) * 72).toFixed(1));
+      live.querySelector('span').textContent = 'En vivo' + (d.act ? ' · actualizado ' + hace(d.act) : '');
+      log.innerHTML = (d.log || []).slice(0, 5).map(function (x) { return '<div>' + esc(x.t || '') + '<small>' + esc(hace(x.f)) + '</small></div>'; }).join('');
+      if (Array.isArray(d.muro) && d.muro.length) {
+        var wall = D.getElementById('cx-sec-muro');
+        if (!wall) { wall = el('div', 'cx-card', '<h3>💛 Gracias a</h3><div class="cx-wall"></div>'); wall.id = 'cx-sec-muro'; goal.closest('.cx-card').insertAdjacentElement('afterend', wall); }
+        wall.querySelector('.cx-wall').innerHTML = d.muro.map(function (n) { return '<span>' + sym + ' ' + esc(n) + '</span>'; }).join('');
+      }
+      if (ultimo && d.act !== ultimo && act > 0) CX.burst(goal, '💛');
+      ultimo = d.act || ultimo;
+    }
+    function traer() { fetch(url, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.total) pintar(d); }).catch(function () {}); }
+    traer(); setInterval(function () { if (!D.hidden) traer(); }, 45000);
+    D.addEventListener('visibilitychange', function () { if (!D.hidden) traer(); });
   };
 
   /* ---------- Cielo estrellado ---------- */
@@ -7872,7 +7910,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 (function(){
   if(window.__ANGELA_REGALOS_QR__) return;
   window.__ANGELA_REGALOS_QR__=true;
-  window.ANGELA_QR_VERSION='11.6';
+  window.ANGELA_QR_VERSION='11.7';
   const STORAGE='ANGELA_regalos_qr_v2';
   const HISTORY_STORAGE='ANGELA_regalos_qr_history_v2';
 
@@ -7960,7 +7998,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   };
   const PRESENTATION_ORDER=['romantica','album','cinematografica','floral','fiesta','elegante','espiritual','historia','bebe','graduacion','mascotas','navidad','gaming','carta','albumdigital'];
   const SYMBOLS={heart:'❤',star:'★',gift:'🎁',flower:'✿',spark:'✦',candle:'🕯',moon:'☾',baby:'👶',bottle:'🍼',grad:'🎓',paw:'🐾',tree:'🎄',ball:'⚽',game:'🎮',ring:'💍',home:'🏠',plane:'✈️'};
-  const DEFAULTS={cxApertura:'sobre',cxRetroTexto:'',cxClave:'',cxPista:'',cxVelas:'5',cxBloqueo:'',cxEfecto:'auto',cxEscribir:true,cxDe:'',cxPara:'',cxMenu:false,cxAlbum:false,cxAlbumTitulo:'',cxAlbumNotas:'',cxCubo:false,cxCuboTexto:'',cxCaja:false,cxLibro:false,cxMemo:false,cxHablaFoto:'',cxHablaAudio:'',cxHablaTexto:'',cxHistoria:'',cxRazones:'',cxChat:'',cxCupones:'',cxFrasco:'',cxBendicion:false,cxQuiz:'',cxEstrellas:'',cxFirma:'',cxWa:'',cxPregunta:'',cxPreguntaSi:'',cxResponder:false,cxAviso:false,cxMetaTitulo:'',cxMetaActual:'',cxMetaTotal:'',cxMetaUnidad:'',cxMuro:'',cxComprobante:false,cartaDate:'',cartaLabel:'Juntos hace',cartaUnder:'Los mejores días de mi vida',cartaCaptions:'',cartaVerse:'',cartaVerseRef:'',cartaClose:'Te quiero',cartaVideo:'',occasion:'cumple',theme:'cumple',presentation:'auto',presentationTryIndex:0,designVariant:0,symbol:'heart',name:'',sender:'',date:'',detail:'',smartContext:'',title:'',phrase:'',message:'',cta:'',progressText:'',cardTitle:'',cardText:'',publicUrl:'',publishedUrl:'',publishedAt:'',publishProvider:'',publishProjectId:'',publishDeleteToken:'',publishUpdateToken:'',musicUrl:'',musicName:'',musicData:'',musicOriginalBytes:0,musicStoredBytes:0,musicOptimized:false,musicClipSeconds:0,autoPhrase:true,autofillTheme:true,eventData:{},cardShape:'rounded',surpriseMode:true,themeImageData:'',themeImageName:'',themeImageMode:'auto',themeImageFit:'contain',themeImageX:50,themeImageY:50,themeImageZoom:100,photos:[],activePhoto:0,lastHtml:'',lastCardHtml:''};
+  const DEFAULTS={cxVivo:false,cxAuto:false,cxEquiv:'',cxCampId:'',cxVivoDesde:'',cxLog:[],cxMpVistos:[],cxApertura:'sobre',cxRetroTexto:'',cxClave:'',cxPista:'',cxVelas:'5',cxBloqueo:'',cxEfecto:'auto',cxEscribir:true,cxDe:'',cxPara:'',cxMenu:false,cxAlbum:false,cxAlbumTitulo:'',cxAlbumNotas:'',cxCubo:false,cxCuboTexto:'',cxCaja:false,cxLibro:false,cxMemo:false,cxHablaFoto:'',cxHablaAudio:'',cxHablaTexto:'',cxHistoria:'',cxRazones:'',cxChat:'',cxCupones:'',cxFrasco:'',cxBendicion:false,cxQuiz:'',cxEstrellas:'',cxFirma:'',cxWa:'',cxPregunta:'',cxPreguntaSi:'',cxResponder:false,cxAviso:false,cxMetaTitulo:'',cxMetaActual:'',cxMetaTotal:'',cxMetaUnidad:'',cxMuro:'',cxComprobante:false,cartaDate:'',cartaLabel:'Juntos hace',cartaUnder:'Los mejores días de mi vida',cartaCaptions:'',cartaVerse:'',cartaVerseRef:'',cartaClose:'Te quiero',cartaVideo:'',occasion:'cumple',theme:'cumple',presentation:'auto',presentationTryIndex:0,designVariant:0,symbol:'heart',name:'',sender:'',date:'',detail:'',smartContext:'',title:'',phrase:'',message:'',cta:'',progressText:'',cardTitle:'',cardText:'',publicUrl:'',publishedUrl:'',publishedAt:'',publishProvider:'',publishProjectId:'',publishDeleteToken:'',publishUpdateToken:'',musicUrl:'',musicName:'',musicData:'',musicOriginalBytes:0,musicStoredBytes:0,musicOptimized:false,musicClipSeconds:0,autoPhrase:true,autofillTheme:true,eventData:{},cardShape:'rounded',surpriseMode:true,themeImageData:'',themeImageName:'',themeImageMode:'auto',themeImageFit:'contain',themeImageX:50,themeImageY:50,themeImageZoom:100,photos:[],activePhoto:0,lastHtml:'',lastCardHtml:''};
 
   let STATE=loadState();
   let PREVIEW_AUDIO=null;
@@ -8188,13 +8226,57 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       quiz:cxLines(STATE.cxQuiz),estrellas:STATE.cxEstrellas||'',firma:STATE.cxFirma||'',
       wa:String(STATE.cxWa||'').replace(/\D/g,''),pregunta:STATE.cxPregunta?{texto:STATE.cxPregunta,si:'¡Sí!',no:'No',mensajeSi:STATE.cxPreguntaSi||'¡Sabía que ibas a decir que sí!'}:{},
       responder:!!STATE.cxResponder,aviso:!!STATE.cxAviso,
-      meta:{titulo:STATE.cxMetaTitulo||'',actual:STATE.cxMetaActual||0,total:STATE.cxMetaTotal||0,unidad:STATE.cxMetaUnidad||''},muro:cxLines(STATE.cxMuro),comprobante:!!STATE.cxComprobante};
+      meta:{titulo:STATE.cxMetaTitulo||'',actual:STATE.cxMetaActual||0,total:STATE.cxMetaTotal||0,unidad:STATE.cxMetaUnidad||''},vivo:STATE.cxVivo&&parseFloat(STATE.cxMetaTotal)>0?{url:'https://orion-ia-sooty.vercel.app/api/supabase-config?camp='+cxCampId()}:null,muro:cxLines(STATE.cxMuro),comprobante:!!STATE.cxComprobante};
   }
+  // V12.92: meta en vivo
+  function cxCampId(){if(!STATE.cxCampId){STATE.cxCampId=Array.from(crypto.getRandomValues?crypto.getRandomValues(new Uint8Array(10)):[...Array(10)].map(()=>Math.random()*256|0),b=>'abcdefghijkmnpqrstuvwxyz23456789'[b%32]).join('');STATE.cxVivoDesde=new Date().toISOString();saveState()}return STATE.cxCampId}
+  function cxVivoStatus(txt){const el=document.getElementById('agqr_cxVivoStatus');if(!el)return;if(txt){el.textContent=txt;return}const act=parseFloat(STATE.cxMetaActual)||0,tot=parseFloat(STATE.cxMetaTotal)||0;el.textContent=STATE.cxVivo?(tot?`🔴 En vivo: ${act.toLocaleString('es-AR')} de ${tot.toLocaleString('es-AR')} ${STATE.cxMetaUnidad||''}`+(STATE.cxVivoAct?` · último envío ${new Date(STATE.cxVivoAct).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`:''):'Poné la meta (Llevamos / Meta) para activar el modo en vivo.'):'Modo en vivo apagado.'}
+  function cxSetVal(id,v){const el=document.getElementById(id);if(el)el.value=v}
+  function cxRegistrar(cant,texto){STATE.cxMetaActual=String(Math.round(((parseFloat(STATE.cxMetaActual)||0)+cant)*100)/100);cxSetVal('agqr_cxMetaActual',STATE.cxMetaActual);STATE.cxLog=[...(STATE.cxLog||[]),{t:texto,f:new Date().toISOString()}].slice(-30)}
+  async function cxPublicarVivo(silencioso){
+    if(!STATE.cxVivo){if(!silencioso)cxVivoStatus('Activá «Meta en vivo» primero.');return false}
+    if(!(parseFloat(STATE.cxMetaTotal)>0)){if(!silencioso)cxVivoStatus('Falta poner la meta (el número total).');return false}
+    try{cxVivoStatus('⏳ Actualizando el link…');
+      await window.ANGELASupabase.saveCampaign(cxCampId(),{titulo:STATE.cxMetaTitulo||'',total:parseFloat(STATE.cxMetaTotal)||0,actual:parseFloat(STATE.cxMetaActual)||0,unidad:STATE.cxMetaUnidad||'',muro:cxLines(STATE.cxMuro),log:(STATE.cxLog||[]).slice(-8).reverse(),act:new Date().toISOString()});
+      STATE.cxVivoAct=new Date().toISOString();saveState();cxVivoStatus();return true
+    }catch(e){cxVivoStatus('❌ '+(e?.message||'No se pudo actualizar'));return false}
+  }
+  async function cxSumarManual(){
+    const c=parseFloat(document.getElementById('agqr_cxSumaCant')?.value),n=(document.getElementById('agqr_cxSumaNombre')?.value||'').trim();
+    if(!(c>0)){cxVivoStatus('Escribí la cantidad que donaron.');return}
+    const u=STATE.cxMetaUnidad||'';cxRegistrar(c,`${n||'Alguien'} sumó ${c.toLocaleString('es-AR')} ${u}`.trim()+' 💛');
+    if(n&&document.getElementById('agqr_cxSumaMuro')?.checked&&!cxLines(STATE.cxMuro).includes(n)){STATE.cxMuro=[...cxLines(STATE.cxMuro),n].join('\n');cxSetVal('agqr_cxMuro',STATE.cxMuro)}
+    cxSetVal('agqr_cxSumaCant','');cxSetVal('agqr_cxSumaNombre','');saveState();await cxPublicarVivo();
+  }
+  async function cxAutoRevisar(manual){
+    if(!STATE.cxVivo||(!STATE.cxAuto&&!manual))return;
+    if(!/^https?:/.test(location.protocol)){if(manual)cxVivoStatus('Para leer Mercado Pago abrí ÁNGELA desde orion-ia-sooty.vercel.app');return}
+    try{
+      if(manual)cxVivoStatus('⏳ Revisando Mercado Pago…');
+      const r=await fetch('/api/gmail/mercadopago-ingresos',{credentials:'include',cache:'no-store'}),d=await r.json().catch(()=>({}));
+      if(!r.ok){cxVivoStatus('🟡 '+(d.error||'No pude leer Mercado Pago')+' Conectá Gmail en el Centro de Gestión.');return}
+      const desde=Date.parse(STATE.cxVivoDesde||'')||Date.now(),vistos=new Set(STATE.cxMpVistos||[]),equiv=parseFloat(STATE.cxEquiv)||0,u=STATE.cxMetaUnidad||'';let nuevos=0,pesos=0;
+      for(const it of (d.ingresos||[])){
+        const key=String(it.referencia||it.id||'');if(!key||vistos.has(key))continue;vistos.add(key);
+        const f=Date.parse(it.fecha)||0;if(f&&f<desde)continue;
+        const monto=parseFloat(String(it.monto||'').replace(/\./g,'').replace(',','.'))||0;if(monto<=0)continue;
+        nuevos++;pesos+=monto;
+        const cant=equiv>0?monto/equiv:monto;
+        cxRegistrar(cant,`Alguien donó $${monto.toLocaleString('es-AR')}`+(equiv>0?` (≈ ${(Math.round(cant*10)/10).toLocaleString('es-AR')} ${u})`:'')+' 💛');
+      }
+      STATE.cxMpVistos=[...vistos].slice(-600);saveState();
+      if(nuevos){await cxPublicarVivo(true);cxVivoStatus(`✅ ${nuevos} donación${nuevos>1?'es':''} nueva${nuevos>1?'s':''} de Mercado Pago ($${pesos.toLocaleString('es-AR')}). Link actualizado.`);window.showToast?.('💛 ÁNGELA sumó '+nuevos+' donación'+(nuevos>1?'es':'')+' a la campaña')}
+      else cxVivoStatus(`🔎 Revisé Mercado Pago a las ${new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}: no hay donaciones nuevas.`);
+    }catch(e){cxVivoStatus('🟡 No pude revisar Mercado Pago ahora: '+(e?.message||e))}
+  }
+  setTimeout(()=>cxAutoRevisar(false),20000);setInterval(()=>cxAutoRevisar(false),5*60*1000);
   function cxBindForm(){
-    const T=['cxApertura','cxRetroTexto','cxClave','cxPista','cxVelas','cxBloqueo','cxEfecto','cxDe','cxPara','cxAlbumTitulo','cxAlbumNotas','cxCuboTexto','cxHablaTexto','cxHistoria','cxRazones','cxChat','cxCupones','cxFrasco','cxQuiz','cxEstrellas','cxWa','cxPregunta','cxPreguntaSi','cxMetaTitulo','cxMetaActual','cxMetaTotal','cxMetaUnidad','cxMuro'];
-    const C=['cxEscribir','cxMenu','cxAlbum','cxCubo','cxCaja','cxLibro','cxMemo','cxBendicion','cxResponder','cxAviso','cxComprobante'];
-    T.forEach(k=>{const el=document.getElementById('agqr_'+k);if(el&&!el.dataset.agCx){el.dataset.agCx='1';el.value=STATE[k]??'';bindInput('agqr_'+k,k,e=>e.value)}});
+    const T=['cxEquiv','cxApertura','cxRetroTexto','cxClave','cxPista','cxVelas','cxBloqueo','cxEfecto','cxDe','cxPara','cxAlbumTitulo','cxAlbumNotas','cxCuboTexto','cxHablaTexto','cxHistoria','cxRazones','cxChat','cxCupones','cxFrasco','cxQuiz','cxEstrellas','cxWa','cxPregunta','cxPreguntaSi','cxMetaTitulo','cxMetaActual','cxMetaTotal','cxMetaUnidad','cxMuro'];
+    const C=['cxVivo','cxAuto','cxEscribir','cxMenu','cxAlbum','cxCubo','cxCaja','cxLibro','cxMemo','cxBendicion','cxResponder','cxAviso','cxComprobante'];
+    const VIVO=['cxEquiv','cxMetaTitulo','cxMetaActual','cxMetaTotal','cxMetaUnidad','cxMuro'];T.forEach(k=>{const el=document.getElementById('agqr_'+k);if(el&&!el.dataset.agCx){el.dataset.agCx='1';el.value=STATE[k]??'';if(VIVO.includes(k)){const fn=()=>{STATE[k]=el.value;saveState();cxVivoStatus()};el.addEventListener('input',fn);el.addEventListener('change',fn)}else bindInput('agqr_'+k,k,e=>e.value)}});
     C.forEach(k=>{const el=document.getElementById('agqr_'+k);if(el&&!el.dataset.agCx){el.dataset.agCx='1';el.checked=k==='cxEscribir'?STATE[k]!==false:!!STATE[k];bindInput('agqr_'+k,k,e=>e.checked)}});
+    const bs=(id,fn)=>{const b=document.getElementById(id);if(b&&!b.dataset.agCx){b.dataset.agCx='1';b.addEventListener('click',fn)}};
+    bs('agqr_cxSumar',cxSumarManual);bs('agqr_cxRevisarMP',()=>cxAutoRevisar(true));bs('agqr_cxPublicarVivo',()=>cxPublicarVivo());cxVivoStatus();
     const st=document.getElementById('agqr_cxHablaStatus');
     const pinta=()=>{if(st)st.textContent=[STATE.cxHablaFoto?'✅ Foto cargada':'Sin foto',STATE.cxHablaAudio?'✅ Audio cargado':(STATE.cxHablaTexto?'🔊 Sin audio: lo lee una voz automática':'Sin audio')].join(' · ')};pinta();
     const ff=document.getElementById('agqr_cxHablaFotoFile');if(ff&&!ff.dataset.agCx){ff.dataset.agCx='1';ff.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;invalidateFinal();STATE.cxHablaFoto=await compressGiftImage(f);saveState();pinta();syncPreview();e.target.value=''})}
@@ -8355,7 +8437,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   async function publishWithSpark(htmlFinal){const S=await ensureSparkClient(),app=await S.deploy({index:htmlFinal});let url=app?.scaffold?.site_url||app?.scaffold?.siteUrl||app?.site_url||app?.siteUrl||app?.url||'';if(url&&url.startsWith('/'))url='https://spark.boqsc.eu'+url;if(!/^https:\/\//i.test(url))throw new Error('servicio 3 sin enlace válido');return{url,projectId:app?.project?.id||app?.project_id||app?.id||'',provider:'Spark'}}
   async function createOnlineGift(htmlFinal){const providers=[...(window.ANGELASupabase?.publishGift?[window.ANGELASupabase.publishGift]:[]),publishWithHtmlHoster,publishWithPasteHtml,publishWithSpark],errors=[];for(let i=0;i<providers.length;i++){setStatus(`⏳ <b>Creando tu regalo y el QR…</b><br>Paso ${i+1} de ${providers.length}. No cierres esta pantalla.`,`busy`);try{const r=await providers[i](htmlFinal);if(r?.url)return r}catch(e){console.warn('ÁNGELA Regalos QR fallback',e);errors.push(e?.message||String(e))}}throw new Error('No pude crear el enlace del regalo en este momento. Revisá Internet y volvé a intentar.')}
   function addHistory(result){const list=loadHistory(),entry={id:uid(),createdAt:new Date().toISOString(),name:STATE.name||STATE.detail||occasionInfo(STATE.occasion).label,occasion:STATE.occasion,presentation:resolvedPresentation(),url:result.url,provider:result.provider||'',projectId:result.projectId||'',deleteToken:result.deleteToken||'',updateToken:result.updateToken||''};const filtered=list.filter(x=>x.url!==entry.url);filtered.unshift(entry);saveHistory(filtered);renderHistory();return entry}
-  async function createGiftAndQr(){try{stopPreviewMusic();if(!STATE.phrase&&STATE.autoPhrase)STATE.phrase=makePhrase();syncPreview();const manual=String(STATE.publicUrl||'').trim();if(/^https?:\/\//i.test(manual)){STATE.publishedUrl='';STATE.publishedAt=new Date().toISOString();STATE.publishProvider='manual';saveState();syncPreview();setStatus(`✅ <b>REGALO LISTO + QR FINAL LISTO.</b><br><a href="${esc(manual)}" target="_blank" rel="noopener">Abrir regalo</a>`,'ok');return manual}const htmlFinal=giftHtml();STATE.lastHtml=htmlFinal;saveState();const result=await createOnlineGift(htmlFinal);STATE.publicUrl='';STATE.publishedUrl=result.url;STATE.publishedAt=new Date().toISOString();STATE.publishProvider=result.provider||'Automático';STATE.publishProjectId=result.projectId||'';STATE.publishDeleteToken=result.deleteToken||'';STATE.publishUpdateToken=result.updateToken||'';saveState();addHistory(result);syncPreview();renderFormValues();setStatus(`✅ <b>REGALO LISTO + QR FINAL LISTO.</b><br><a href="${esc(result.url)}" target="_blank" rel="noopener">${esc(result.url)}</a><br><span style="font-size:.74rem">Ya podés descargar o imprimir el QR y usarlo en tarjeta, taza, sublimación, cuadro, sticker o láser.</span>`,'ok');window.showToast?.('✅ Regalo y QR final listos.');setTimeout(()=>document.getElementById('agqr_cardPreview')?.scrollIntoView({behavior:'smooth',block:'center'}),180);return result.url}catch(e){console.error('ÁNGELA Regalos QR',e);setStatus(`❌ <b>No pude terminar el regalo.</b><br>${esc(e.message||e)}<br>Todo lo que cargaste sigue guardado. Revisá la conexión y tocá nuevamente “Crear regalo y generar QR”.`,'error');return null}}
+  async function createGiftAndQr(){try{stopPreviewMusic();if(!STATE.phrase&&STATE.autoPhrase)STATE.phrase=makePhrase();syncPreview();const manual=String(STATE.publicUrl||'').trim();if(/^https?:\/\//i.test(manual)){STATE.publishedUrl='';STATE.publishedAt=new Date().toISOString();STATE.publishProvider='manual';saveState();syncPreview();setStatus(`✅ <b>REGALO LISTO + QR FINAL LISTO.</b><br><a href="${esc(manual)}" target="_blank" rel="noopener">Abrir regalo</a>`,'ok');return manual}const htmlFinal=giftHtml();STATE.lastHtml=htmlFinal;saveState();const result=await createOnlineGift(htmlFinal);if(STATE.cxVivo)await cxPublicarVivo(true);STATE.publicUrl='';STATE.publishedUrl=result.url;STATE.publishedAt=new Date().toISOString();STATE.publishProvider=result.provider||'Automático';STATE.publishProjectId=result.projectId||'';STATE.publishDeleteToken=result.deleteToken||'';STATE.publishUpdateToken=result.updateToken||'';saveState();addHistory(result);syncPreview();renderFormValues();setStatus(`✅ <b>REGALO LISTO + QR FINAL LISTO.</b><br><a href="${esc(result.url)}" target="_blank" rel="noopener">${esc(result.url)}</a><br><span style="font-size:.74rem">Ya podés descargar o imprimir el QR y usarlo en tarjeta, taza, sublimación, cuadro, sticker o láser.</span>`,'ok');window.showToast?.('✅ Regalo y QR final listos.');setTimeout(()=>document.getElementById('agqr_cardPreview')?.scrollIntoView({behavior:'smooth',block:'center'}),180);return result.url}catch(e){console.error('ÁNGELA Regalos QR',e);setStatus(`❌ <b>No pude terminar el regalo.</b><br>${esc(e.message||e)}<br>Todo lo que cargaste sigue guardado. Revisá la conexión y tocá nuevamente “Crear regalo y generar QR”.`,'error');return null}}
   async function ensureFinal(){return finalPublicUrl()||await createGiftAndQr()}
 
   function downloadText(name,text,type){const blob=new Blob([text],{type:type||'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1200)}
@@ -8484,7 +8566,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <div class="angqr-field"><label>🎯 Meta (título)</label><input id="agqr_cxMetaTitulo" placeholder="Cajas navideñas para las familias"></div>
 <div class="angqr-field"><label>Llevamos / Meta / Unidad</label><div style="display:flex;gap:6px"><input id="agqr_cxMetaActual" type="number" placeholder="62"><input id="agqr_cxMetaTotal" type="number" placeholder="100"><input id="agqr_cxMetaUnidad" placeholder="cajas"></div></div>
 <div class="angqr-field"><label>💛 Muro de gracias (un nombre por línea)</label><textarea id="agqr_cxMuro" placeholder="Familia Gómez&#10;Panadería La Espiga"></textarea></div>
-<label class="angqr-check"><input type="checkbox" id="agqr_cxComprobante"> 🧾 Comprobante de agradecimiento descargable</label></div>
+<label class="angqr-check"><input type="checkbox" id="agqr_cxComprobante"> 🧾 Comprobante de agradecimiento descargable</label></div><div class="angqr-smartbox" style="margin-top:10px"><div style="font-weight:900">🔴 Meta en vivo · el mismo QR y link muestran cuánto se va juntando</div>
+<div class="angqr-smartsub" style="margin:4px 0 8px">Quien abre el link ve la barra y el plato subir. Las donaciones salen como «Alguien donó», sin nombre. Los nombres solo van al muro si los agregás vos.</div>
+<div class="angqr-grid two">
+<label class="angqr-check"><input type="checkbox" id="agqr_cxVivo"> 🔴 Activar meta en vivo</label>
+<label class="angqr-check"><input type="checkbox" id="agqr_cxAuto"> 🤖 Sumar sola las transferencias de Mercado Pago</label>
+<div class="angqr-field"><label>Si la meta no es en pesos: ¿cuántos $ suman 1 unidad?</label><input id="agqr_cxEquiv" type="number" min="0" placeholder="Ej: 15000 (1 caja = $15.000). Vacío = la meta es en $"></div>
+<div class="angqr-field"><label>➕ Sumar una donación a mano (alimentos, juguetes, efectivo)</label><div style="display:flex;gap:6px"><input id="agqr_cxSumaCant" type="number" min="0" step="any" placeholder="Cantidad"><input id="agqr_cxSumaNombre" placeholder="Nombre (opcional)"></div><label class="angqr-check" style="margin-top:5px"><input type="checkbox" id="agqr_cxSumaMuro"> Agregar el nombre al muro de gracias</label></div>
+</div>
+<div class="angqr-actions" style="margin-top:8px"><button type="button" class="angqr-btn publish" id="agqr_cxSumar">➕ Sumar donación</button><button type="button" class="angqr-btn alt" id="agqr_cxRevisarMP">🤖 Revisar Mercado Pago ahora</button><button type="button" class="angqr-btn alt" id="agqr_cxPublicarVivo">🔄 Actualizar el link ahora</button></div>
+<div id="agqr_cxVivoStatus" class="muted" style="font-size:.76rem;margin-top:6px"></div>
+<div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Para que sume sola: Gmail conectado en el Centro de Gestión y ÁNGELA abierta (por ejemplo en la PC de la radio). Revisa cada 5 minutos.</div></div>
 </details>
   <div class="angqr-grid two"><div class="angqr-field"><label>Título de la tarjeta QR</label><input id="agqr_cardTitle"></div><div class="angqr-field"><label>Texto de la tarjeta QR</label><input id="agqr_cardText"></div></div>
   <div class="angqr-field" style="margin-top:10px"><label>🎵 Música o audio personal</label><input id="agqr_musicUrl" placeholder="Link directo .mp3/.m4a/.ogg/.opus (opcional)"><div id="agqr_musicStatus" class="angqr-music-warn"></div></div>
@@ -11229,6 +11321,17 @@ body.ags-lock{overflow:hidden!important}
     const viewerUrl=`${site}/r/${day.slice(2).replace(/-/g,'')}${id}`;
     return{url:viewerUrl,rawUrl:publicUrl,projectId:path,provider:'Supabase',contentType:'text/html'};
   }
+  // V12.92: meta en vivo de las campañas (cada actualización es un archivo nuevo, no hace falta sobrescribir)
+  async function saveCampaign(id,data){
+    const c=await config(); if(!c)throw new Error('Supabase todavía no está disponible. Abrí ÁNGELA desde orion-ia-sooty.vercel.app');
+    const body=JSON.stringify(data),stamp=String(Date.now()),errs=[];
+    for(const [ext,type] of [['json','application/json'],['txt','text/plain;charset=utf-8'],['html','text/html;charset=utf-8']]){
+      const path=`campanas/${id}/${stamp}.${ext}`,encoded=path.split('/').map(encodeURIComponent).join('/');
+      const r=await request(`/storage/v1/object/${encodeURIComponent(c.bucket)}/${encoded}`,{method:'POST',headers:{'Content-Type':type,'x-upsert':'false','cache-control':'0'},body:new Blob([body],{type})});
+      if(r.ok)return true; errs.push(`${ext}: HTTP ${r.status}`);
+    }
+    throw new Error('No se pudo guardar la campaña ('+errs.join(' · ')+')');
+  }
   async function connectPrompt(){
     const current=saved();
     const key=prompt('Pegá la Publishable Key de Supabase (sb_publishable_...). Se guarda solamente en este navegador.',current.key||'');
@@ -11236,7 +11339,7 @@ body.ags-lock{overflow:hidden!important}
     if(!validKey(key)){alert('La clave no parece una Publishable Key válida.');return false}
     save({url:PROJECT_URL,key,bucket:BUCKET}); return check();
   }
-  window.ANGELASupabase={config,check,publishGift,connectPrompt,projectUrl:PROJECT_URL,bucket:BUCKET};
+  window.ANGELASupabase={config,check,publishGift,saveCampaign,connectPrompt,projectUrl:PROJECT_URL,bucket:BUCKET};
   const refresh=()=>setTimeout(check,350);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh,{once:true}); else refresh();
   const old=window.angelaAbrirGestion;

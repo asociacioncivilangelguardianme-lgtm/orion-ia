@@ -10,6 +10,11 @@ module.exports = function handler(req, res) {
     return shortLink(req, res);
   }
 
+  // Meta en vivo de las campañas del comedor (?camp=ID)
+  if (req.query && req.query.camp) {
+    return shortLink.campaign(req, res);
+  }
+
   const rawUrl = process.env.SUPABASE_URL || "";
 
   const url = rawUrl
