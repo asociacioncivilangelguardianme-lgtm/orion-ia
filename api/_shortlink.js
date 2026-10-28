@@ -23,7 +23,8 @@ module.exports = async function shortLink(req, res) {
   const publicUrl = `${base}/storage/v1/object/public/${BUCKET}/regalos/${day}/${m[4]}/index.html`;
 
   let title = 'Tenés una sorpresa 🎁';
-  let desc = 'Tocá para abrir tu sorpresa. Hecho con ÁNGELA 👼';
+  let desc = 'Hecho con amor desde el Comedor Ángel Guardián 👼 Tocá para abrir tu sorpresa.';
+  let ogImg = 'og-comedor.jpg';
   try {
     const r = await fetch(publicUrl, { headers: { Range: 'bytes=0-6000' } });
     if (r.ok || r.status === 206) {
@@ -33,7 +34,7 @@ module.exports = async function shortLink(req, res) {
       const oc = (head.match(/name="angela-ocasion" content="([a-z]+)"/) || [])[1] || '';
       const para = ((head.match(/name="angela-para" content="([^"]{1,60})"/) || [])[1] || '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
       // Regalos: la vista previa de WhatsApp no revela la sorpresa. Comedor y campañas sí dicen de dónde son.
-      if (oc === 'campana') { title = 'Campaña · Comedor Ángel Guardián: ' + title; desc = 'Tocá para ver la campaña y sumarte 💛'; }
+      if (oc === 'campana') { title = 'Campaña · Comedor Ángel Guardián: ' + title; desc = 'Tocá para ver la campaña y sumarte 💛'; ogImg = 'og-campana.jpg'; }
       else if (oc === 'comedor') { title = 'Comedor Ángel Guardián: ' + title; }
       else if (oc) { title = '🎁 Una sorpresa para ' + (para || 'vos'); }
     } else if (r.status === 404 || r.status === 400) {
@@ -45,15 +46,16 @@ module.exports = async function shortLink(req, res) {
 
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'orion-ia-sooty.vercel.app';
   const origin = `https://${host}`;
-  const img = `${origin}/icon-512.png`;
+  const img = `${origin}/${ogImg}`;
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.end(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(title)}</title>
-<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">
-<meta property="og:image" content="${esc(img)}"><meta property="og:image:width" content="512"><meta property="og:image:height" content="512">
-<meta property="og:url" content="${esc(origin + '/r/' + code)}"><meta name="twitter:card" content="summary"><meta name="description" content="${esc(desc)}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Comedor Ángel Guardián"><meta property="og:locale" content="es_AR">
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">
+<meta property="og:image" content="${esc(img)}"><meta property="og:image:secure_url" content="${esc(img)}"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Comedor Ángel Guardián">
+<meta property="og:url" content="${esc(origin + '/r/' + code)}"><meta name="twitter:card" content="summary_large_image"><meta name="description" content="${esc(desc)}">
 <style>
 *{box-sizing:border-box}html,body{margin:0;height:100%}
 body{font-family:Georgia,'Times New Roman',serif;color:#fff;background:linear-gradient(160deg,#3b0764,#be185d);overflow:hidden;transition:background 1s ease}
@@ -76,6 +78,9 @@ h1{font-size:clamp(26px,7vw,40px);line-height:1.12;margin:0 0 10px;text-shadow:0
 .err{display:none;background:rgba(0,0,0,.25);padding:14px 16px;border-radius:14px;font:600 15px Arial,sans-serif;max-width:32ch}
 .boom span{position:fixed;left:50%;top:50%;font-size:34px;animation:vuela 1s ease-out forwards;z-index:5}
 @keyframes vuela{from{transform:translate(-50%,-50%) scale(.4);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.3);opacity:0}}
+.pie{position:fixed;left:0;right:0;bottom:0;z-index:3;text-align:center;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(0,0,0,.45));font:700 14px Arial,sans-serif}
+.pie small{display:block;font-weight:400;opacity:.8;font-size:12px;margin-top:2px}
+.c{padding-bottom:90px}
 @media (prefers-reduced-motion:reduce){#fx,.ico,#go,.mano{animation:none!important}}
 </style>
 </head><body>
@@ -90,6 +95,7 @@ h1{font-size:clamp(26px,7vw,40px);line-height:1.12;margin:0 0 10px;text-shadow:0
   <div class="mano" id="mano" aria-hidden="true">👆</div>
   <div class="err" id="err"></div>
 </div>
+<div class="pie">👼 Comedor Ángel Guardián · Merlo<small>Hecho con amor · link seguro de ÁNGELA</small></div>
 <script>var SRC=${JSON.stringify(publicUrl)};
 
 var TEMAS={
