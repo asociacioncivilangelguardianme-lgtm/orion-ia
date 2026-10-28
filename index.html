@@ -8250,11 +8250,11 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }
   async function cxAutoRevisar(manual){
     if(!STATE.cxVivo||(!STATE.cxAuto&&!manual))return;
-    if(!/^https?:/.test(location.protocol)){if(manual)cxVivoStatus('Para leer Mercado Pago abrí ÁNGELA desde orion-ia-sooty.vercel.app');return}
+    if(!/^https?:/.test(location.protocol)){if(manual)cxVivoStatus('Para leer las transferencias abrí ÁNGELA desde orion-ia-sooty.vercel.app');return}
     try{
-      if(manual)cxVivoStatus('⏳ Revisando Mercado Pago…');
-      const r=await fetch('/api/gmail/mercadopago-ingresos',{credentials:'include',cache:'no-store'}),d=await r.json().catch(()=>({}));
-      if(!r.ok){cxVivoStatus('🟡 '+(d.error||'No pude leer Mercado Pago')+' Conectá Gmail en el Centro de Gestión.');return}
+      if(manual)cxVivoStatus('⏳ Revisando transferencias…');
+      const r=await fetch('/api/gmail/mercadopago-ingresos?todos=1',{credentials:'include',cache:'no-store'}),d=await r.json().catch(()=>({}));
+      if(!r.ok){cxVivoStatus('🟡 '+(d.error||'No pude leer las transferencias.')+' Conectá Gmail en el Centro de Gestión.');return}
       const desde=Date.parse(STATE.cxVivoDesde||'')||Date.now(),vistos=new Set(STATE.cxMpVistos||[]),equiv=parseFloat(STATE.cxEquiv)||0,u=STATE.cxMetaUnidad||'';let nuevos=0,pesos=0;
       for(const it of (d.ingresos||[])){
         const key=String(it.referencia||it.id||'');if(!key||vistos.has(key))continue;vistos.add(key);
@@ -8262,12 +8262,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         const monto=parseFloat(String(it.monto||'').replace(/\./g,'').replace(',','.'))||0;if(monto<=0)continue;
         nuevos++;pesos+=monto;
         const cant=equiv>0?monto/equiv:monto;
-        cxRegistrar(cant,`Alguien donó $${monto.toLocaleString('es-AR')}`+(equiv>0?` (≈ ${(Math.round(cant*10)/10).toLocaleString('es-AR')} ${u})`:'')+' 💛');
+        cxRegistrar(cant,`Alguien donó $${monto.toLocaleString('es-AR')}`+(it.origen==='banco'?' por transferencia':'')+(equiv>0?` (≈ ${(Math.round(cant*10)/10).toLocaleString('es-AR')} ${u})`:'')+' 💛');
       }
       STATE.cxMpVistos=[...vistos].slice(-600);saveState();
-      if(nuevos){await cxPublicarVivo(true);cxVivoStatus(`✅ ${nuevos} donación${nuevos>1?'es':''} nueva${nuevos>1?'s':''} de Mercado Pago ($${pesos.toLocaleString('es-AR')}). Link actualizado.`);window.showToast?.('💛 ÁNGELA sumó '+nuevos+' donación'+(nuevos>1?'es':'')+' a la campaña')}
-      else cxVivoStatus(`🔎 Revisé Mercado Pago a las ${new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}: no hay donaciones nuevas.`);
-    }catch(e){cxVivoStatus('🟡 No pude revisar Mercado Pago ahora: '+(e?.message||e))}
+      if(nuevos){await cxPublicarVivo(true);cxVivoStatus(`✅ ${nuevos} donación${nuevos>1?'es':''} nueva${nuevos>1?'s':''} ($${pesos.toLocaleString('es-AR')}). Link actualizado.`);window.showToast?.('💛 ÁNGELA sumó '+nuevos+' donación'+(nuevos>1?'es':'')+' a la campaña')}
+      else cxVivoStatus(`🔎 Revisé las transferencias a las ${new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}: no hay donaciones nuevas.`);
+    }catch(e){cxVivoStatus('🟡 No pude revisar las transferencias ahora: '+(e?.message||e))}
   }
   setTimeout(()=>cxAutoRevisar(false),20000);setInterval(()=>cxAutoRevisar(false),5*60*1000);
   function cxBindForm(){
@@ -8570,13 +8570,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <div class="angqr-smartsub" style="margin:4px 0 8px">Quien abre el link ve la barra y el plato subir. Las donaciones salen como «Alguien donó», sin nombre. Los nombres solo van al muro si los agregás vos.</div>
 <div class="angqr-grid two">
 <label class="angqr-check"><input type="checkbox" id="agqr_cxVivo"> 🔴 Activar meta en vivo</label>
-<label class="angqr-check"><input type="checkbox" id="agqr_cxAuto"> 🤖 Sumar sola las transferencias de Mercado Pago</label>
+<label class="angqr-check"><input type="checkbox" id="agqr_cxAuto"> 🤖 Sumar solas las transferencias (Mercado Pago y bancos)</label>
 <div class="angqr-field"><label>Si la meta no es en pesos: ¿cuántos $ suman 1 unidad?</label><input id="agqr_cxEquiv" type="number" min="0" placeholder="Ej: 15000 (1 caja = $15.000). Vacío = la meta es en $"></div>
 <div class="angqr-field"><label>➕ Sumar una donación a mano (alimentos, juguetes, efectivo)</label><div style="display:flex;gap:6px"><input id="agqr_cxSumaCant" type="number" min="0" step="any" placeholder="Cantidad"><input id="agqr_cxSumaNombre" placeholder="Nombre (opcional)"></div><label class="angqr-check" style="margin-top:5px"><input type="checkbox" id="agqr_cxSumaMuro"> Agregar el nombre al muro de gracias</label></div>
 </div>
-<div class="angqr-actions" style="margin-top:8px"><button type="button" class="angqr-btn publish" id="agqr_cxSumar">➕ Sumar donación</button><button type="button" class="angqr-btn alt" id="agqr_cxRevisarMP">🤖 Revisar Mercado Pago ahora</button><button type="button" class="angqr-btn alt" id="agqr_cxPublicarVivo">🔄 Actualizar el link ahora</button></div>
+<div class="angqr-actions" style="margin-top:8px"><button type="button" class="angqr-btn publish" id="agqr_cxSumar">➕ Sumar donación</button><button type="button" class="angqr-btn alt" id="agqr_cxRevisarMP">🤖 Revisar transferencias ahora</button><button type="button" class="angqr-btn alt" id="agqr_cxPublicarVivo">🔄 Actualizar el link ahora</button></div>
 <div id="agqr_cxVivoStatus" class="muted" style="font-size:.76rem;margin-top:6px"></div>
-<div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Para que sume sola: Gmail conectado en el Centro de Gestión y ÁNGELA abierta (por ejemplo en la PC de la radio). Revisa cada 5 minutos.</div></div>
+<div style="font-size:.69rem;color:#94a3b8;margin-top:5px">Para que sume sola: Gmail conectado en el Centro de Gestión y ÁNGELA abierta (por ejemplo en la PC de la radio). Revisa cada 5 minutos los avisos de Mercado Pago y de los bancos que mandan mail cuando entra plata.</div></div>
 </details>
   <div class="angqr-grid two"><div class="angqr-field"><label>Título de la tarjeta QR</label><input id="agqr_cardTitle"></div><div class="angqr-field"><label>Texto de la tarjeta QR</label><input id="agqr_cardText"></div></div>
   <div class="angqr-field" style="margin-top:10px"><label>🎵 Música o audio personal</label><input id="agqr_musicUrl" placeholder="Link directo .mp3/.m4a/.ogg/.opus (opcional)"><div id="agqr_musicStatus" class="angqr-music-warn"></div></div>

@@ -68,7 +68,17 @@ function esIngresoMercadoPago(texto = "") {
     "se acredito",
     "acreditamos",
     "ingresó dinero",
-    "ingreso de dinero"
+    "ingreso de dinero",
+    // Bancos (Provincia, Nación, Galicia, Santander, BBVA, Macro, Brubank, Ualá, Cuenta DNI, etc.)
+    "transferencia entrante",
+    "recibiste un depósito",
+    "recibiste un deposito",
+    "acreditación de transferencia",
+    "acreditacion de transferencia",
+    "ingreso por transferencia",
+    "te depositaron",
+    "te enviaron una transferencia",
+    "recibiste $"
   ];
 
   const frasesExcluir = [
@@ -131,8 +141,13 @@ function extraerReferencia(texto = "") {
   return coincidencia ? coincidencia[1] : "";
 }
 
+// ?todos=1 suma también los avisos de transferencias de bancos (para las campañas en vivo).
+// Sin ese parámetro funciona igual que antes (solo Mercado Pago).
+const BUSQUEDA_TODOS = '("Mercado Pago" OR "recibiste una transferencia" OR "transferencia recibida" OR "transferencia entrante" OR "te transfirió" OR "te transfirio" OR "recibiste dinero" OR "te enviaron dinero" OR "acreditación de transferencia" OR "ingreso por transferencia" OR "recibiste un depósito") newer_than:90d';
+
 export default async function handler(req, res) {
   try {
+    const todos = req.query && (req.query.todos === "1" || req.query.todos === "true");
     const cookies = leerCookies(req);
 
     const refreshToken =
@@ -183,7 +198,7 @@ export default async function handler(req, res) {
     const accessToken = tokenDatos.access_token;
 
     const listaRespuesta = await fetch(
-      "https://gmail.googleapis.com/gmail/v1/users/me/messages?q=%22Mercado%20Pago%22&maxResults=100",
+      "https://gmail.googleapis.com/gmail/v1/users/me/messages?q=" + encodeURIComponent(todos ? BUSQUEDA_TODOS : '"Mercado Pago"') + "&maxResults=100",
       {
         headers: {
           Authorization: `Bearer ${accessToken}`
@@ -251,7 +266,8 @@ export default async function handler(req, res) {
         referencia:
           extraerReferencia(textoCompleto),
         asunto,
-        remitente
+        remitente,
+        origen: /mercado\s*pago|mercadopago/i.test(remitente + " " + asunto) ? "Mercado Pago" : "banco"
       });
     }
 
