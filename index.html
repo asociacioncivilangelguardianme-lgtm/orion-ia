@@ -8014,6 +8014,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.ANGELA_QR_VERSION='11.9';
   const STORAGE='ANGELA_regalos_qr_v2';
   const HISTORY_STORAGE='ANGELA_regalos_qr_history_v2';
+  // V12.96: fotos, música y audios se guardan en el almacenamiento grande del navegador (IndexedDB),
+  // porque localStorage tiene ~5 MB y al llenarse se perdían las fotos al actualizar la página.
+  const ANGELAMedia=window.ANGELAMedia||(window.ANGELAMedia=(()=>{let dbP=null;const open=()=>dbP||(dbP=new Promise((res,rej)=>{try{const q=indexedDB.open('ANGELA_media',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}catch(e){rej(e)}}));
+    const tx=(mode,fn)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',mode),st=t.objectStore('kv');let out;const q=fn(st);if(q)q.onsuccess=()=>{out=q.result};t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)}));
+    return{get:k=>tx('readonly',st=>st.get(k)),set:(k,v)=>tx('readwrite',st=>st.put(v,k)),del:k=>tx('readwrite',st=>st.delete(k))}})());
+  let MEDIA_OK=false,MEDIA_T=null;
 
   const THEMES={
     romantico:{name:'Romántico',bg:'#fdf2f8',bg2:'#fff7ed',accent:'#be185d',accent2:'#fb7185',text:'#6b2147',soft:'#fff1f2'},
@@ -8102,13 +8108,25 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   const DEFAULTS={cxMetaDesde:'',cxMetaHasta:'',cxVivo:false,cxAuto:false,cxEquiv:'',cxCampId:'',cxVivoDesde:'',cxLog:[],cxMpVistos:[],cxApertura:'sobre',cxRetroTexto:'',cxClave:'',cxPista:'',cxVelas:'5',cxBloqueo:'',cxEfecto:'auto',cxEscribir:true,cxDe:'',cxPara:'',cxMenu:false,cxAlbum:false,cxAlbumTitulo:'',cxAlbumNotas:'',cxCubo:false,cxCuboTexto:'',cxCaja:false,cxLibro:false,cxMemo:false,cxHablaFoto:'',cxHablaAudio:'',cxHablaTexto:'',cxHistoria:'',cxRazones:'',cxChat:'',cxCupones:'',cxFrasco:'',cxBendicion:false,cxQuiz:'',cxEstrellas:'',cxFirma:'',cxWa:'',cxPregunta:'',cxPreguntaSi:'',cxResponder:false,cxAviso:false,cxMetaTitulo:'',cxMetaActual:'',cxMetaTotal:'',cxMetaUnidad:'',cxMuro:'',cxComprobante:false,cartaDate:'',cartaLabel:'Juntos hace',cartaUnder:'Los mejores días de mi vida',cartaCaptions:'',cartaVerse:'',cartaVerseRef:'',cartaClose:'Te quiero',cartaVideo:'',occasion:'cumple',theme:'cumple',presentation:'auto',presentationTryIndex:0,designVariant:0,symbol:'heart',name:'',sender:'',date:'',detail:'',smartContext:'',title:'',phrase:'',message:'',cta:'',progressText:'',cardTitle:'',cardText:'',publicUrl:'',publishedUrl:'',publishedAt:'',publishProvider:'',publishProjectId:'',publishDeleteToken:'',publishUpdateToken:'',musicUrl:'',musicName:'',musicData:'',musicOriginalBytes:0,musicStoredBytes:0,musicOptimized:false,musicClipSeconds:0,autoPhrase:true,autofillTheme:true,eventData:{},cardShape:'rounded',surpriseMode:true,themeImageData:'',themeImageName:'',themeImageMode:'auto',themeImageFit:'contain',themeImageX:50,themeImageY:50,themeImageZoom:100,photos:[],activePhoto:0,lastHtml:'',lastCardHtml:''};
 
   let STATE=loadState();
+  // Recuperar fotos, música y audios guardados
+  ANGELAMedia.get('regalo').then(m=>{
+    if(m){(STATE.photos||[]).forEach(p=>{if(p&&!p.data&&m.photos&&m.photos[p.id])p.data=m.photos[p.id]});for(const k of Object.keys(m.big||{}))if(!STATE[k])STATE[k]=m.big[k]}
+    STATE.photos=(STATE.photos||[]).filter(p=>p&&p.data);MEDIA_OK=true;saveState();
+    if(document.getElementById('agqr_photoList')){try{renderPhotos();renderFormValues();syncPreview()}catch(e){}}
+  }).catch(()=>{MEDIA_OK=true});
   let PREVIEW_AUDIO=null;
 
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const slug=s=>String(s||'regalo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'regalo';
   const uid=()=>crypto?.randomUUID?.()||('g-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8));
   function loadState(){try{return {...DEFAULTS,...JSON.parse(localStorage.getItem(STORAGE)||'{}')}}catch{return {...DEFAULTS}}}
-  function saveState(){try{localStorage.setItem(STORAGE,JSON.stringify(STATE))}catch(e){try{const light={...STATE,musicData:'',photos:(STATE.photos||[]).map(p=>({...p,data:''}))};localStorage.setItem(STORAGE,JSON.stringify(light))}catch(_e){}}}
+  function saveState(){
+    const media={photos:{},big:{}},light={...STATE,lastHtml:''};
+    light.photos=(STATE.photos||[]).map(p=>{if(p&&p.data)media.photos[p.id]=p.data;return{...p,data:''}});
+    for(const k of Object.keys(STATE)){const v=STATE[k];if(k!=='lastHtml'&&typeof v==='string'&&v.length>30000){media.big[k]=v;light[k]=''}}
+    try{localStorage.setItem(STORAGE,JSON.stringify(light))}catch(_e){}
+    if(MEDIA_OK){clearTimeout(MEDIA_T);MEDIA_T=setTimeout(()=>ANGELAMedia.set('regalo',media).catch(e=>console.warn('ÁNGELA: no pude guardar las fotos',e)),300)}
+  }
   function loadHistory(){try{const v=JSON.parse(localStorage.getItem(HISTORY_STORAGE)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
   function saveHistory(list){try{localStorage.setItem(HISTORY_STORAGE,JSON.stringify((list||[]).slice(0,40)))}catch{}}
   function occasionInfo(k){return OCCASIONS[k]||OCCASIONS.cumple}
@@ -8879,16 +8897,20 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     });
 
     const evLines=a=>(a||[]).join('\n');
-    let EV_PRESENTATION_PHOTOS=[];
+    let EV_PRESENTATION_PHOTOS=[],EV_BG='',EV_MEDIA_OK=false;
+    const evStore=d=>{const media={photos:Array.isArray(d.photos)?d.photos:[],bgData:d.bgData||''};EV_BG=media.bgData;if(media.photos.length)EV_PRESENTATION_PHOTOS=[...media.photos];
+      try{localStorage.setItem(EVKEY,JSON.stringify({...d,photos:[],bgData:''}))}catch(_e){}
+      if(EV_MEDIA_OK)ANGELAMedia.set('evento',media).catch(()=>{})};
     const evGet=()=>{
       let d={};
       try{d=JSON.parse(localStorage.getItem(EVKEY)||'{}')||{}}catch{}
+      if(!d.bgData&&EV_BG)d.bgData=EV_BG;
       if(EV_PRESENTATION_PHOTOS.length)d.photos=[...EV_PRESENTATION_PHOTOS];
       else if(Array.isArray(d.photos)&&d.photos.length)EV_PRESENTATION_PHOTOS=[...d.photos];
       return d;
     };
     const evV=id=>document.getElementById(id)?.value||'',evC=(id,def)=>{const e=document.getElementById(id);return e?!!e.checked:def!==false};
-    const evSave=()=>{const prev=evGet();const d={...prev,type:document.getElementById('agqr_evType')?.value||'casamiento',name:document.getElementById('agqr_evName')?.value||'',date:document.getElementById('agqr_evDate')?.value||'',when:document.getElementById('agqr_evWhen')?.value||'',plan:document.getElementById('agqr_evPlan')?.value||'',letter:document.getElementById('agqr_evLetter')?.value||'',photos:EV_PRESENTATION_PHOTOS.length?[...EV_PRESENTATION_PHOTOS]:(prev.photos||[]),style:document.getElementById('agqr_evStyle')?.value||'elegante',template:document.getElementById('agqr_evTemplate')?.value||prev.template||'auto',bgData:prev.bgData||'',publicUrl:prev.publicUrl||'',game:!!document.getElementById('agqr_evGame')?.checked,conf:!!document.getElementById('agqr_evConf')?.checked,album:!!document.getElementById('agqr_evAlbum')?.checked,challenges:document.getElementById('agqr_evChallenges')?.value||'',questions:document.getElementById('agqr_evQuestions')?.value||'',surpriseIndex:Number(prev.surpriseIndex||0),eventId:prev.eventId||'',ownerToken:prev.ownerToken||'',ownerUrl:prev.ownerUrl||'',address:evV('agqr_evAddress'),coords:evV('agqr_evCoords'),howto:evV('agqr_evHowTo'),whats:evV('agqr_evWhats'),start:evV('agqr_evStart'),end:evV('agqr_evEnd'),trivia:evV('agqr_evTrivia'),prizes:evV('agqr_evPrizes'),play:evC('agqr_evPlay',prev.play),rsvp:evC('agqr_evRsvp',prev.rsvp)};try{localStorage.setItem(EVKEY,JSON.stringify(d))}catch(_storageFull){/* Las fotos siguen vivas en memoria y la vista previa NO se interrumpe. */}return d};
+    const evSave=()=>{const prev=evGet();const d={...prev,type:document.getElementById('agqr_evType')?.value||'casamiento',name:document.getElementById('agqr_evName')?.value||'',date:document.getElementById('agqr_evDate')?.value||'',when:document.getElementById('agqr_evWhen')?.value||'',plan:document.getElementById('agqr_evPlan')?.value||'',letter:document.getElementById('agqr_evLetter')?.value||'',photos:EV_PRESENTATION_PHOTOS.length?[...EV_PRESENTATION_PHOTOS]:(prev.photos||[]),style:document.getElementById('agqr_evStyle')?.value||'elegante',template:document.getElementById('agqr_evTemplate')?.value||prev.template||'auto',bgData:prev.bgData||'',publicUrl:prev.publicUrl||'',game:!!document.getElementById('agqr_evGame')?.checked,conf:!!document.getElementById('agqr_evConf')?.checked,album:!!document.getElementById('agqr_evAlbum')?.checked,challenges:document.getElementById('agqr_evChallenges')?.value||'',questions:document.getElementById('agqr_evQuestions')?.value||'',surpriseIndex:Number(prev.surpriseIndex||0),eventId:prev.eventId||'',ownerToken:prev.ownerToken||'',ownerUrl:prev.ownerUrl||'',address:evV('agqr_evAddress'),coords:evV('agqr_evCoords'),howto:evV('agqr_evHowTo'),whats:evV('agqr_evWhats'),start:evV('agqr_evStart'),end:evV('agqr_evEnd'),trivia:evV('agqr_evTrivia'),prizes:evV('agqr_evPrizes'),play:evC('agqr_evPlay',prev.play),rsvp:evC('agqr_evRsvp',prev.rsvp)};try{evStore(d)}catch(_storageFull){/* Las fotos siguen vivas en memoria y la vista previa NO se interrumpe. */}return d};
     const evFill=d=>{if(!d)return;[['agqr_evType','type'],['agqr_evName','name'],['agqr_evDate','date'],['agqr_evWhen','when'],['agqr_evPlan','plan'],['agqr_evLetter','letter'],['agqr_evStyle','style'],['agqr_evTemplate','template'],['agqr_evChallenges','challenges'],['agqr_evQuestions','questions'],['agqr_evAddress','address'],['agqr_evCoords','coords'],['agqr_evHowTo','howto'],['agqr_evWhats','whats'],['agqr_evStart','start'],['agqr_evEnd','end'],['agqr_evTrivia','trivia'],['agqr_evPrizes','prizes']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.value=d[k]});[['agqr_evGame','game'],['agqr_evConf','conf'],['agqr_evAlbum','album'],['agqr_evPlay','play'],['agqr_evRsvp','rsvp']].forEach(([id,k])=>{const e=document.getElementById(id);if(e&&d[k]!=null)e.checked=!!d[k]})};
     const evEsc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const evItems=s=>String(s||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
@@ -9021,7 +9043,7 @@ libre:[['✨','Bienvenida','Comienza un momento especial'],['📸','Fotos','Guar
       const mix=a=>{const base=[...(a||[])],extra=[...((evExtra[type]?.retos)||[])];return [...base,...extra].sort(()=>Math.random()-.5).slice(0,Math.min(12,base.length+extra.length))};
       const mixq=a=>[...(a||[]),...((evExtra[type]?.preguntas)||[])].sort(()=>Math.random()-.5).slice(0,8);
       const r=document.getElementById('agqr_evChallenges'),q=document.getElementById('agqr_evQuestions');if(r)r.value=evLines(mix(p.retos));if(q)q.value=evLines(mixq(p.preguntas));
-      let d=evSave();d.surpriseIndex=idx;d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview();
+      let d=evSave();d.surpriseIndex=idx;d.publicUrl='';evStore(d);evPreview();
       const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='✨ <b>Nueva presentación creada.</b> Cambié diseño, estilo, retos y preguntas. Tocá “Sorprendeme” otra vez para obtener una composición diferente.';
     }
     // V12.90: cuenta regresiva, ubicación, confirmar por WhatsApp, juegos, mis retos y carpeta de recuerdos para invitados.
@@ -9245,7 +9267,7 @@ if(ownerMode)owner();
       const r=await fetch(c.url+'/rest/v1/angela_eventos',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({nombre:d.name,tipo:d.type||null,fecha_evento:evDateForSupabase(d.date)})});
       if(!r.ok)throw new Error('No se pudo crear el evento en Supabase: '+await r.text());
       const a=await r.json(),e=a?.[0];if(!e?.id||!e?.owner_token)throw new Error('Supabase no devolvió el acceso privado del evento.');
-      d={...d,eventId:e.id,ownerToken:e.owner_token,supabaseUrl:c.url,supabaseKey:c.key,supabaseBucket:c.bucket||'eventos-qr'};localStorage.setItem(EVKEY,JSON.stringify(d));return d;
+      d={...d,eventId:e.id,ownerToken:e.owner_token,supabaseUrl:c.url,supabaseKey:c.key,supabaseBucket:c.bucket||'eventos-qr'};evStore(d);return d;
     }
     async function evGenerateQR(){
       let d=evSave(),st=document.getElementById('agqr_evStatus');
@@ -9264,7 +9286,7 @@ if(ownerMode)owner();
         if(!verify.ok)throw new Error('Control final falló: '+verify.reason);
         const ownerUrl=r.url+(r.url.includes('?')?'&':'?')+'owner=1&token='+encodeURIComponent(d.ownerToken||'');
         d={...d,publicUrl:r.url,ownerUrl,publishProvider:r.provider||'Automático',publishedAt:new Date().toISOString()};
-        localStorage.setItem(EVKEY,JSON.stringify(d));evFill(d);evPreview();
+        evStore(d);evFill(d);evPreview();
         if(st)st.innerHTML='✅ <b>Evento publicado, comprobado y QR generado.</b><br>QR invitados listo.<br><a href="'+r.url+'" target="_blank" rel="noopener">Abrir vista invitado</a> · <a href="'+ownerUrl+'" target="_blank" rel="noopener">❤️ Abrir tarjeta privada del agasajado</a><br><span style="font-size:.75rem">La tarjeta privada es para entregar solamente al receptor del evento.</span>';
       }catch(e){if(st)st.textContent='⚠️ No pude publicar el evento: '+(e?.message||e)}
     }
@@ -9273,7 +9295,7 @@ if(ownerMode)owner();
       if(d.publicUrl){
         const v=await evValidatePublishedPage(d.publicUrl);
         if(v.ok)return d.publicUrl;
-        d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));
+        d.publicUrl='';evStore(d);
         const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🔄 El enlace anterior no pasó el control. ÁNGELA lo está publicando nuevamente…';
       }
       await evGenerateQR();return evGet().publicUrl||'';
@@ -9425,6 +9447,12 @@ if(ownerMode)owner();
     if(location.protocol==='file:'){const n=document.getElementById('agqr_evLocalNotice');if(n)n.style.display='block'}
 
     const oldEv=evGet(); if(Object.keys(oldEv).length)evFill(oldEv);
+    ANGELAMedia.get('evento').then(m=>{
+      // migración: si el localStorage viejo todavía tenía fotos, pasan al almacenamiento grande
+      if(m){if(!EV_PRESENTATION_PHOTOS.length&&Array.isArray(m.photos))EV_PRESENTATION_PHOTOS=[...m.photos];if(!EV_BG&&m.bgData)EV_BG=m.bgData}
+      EV_MEDIA_OK=true;try{const d=evGet();evStore(d)}catch(_e){}
+      const gc=document.getElementById('agqr_evGalleryCount');if(gc&&EV_PRESENTATION_PHOTOS.length)gc.textContent='✅ '+EV_PRESENTATION_PHOTOS.length+' foto(s) guardada(s).';
+    }).catch(()=>{EV_MEDIA_OK=true});
     document.querySelectorAll('#agqr_eventosQR input,#agqr_eventosQR select,#agqr_eventosQR textarea').forEach(e=>e.addEventListener('input',evSave));
     document.getElementById('agqr_evMusic')?.addEventListener('change',e=>{const f=e.target.files?.[0],st=document.getElementById('agqr_evStatus');if(f&&st)st.textContent='🎵 Música seleccionada: '+f.name+'. Quedará asociada al evento al publicarlo online.'});
     document.getElementById('agqr_evSurprise')?.addEventListener('click',evSurprise);
@@ -9439,8 +9467,8 @@ if(ownerMode)owner();
     document.getElementById('agqr_evDownloadCard')?.addEventListener('click',()=>evDownloadCard(true));
     document.getElementById('agqr_evShareCard')?.addEventListener('click',()=>evDownloadCard(false));document.getElementById('agqr_evDownloadBoth').onclick=evDownloadBoth;
     document.getElementById('agqr_evOpen')?.addEventListener('click',async()=>{const u=await evEnsureUrl();if(u)window.open(u,'_blank','noopener')});
-    document.getElementById('agqr_evBg')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const d=evSave();d.bgData=String(r.result||'');d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()};r.readAsDataURL(f);e.target.value=''});
-    document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();d.bgData='';d.publicUrl='';localStorage.setItem(EVKEY,JSON.stringify(d));evPreview()});
+    document.getElementById('agqr_evBg')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const d=evSave();d.bgData=String(r.result||'');d.publicUrl='';evStore(d);evPreview()};r.readAsDataURL(f);e.target.value=''});
+    document.getElementById('agqr_evBgClear')?.addEventListener('click',()=>{const d=evSave();d.bgData='';d.publicUrl='';evStore(d);evPreview()});
 
     const evPhotoData=async file=>{
       const raw=await new Promise((resolve,reject)=>{
@@ -9481,7 +9509,7 @@ if(ownerMode)owner();
         d.photos=[...pics];
         d.publicUrl='';
         try{
-          localStorage.setItem(EVKEY,JSON.stringify(d));
+          evStore(d);
         }catch(storageErr){
           /* La vista previa y la publicación siguen usando la copia en memoria. */
         }
@@ -9494,7 +9522,7 @@ if(ownerMode)owner();
            No vaciar e.target.value: en PC hacía parecer que no se habían elegido fotos. */
       }
     });
-    document.getElementById('agqr_evClear')?.addEventListener('click',()=>{EV_PRESENTATION_PHOTOS=[];localStorage.removeItem(EVKEY);evFill({type:'casamiento',name:'',date:'',when:'',plan:'',letter:'',photos:[],style:'elegante',template:'auto',bgData:'',publicUrl:'',game:true,conf:true,album:true,challenges:'',questions:''});const b=document.getElementById('agqr_evPreviewBox');if(b){b.style.display='none';b.innerHTML=''};const gc=document.getElementById('agqr_evGalleryCount');if(gc)gc.textContent='Ninguna foto seleccionada todavía.';const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🆕 Nuevo evento listo. Los Regalos QR existentes no fueron tocados.'});
+    document.getElementById('agqr_evClear')?.addEventListener('click',()=>{EV_PRESENTATION_PHOTOS=[];EV_BG='';localStorage.removeItem(EVKEY);ANGELAMedia.del('evento').catch(()=>{});evFill({type:'casamiento',name:'',date:'',when:'',plan:'',letter:'',photos:[],style:'elegante',template:'auto',bgData:'',publicUrl:'',game:true,conf:true,album:true,challenges:'',questions:''});const b=document.getElementById('agqr_evPreviewBox');if(b){b.style.display='none';b.innerHTML=''};const gc=document.getElementById('agqr_evGalleryCount');if(gc)gc.textContent='Ninguna foto seleccionada todavía.';const st=document.getElementById('agqr_evStatus');if(st)st.textContent='🆕 Nuevo evento listo. Los Regalos QR existentes no fueron tocados.'});
 
     window.ANGELA_EVENTOS_QR_OPEN=function(){const d=document.getElementById('agqr_eventosQR');if(!d)return;d.open=true;evSetFullscreen(true);setTimeout(()=>{const st=document.getElementById('agqr_evStatus');if(st)st.innerHTML='🎉 <b>Eventos QR abierto como módulo independiente.</b> Podés probar Foto, Video, Audio, Mensaje y Otro reto desde Vista previa antes de publicar.';},40)};
     syncPreview();renderPhotos();renderHistory();saveState();if(finalPublicUrl())setStatus(`✅ <b>Este regalo ya tiene QR final.</b><br><a href="${esc(finalPublicUrl())}" target="_blank" rel="noopener">Abrir regalo</a>`,'ok')
