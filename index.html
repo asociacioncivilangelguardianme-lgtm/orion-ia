@@ -7549,6 +7549,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       '.cx-cal{position:absolute;background:#fff;box-shadow:0 6px 14px rgba(0,0,0,.2);padding:8px;font:11px Arial,sans-serif;color:#333;text-align:center}',
       '.cx-cal b{display:block;color:#c0263c;font-size:20px}.cx-cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:4px}.cx-cal .g span{padding:2px 0}.cx-cal .g .h{color:#c0263c;font-weight:900}',
       '.cx-live{display:inline-flex;align-items:center;gap:6px;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:4px 10px;font:800 12px Arial,sans-serif;margin-bottom:6px}','.cx-live i{width:8px;height:8px;border-radius:50%;background:#dc2626;animation:cxBlink 1.2s steps(1) infinite}','.cx-log{margin-top:10px;display:grid;gap:5px;text-align:left}','.cx-log div{background:#f8fafc;border-radius:10px;padding:7px 10px;font:600 13px Arial,sans-serif;color:#334155;animation:cxPop .4s ease}','.cx-log small{color:#94a3b8;font-weight:400;margin-left:6px}','.cx-share{margin-top:12px;width:100%}',
+      '.cx-fechas{background:#f1f5f9;border-radius:12px;padding:8px 10px;font:700 14px Arial,sans-serif;color:#334155;margin:6px 0 4px}','.cx-fechas .est{color:var(--cx-acc);margin-top:3px}','.cx-cerrada .cx-share{display:none}',
       '.cx-albumbar{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font:700 14px Arial,sans-serif}',
       '.cx-albumbar button{border:0;border-radius:999px;padding:9px 15px;background:var(--cx-acc);color:#fff;font:700 14px Arial,sans-serif;cursor:pointer}.cx-albumbar button:disabled{opacity:.35}'
     ].join('\n');
@@ -7747,8 +7748,34 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       };
     }
 
+    /* Fechas de la campaña */
+    if (mt.desde || mt.hasta) CX.fechasMeta(host.querySelector('.cx-goal'), mt.desde, mt.hasta, sym);
+
     /* Meta en vivo */
     if (cfg.vivo) CX.vivo(host, cfg);
+  };
+
+  /* ---------- Fechas de la campaña: empieza / termina ---------- */
+  CX.fechasMeta = function (goal, desde, hasta, sym) {
+    if (!goal) return;
+    var box = goal.querySelector('.cx-fechas');
+    if (!desde && !hasta) { if (box) box.remove(); return; }
+    if (!box) { box = el('div', 'cx-fechas'); var h = goal.querySelector('h3'); if (h) h.insertAdjacentElement('afterend', box); else goal.insertBefore(box, goal.firstChild); }
+    var d0 = desde ? new Date(String(desde).slice(0, 10) + 'T00:00:00') : null, d1 = hasta ? new Date(String(hasta).slice(0, 10) + 'T23:59:59') : null, now = Date.now();
+    function f(d) { return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }); }
+    function cuanto(ms) { var hs = Math.ceil(ms / 3600000); return hs <= 24 ? hs + (hs === 1 ? ' hora' : ' horas') : Math.ceil(ms / 86400000) + ' días'; }
+    var txt = d0 && d1 ? '📅 Del ' + f(d0) + ' al ' + f(d1) : d1 ? '📅 Hasta el ' + f(d1) : '📅 Desde el ' + f(d0), est = '';
+    goal.classList.remove('cx-cerrada');
+    if (d0 && now < d0) est = '⏳ Empieza en ' + cuanto(d0 - now);
+    else if (d1 && now <= d1) est = '⏳ Quedan ' + cuanto(d1 - now) + ' para sumarte';
+    else if (d1 && now > d1) {
+      est = '🏁 La campaña terminó. ¡Gracias a todos los que ayudaron! ' + (sym || '💛');
+      goal.classList.add('cx-cerrada');
+      var sp = goal.querySelector('.nums span'), ps = goal.querySelectorAll('p'), msg = ps[ps.length - 1];
+      if (msg && sp && !msg.closest('.cx-log')) msg.textContent = 'Juntamos ' + sp.textContent + '. ¡Gracias!';
+      var lv = goal.querySelector('.cx-live'); if (lv) { lv.innerHTML = '<span>🏁 Campaña terminada</span>'; lv.style.background = '#e2e8f0'; lv.style.color = '#334155'; }
+    }
+    box.innerHTML = '<div>' + txt + '</div>' + (est ? '<div class="est">' + est + '</div>' : '');
   };
 
   /* ---------- Meta en vivo: el mismo link muestra cuánto se va juntando ---------- */
@@ -7770,6 +7797,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       var ps = goal.querySelectorAll('p'); var msg = ps[ps.length - 1]; if (msg && !msg.closest('.cx-log')) msg.textContent = pct >= 100 ? '¡Lo logramos! Gracias a todos ' + sym : 'Faltan ' + num(Math.max(0, tot - act)) + ' ' + u + '. ¡Sumate!';
       if (d.titulo) { var h = goal.querySelector('h3'); if (h) h.textContent = '🎯 ' + d.titulo; }
       var sopa = goal.querySelector('.sopa'); if (sopa) sopa.setAttribute('y', (110 - Math.min(1, act / tot) * 72).toFixed(1));
+      if (!live.querySelector('i')) { live.innerHTML = '<i></i><span></span>'; live.style.background = ''; live.style.color = ''; }
       live.querySelector('span').textContent = 'En vivo' + (d.act ? ' · actualizado ' + hace(d.act) : '');
       log.innerHTML = (d.log || []).slice(0, 5).map(function (x) { return '<div>' + esc(x.t || '') + '<small>' + esc(hace(x.f)) + '</small></div>'; }).join('');
       if (Array.isArray(d.muro) && d.muro.length) {
@@ -7778,6 +7806,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         wall.querySelector('.cx-wall').innerHTML = d.muro.map(function (n) { return '<span>' + sym + ' ' + esc(n) + '</span>'; }).join('');
       }
       if (ultimo && d.act !== ultimo && act > 0) CX.burst(goal, '💛');
+      CX.fechasMeta(goal, d.desde || (cfg.meta || {}).desde, d.hasta || (cfg.meta || {}).hasta, sym);
       ultimo = d.act || ultimo;
     }
     function traer() { fetch(url, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.total) pintar(d); }).catch(function () {}); }
@@ -7910,7 +7939,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 (function(){
   if(window.__ANGELA_REGALOS_QR__) return;
   window.__ANGELA_REGALOS_QR__=true;
-  window.ANGELA_QR_VERSION='11.7';
+  window.ANGELA_QR_VERSION='11.8';
   const STORAGE='ANGELA_regalos_qr_v2';
   const HISTORY_STORAGE='ANGELA_regalos_qr_history_v2';
 
@@ -7998,7 +8027,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   };
   const PRESENTATION_ORDER=['romantica','album','cinematografica','floral','fiesta','elegante','espiritual','historia','bebe','graduacion','mascotas','navidad','gaming','carta','albumdigital'];
   const SYMBOLS={heart:'❤',star:'★',gift:'🎁',flower:'✿',spark:'✦',candle:'🕯',moon:'☾',baby:'👶',bottle:'🍼',grad:'🎓',paw:'🐾',tree:'🎄',ball:'⚽',game:'🎮',ring:'💍',home:'🏠',plane:'✈️'};
-  const DEFAULTS={cxVivo:false,cxAuto:false,cxEquiv:'',cxCampId:'',cxVivoDesde:'',cxLog:[],cxMpVistos:[],cxApertura:'sobre',cxRetroTexto:'',cxClave:'',cxPista:'',cxVelas:'5',cxBloqueo:'',cxEfecto:'auto',cxEscribir:true,cxDe:'',cxPara:'',cxMenu:false,cxAlbum:false,cxAlbumTitulo:'',cxAlbumNotas:'',cxCubo:false,cxCuboTexto:'',cxCaja:false,cxLibro:false,cxMemo:false,cxHablaFoto:'',cxHablaAudio:'',cxHablaTexto:'',cxHistoria:'',cxRazones:'',cxChat:'',cxCupones:'',cxFrasco:'',cxBendicion:false,cxQuiz:'',cxEstrellas:'',cxFirma:'',cxWa:'',cxPregunta:'',cxPreguntaSi:'',cxResponder:false,cxAviso:false,cxMetaTitulo:'',cxMetaActual:'',cxMetaTotal:'',cxMetaUnidad:'',cxMuro:'',cxComprobante:false,cartaDate:'',cartaLabel:'Juntos hace',cartaUnder:'Los mejores días de mi vida',cartaCaptions:'',cartaVerse:'',cartaVerseRef:'',cartaClose:'Te quiero',cartaVideo:'',occasion:'cumple',theme:'cumple',presentation:'auto',presentationTryIndex:0,designVariant:0,symbol:'heart',name:'',sender:'',date:'',detail:'',smartContext:'',title:'',phrase:'',message:'',cta:'',progressText:'',cardTitle:'',cardText:'',publicUrl:'',publishedUrl:'',publishedAt:'',publishProvider:'',publishProjectId:'',publishDeleteToken:'',publishUpdateToken:'',musicUrl:'',musicName:'',musicData:'',musicOriginalBytes:0,musicStoredBytes:0,musicOptimized:false,musicClipSeconds:0,autoPhrase:true,autofillTheme:true,eventData:{},cardShape:'rounded',surpriseMode:true,themeImageData:'',themeImageName:'',themeImageMode:'auto',themeImageFit:'contain',themeImageX:50,themeImageY:50,themeImageZoom:100,photos:[],activePhoto:0,lastHtml:'',lastCardHtml:''};
+  const DEFAULTS={cxMetaDesde:'',cxMetaHasta:'',cxVivo:false,cxAuto:false,cxEquiv:'',cxCampId:'',cxVivoDesde:'',cxLog:[],cxMpVistos:[],cxApertura:'sobre',cxRetroTexto:'',cxClave:'',cxPista:'',cxVelas:'5',cxBloqueo:'',cxEfecto:'auto',cxEscribir:true,cxDe:'',cxPara:'',cxMenu:false,cxAlbum:false,cxAlbumTitulo:'',cxAlbumNotas:'',cxCubo:false,cxCuboTexto:'',cxCaja:false,cxLibro:false,cxMemo:false,cxHablaFoto:'',cxHablaAudio:'',cxHablaTexto:'',cxHistoria:'',cxRazones:'',cxChat:'',cxCupones:'',cxFrasco:'',cxBendicion:false,cxQuiz:'',cxEstrellas:'',cxFirma:'',cxWa:'',cxPregunta:'',cxPreguntaSi:'',cxResponder:false,cxAviso:false,cxMetaTitulo:'',cxMetaActual:'',cxMetaTotal:'',cxMetaUnidad:'',cxMuro:'',cxComprobante:false,cartaDate:'',cartaLabel:'Juntos hace',cartaUnder:'Los mejores días de mi vida',cartaCaptions:'',cartaVerse:'',cartaVerseRef:'',cartaClose:'Te quiero',cartaVideo:'',occasion:'cumple',theme:'cumple',presentation:'auto',presentationTryIndex:0,designVariant:0,symbol:'heart',name:'',sender:'',date:'',detail:'',smartContext:'',title:'',phrase:'',message:'',cta:'',progressText:'',cardTitle:'',cardText:'',publicUrl:'',publishedUrl:'',publishedAt:'',publishProvider:'',publishProjectId:'',publishDeleteToken:'',publishUpdateToken:'',musicUrl:'',musicName:'',musicData:'',musicOriginalBytes:0,musicStoredBytes:0,musicOptimized:false,musicClipSeconds:0,autoPhrase:true,autofillTheme:true,eventData:{},cardShape:'rounded',surpriseMode:true,themeImageData:'',themeImageName:'',themeImageMode:'auto',themeImageFit:'contain',themeImageX:50,themeImageY:50,themeImageZoom:100,photos:[],activePhoto:0,lastHtml:'',lastCardHtml:''};
 
   let STATE=loadState();
   let PREVIEW_AUDIO=null;
@@ -8226,7 +8255,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       quiz:cxLines(STATE.cxQuiz),estrellas:STATE.cxEstrellas||'',firma:STATE.cxFirma||'',
       wa:String(STATE.cxWa||'').replace(/\D/g,''),pregunta:STATE.cxPregunta?{texto:STATE.cxPregunta,si:'¡Sí!',no:'No',mensajeSi:STATE.cxPreguntaSi||'¡Sabía que ibas a decir que sí!'}:{},
       responder:!!STATE.cxResponder,aviso:!!STATE.cxAviso,
-      meta:{titulo:STATE.cxMetaTitulo||'',actual:STATE.cxMetaActual||0,total:STATE.cxMetaTotal||0,unidad:STATE.cxMetaUnidad||''},vivo:STATE.cxVivo&&parseFloat(STATE.cxMetaTotal)>0?{url:'https://orion-ia-sooty.vercel.app/api/supabase-config?camp='+cxCampId()}:null,muro:cxLines(STATE.cxMuro),comprobante:!!STATE.cxComprobante};
+      meta:{titulo:STATE.cxMetaTitulo||'',actual:STATE.cxMetaActual||0,total:STATE.cxMetaTotal||0,unidad:STATE.cxMetaUnidad||'',desde:STATE.cxMetaDesde||'',hasta:STATE.cxMetaHasta||''},vivo:STATE.cxVivo&&parseFloat(STATE.cxMetaTotal)>0?{url:'https://orion-ia-sooty.vercel.app/api/supabase-config?camp='+cxCampId()}:null,muro:cxLines(STATE.cxMuro),comprobante:!!STATE.cxComprobante};
   }
   // V12.92: meta en vivo
   function cxCampId(){if(!STATE.cxCampId){STATE.cxCampId=Array.from(crypto.getRandomValues?crypto.getRandomValues(new Uint8Array(10)):[...Array(10)].map(()=>Math.random()*256|0),b=>'abcdefghijkmnpqrstuvwxyz23456789'[b%32]).join('');STATE.cxVivoDesde=new Date().toISOString();saveState()}return STATE.cxCampId}
@@ -8237,7 +8266,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(!STATE.cxVivo){if(!silencioso)cxVivoStatus('Activá «Meta en vivo» primero.');return false}
     if(!(parseFloat(STATE.cxMetaTotal)>0)){if(!silencioso)cxVivoStatus('Falta poner la meta (el número total).');return false}
     try{cxVivoStatus('⏳ Actualizando el link…');
-      await window.ANGELASupabase.saveCampaign(cxCampId(),{titulo:STATE.cxMetaTitulo||'',total:parseFloat(STATE.cxMetaTotal)||0,actual:parseFloat(STATE.cxMetaActual)||0,unidad:STATE.cxMetaUnidad||'',muro:cxLines(STATE.cxMuro),log:(STATE.cxLog||[]).slice(-8).reverse(),act:new Date().toISOString()});
+      await window.ANGELASupabase.saveCampaign(cxCampId(),{titulo:STATE.cxMetaTitulo||'',total:parseFloat(STATE.cxMetaTotal)||0,actual:parseFloat(STATE.cxMetaActual)||0,unidad:STATE.cxMetaUnidad||'',desde:STATE.cxMetaDesde||'',hasta:STATE.cxMetaHasta||'',muro:cxLines(STATE.cxMuro),log:(STATE.cxLog||[]).slice(-8).reverse(),act:new Date().toISOString()});
       STATE.cxVivoAct=new Date().toISOString();saveState();cxVivoStatus();return true
     }catch(e){cxVivoStatus('❌ '+(e?.message||'No se pudo actualizar'));return false}
   }
@@ -8258,7 +8287,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       const desde=Date.parse(STATE.cxVivoDesde||'')||Date.now(),vistos=new Set(STATE.cxMpVistos||[]),equiv=parseFloat(STATE.cxEquiv)||0,u=STATE.cxMetaUnidad||'';let nuevos=0,pesos=0;
       for(const it of (d.ingresos||[])){
         const key=String(it.referencia||it.id||'');if(!key||vistos.has(key))continue;vistos.add(key);
-        const f=Date.parse(it.fecha)||0;if(f&&f<desde)continue;
+        const f=Date.parse(it.fecha)||0;if(f&&f<desde)continue;if(f&&STATE.cxMetaHasta&&f>Date.parse(STATE.cxMetaHasta+'T23:59:59'))continue;
         const monto=parseFloat(String(it.monto||'').replace(/\./g,'').replace(',','.'))||0;if(monto<=0)continue;
         nuevos++;pesos+=monto;
         const cant=equiv>0?monto/equiv:monto;
@@ -8271,9 +8300,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }
   setTimeout(()=>cxAutoRevisar(false),20000);setInterval(()=>cxAutoRevisar(false),5*60*1000);
   function cxBindForm(){
-    const T=['cxEquiv','cxApertura','cxRetroTexto','cxClave','cxPista','cxVelas','cxBloqueo','cxEfecto','cxDe','cxPara','cxAlbumTitulo','cxAlbumNotas','cxCuboTexto','cxHablaTexto','cxHistoria','cxRazones','cxChat','cxCupones','cxFrasco','cxQuiz','cxEstrellas','cxWa','cxPregunta','cxPreguntaSi','cxMetaTitulo','cxMetaActual','cxMetaTotal','cxMetaUnidad','cxMuro'];
+    const T=['cxMetaDesde','cxMetaHasta','cxEquiv','cxApertura','cxRetroTexto','cxClave','cxPista','cxVelas','cxBloqueo','cxEfecto','cxDe','cxPara','cxAlbumTitulo','cxAlbumNotas','cxCuboTexto','cxHablaTexto','cxHistoria','cxRazones','cxChat','cxCupones','cxFrasco','cxQuiz','cxEstrellas','cxWa','cxPregunta','cxPreguntaSi','cxMetaTitulo','cxMetaActual','cxMetaTotal','cxMetaUnidad','cxMuro'];
     const C=['cxVivo','cxAuto','cxEscribir','cxMenu','cxAlbum','cxCubo','cxCaja','cxLibro','cxMemo','cxBendicion','cxResponder','cxAviso','cxComprobante'];
-    const VIVO=['cxEquiv','cxMetaTitulo','cxMetaActual','cxMetaTotal','cxMetaUnidad','cxMuro'];T.forEach(k=>{const el=document.getElementById('agqr_'+k);if(el&&!el.dataset.agCx){el.dataset.agCx='1';el.value=STATE[k]??'';if(VIVO.includes(k)){const fn=()=>{STATE[k]=el.value;saveState();cxVivoStatus()};el.addEventListener('input',fn);el.addEventListener('change',fn)}else bindInput('agqr_'+k,k,e=>e.value)}});
+    const VIVO=['cxMetaDesde','cxMetaHasta','cxEquiv','cxMetaTitulo','cxMetaActual','cxMetaTotal','cxMetaUnidad','cxMuro'];T.forEach(k=>{const el=document.getElementById('agqr_'+k);if(el&&!el.dataset.agCx){el.dataset.agCx='1';el.value=STATE[k]??'';if(VIVO.includes(k)){const fn=()=>{STATE[k]=el.value;saveState();cxVivoStatus()};el.addEventListener('input',fn);el.addEventListener('change',fn)}else bindInput('agqr_'+k,k,e=>e.value)}});
     C.forEach(k=>{const el=document.getElementById('agqr_'+k);if(el&&!el.dataset.agCx){el.dataset.agCx='1';el.checked=k==='cxEscribir'?STATE[k]!==false:!!STATE[k];bindInput('agqr_'+k,k,e=>e.checked)}});
     const bs=(id,fn)=>{const b=document.getElementById(id);if(b&&!b.dataset.agCx){b.dataset.agCx='1';b.addEventListener('click',fn)}};
     bs('agqr_cxSumar',cxSumarManual);bs('agqr_cxRevisarMP',()=>cxAutoRevisar(true));bs('agqr_cxPublicarVivo',()=>cxPublicarVivo());cxVivoStatus();
@@ -8564,7 +8593,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <label class="angqr-check"><input type="checkbox" id="agqr_cxAviso"> 🔔 «Avisale que ya lo abriste»</label></div>
 <div style="font-weight:900;margin:12px 0 6px">🤝 Campañas del comedor</div><div class="angqr-grid two">
 <div class="angqr-field"><label>🎯 Meta (título)</label><input id="agqr_cxMetaTitulo" placeholder="Cajas navideñas para las familias"></div>
-<div class="angqr-field"><label>Llevamos / Meta / Unidad</label><div style="display:flex;gap:6px"><input id="agqr_cxMetaActual" type="number" placeholder="62"><input id="agqr_cxMetaTotal" type="number" placeholder="100"><input id="agqr_cxMetaUnidad" placeholder="cajas"></div></div>
+<div class="angqr-field"><label>📅 Empieza / 🏁 Termina la campaña</label><div style="display:flex;gap:6px"><input id="agqr_cxMetaDesde" type="date" title="Empieza"><input id="agqr_cxMetaHasta" type="date" title="Termina"></div></div><div class="angqr-field"><label>Llevamos / Meta / Unidad</label><div style="display:flex;gap:6px"><input id="agqr_cxMetaActual" type="number" placeholder="62"><input id="agqr_cxMetaTotal" type="number" placeholder="100"><input id="agqr_cxMetaUnidad" placeholder="cajas"></div></div>
 <div class="angqr-field"><label>💛 Muro de gracias (un nombre por línea)</label><textarea id="agqr_cxMuro" placeholder="Familia Gómez&#10;Panadería La Espiga"></textarea></div>
 <label class="angqr-check"><input type="checkbox" id="agqr_cxComprobante"> 🧾 Comprobante de agradecimiento descargable</label></div><div class="angqr-smartbox" style="margin-top:10px"><div style="font-weight:900">🔴 Meta en vivo · el mismo QR y link muestran cuánto se va juntando</div>
 <div class="angqr-smartsub" style="margin:4px 0 8px">Quien abre el link ve la barra y el plato subir. Las donaciones salen como «Alguien donó», sin nombre. Los nombres solo van al muro si los agregás vos.</div>
