@@ -7432,7 +7432,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     var tot = parseFloat(mt.total) || 0, act = parseFloat(mt.actual) || 0;
     if (tot > 0) {
       var pct = Math.max(0, Math.min(100, Math.round(act / tot * 100)));
-      var gc = sec(host, '<div class="cx-goal"><h3>🎯 ' + esc(mt.titulo || 'Nuestra meta') + '</h3><div class="bar"><i></i></div><div class="nums"><span>' + esc(act) + ' de ' + esc(tot) + ' ' + esc(mt.unidad || '') + '</span><span>' + pct + '%</span></div><p style="margin:10px 0 0;font-size:14px;opacity:.8">' + (pct >= 100 ? '¡Lo logramos! Gracias a todos ' + sym : 'Faltan ' + esc(Math.max(0, tot - act)) + ' ' + esc(mt.unidad || '') + '. ¡Sumate!') + '</p></div>');
+      var gc = sec(host, '<div class="cx-goal"><h3>🎯 ' + esc(mt.titulo || 'Nuestra meta') + '</h3><div class="bar"><i></i></div><div class="nums"><span>' + esc(act) + ' de ' + esc(tot) + (mt.unidad ? ' ' + esc(mt.unidad) : '') + '</span><span>' + pct + '%</span></div><p style="margin:10px 0 0;font-size:14px;opacity:.8">' + (pct >= 100 ? '¡Lo logramos! Gracias a todos ' + sym : 'Faltan ' + esc(Math.max(0, tot - act)) + (mt.unidad ? ' ' + esc(mt.unidad) : '') + '. ¡Sumate!') + '</p></div>');
       setTimeout(function () { gc.querySelector('.bar i').style.width = pct + '%'; }, 250);
     }
 
@@ -7766,7 +7766,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     function cuanto(ms) { var hs = Math.ceil(ms / 3600000); return hs <= 24 ? hs + (hs === 1 ? ' hora' : ' horas') : Math.ceil(ms / 86400000) + ' días'; }
     var txt = (d0 ? '<div>🟢 Empieza: ' + f(d0) + '</div>' : '') + (d1 ? '<div>🏁 Termina: ' + f(d1) + '</div>' : ''), est = '', meta = 0;
     goal.classList.remove('cx-cerrada');
-    if (d0 && now < d0) { est = '⏳ Falta para que empiece'; meta = d0.getTime(); }
+    if (d0 && now < d0) { est = '⏳ Falta para que empiece'; meta = d0.getTime(); var ps0 = goal.querySelectorAll('p'), m0 = ps0[ps0.length - 1]; if (m0 && !m0.closest('.cx-log')) m0.textContent = '¡Muy pronto! Guardá este link y compartilo.'; }
     else if (d1 && now <= d1) { est = '⏳ Quedan para sumarte'; meta = d1.getTime(); }
     else if (d1 && now > d1) {
       est = '🏁 La campaña terminó. ¡Gracias a todos los que ayudaron! ' + (sym || '💛');
@@ -7803,9 +7803,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     function pintar(d) {
       var tot = parseFloat(d.total) || 0, act = parseFloat(d.actual) || 0; if (!tot) return;
       var pct = Math.max(0, Math.min(100, Math.round(act / tot * 100))), u = d.unidad || '';
-      var sp = goal.querySelectorAll('.nums span'); if (sp[0]) sp[0].textContent = num(act) + ' de ' + num(tot) + ' ' + u; if (sp[1]) sp[1].textContent = pct + '%';
+      var sp = goal.querySelectorAll('.nums span'); if (sp[0]) sp[0].textContent = num(act) + ' de ' + num(tot) + (u ? ' ' + u : ''); if (sp[1]) sp[1].textContent = pct + '%';
       var b = goal.querySelector('.bar i'); if (b) b.style.width = pct + '%';
-      var ps = goal.querySelectorAll('p'); var msg = ps[ps.length - 1]; if (msg && !msg.closest('.cx-log')) msg.textContent = pct >= 100 ? '¡Lo logramos! Gracias a todos ' + sym : 'Faltan ' + num(Math.max(0, tot - act)) + ' ' + u + '. ¡Sumate!';
+      var ps = goal.querySelectorAll('p'); var msg = ps[ps.length - 1]; if (msg && !msg.closest('.cx-log')) msg.textContent = pct >= 100 ? '¡Lo logramos! Gracias a todos ' + sym : 'Faltan ' + num(Math.max(0, tot - act)) + (u ? ' ' + u : '') + '. ¡Sumate!';
       if (d.titulo) { var h = goal.querySelector('h3'); if (h) h.textContent = '🎯 ' + d.titulo; }
       var sopa = goal.querySelector('.sopa'); if (sopa) sopa.setAttribute('y', (110 - Math.min(1, act / tot) * 72).toFixed(1));
       if (!live.querySelector('i')) { live.innerHTML = '<i></i><span></span>'; live.style.background = ''; live.style.color = ''; }
