@@ -1,4 +1,6 @@
 // ÁNGELA · Link corto de los Regalos QR: /r/AAMMDDcodigo
+// El guion bajo del nombre hace que Vercel no lo cuente como función aparte
+// (el plan gratis permite 12): lo usa api/supabase-config.js cuando llega ?r=
 // Abre el regalo guardado en Supabase y, cuando se comparte por WhatsApp o redes,
 // muestra el título del regalo con la imagen de ÁNGELA en la vista previa.
 const PROJECT_URL = 'https://xbbmqfapcfqndwanfkvh.supabase.co';
@@ -8,8 +10,8 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-module.exports = async function handler(req, res) {
-  const code = String((req.query && req.query.c) || '').toLowerCase();
+module.exports = async function shortLink(req, res) {
+  const code = String((req.query && (req.query.r || req.query.c)) || '').toLowerCase();
   const m = code.match(/^(\d{2})(\d{2})(\d{2})([a-z0-9]{6,16})$/);
   if (!m) {
     res.statusCode = 404;

@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/r/:code", "destination": "/api/r?c=:code" }
+    { "source": "/r/:code", "destination": "/api/supabase-config?r=:code" }
   ]
 }

@@ -1,6 +1,13 @@
+const shortLink = require("./_shortlink.js");
+
 module.exports = function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Método no permitido" });
+  }
+
+  // Link corto de los Regalos QR (/r/código llega acá con ?r=código)
+  if (req.query && req.query.r) {
+    return shortLink(req, res);
   }
 
   const rawUrl = process.env.SUPABASE_URL || "";
