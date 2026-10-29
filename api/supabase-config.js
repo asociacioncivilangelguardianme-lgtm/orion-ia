@@ -15,6 +15,19 @@ module.exports = function handler(req, res) {
     return shortLink.campaign(req, res);
   }
 
+  // Sincronización entre aparatos (?sync=ID): devuelve la última copia cifrada
+  if (req.query && req.query.sync) {
+    return shortLink.sync(req, res);
+  }
+
+  // Estudio Web: traer una página pública (?page=URL) o controlar enlaces (?checks=a|b|c)
+  if (req.query && req.query.page) {
+    return shortLink.page(req, res);
+  }
+  if (req.query && req.query.checks) {
+    return shortLink.checks(req, res);
+  }
+
   const rawUrl = process.env.SUPABASE_URL || "";
 
   const url = rawUrl

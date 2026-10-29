@@ -4668,6 +4668,8 @@ const schema={
 let DB;
 try{ DB=Object.assign({},schema,JSON.parse(localStorage.getItem(KEY)||"{}")); }catch(e){DB=structuredClone(schema)}
 const save=()=>localStorage.setItem(KEY,JSON.stringify(DB));
+/* V13: vuelve a leer la base si otra parte de ÁNGELA (sincronización, cocina, otra pestaña) la cambió */
+const reloadDB=()=>{try{DB=Object.assign({},schema,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}};window.addEventListener("angela-db-recargar",reloadDB);window.addEventListener("storage",e=>{if(e.key===KEY)reloadDB()});
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const box=()=>document.getElementById("angelaGestionContenido");
 const money=n=>new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:0}).format(Number(n)||0);
@@ -4686,9 +4688,10 @@ function rows(mod,cols){
  return `<table class="w-full text-xs"><thead><tr>${cols.map(c=>`<th class="text-left p-2">${c[1]}</th>`).join("")}<th></th></tr></thead><tbody>`+
  DB[mod].map(r=>`<tr class="border-t border-slate-800">${cols.map(c=>`<td class="p-2">${esc(typeof c[0]==="function"?c[0](r):r[c[0]])}</td>`).join("")}<td>${del(mod,r.id)}</td></tr>`).join("")+"</tbody></table>";
 }
-window.angelaBorrarRegistro=(m,i)=>{if(!confirm("¿Eliminar este registro?"))return;DB[m]=DB[m].filter(x=>x.id!==i);save();angelaAbrirGestion(m)};
-function add(mod,obj){DB[mod].unshift({id:id(),creado:new Date().toISOString(),...obj});save();angelaAbrirGestion(mod)}
+window.angelaBorrarRegistro=(m,i)=>{if(!confirm("¿Eliminar este registro?"))return;reloadDB();DB[m]=DB[m].filter(x=>x.id!==i);save();angelaAbrirGestion(m)};
+function add(mod,obj){reloadDB();DB[mod]=DB[mod]||[];DB[mod].unshift({id:id(),creado:new Date().toISOString(),...obj});save();angelaAbrirGestion(mod)}
 window.angelaAbrirGestion=(m)=>{
+ reloadDB();
  if(m==="costos"){
   const total=r=>(+r.materiales||0)+(+r.mano||0)+(+r.gastos||0), final=r=>total(r)*(1+(+r.ganancia||0)/100);
   render("🧮 Costos y Presupuestos",
@@ -13115,18 +13118,18 @@ function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').tex
 function home(){
   stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
   var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
-  [window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELAPro].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
+  [window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
   h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
   $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
 }
 function go(k){
   stopAll();
-  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELAPro].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
+  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
   var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
   CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
   ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
 }
-function stopAll(){try{window.ANGELA3D&&ANGELA3D.stop()}catch(e){}try{window.ANGELACam&&ANGELACam.stop()}catch(e){}try{if(REC.r){REC.on=false;REC.r.stop()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(M.busy)M.cancel=true}
+function stopAll(){try{window.ANGELACel&&ANGELACel.stop()}catch(e){}try{window.ANGELA3D&&ANGELA3D.stop()}catch(e){}try{window.ANGELACam&&ANGELACam.stop()}catch(e){}try{if(REC.r){REC.on=false;REC.r.stop()}}catch(e){}try{speechSynthesis.cancel()}catch(e){}if(M.busy)M.cancel=true}
 
 /* ================= 🎼 ORDENAR MÚSICA POR GÉNERO ================= */
 var M={files:[],busy:false,cancel:false,filter:'',src:null};
@@ -14918,3 +14921,644 @@ console.info('[ÁNGELA] Taller Pro: vectorizar, nombres en lote y plantillas de 
 })();
 </script>
 <!-- ===== FIN TALLER PRO ===== -->
+
+<!-- ===== ÁNGELA · ESTUDIO WEB: REVISAR UNA PÁGINA DE PUNTA A PUNTA Y REHACERLA CON OTRO ESTILO =====
+     Agregado al final: no modifica nada existente. Usa /api/supabase-config?page= (trae la página) y /api/chat (captura).
+     Para quitarlo, borrá desde acá hasta "FIN ESTUDIO WEB". -->
+<style id="angela-web-style">
+.wb-score{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.wb-ring{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;font-size:26px;font-weight:800;color:#fff;flex:none}
+.wb-ring small{display:block;font-size:10px;font-weight:600;opacity:.8;margin-top:-6px}
+.wb-li{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #24242e;font-size:13px;line-height:1.4}
+.wb-li:last-child{border-bottom:0}
+.wb-li .e{flex:none;width:20px;text-align:center}
+.wb-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.wb-chip{padding:5px 10px;border-radius:999px;background:#1f1f29;border:1px solid #353545;font-size:12px;color:#cfcfe0}
+.wb-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.wb-tabs button{padding:9px 12px;border-radius:10px;background:#1f1f29;border:1px solid #353545;color:#cfcfe0;font-weight:700;font-size:13px}
+.wb-tabs button.on{background:#7c5cff;border-color:#7c5cff;color:#fff}
+.wb-frame{width:100%;height:70vh;border:1px solid #272733;border-radius:12px;background:#fff}
+.wb-themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.wb-theme{border-radius:12px;padding:10px;border:2px solid transparent;cursor:pointer;font-size:12.5px;font-weight:700;text-align:left;min-height:70px}
+.wb-theme.on{border-color:#22d3ee;box-shadow:0 0 0 3px rgba(34,211,238,.25)}
+.wb-theme i{display:flex;gap:4px;margin-top:8px}.wb-theme i b{width:16px;height:16px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+.wb-sizes{display:flex;gap:6px;margin:8px 0}
+.wb-shot{max-width:100%;max-height:240px;border-radius:10px;border:1px solid #272733;display:block;margin-top:8px}
+</style>
+<script id="angela-web-v1">
+(function(){'use strict';if(window.ANGELAWeb)return;
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function T(s){return String(s==null?'':s).replace(/\s+/g,' ').trim()}
+function saveBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+function slug(s){return String(s||'pagina').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'').slice(0,30)||'pagina'}
+function api(){return location.protocol==='file:'?'https://orion-ia-sooty.vercel.app':''}
+var W={url:'',html:'',doc:null,meta:null,rep:null,model:null,theme:'moderno',opts:{fijo:true,wa:true,modo:true,anim:true,font:''},src:'',shot:null,out:''};
+
+/* ================= 1. CONSEGUIR LA PÁGINA ================= */
+async function traer(url){var r=await fetch(api()+'/api/supabase-config?page='+encodeURIComponent(url),{cache:'no-store'});var j=await r.json().catch(function(){return{ok:false,error:'El servidor no respondió bien (HTTP '+r.status+')'}});if(!j.ok)throw new Error(j.error||'No pude abrir la página');return j}
+function parse(html,base){var d=new DOMParser().parseFromString(html,'text/html');try{if(base&&!d.querySelector('base')){var b=d.createElement('base');b.href=base;d.head.prepend(b)}}catch(e){}return d}
+function abs(u,base){try{return new URL(u,base||W.url||location.href).href}catch(e){return ''}}
+
+/* ================= 2. REVISIÓN DE PUNTA A PUNTA ================= */
+var SOC=[[/facebook\.com|fb\.me/i,'📘 Facebook'],[/instagram\.com/i,'📸 Instagram'],[/tiktok\.com/i,'🎵 TikTok'],[/youtube\.com|youtu\.be/i,'▶️ YouTube'],[/(^|\.)x\.com|twitter\.com/i,'✖️ X / Twitter'],[/linkedin\.com/i,'💼 LinkedIn'],[/wa\.me|whatsapp\.com/i,'💬 WhatsApp'],[/t\.me\//i,'✈️ Telegram'],[/spotify\.com/i,'🎧 Spotify']];
+function analizar(d,meta){var base=meta.url,host='';try{host=new URL(base).host}catch(e){}
+  var I=[],F=[],TECH=[],pts=100,add=function(g,lvl,txt,pen){I.push({g:g,l:lvl,t:txt});if(pen)pts-=pen};
+  var q=function(s){return Array.from(d.querySelectorAll(s))},html=W.html||'',low=html.toLowerCase();
+  var title=T(d.title),desc=T((d.querySelector('meta[name="description" i]')||{}).content),vp=d.querySelector('meta[name="viewport" i]'),lang=(d.documentElement.getAttribute('lang')||'').trim();
+  var og=d.querySelector('meta[property="og:image"]'),fav=d.querySelector('link[rel~="icon" i]'),h1=q('h1'),h2=q('h2'),imgs=q('img'),sinAlt=imgs.filter(function(i){return !i.hasAttribute('alt')}),links=q('a[href]');
+  var words=T((d.body||d.documentElement).textContent).split(' ').filter(function(w){return w.length>1}).length;
+  // 🔎 Google
+  if(!title)add('google','bad','La página no tiene título (lo que aparece en la pestaña y en Google).',10);else if(title.length>65)add('google','warn','El título es largo ('+title.length+' letras). Google muestra unas 60.',3);else add('google','ok','Título: «'+title+'»');
+  if(!desc)add('google','bad','Falta la descripción para Google (el textito que aparece abajo del título).',8);else if(desc.length<70||desc.length>170)add('google','warn','La descripción tiene '+desc.length+' letras. Lo ideal es entre 70 y 160.',2);else add('google','ok','Tiene descripción para Google.');
+  if(!h1.length)add('google','bad','No tiene un título principal (H1).',6);else if(h1.length>1)add('google','warn','Tiene '+h1.length+' títulos principales (H1). Conviene uno solo.',3);else add('google','ok','Título principal: «'+T(h1[0].textContent).slice(0,80)+'»');
+  if(!og)add('google','warn','No tiene imagen para cuando se comparte por WhatsApp o Facebook (og:image).',4);else add('google','ok','Tiene imagen para compartir en redes.');
+  if(!lang)add('google','warn','No dice en qué idioma está.',1);
+  if(words<120)add('google','warn','Tiene poco texto ('+words+' palabras). A Google le cuesta entender de qué trata.',4);else add('google','ok',words+' palabras de texto.');
+  // 📱 celular y velocidad
+  if(!vp)add('cel','bad','No está preparada para celular (falta el «viewport»): en el teléfono se ve chiquita.',15);else add('cel','ok','Está preparada para verse en celular.');
+  if(meta.ms!=null){if(meta.ms>3000)add('cel','bad','Tardó '+(meta.ms/1000).toFixed(1)+' s en responder. Es lento.',8);else if(meta.ms>1500)add('cel','warn','Tardó '+(meta.ms/1000).toFixed(1)+' s en responder.',3);else add('cel','ok','Respondió rápido ('+(meta.ms/1000).toFixed(1)+' s).')}
+  if(meta.size){var kb=Math.round(meta.size/1024);if(kb>1500)add('cel','warn','El código pesa '+kb+' KB, bastante para datos móviles.',3);else add('cel','ok','El código pesa '+kb+' KB.')}
+  var scripts=q('script[src]').length,css=q('link[rel="stylesheet" i]').length;if(scripts>25)add('cel','warn','Carga '+scripts+' programas externos: eso la hace más lenta.',3);
+  if(/^http:/.test(base))add('cel','bad','No usa conexión segura (https). El navegador la marca como «No segura».',10);else if(base)add('cel','ok','Usa conexión segura (https).');
+  var mixed=q('img[src^="http:"],script[src^="http:"],iframe[src^="http:"]').length;if(/^https:/.test(base)&&mixed)add('cel','warn',mixed+' elemento(s) cargan por http inseguro.',2);
+  // ♿ fácil de usar
+  if(imgs.length&&sinAlt.length)add('acc','warn',sinAlt.length+' de '+imgs.length+' imágenes no tienen descripción (alt). Las personas ciegas no saben qué muestran.',Math.min(6,sinAlt.length));else if(imgs.length)add('acc','ok','Todas las imágenes tienen descripción.');
+  var inputs=q('input:not([type=hidden]):not([type=submit]):not([type=button]),textarea,select'),sinLbl=inputs.filter(function(i){return !(i.id&&d.querySelector('label[for="'+i.id+'"]'))&&!i.closest('label')&&!i.getAttribute('aria-label')&&!i.getAttribute('placeholder')});
+  if(sinLbl.length)add('acc','warn',sinLbl.length+' campo(s) de formulario sin nombre visible.',2);
+  var vac=links.filter(function(a){return !T(a.textContent)&&!a.querySelector('img[alt]')&&!a.getAttribute('aria-label')});if(vac.length)add('acc','warn',vac.length+' enlace(s) sin texto: no se sabe a dónde llevan.',2);
+  if(!q('nav').length&&!q('header a').length)add('acc','warn','No se detecta un menú de navegación claro.',2);else add('acc','ok','Tiene menú de navegación.');
+  // 🔗 enlaces
+  var LK=[],seen={};links.forEach(function(a){var h=a.getAttribute('href')||'';if(!h||/^(#|javascript:)/i.test(h))return;var u=abs(h,base);if(!u||seen[u])return;seen[u]=1;var ext=false;try{ext=new URL(u).host!==host}catch(e){}LK.push({u:u,t:T(a.textContent).slice(0,60)||a.getAttribute('aria-label')||'',ext:ext,tipo:/^mailto:/i.test(u)?'mail':/^tel:/i.test(u)?'tel':/^https?:/i.test(u)?'web':'otro'})});
+  // 🧩 qué tiene: herramientas y funciones
+  var forms=q('form');forms.forEach(function(f){var n=f.querySelectorAll('input:not([type=hidden]),textarea,select').length,t=T(f.textContent).toLowerCase();var k=/buscar|search|busqueda/.test(t+(f.getAttribute('role')||'')+(f.getAttribute('action')||''))?'🔎 Buscador':/suscrib|newsletter|novedades/.test(t)?'📨 Suscripción':/contra|login|ingres|password/.test(t)||f.querySelector('input[type=password]')?'🔐 Ingreso de usuarios':/contact|mensaje|consulta|escrib/.test(t)?'✉️ Formulario de contacto':'📝 Formulario';F.push(k+' ('+n+' campo'+(n===1?'':'s')+')')});
+  var ifr=q('iframe[src]').map(function(i){return i.getAttribute('src')});
+  if(ifr.some(function(s){return /youtube|youtu\.be/i.test(s)}))F.push('▶️ Videos de YouTube');if(ifr.some(function(s){return /maps\.google|google\.com\/maps/i.test(s)}))F.push('🗺️ Mapa de Google');if(ifr.some(function(s){return /spotify|soundcloud/i.test(s)}))F.push('🎧 Música (Spotify/SoundCloud)');if(ifr.some(function(s){return /facebook\.com\/plugins/i.test(s)}))F.push('📘 Publicaciones de Facebook');if(ifr.some(function(s){return /instagram\.com/i.test(s)}))F.push('📸 Publicaciones de Instagram');
+  if(q('audio').length||/\.(mp3|aac|m3u8|pls)(\?|"|')|icecast|shoutcast|zeno\.fm|radio/i.test(low))F.push('📻 Reproductor de audio / radio');
+  if(q('video').length)F.push('🎬 Videos propios');
+  var tels=LK.filter(function(l){return l.tipo==='tel'}),mails=LK.filter(function(l){return l.tipo==='mail'}),wa=LK.filter(function(l){return /wa\.me|whatsapp/i.test(l.u)});
+  if(wa.length)F.push('💬 Botón de WhatsApp');if(tels.length)F.push('📞 Teléfono para llamar');if(mails.length)F.push('📧 Correo');
+  if(/mercadopago|mercado pago|paypal|stripe|checkout|carrito|add-to-cart|agregar al carrito/i.test(low))F.push('🛒 Tienda o botón de pago');
+  if(/calendly|reservar|turnos|booking/i.test(low))F.push('📅 Reservas o turnos');
+  if(/tawk\.to|crisp\.chat|tidio|zendesk|livechat|messenger-chat|chatbot/i.test(low))F.push('💭 Chat en vivo');
+  if(/googletagmanager|google-analytics|gtag\(|fbq\(/i.test(low))F.push('📊 Estadísticas de visitas');
+  if(/recaptcha|hcaptcha/i.test(low))F.push('🤖 Protección anti-spam');
+  if(q('[class*="slider" i],[class*="carousel" i],[class*="swiper" i]').length)F.push('🎠 Carrusel de imágenes');
+  if(q('[class*="gallery" i],[class*="galeria" i]').length||imgs.length>=8)F.push('🖼️ Galería de fotos');
+  if(/donar|donaci|colabor/i.test(low))F.push('💛 Donaciones / colaborar');
+  var redes=[];SOC.forEach(function(s){var l=LK.find(function(x){return s[0].test(x.u)});if(l)redes.push({n:s[1],u:l.u})});redes.forEach(function(r){if(F.indexOf(r.n)<0&&!/WhatsApp/.test(r.n))F.push(r.n)});
+  // ⚙️ con qué está hecha
+  [[/wp-content|wordpress/i,'WordPress'],[/wix\.com|wixstatic/i,'Wix'],[/blogger\.com|blogspot/i,'Blogger'],[/cdn\.shopify|shopify/i,'Shopify'],[/tiendanube|nuvemshop/i,'Tiendanube'],[/sites\.google/i,'Google Sites'],[/squarespace/i,'Squarespace'],[/webflow/i,'Webflow'],[/elementor/i,'Elementor'],[/__next|_next\//i,'Next.js (React)'],[/react/i,'React'],[/vue/i,'Vue'],[/bootstrap/i,'Bootstrap'],[/tailwind/i,'Tailwind'],[/jquery/i,'jQuery'],[/vercel/i,'Vercel'],[/cloudflare/i,'Cloudflare']].forEach(function(t){if(t[0].test(low)||t[0].test(JSON.stringify(meta.headers||{})))TECH.push(t[1])});
+  var score=Math.max(5,Math.min(100,Math.round(pts)));
+  return{score:score,items:I,funcs:F,tech:TECH,links:LK,redes:redes,info:{title:title,desc:desc,words:words,imgs:imgs.length,sinAlt:sinAlt.length,h1:h1.length,h2:h2.length,forms:forms.length,links:LK.length,ext:LK.filter(function(l){return l.ext}).length,scripts:scripts,css:css,lang:lang,ms:meta.ms,size:meta.size,status:meta.status},fav:fav?abs(fav.getAttribute('href'),base):''}}
+
+/* ================= 3. CONTENIDO PARA REHACERLA ================= */
+function extraer(d,base){var M={nombre:'',logo:'',hero:{t:'',s:'',img:''},nav:[],secs:[],forms:[],contacto:{tel:[],mail:[],wa:[],dir:''},redes:[],embeds:[],audios:[],pie:'',colores:[]};
+  var og=function(p){var m=d.querySelector('meta[property="'+p+'"],meta[name="'+p+'"]');return m?T(m.content):''};
+  M.nombre=og('og:site_name')||T(d.title).split(/\s[|\-–·]\s/)[0]||'Mi página';
+  var lg=Array.from(d.querySelectorAll('img')).find(function(i){return /logo/i.test((i.getAttribute('src')||'')+' '+(i.getAttribute('alt')||'')+' '+(i.className||'')+' '+(i.id||'')+' '+((i.parentNode&&i.parentNode.className)||''))});
+  if(lg)M.logo=abs(lg.getAttribute('src')||lg.getAttribute('data-src'),base);
+  var h1=d.querySelector('h1');M.hero.t=h1?T(h1.textContent):T(d.title);M.hero.s=og('description')||og('og:description');
+  M.hero.img=og('og:image')?abs(og('og:image'),base):'';
+  var navA=Array.from(d.querySelectorAll('nav a[href],header a[href]')),seen={};navA.forEach(function(a){var t=T(a.textContent),h=a.getAttribute('href')||'';if(!t||t.length>30||seen[t.toLowerCase()]||/^javascript:/i.test(h))return;seen[t.toLowerCase()]=1;if(M.nav.length<8)M.nav.push({t:t,u:h.charAt(0)==='#'?h:abs(h,base)})});
+  // recorrer el contenido en orden
+  var root=d.querySelector('main')||d.querySelector('article')||d.body;if(!root)return M;
+  var skip=function(el){return !!el.closest('nav,header,footer,script,style,noscript,form,svg,template,[aria-hidden="true"]')};
+  var cur=null,used={},nueva=function(t){cur={t:t,p:[],li:[],img:[],btn:[],emb:[]};M.secs.push(cur)};
+  var nodes=root.querySelectorAll('h1,h2,h3,p,li,img,iframe,audio,video,blockquote,a.button,a.btn,a[class*="btn"],a[class*="button"],button');
+  Array.prototype.forEach.call(nodes,function(el){if(skip(el)&&el.tagName!=='IFRAME')return;var tg=el.tagName;
+    if(tg==='H1'){return}
+    if(tg==='H2'||tg==='H3'){var t=T(el.textContent);if(t&&t.length<120)nueva(t);return}
+    if(!cur)nueva('');
+    if(tg==='P'||tg==='BLOCKQUOTE'){var t2=T(el.textContent);if(t2.length>1&&!used[t2]&&!el.closest('li')){used[t2]=1;if(cur.p.length<14)cur.p.push(t2.slice(0,900))}}
+    else if(tg==='LI'){var t3=T(el.textContent);if(t3&&t3.length<220&&!used[t3]&&!el.querySelector('p,li')){used[t3]=1;if(cur.li.length<20)cur.li.push(t3)}}
+    else if(tg==='IMG'){var src=el.getAttribute('src')||el.getAttribute('data-src')||el.getAttribute('data-lazy-src')||'';if(!src||/^data:image\/(svg|gif)/i.test(src))return;var w=+el.getAttribute('width')||0;if(w&&w<60)return;var u=abs(src,base);if(!u||used[u]||u===M.logo)return;used[u]=1;if(cur.img.length<12)cur.img.push({u:u,a:T(el.getAttribute('alt'))})}
+    else if(tg==='IFRAME'){var s=el.getAttribute('src')||el.getAttribute('data-src')||'';if(/youtube|youtu\.be|google\.com\/maps|maps\.google|spotify|soundcloud|vimeo/i.test(s)){var u2=abs(s,base);if(!used[u2]){used[u2]=1;cur.emb.push(u2)}}}
+    else if(tg==='AUDIO'||tg==='VIDEO'){var s2=el.getAttribute('src')||(el.querySelector('source')&&el.querySelector('source').getAttribute('src'))||'';if(s2){var u3=abs(s2,base);if(!used[u3]){used[u3]=1;cur.emb.push((tg==='AUDIO'?'audio:':'video:')+u3)}}}
+    else{var bt=T(el.textContent),hr=el.getAttribute('href');if(bt&&bt.length<40&&hr&&!/^javascript:/i.test(hr)&&cur.btn.length<3&&!used['b'+bt]){used['b'+bt]=1;cur.btn.push({t:bt,u:hr.charAt(0)==='#'?hr:abs(hr,base)})}}});
+  M.secs=M.secs.filter(function(s){return s.t||s.p.length||s.li.length||s.img.length||s.emb.length}).slice(0,30);
+  if(!M.hero.s){var fp=M.secs.length&&M.secs[0].p.find(function(p){return p.length>40});if(fp)M.hero.s=fp.slice(0,220)}
+  if(!M.hero.img){var fi=M.secs.find(function(s){return s.img.length});if(fi)M.hero.img=fi.img[0].u}
+  // formularios: se rehacen con los mismos campos y la misma dirección, así siguen funcionando
+  Array.from(d.querySelectorAll('form')).slice(0,4).forEach(function(f){var fields=[];f.querySelectorAll('input,textarea,select').forEach(function(i){var ty=(i.getAttribute('type')||i.tagName).toLowerCase();if(/submit|button|image|reset/.test(ty))return;var lb='';if(i.id){var l=d.querySelector('label[for="'+i.id+'"]');if(l)lb=T(l.textContent)}if(!lb&&i.closest('label'))lb=T(i.closest('label').textContent);fields.push({tag:i.tagName.toLowerCase(),type:ty,name:i.getAttribute('name')||'',ph:i.getAttribute('placeholder')||'',label:lb||i.getAttribute('aria-label')||'',req:i.hasAttribute('required'),val:ty==='hidden'?(i.getAttribute('value')||''):'',opts:i.tagName==='SELECT'?Array.from(i.options).map(function(o){return[o.value,T(o.textContent)]}):null})});
+    var sb=f.querySelector('[type=submit],button');if(fields.filter(function(x){return x.type!=='hidden'}).length)M.forms.push({action:abs(f.getAttribute('action')||'',base)||base,method:(f.getAttribute('method')||'get').toLowerCase(),enctype:f.getAttribute('enctype')||'',fields:fields,submit:sb?T(sb.textContent||sb.getAttribute('value'))||'Enviar':'Enviar',titulo:/buscar|search/i.test(T(f.textContent)+(f.getAttribute('action')||''))?'Buscar':'Escribinos'})});
+  Array.from(d.querySelectorAll('a[href]')).forEach(function(a){var h=a.getAttribute('href')||'';if(/^tel:/i.test(h)&&M.contacto.tel.indexOf(h)<0)M.contacto.tel.push(h);else if(/^mailto:/i.test(h)&&M.contacto.mail.indexOf(h)<0)M.contacto.mail.push(h);else if(/wa\.me|whatsapp\.com\/send|api\.whatsapp/i.test(h)&&M.contacto.wa.indexOf(h)<0)M.contacto.wa.push(abs(h,base))});
+  var ad=d.querySelector('address');if(ad)M.contacto.dir=T(ad.textContent).slice(0,200);
+  SOC.forEach(function(s){var a=Array.from(d.querySelectorAll('a[href]')).find(function(x){return s[0].test(x.getAttribute('href')||'')});if(a&&!/WhatsApp/.test(s[1]))M.redes.push({n:s[1],u:abs(a.getAttribute('href'),base)})});
+  var ft=d.querySelector('footer');if(ft)M.pie=T(ft.textContent).slice(0,240);
+  return M}
+
+/* ================= 4. ESTILOS ================= */
+var TH={
+ moderno:{n:'🌙 Moderno oscuro',bg:'#0b1020',sf:'#141a2e',tx:'#e8ecf6',mu:'#9aa4bf',pr:'#7c5cff',ac:'#22d3ee',fh:'Poppins',fb:'Inter',r:18},
+ claro:{n:'🤍 Claro elegante',bg:'#faf8f5',sf:'#ffffff',tx:'#1f2328',mu:'#5b6470',pr:'#1f3a5f',ac:'#c08a3e',fh:'Playfair Display',fb:'Lato',r:10},
+ alegre:{n:'🌈 Colorido alegre',bg:'#fff7ed',sf:'#ffffff',tx:'#27180e',mu:'#7a5a44',pr:'#ec4899',ac:'#f59e0b',fh:'Baloo 2',fb:'Nunito',r:22},
+ minimal:{n:'◻️ Minimalista',bg:'#ffffff',sf:'#f5f5f5',tx:'#111111',mu:'#666666',pr:'#111111',ac:'#ff4d00',fh:'Inter',fb:'Inter',r:6},
+ solidario:{n:'💛 Comedor solidario',bg:'#fffbeb',sf:'#ffffff',tx:'#1e293b',mu:'#64748b',pr:'#0f4f8a',ac:'#f59e0b',fh:'Merriweather',fb:'Open Sans',r:16},
+ neon:{n:'📻 Neón / radio',bg:'#05010d',sf:'#120a24',tx:'#f5f3ff',mu:'#a5a1c2',pr:'#ff2bd6',ac:'#00f0ff',fh:'Bebas Neue',fb:'Rubik',r:14},
+ natural:{n:'🌿 Natural',bg:'#f3f6f0',sf:'#ffffff',tx:'#1d2a1f',mu:'#5e6b5f',pr:'#2f6b3a',ac:'#c58b3a',fh:'Lora',fb:'Source Sans 3',r:14},
+ fe:{n:'🕯️ Espiritual',bg:'#140f0a',sf:'#1f1710',tx:'#f6ead6',mu:'#c4b29a',pr:'#d9a441',ac:'#b45309',fh:'Cinzel',fb:'EB Garamond',r:12}};
+function gen(M,thk,o){var t=Object.assign({},TH[thk]||TH.moderno);if(W.custom&&thk==='captura')t=W.custom;if(o.pr)t.pr=o.pr;if(o.ac)t.ac=o.ac;var fh=o.font||t.fh,fb=t.fb;
+  var fam=[fh,fb].filter(function(v,i,a){return a.indexOf(v)===i}).map(function(f){return 'family='+encodeURIComponent(f).replace(/%20/g,'+')+':wght@400;600;700'}).join('&');
+  var e=esc,wa=(M.contacto.wa[0]||(o.waNum?'https://wa.me/'+String(o.waNum).replace(/\D/g,''):''));
+  var nav=M.nav.length?M.nav:M.secs.filter(function(s){return s.t}).slice(0,6).map(function(s,i){return{t:s.t.slice(0,22),u:'#s'+i}});
+  var secH=M.secs.map(function(s,i){var img=s.img,txt=s.p.map(function(p){return '<p>'+e(p)+'</p>'}).join('')+(s.li.length?'<ul class="ls">'+s.li.map(function(l){return '<li>'+e(l)+'</li>'}).join('')+'</ul>':'')+(s.btn.length?'<div class="bts">'+s.btn.map(function(b){return '<a class="btn" href="'+e(b.u)+'">'+e(b.t)+'</a>'}).join('')+'</div>':'');
+    var media='';if(img.length===1)media='<figure class="ph"><img loading="lazy" src="'+e(img[0].u)+'" alt="'+e(img[0].a)+'"></figure>';else if(img.length>1)media='<div class="gal">'+img.map(function(m){return '<img loading="lazy" src="'+e(m.u)+'" alt="'+e(m.a)+'">'}).join('')+'</div>';
+    var emb=s.emb.map(function(u){if(/^audio:/.test(u))return '<audio controls preload="none" src="'+e(u.slice(6))+'"></audio>';if(/^video:/.test(u))return '<video controls preload="none" src="'+e(u.slice(6))+'"></video>';return '<div class="emb"><iframe loading="lazy" src="'+e(u)+'" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe></div>'}).join('');
+    var two=img.length===1&&(s.p.length||s.li.length);
+    return '<section id="s'+i+'" class="sec'+(i%2?' alt':'')+'"><div class="wrap'+(two?' two'+(i%2?' rev':''):'')+'"><div class="tx">'+(s.t?'<h2>'+e(s.t)+'</h2>':'')+txt+'</div>'+(two?media:'')+'</div>'+(!two&&media?'<div class="wrap">'+media+'</div>':'')+(emb?'<div class="wrap">'+emb+'</div>':'')+'</section>'}).join('');
+  var formH=M.forms.map(function(f){return '<section class="sec"><div class="wrap narrow"><h2>'+e(f.titulo)+'</h2><form class="fm" action="'+e(f.action)+'" method="'+e(f.method)+'"'+(f.enctype?' enctype="'+e(f.enctype)+'"':'')+'>'+f.fields.map(function(x){if(x.type==='hidden')return '<input type="hidden" name="'+e(x.name)+'" value="'+e(x.val)+'">';var lab=x.label||x.ph||x.name||'Dato',at=' name="'+e(x.name)+'"'+(x.req?' required':'')+(x.ph?' placeholder="'+e(x.ph)+'"':'');
+      if(x.tag==='textarea')return '<label>'+e(lab)+'<textarea rows="4"'+at+'></textarea></label>';if(x.tag==='select')return '<label>'+e(lab)+'<select'+at+'>'+(x.opts||[]).map(function(op){return '<option value="'+e(op[0])+'">'+e(op[1])+'</option>'}).join('')+'</select></label>';
+      if(x.type==='checkbox'||x.type==='radio')return '<label class="ck"><input type="'+e(x.type)+'"'+at+'> '+e(lab)+'</label>';return '<label>'+e(lab)+'<input type="'+e(x.type==='input'?'text':x.type)+'"'+at+'></label>'}).join('')+'<button class="btn" type="submit">'+e(f.submit)+'</button></form></div></section>'}).join('');
+  var c=M.contacto,contH=(c.tel.length||c.mail.length||c.wa.length||c.dir)?'<section id="contacto" class="sec alt"><div class="wrap narrow ce"><h2>Contacto</h2><div class="cards">'+c.tel.slice(0,2).map(function(x){return '<a class="card" href="'+e(x)+'">📞 '+e(x.replace(/^tel:/i,''))+'</a>'}).join('')+c.mail.slice(0,2).map(function(x){return '<a class="card" href="'+e(x)+'">📧 '+e(x.replace(/^mailto:/i,'').split('?')[0])+'</a>'}).join('')+c.wa.slice(0,1).map(function(x){return '<a class="card" href="'+e(x)+'" target="_blank" rel="noopener">💬 WhatsApp</a>'}).join('')+(c.dir?'<div class="card">📍 '+e(c.dir)+'</div>':'')+'</div></div></section>':'';
+  var redH=M.redes.length?'<div class="redes">'+M.redes.map(function(r){return '<a href="'+e(r.u)+'" target="_blank" rel="noopener">'+e(r.n)+'</a>'}).join('')+'</div>':'';
+  var css=':root{--bg:'+t.bg+';--sf:'+t.sf+';--tx:'+t.tx+';--mu:'+t.mu+';--pr:'+t.pr+';--ac:'+t.ac+';--r:'+t.r+'px}'+
+   (o.modo?'html.oscuro{--bg:#0d1017;--sf:#171b25;--tx:#e9edf5;--mu:#9aa3b5}html.claro{--bg:#ffffff;--sf:#f4f5f7;--tx:#16181d;--mu:#5d6470}':'')+
+   '*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 "'+fb+'",system-ui,sans-serif}img{max-width:100%;display:block}a{color:var(--pr)}'+
+   'h1,h2,h3{font-family:"'+fh+'",serif;line-height:1.15;margin:0 0 .5em}h2{font-size:clamp(26px,4.5vw,40px)}'+
+   '.wrap{max-width:1120px;margin:auto;padding:0 20px}.narrow{max-width:720px}'+
+   'header.top{'+(o.fijo?'position:sticky;top:0;z-index:20;':'')+'background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb,var(--tx) 10%,transparent)}'+
+   '.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px}.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-family:"'+fh+'",serif;font-size:20px;color:var(--tx);text-decoration:none}.brand img{height:40px;width:auto}'+
+   '.menu{display:flex;gap:4px;flex-wrap:wrap}.menu a{color:var(--tx);text-decoration:none;padding:8px 12px;border-radius:999px;font-size:15px}.menu a:hover{background:color-mix(in srgb,var(--pr) 14%,transparent)}'+
+   '.hb{display:none;background:none;border:0;color:var(--tx);font-size:26px}.tg{background:none;border:1px solid color-mix(in srgb,var(--tx) 20%,transparent);color:var(--tx);border-radius:999px;padding:6px 10px;cursor:pointer}'+
+   '@media(max-width:760px){.hb{display:block}.menu{display:none;position:absolute;left:0;right:0;top:64px;flex-direction:column;background:var(--sf);padding:10px 16px;box-shadow:0 10px 30px rgba(0,0,0,.15)}.menu.on{display:flex}}'+
+   '.hero{position:relative;padding:clamp(70px,12vw,140px) 0;overflow:hidden;background:linear-gradient(135deg,color-mix(in srgb,var(--pr) 85%,#000),color-mix(in srgb,var(--ac) 70%,#000))'+(M.hero.img?',url("'+e(M.hero.img)+'") center/cover':'')+';background-blend-mode:multiply;color:#fff;text-align:center}'+
+   '.hero h1{font-size:clamp(34px,7vw,64px);text-shadow:0 4px 30px rgba(0,0,0,.35)}.hero p{max-width:700px;margin:0 auto 26px;font-size:clamp(17px,2.4vw,21px);opacity:.95}'+
+   '.btn{display:inline-block;background:var(--ac);color:#111;text-decoration:none;font-weight:700;padding:13px 24px;border-radius:999px;border:0;cursor:pointer;font-size:16px;box-shadow:0 8px 24px rgba(0,0,0,.18)}.btn.o{background:transparent;color:#fff;border:2px solid #fff}.bts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}'+
+   '.sec{padding:clamp(48px,8vw,90px) 0}.sec.alt{background:var(--sf)}.sec p{color:var(--mu);font-size:17px}.two{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(24px,5vw,56px);align-items:center}.two.rev .ph{order:-1}@media(max-width:760px){.two{grid-template-columns:1fr}.two.rev .ph{order:0}}'+
+   '.ph img{border-radius:var(--r);box-shadow:0 18px 50px rgba(0,0,0,.18);width:100%;object-fit:cover;max-height:520px}.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:18px}.gal img{border-radius:calc(var(--r) - 4px);aspect-ratio:4/3;object-fit:cover;width:100%}'+
+   '.ls{padding-left:0;list-style:none}.ls li{padding:10px 14px 10px 40px;margin:8px 0;background:var(--sf);border-radius:calc(var(--r) - 6px);position:relative}.sec.alt .ls li{background:var(--bg)}.ls li:before{content:"✓";position:absolute;left:14px;color:var(--pr);font-weight:700}'+
+   '.emb{position:relative;padding-top:56.25%;margin-top:18px;border-radius:var(--r);overflow:hidden}.emb iframe{position:absolute;inset:0;width:100%;height:100%;border:0}audio,video{width:100%;margin-top:14px;border-radius:12px}'+
+   '.fm{display:grid;gap:12px}.fm label{display:grid;gap:6px;font-weight:600;font-size:14px}.fm .ck{display:flex;gap:8px;align-items:center}.fm input,.fm textarea,.fm select{font:inherit;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--tx) 18%,transparent);background:var(--sf);color:var(--tx)}'+
+   '.ce{text-align:center}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:10px}.card{background:var(--bg);padding:18px;border-radius:var(--r);text-decoration:none;color:var(--tx);font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.06)}'+
+   'footer.pie{padding:40px 0;text-align:center;color:var(--mu);font-size:14px;border-top:1px solid color-mix(in srgb,var(--tx) 10%,transparent)}.redes{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:14px}.redes a{text-decoration:none;padding:8px 14px;border-radius:999px;background:var(--sf);color:var(--tx);font-size:14px}'+
+   '.waf{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;background:#25d366;color:#fff;display:grid;place-items:center;font-size:28px;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:30}'+
+   (o.anim?'.rv{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}.rv.in{opacity:1;transform:none}@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}}':'');
+  var js='<script>(function(){var h=document.querySelector(".hb"),m=document.querySelector(".menu");if(h)h.onclick=function(){m.classList.toggle("on")};if(m)m.addEventListener("click",function(e){if(e.target.tagName==="A")m.classList.remove("on")});'+
+   (o.modo?'var tg=document.querySelector(".tg"),k="modo_pagina";try{var s=localStorage.getItem(k);if(s)document.documentElement.className=s}catch(e){}if(tg)tg.onclick=function(){var r=document.documentElement,n=r.className==="oscuro"?"claro":"oscuro";r.className=n;try{localStorage.setItem(k,n)}catch(e){}};':'')+
+   (o.anim?'var io="IntersectionObserver"in window?new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}})},{threshold:.12}):null;document.querySelectorAll(".sec .wrap").forEach(function(el){el.classList.add("rv");if(io)io.observe(el);else el.classList.add("in")});':'')+
+   '})();<\/script>';
+  var first=M.secs.find(function(s){return s.btn.length}),cta=wa?'<a class="btn" href="'+e(wa)+'" target="_blank" rel="noopener">💬 Escribinos</a>':(first?'<a class="btn" href="'+e(first.btn[0].u)+'">'+e(first.btn[0].t)+'</a>':'');
+  return ('<!doctype html>\n<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+e(M.nombre||M.hero.t)+'</title>'+(M.hero.s?'<meta name="description" content="'+e(M.hero.s.slice(0,160))+'">':'')+(M.hero.img?'<meta property="og:image" content="'+e(M.hero.img)+'">':'')+
+   '<meta property="og:title" content="'+e(M.nombre||M.hero.t)+'"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?'+fam+'&display=swap"><style>'+css+'</style></head><body>'+
+   '<header class="top"><div class="wrap bar"><a class="brand" href="#">'+(M.logo?'<img src="'+e(M.logo)+'" alt="'+e(M.nombre)+'">':'')+'<span>'+e(M.nombre)+'</span></a><nav class="menu" aria-label="Menú">'+nav.map(function(n){return '<a href="'+e(n.u)+'">'+e(n.t)+'</a>'}).join('')+(contH?'<a href="#contacto">Contacto</a>':'')+'</nav><div style="display:flex;gap:8px;align-items:center">'+(o.modo?'<button class="tg" type="button" aria-label="Cambiar a modo claro u oscuro">🌓</button>':'')+'<button class="hb" type="button" aria-label="Abrir menú">☰</button></div></div></header>'+
+   '<section class="hero"><div class="wrap"><h1>'+e(M.hero.t||M.nombre)+'</h1>'+(M.hero.s?'<p>'+e(M.hero.s)+'</p>':'')+'<div class="bts" style="justify-content:center">'+cta+(M.secs[0]?'<a class="btn o" href="#s0">Conocé más</a>':'')+'</div></div></section>'+
+   secH+formH+contH+'<footer class="pie"><div class="wrap">'+redH+(M.pie?'<div>'+e(M.pie)+'</div>':'<div>© '+new Date().getFullYear()+' '+e(M.nombre)+'</div>')+'</div></footer>'+
+   (o.wa&&wa?'<a class="waf" href="'+e(wa)+'" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>':'')+js+'</body></html>').replace(/<img /g,'<img onerror="this.remove()" ')}
+
+/* ================= 5. DESDE UNA CAPTURA DE PANTALLA (IA) ================= */
+function paleta(img){var c=document.createElement('canvas'),s=Math.min(1,160/Math.max(img.width,img.height));c.width=Math.max(1,img.width*s|0);c.height=Math.max(1,img.height*s|0);var x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);var d=x.getImageData(0,0,c.width,c.height).data,b={};
+  for(var i=0;i<d.length;i+=4){var k=(d[i]>>4)+','+(d[i+1]>>4)+','+(d[i+2]>>4);b[k]=(b[k]||0)+1}
+  var L=Object.keys(b).sort(function(a,z){return b[z]-b[a]}).map(function(k){var p=k.split(',').map(function(n){return(+n<<4)+8});return{c:p,n:b[k]}});
+  var hex=function(p){return '#'+p.map(function(v){return Math.min(255,v).toString(16).padStart(2,'0')}).join('')},lum=function(p){return(p[0]*299+p[1]*587+p[2]*114)/1000},sat=function(p){var mx=Math.max.apply(0,p),mn=Math.min.apply(0,p);return mx?(mx-mn)/mx:0};
+  var bg=L[0].c,vivos=L.filter(function(o){return sat(o.c)>.35&&lum(o.c)>40&&lum(o.c)<225}),pr=vivos[0]?vivos[0].c:[124,92,255],ac=(vivos.find(function(o){return Math.abs(o.c[0]-pr[0])+Math.abs(o.c[1]-pr[1])+Math.abs(o.c[2]-pr[2])>120})||{c:[245,158,11]}).c,dark=lum(bg)<110;
+  return{n:'📸 Como la captura',bg:hex(bg),sf:dark?hex(bg.map(function(v){return v+14})):hex(bg.map(function(v){return Math.max(0,v-8)})),tx:dark?'#f1f3f8':'#16181d',mu:dark?'#a8b0c2':'#5d6470',pr:hex(pr),ac:hex(ac),fh:'Poppins',fb:'Inter',r:14}}
+async function desdeCaptura(file,st){st('⏳ Leyendo la captura con la IA… puede tardar unos segundos.');
+  var data=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result))};r.onerror=rej;r.readAsDataURL(file)});
+  var img=await new Promise(function(res,rej){var i=new Image();i.onload=function(){res(i)};i.onerror=rej;i.src=data});
+  var c=document.createElement('canvas'),s=Math.min(1,1600/Math.max(img.width,img.height));c.width=img.width*s|0;c.height=img.height*s|0;c.getContext('2d').drawImage(img,0,0,c.width,c.height);var jpg=c.toDataURL('image/jpeg',.82);
+  W.shot=jpg;W.custom=paleta(img);
+  var prompt='Mirá esta captura de pantalla de una página web. Transcribí TODO su contenido visible para poder rehacerla. Respondé SOLO con JSON válido (sin explicaciones ni ```), con este formato exacto: {"nombre":"nombre del sitio o marca","titulo":"título principal grande","subtitulo":"frase debajo del título","menu":["opción 1","opción 2"],"secciones":[{"titulo":"título de la sección","parrafos":["texto tal cual se ve"],"lista":["ítems si hay una lista"],"botones":["texto de los botones"]}],"contacto":{"telefono":"","email":"","whatsapp":"","direccion":""},"redes":["facebook","instagram"],"pie":"texto del pie de página","formulario":["nombre de cada campo si hay un formulario"]}. Copiá los textos exactamente como aparecen, en su idioma. Si algo no se ve, dejalo vacío.';
+  var r=await fetch(api()+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:prompt,fresh:false,maxTokens:5000,attachments:[{name:'captura.jpg',type:'image/jpeg',data:jpg.split(',')[1]}]})});
+  var j=await r.json().catch(function(){return{}});var txt=String(j.reply||j.respuesta||'');if(!txt)throw new Error(j.error||'La IA no respondió. Probá de nuevo en un rato.');
+  var a=txt.indexOf('{'),z=txt.lastIndexOf('}');if(a<0||z<a)throw new Error('La IA no devolvió el contenido en el formato esperado. Probá de nuevo.');
+  var o=JSON.parse(txt.slice(a,z+1).replace(/,\s*([}\]])/g,'$1'));
+  var M={nombre:T(o.nombre)||'Mi página',logo:'',hero:{t:T(o.titulo),s:T(o.subtitulo),img:''},nav:(o.menu||[]).slice(0,8).map(function(m,i){return{t:T(m),u:'#s'+i}}),secs:(o.secciones||[]).map(function(s){return{t:T(s.titulo),p:(s.parrafos||[]).map(T).filter(Boolean),li:(s.lista||[]).map(T).filter(Boolean),img:[],btn:(s.botones||[]).map(function(b){return{t:T(b),u:'#contacto'}}).filter(function(b){return b.t}),emb:[]}}),forms:[],contacto:{tel:[],mail:[],wa:[],dir:''},redes:[],embeds:[],audios:[],pie:T(o.pie)};
+  var ct=o.contacto||{};if(ct.telefono)M.contacto.tel.push('tel:'+String(ct.telefono).replace(/[^\d+]/g,''));if(ct.email)M.contacto.mail.push('mailto:'+T(ct.email));if(ct.whatsapp){var n=String(ct.whatsapp).replace(/\D/g,'');if(n)M.contacto.wa.push('https://wa.me/'+n)}if(ct.direccion)M.contacto.dir=T(ct.direccion);
+  (o.redes||[]).forEach(function(rd){var k=String(rd).toLowerCase();SOC.forEach(function(sc){if(sc[1].toLowerCase().indexOf(k.replace(/[^a-z]/g,''))>=0&&!/whatsapp/.test(k))M.redes.push({n:sc[1],u:'#'})})});
+  if(Array.isArray(o.formulario)&&o.formulario.length)M.forms.push({action:'#',method:'post',enctype:'',titulo:'Escribinos',submit:'Enviar',fields:o.formulario.slice(0,8).map(function(f){var l=T(f);return{tag:/mensaje|consulta|comentario/i.test(l)?'textarea':'input',type:/mail/i.test(l)?'email':/tel|cel/i.test(l)?'tel':'text',name:slug(l).toLowerCase(),ph:'',label:l,req:false,val:'',opts:null}})});
+  return M}
+
+/* ================= PANTALLA ================= */
+function vista(el){
+  el.innerHTML='<div class="herr-card"><h3>🌐 ¿Qué página querés revisar o rehacer?</h3><p class="herr-sub">Pegá el link, subí una <b>captura de pantalla</b> o pegá el <b>código</b>. ÁNGELA la revisa de punta a punta y te la rehace con otro estilo, conservando los textos, fotos, botones, formularios, videos, mapas y redes.</p>'+
+   '<div class="wb-tabs"><button class="on" data-src="link">🔗 Link</button><button data-src="shot">📸 Captura</button><button data-src="code">🧾 Código</button></div>'+
+   '<div id="wbIn"></div><div class="herr-status" id="wbSt"></div>'+
+   '<div class="herr-info herr-warn" style="margin-top:10px">⚖️ Usalo con <b>tus</b> páginas (o las de alguien que te dio permiso), o como inspiración. Si la página es de otro, no la publiques como propia: los textos, fotos y marcas son de su dueño.</div></div><div id="wbOut"></div>';
+  var src='link';function inp(){var b=$('wbIn');
+    if(src==='link')b.innerHTML='<div class="herr-row" style="margin-top:0"><input class="herr-inp" id="wbU" type="url" inputmode="url" placeholder="https://www.ejemplo.com" style="flex:1;min-width:200px" value="'+esc(W.url)+'"><button class="herr-btn grad" id="wbGo">🔎 Revisar</button></div>';
+    else if(src==='shot')b.innerHTML='<label class="herr-btn pri" style="cursor:pointer">📸 Elegir captura de pantalla<input type="file" id="wbShot" accept="image/*" hidden></label><p class="tpr-mini" style="margin-top:6px">Mejor si la captura muestra la página entera (en el celular: «captura larga» o «captura con desplazamiento»).</p>'+(W.shot?'<img class="wb-shot" src="'+W.shot+'" alt="Captura cargada">':'');
+    else b.innerHTML='<textarea class="herr-ta" id="wbCode" placeholder="Pegá acá el código HTML de la página (en la PC: clic derecho → Ver código fuente → copiar todo)"></textarea><div class="herr-row"><input class="herr-inp" id="wbBase" placeholder="Link original (opcional, para que carguen las fotos)" style="flex:1"><button class="herr-btn grad" id="wbGoC">🔎 Revisar</button></div>';
+    if($('wbGo')){$('wbGo').onclick=goLink;$('wbU').onkeydown=function(e){if(e.key==='Enter')goLink()}}
+    if($('wbShot'))$('wbShot').onchange=function(){var f=this.files[0];if(f)goShot(f)};
+    if($('wbGoC'))$('wbGoC').onclick=goCode}
+  el.querySelectorAll('[data-src]').forEach(function(b){b.onclick=function(){src=b.dataset.src;el.querySelectorAll('[data-src]').forEach(function(x){x.classList.toggle('on',x===b)});inp()}});inp();
+  function st(t){$('wbSt').innerHTML=t}
+  async function goLink(){var u=T($('wbU').value);if(!u)return st('⚠️ Pegá un link.');if(!/^https?:\/\//i.test(u))u='https://'+u;st('⏳ Abriendo la página y revisándola…');
+    try{var j=await traer(u);W.url=j.url;W.html=j.html;W.src='link';W.doc=parse(j.html,j.url);W.meta=j;listo()}catch(e){st('⚠️ '+esc(e.message)+'<br>Si la página no deja que la lean, probá con <b>📸 Captura</b> o <b>🧾 Código</b>.')}}
+  function goCode(){var h=$('wbCode').value;if(h.length<30)return st('⚠️ Pegá el código de la página.');var b=T($('wbBase').value);W.url=b&&/^https?:/i.test(b)?b:'';W.html=h;W.src='code';W.doc=parse(h,W.url);W.meta={url:W.url,ms:null,size:h.length,status:200,headers:{}};listo()}
+  async function goShot(f){try{W.model=await desdeCaptura(f,st);W.src='shot';W.rep=null;W.theme='captura';inp();st('✅ Leí la captura: '+W.model.secs.length+' sección(es). Elegí el estilo abajo.');pintar()}catch(e){st('⚠️ '+esc(e.message||e))}}
+  function listo(){W.rep=analizar(W.doc,W.meta);W.model=extraer(W.doc,W.url);W.custom=null;if(W.theme==='captura')W.theme='moderno';st('✅ Página revisada. Mirá el informe y, más abajo, la versión nueva.');pintar()}
+  function pintar(){var o=$('wbOut');o.innerHTML=(W.rep?informe(W.rep):'')+rediseno();atar()}}
+function informe(R){var col=R.score>=80?'#16a34a':R.score>=55?'#d97706':'#dc2626',G={google:'🔎 Para aparecer en Google',cel:'📱 Celular, velocidad y seguridad',acc:'♿ Fácil de usar para todos'};
+  var fix=R.items.filter(function(i){return i.l!=='ok'}).sort(function(a,b){return(a.l==='bad'?0:1)-(b.l==='bad'?0:1)});
+  return '<div class="herr-card"><div class="wb-score"><div class="wb-ring" style="background:'+col+'">'+R.score+'<small>de 100</small></div><div><h3 style="margin:0">'+esc(R.info.title||W.url)+'</h3><div class="herr-sub" style="margin:4px 0 0">'+esc(W.url)+'<br>'+R.info.words+' palabras · '+R.info.imgs+' imágenes · '+R.info.links+' enlaces · '+R.info.forms+' formulario(s)'+(R.tech.length?' · Hecha con: '+esc(R.tech.join(', ')):'')+'</div></div></div></div>'+
+   '<div class="herr-2"><div class="herr-card"><h3>🧩 Qué tiene la página (herramientas y funciones)</h3>'+(R.funcs.length?'<div class="wb-chips">'+R.funcs.map(function(f){return '<span class="wb-chip">'+esc(f)+'</span>'}).join('')+'</div>':'<p class="herr-sub">No encontré herramientas especiales: es una página de información.</p>')+'<p class="tpr-mini" style="margin-top:10px">La versión nueva conserva los formularios (con la misma dirección de envío), los videos, mapas, audio, botones, WhatsApp, teléfonos, correos y redes.</p></div>'+
+   '<div class="herr-card"><h3>✅ Qué conviene arreglar primero</h3>'+(fix.length?fix.slice(0,10).map(function(i){return '<div class="wb-li"><span class="e">'+(i.l==='bad'?'🔴':'🟡')+'</span><span>'+esc(i.t)+'</span></div>'}).join(''):'<p class="herr-sub">🎉 No encontré problemas importantes.</p>')+'</div></div>'+
+   '<div class="herr-2">'+Object.keys(G).map(function(g){var L=R.items.filter(function(i){return i.g===g});return '<div class="herr-card"><h3>'+G[g]+'</h3>'+L.map(function(i){return '<div class="wb-li"><span class="e">'+(i.l==='ok'?'✅':i.l==='bad'?'🔴':'🟡')+'</span><span>'+esc(i.t)+'</span></div>'}).join('')+'</div>'}).join('')+
+   '<div class="herr-card"><h3>🔗 Enlaces ('+R.links.length+')</h3><p class="herr-sub">'+R.links.filter(function(l){return !l.ext}).length+' internos · '+R.links.filter(function(l){return l.ext}).length+' a otros sitios'+(R.redes.length?' · Redes: '+esc(R.redes.map(function(r){return r.n}).join(', ')):'')+'</p><button class="herr-btn" id="wbChk">🔍 Buscar enlaces rotos</button><div id="wbChkR" style="margin-top:8px"></div></div></div>'+
+   '<div class="herr-card"><div class="herr-row" style="margin-top:0"><button class="herr-btn" id="wbIA">🧠 Pedirle a ÁNGELA consejos para mejorarla</button><button class="herr-btn" id="wbRep">⬇️ Descargar el informe</button></div><div id="wbIAR" class="herr-status"></div></div>'}
+function rediseno(){var M=W.model;if(!M)return '';var th=Object.assign({},TH);if(W.custom)th={captura:W.custom};Object.keys(TH).forEach(function(k){th[k]=TH[k]});
+  return '<div class="herr-card"><h3>🎨 Rehacerla con otro estilo</h3><p class="herr-sub">Encontré: '+M.secs.length+' sección(es), '+M.nav.length+' opciones de menú, '+M.forms.length+' formulario(s), '+M.redes.length+' red(es)'+(M.contacto.wa.length?' y WhatsApp':'')+'. Elegí cómo querés que se vea:</p>'+
+   '<div class="wb-themes">'+Object.keys(th).map(function(k){var t=th[k];return '<button type="button" class="wb-theme'+(W.theme===k?' on':'')+'" data-th="'+k+'" style="background:'+t.bg+';color:'+t.tx+'">'+esc(t.n)+'<i><b style="background:'+t.pr+'"></b><b style="background:'+t.ac+'"></b><b style="background:'+t.sf+'"></b></i></button>'}).join('')+'</div>'+
+   '<div class="herr-cols" style="margin-top:10px"><div><label class="herr-lbl">Color principal</label><input type="color" class="herr-inp" id="wbPr" style="height:42px;padding:4px" value="'+((th[W.theme]||TH.moderno).pr)+'"></div><div><label class="herr-lbl">Color de los botones</label><input type="color" class="herr-inp" id="wbAc" style="height:42px;padding:4px" value="'+((th[W.theme]||TH.moderno).ac)+'"></div><div><label class="herr-lbl">Letra de los títulos</label><select class="herr-sel" id="wbFo"><option value="">La del estilo</option>'+['Poppins','Montserrat','Playfair Display','Merriweather','Bebas Neue','Pacifico','Lobster','Cinzel','Baloo 2','Oswald'].map(function(f){return '<option'+(W.opts.font===f?' selected':'')+'>'+f+'</option>'}).join('')+'</select></div>'+(M.contacto.wa.length?'':'<div><label class="herr-lbl">WhatsApp (opcional)</label><input class="herr-inp" id="wbWa" inputmode="tel" placeholder="5491112345678" value="'+esc(W.opts.waNum||'')+'"></div>')+'</div>'+
+   '<div class="herr-row">'+[['fijo','Menú fijo arriba'],['wa','Botón flotante de WhatsApp'],['modo','Botón de modo claro/oscuro'],['anim','Animaciones suaves']].map(function(x){return '<label class="tpr-mini" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-op="'+x[0]+'"'+(W.opts[x[0]]?' checked':'')+'> '+x[1]+'</label>'}).join('')+'</div>'+
+   '<div class="wb-sizes"><button class="herr-btn sm pri" data-w="100%">🖥️ Compu</button><button class="herr-btn sm" data-w="420px">📱 Celular</button>'+(W.src==='link'?'<button class="herr-btn sm" id="wbOrig">👀 Ver la original</button>':'')+'<button class="herr-btn sm" id="wbEd">✏️ Editar textos</button></div>'+
+   '<iframe class="wb-frame" id="wbF" title="Vista de la página nueva" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="wbDl">⬇️ Descargar la página nueva (.html)</button><button class="herr-btn" id="wbIA2">✨ Mejorar los textos con IA</button></div>'+
+   '<div class="herr-info">Es un archivo solo, listo para subir a Vercel, GitHub Pages, Netlify o tu hosting. Las fotos se siguen cargando desde la página original: si la vas a publicar, conviene subir tus propias fotos.'+(W.src==='shot'?' Como viene de una captura, las fotos no se pueden recuperar: el diseño queda con los textos y colores.':'')+'</div><div class="herr-status" id="wbSt2"></div></div>'}
+function atar(){var M=W.model;
+  function render(){if(!M)return;W.out=gen(M,W.theme,W.opts);var f=$('wbF');if(f){f.srcdoc=W.out;edit=false;var b=$('wbEd');if(b)b.textContent='✏️ Editar textos'}}
+  var edit=false;
+  document.querySelectorAll('[data-th]').forEach(function(b){b.onclick=function(){W.theme=b.dataset.th;var t=(W.theme==='captura'?W.custom:TH[W.theme]);W.opts.pr='';W.opts.ac='';$('wbPr').value=t.pr;$('wbAc').value=t.ac;document.querySelectorAll('[data-th]').forEach(function(x){x.classList.toggle('on',x===b)});render()}});
+  if($('wbPr'))$('wbPr').oninput=function(){W.opts.pr=this.value;render()};if($('wbAc'))$('wbAc').oninput=function(){W.opts.ac=this.value;render()};if($('wbFo'))$('wbFo').onchange=function(){W.opts.font=this.value;render()};if($('wbWa'))$('wbWa').onchange=function(){W.opts.waNum=this.value;render()};
+  document.querySelectorAll('[data-op]').forEach(function(c){c.onchange=function(){W.opts[c.dataset.op]=c.checked;render()}});
+  document.querySelectorAll('[data-w]').forEach(function(b){b.onclick=function(){$('wbF').style.width=b.dataset.w;$('wbF').style.margin=b.dataset.w==='100%'?'0':'0 auto';$('wbF').style.display='block';document.querySelectorAll('[data-w]').forEach(function(x){x.classList.toggle('pri',x===b)})}});
+  if($('wbOrig'))$('wbOrig').onclick=function(){var b=this,f=$('wbF');if(b.dataset.on){b.dataset.on='';b.textContent='👀 Ver la original';f.setAttribute('sandbox','allow-same-origin allow-scripts allow-popups allow-forms');f.srcdoc=W.out;return}b.dataset.on='1';b.textContent='🎨 Ver la nueva';f.setAttribute('sandbox','');var h=W.html.replace(/<script[\s\S]*?<\/script>/gi,'');if(!/<base\s/i.test(h))h=h.replace(/<head[^>]*>/i,function(m){return m+'<base href="'+esc(W.url)+'">'});f.srcdoc=h};
+  if($('wbEd'))$('wbEd').onclick=function(){var f=$('wbF');try{var d=f.contentDocument;edit=!edit;d.designMode=edit?'on':'off';this.textContent=edit?'✅ Terminar de editar':'✏️ Editar textos';$('wbSt2').textContent=edit?'✏️ Tocá cualquier texto de la vista y cambialo. Después descargá la página.':'✅ Cambios listos para descargar.'}catch(e){$('wbSt2').textContent='⚠️ No pude activar la edición en este navegador.'}};
+  if($('wbDl'))$('wbDl').onclick=function(){var f=$('wbF'),out=W.out;try{var d=f.contentDocument;if(d&&d.documentElement&&$('wbOrig')&&$('wbOrig').dataset.on){}else if(d&&d.documentElement){d.designMode='off';out='<!doctype html>\n'+d.documentElement.outerHTML}}catch(e){}saveBlob(new Blob([out],{type:'text/html;charset=utf-8'}),'pagina_'+slug(M.nombre)+'_'+W.theme+'.html')};
+  if($('wbIA2'))$('wbIA2').onclick=async function(){var s=$('wbSt2');s.textContent='⏳ ÁNGELA está mejorando los textos…';
+    try{var data={nombre:M.nombre,titulo:M.hero.t,subtitulo:M.hero.s,secciones:M.secs.slice(0,12).map(function(x){return{titulo:x.t,parrafos:x.p.slice(0,4).map(function(p){return p.slice(0,400)})}})};
+      var r=await fetch(api()+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fresh:false,maxTokens:5000,message:'Mejorá los textos de esta página web para que sean claros, cálidos y atractivos, en español rioplatense, SIN inventar datos (precios, fechas, teléfonos o nombres que no estén). Mantené la misma cantidad de secciones y párrafos, en el mismo orden. Respondé SOLO con JSON con el mismo formato: '+JSON.stringify(data)})});
+      var j=await r.json(),t=String(j.reply||j.respuesta||''),a=t.indexOf('{'),z=t.lastIndexOf('}');if(a<0)throw new Error(j.error||'sin respuesta');var o=JSON.parse(t.slice(a,z+1).replace(/,\s*([}\]])/g,'$1'));
+      if(o.titulo)M.hero.t=T(o.titulo);if(o.subtitulo)M.hero.s=T(o.subtitulo);(o.secciones||[]).forEach(function(x,i){var sc=M.secs[i];if(!sc)return;if(x.titulo)sc.t=T(x.titulo);(x.parrafos||[]).forEach(function(p,k){if(sc.p[k]!=null&&T(p))sc.p[k]=T(p)})});render();s.textContent='✅ Textos mejorados. Revisalos en la vista: si algo no te gusta, tocá «Editar textos».'}catch(e){s.textContent='⚠️ No pude mejorar los textos ahora: '+(e.message||e)}};
+  if($('wbChk'))$('wbChk').onclick=async function(){var b=this,out=$('wbChkR'),L=W.rep.links.filter(function(l){return l.tipo==='web'}).slice(0,60),bad=[],done=0;b.disabled=true;
+    for(var i=0;i<L.length;i+=15){out.textContent='⏳ Revisando '+Math.min(L.length,i+15)+' de '+L.length+'…';try{var r=await fetch(api()+'/api/supabase-config?checks='+encodeURIComponent(L.slice(i,i+15).map(function(l){return l.u}).join('|')));var j=await r.json();(j.results||[]).forEach(function(x){done++;if(!x.status||x.status>=400)bad.push(x)})}catch(e){out.textContent='⚠️ No pude revisar los enlaces ahora.';b.disabled=false;return}}
+    b.disabled=false;out.innerHTML=bad.length?'<b>🔴 '+bad.length+' enlace(s) con problemas de '+done+' revisados:</b>'+bad.map(function(x){var l=W.rep.links.find(function(y){return y.u===x.url})||{};return '<div class="wb-li"><span class="e">🔴</span><span>'+esc(l.t||'(sin texto)')+' → <small>'+esc(x.url)+'</small> · '+(x.status?'error '+x.status:esc(x.error||'no responde'))+'</span></div>'}).join(''):'✅ Los '+done+' enlaces revisados funcionan.'+(W.rep.links.length>60?' (revisé los primeros 60)':'')};
+  if($('wbIA'))$('wbIA').onclick=async function(){var s=$('wbIAR'),R=W.rep;s.textContent='⏳ ÁNGELA está pensando…';
+    try{var res=R.items.filter(function(i){return i.l!=='ok'}).map(function(i){return '- '+i.t}).join('\n'),r=await fetch(api()+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fresh:false,maxTokens:1800,message:'Revisé la página '+W.url+' (título: '+R.info.title+'; descripción: '+R.info.desc+'; tiene: '+R.funcs.join(', ')+'; secciones: '+W.model.secs.map(function(x){return x.t}).filter(Boolean).slice(0,12).join(' / ')+'). Problemas encontrados:\n'+res+'\nDame 6 consejos concretos y fáciles, en español rioplatense y para alguien que no sabe programar, para que la página consiga más visitas, más contactos y se vea más profesional. Numerados y cortos.'})});
+      var j=await r.json();s.innerHTML='<div style="white-space:pre-wrap;color:#ededf5;font-size:13.5px;line-height:1.55">'+esc(j.reply||j.respuesta||j.error||'Sin respuesta')+'</div>'}catch(e){s.textContent='⚠️ No pude consultar ahora.'}};
+  if($('wbRep'))$('wbRep').onclick=function(){var R=W.rep,G={google:'Para aparecer en Google',cel:'Celular, velocidad y seguridad',acc:'Fácil de usar para todos'},txt='INFORME DE LA PÁGINA · hecho con ÁNGELA · '+new Date().toLocaleDateString('es-AR')+'\n'+W.url+'\nPuntaje: '+R.score+' de 100\n\nQUÉ TIENE:\n'+R.funcs.map(function(f){return '• '+f}).join('\n')+'\n\n'+Object.keys(G).map(function(g){return G[g].toUpperCase()+':\n'+R.items.filter(function(i){return i.g===g}).map(function(i){return(i.l==='ok'?'[OK] ':i.l==='bad'?'[ARREGLAR] ':'[MEJORAR] ')+i.t}).join('\n')}).join('\n\n')+'\n';saveBlob(new Blob([txt],{type:'text/plain;charset=utf-8'}),'informe_'+slug(R.info.title||'pagina')+'.txt')};
+  render()}
+
+var TILES=[['web_estudio','🌐','Revisar y rehacer una página','Desde un link, una captura o el código: informe completo y versión nueva con otro estilo.']];
+window.ANGELAWeb={sec:'🌐 Páginas web',secId:'webSec',short:'Estudio Web',tiles:TILES,has:function(k){return k==='web_estudio'},view:function(k,el){vista(el)},stop:function(){},_analizar:analizar,_extraer:extraer,_gen:gen,_parse:parse,_W:W};
+function accesos(){var w=$('web');if(w&&!$('webQ')){var d=document.createElement('div');d.id='webQ';d.className='tpr-qbtns';d.innerHTML='<button type="button" onclick="ANGELAHerr&&ANGELAHerr.open(\'web_estudio\')">🌐 Revisar y rehacer una página</button>';var h=w.querySelector('h3');if(h&&h.nextSibling)w.insertBefore(d,h.nextSibling);else w.insertBefore(d,w.firstChild)}
+  if(!$('webMenuBtn')){var ref=$('tprMenuBtn')||$('camMenuBtn')||$('herrMenuBtn');if(ref){var b=document.createElement('button');b.id='webMenuBtn';b.className='angela-photo-btn';b.innerHTML='<span class="ico">🌐</span> Estudio Web';b.onclick=function(){window.ANGELAHerr&&ANGELAHerr.open('web_estudio')};ref.parentNode.insertBefore(b,ref.nextSibling)}}}
+setTimeout(accesos,2800);setTimeout(accesos,5500);setTimeout(accesos,9500);
+console.info('[ÁNGELA] Estudio Web: revisar y rehacer páginas desde link, captura o código');
+})();
+</script>
+<!-- ===== FIN ESTUDIO WEB ===== -->
+
+<!-- ===== ÁNGELA · ETAPA 4 · SINCRONIZAR PC Y CELULAR, AVISOS Y COCINA QUE DESCUENTA EL STOCK =====
+     Agregado al final: no modifica nada existente. La copia que va a la nube viaja CIFRADA con la clave del usuario.
+     Para quitarlo, borrá desde acá hasta "FIN ETAPA 4". -->
+<style id="angela-etapa4-style">
+.ae4-m{position:fixed;inset:0;background:rgba(2,6,23,.82);z-index:99990;display:grid;place-items:center;padding:14px}
+.ae4-c{width:100%;max-width:470px;max-height:92vh;overflow:auto;background:#0b1220;border:1px solid #334155;border-radius:18px;padding:18px;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.ae4-c h3{font-weight:800;font-size:17px;margin:0 0 6px}.ae4-c p{font-size:13px;color:#94a3b8;margin:7px 0;line-height:1.5}
+.ae4-c input,.ae4-c select{width:100%;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:11px 12px;font-size:15px;color:#e2e8f0;margin-top:8px}
+.ae4-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.ae4-row button{flex:1;min-height:44px}
+.ae4-err{color:#fca5a5;font-size:12.5px;min-height:16px;margin-top:6px}
+.ae4-ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.35);color:#bbf7d0;border-radius:12px;padding:10px;font-size:13px;margin-top:8px}
+.ae4-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.4);color:#fde68a;border-radius:12px;padding:10px;font-size:13px;margin-top:8px}
+.ae4-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}.ae4-tbl td,.ae4-tbl th{border-bottom:1px solid #1e293b;padding:6px 4px;text-align:left}.ae4-tbl th{color:#94a3b8;font-weight:600}
+#ae4Banner{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:9500;background:#0e7490;color:#fff;border-radius:14px;padding:10px 12px;font-size:13.5px;display:flex;gap:10px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,.45);max-width:94vw}
+#ae4Banner button{background:#fff;color:#0e7490;border:0;border-radius:10px;padding:8px 12px;font-weight:800}
+@media(min-width:1024px){#ae4Banner{bottom:20px}}
+</style>
+<script id="angela-etapa4">
+(function(){'use strict';if(window.__angelaEtapa4)return;window.__angelaEtapa4=true;
+var MASTER='ANGELA_MASTER_LOCAL_V1',COC='ANGELA_COCINA_V1',CFG='ANGELA_SYNC_CFG_V1',META='ANGELA_SYNC_META_V1',NOTI='ANGELA_AVISOS_V1',LEDG='ANGELA_STOCK_DESCUENTOS_V1',EVK='ANGELA_eventos_qr_v2';
+var NO_SYNC=[CFG,META,NOTI+'_hechos','ANGELA_GESTION_PIN_V1','ANGELA_BK_LAST_FILE_V1'];
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function norm(s){return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()}
+function num(v){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:0}
+function J(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function S(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+function hoy(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function toast(t){try{if(typeof window.showToast==='function')return window.showToast(t)}catch(e){}var d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:100000;background:#0b1220;color:#e2e8f0;border:1px solid #334155;border-radius:12px;padding:10px 14px;font-size:13px;max-width:90vw';document.body.appendChild(d);setTimeout(function(){d.remove()},4000)}
+function modal(html){var m=document.createElement('div');m.className='ae4-m';m.innerHTML='<div class="ae4-c">'+html+'</div>';m.addEventListener('click',function(e){if(e.target===m)m.remove()});document.body.appendChild(m);return m}
+function site(){return location.protocol==='file:'?'https://orion-ia-sooty.vercel.app':''}
+function refrescar(){try{window.dispatchEvent(new Event('angela-db-recargar'))}catch(e){}try{window.AngelaEntregas&&AngelaEntregas.tablero()}catch(e){}}
+
+/* =====================================================================
+   🔄 SINCRONIZAR PC Y CELULAR
+   - Una clave (frase) que elige el usuario. De ella salen: un código para encontrar la copia y la llave para cifrarla.
+   - Se sube una copia CIFRADA cuando hay cambios. La nube nunca ve los datos.
+   - Al juntar: por cada sección gana el cambio más nuevo.
+   ===================================================================== */
+var enc=new TextEncoder(),dec=new TextDecoder();
+function b64(buf){var b=new Uint8Array(buf),s='';for(var i=0;i<b.length;i+=32768)s+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(s)}
+function unb64(s){var bin=atob(s),b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b}
+async function sha(t){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(t)))).map(function(x){return x.toString(16).padStart(2,'0')}).join('')}
+async function deriva(frase){var f=String(frase).normalize('NFC').trim(),id=(await sha('angela-sync-id:'+f.toLowerCase())).slice(0,32);
+  var base=await crypto.subtle.importKey('raw',enc.encode(f.toLowerCase()),'PBKDF2',false,['deriveKey']);
+  var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:enc.encode('angela-sync-salt:'+id),iterations:310000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},true,['encrypt','decrypt']);
+  return{id:id,raw:b64(await crypto.subtle.exportKey('raw',key))}}
+function llave(cfg){return crypto.subtle.importKey('raw',unb64(cfg.k),{name:'AES-GCM'},false,['encrypt','decrypt'])}
+async function gz(bytes,des){if(typeof CompressionStream==='undefined')return null;var s=new Blob([bytes]).stream().pipeThrough(des?new DecompressionStream('gzip'):new CompressionStream('gzip'));return new Uint8Array(await new Response(s).arrayBuffer())}
+async function cifrar(cfg,obj){var raw=enc.encode(JSON.stringify(obj)),z=await gz(raw).catch(function(){return null}),data=z||raw,iv=crypto.getRandomValues(new Uint8Array(12));
+  var c=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},await llave(cfg),data);return{v:1,z:!!z,iv:b64(iv),d:b64(c)}}
+async function descifrar(cfg,p){var plain=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(p.iv)},await llave(cfg),unb64(p.d)));if(p.z)plain=await gz(plain,true);return JSON.parse(dec.decode(plain))}
+function hash(s){var h=0,i=0,n=s.length,st=Math.max(1,Math.floor(n/4000));for(;i<n;i+=st)h=(h*31+s.charCodeAt(i))|0;return n+':'+h}
+function sincronizable(k){return k&&NO_SYNC.indexOf(k)<0&&!/^ae\d|_GUEST_ID_|^ANGELA_EV_CHECKIN_|^ANGELA_GESTION_OK/.test(k)}
+function cfg(){return J(CFG,null)}
+/* revisa qué secciones cambiaron y les pone la hora del cambio */
+function escanear(init){var M=J(META,{keys:{}}),now=Date.now(),vistos={},cambio=false;M.keys=M.keys||{};
+  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!sincronizable(k))continue;var v=localStorage.getItem(k);if(v==null||v.length>4e6)continue;vistos[k]=1;var h=hash(v),m=M.keys[k];
+    if(!m||m.del||m.h!==h){M.keys[k]={h:h,t:init?0:now};cambio=true}}
+  Object.keys(M.keys).forEach(function(k){if(!vistos[k]&&!M.keys[k].del&&sincronizable(k)){M.keys[k]={del:true,t:now};cambio=true}});
+  if(cambio)S(META,M);return cambio}
+function estadoLocal(){var M=J(META,{keys:{}}),o={};Object.keys(M.keys||{}).forEach(function(k){var m=M.keys[k];if(m.del)o[k]={del:true,t:m.t};else{var v=localStorage.getItem(k);if(v!=null)o[k]={v:v,t:m.t}}});return o}
+async function supa(){var c=null;try{c=window.ANGELASupabase&&await ANGELASupabase.config()}catch(e){}if(!c||!c.key)throw new Error('No hay conexión con la nube. Abrí ÁNGELA desde orion-ia-sooty.vercel.app con Internet.');return c}
+async function bajar(c){var r=await fetch(site()+'/api/supabase-config?sync='+c.id,{cache:'no-store'});if(r.status===404)return null;if(!r.ok)throw new Error('La nube no respondió (HTTP '+r.status+')');var p=await r.json();if(!p||!p.d)return null;try{return await descifrar(c,p)}catch(e){throw new Error('La clave no coincide con la copia guardada.')}}
+async function subir(c){var s=await supa(),body=JSON.stringify(await cifrar(c,{v:1,at:Date.now(),dev:c.dev||'aparato',keys:estadoLocal()})),stamp=String(Date.now()),errs=[];
+  for(var i=0,F=[['json','application/json'],['txt','text/plain;charset=utf-8']];i<F.length;i++){var path='sync/'+c.id+'/'+stamp+'.'+F[i][0];
+    var r=await fetch(s.url+'/storage/v1/object/'+encodeURIComponent(s.bucket||'eventos-qr')+'/'+path,{method:'POST',headers:{apikey:s.key,Authorization:'Bearer '+s.key,'Content-Type':F[i][1],'x-upsert':'false','cache-control':'0'},body:new Blob([body],{type:F[i][1]})});
+    if(r.ok){var x=cfg()||c;x.lastPush=Date.now();S(CFG,x);return true}errs.push(F[i][0]+': HTTP '+r.status)}
+  throw new Error('No pude subir la copia ('+errs.join(' · ')+')')}
+/* junta la copia de la nube con lo de este aparato: gana el cambio más nuevo de cada sección */
+function juntar(remoto,ganaNube){var M=J(META,{keys:{}}),n=0,cambiadas=[];M.keys=M.keys||{};
+  Object.keys(remoto.keys||{}).forEach(function(k){if(!sincronizable(k))return;var r=remoto.keys[k],l=M.keys[k],lt=l?l.t:-1;if(!(ganaNube||r.t>lt))return;
+    if(r.del){if(localStorage.getItem(k)!=null){localStorage.removeItem(k);n++;cambiadas.push(k)}M.keys[k]={del:true,t:r.t}}
+    else{if(localStorage.getItem(k)!==r.v){try{localStorage.setItem(k,r.v);n++;cambiadas.push(k)}catch(e){return}}M.keys[k]={h:hash(r.v),t:r.t}}});
+  S(META,M);return{n:n,keys:cambiadas}}
+function hayLocalMasNuevo(remoto){var M=J(META,{keys:{}}),R=(remoto&&remoto.keys)||{};return Object.keys(M.keys||{}).some(function(k){var r=R[k];return !r||M.keys[k].t>r.t})}
+var ocupado=false,pendiente=false,ultimaSubida=0;
+async function sincronizar(manual,forzar){var c=cfg();if(!c||!c.on||ocupado)return;if(!navigator.onLine){if(manual)toast('Sin Internet: se sincroniza cuando vuelva la conexión.');return}ocupado=true;
+  try{escanear();var rem=await bajar(c),res={n:0};if(rem)res=juntar(rem,false);c=cfg();c.lastPull=Date.now();c.err='';S(CFG,c);
+    if(res.n){refrescar();banner(res.n,res.keys)}
+    if(!rem||hayLocalMasNuevo(rem)){if(manual||forzar||Date.now()-ultimaSubida>90000){await subir(c);ultimaSubida=Date.now();pendiente=false}else pendiente=true}
+    if(manual)toast('🔄 Sincronizado'+(res.n?': llegaron '+res.n+' cambio(s)':'')+'.')}
+  catch(e){c=cfg()||c;c.err=e.message||String(e);S(CFG,c);if(manual)toast('⚠️ '+c.err)}
+  finally{ocupado=false;try{AngelaEntregas&&AngelaEntregas.tablero()}catch(e){}}}
+function banner(n,keys){var soloSuaves=keys.every(function(k){return k===MASTER||k===COC||k==='ANGELA_ENTREGAS_V1'});if(soloSuaves&&!document.querySelector('.ae4-m')){toast('🔄 Llegaron '+n+' cambio(s) de tu otro aparato.');return}
+  var b=$('ae4Banner');if(!b){b=document.createElement('div');b.id='ae4Banner';document.body.appendChild(b)}b.innerHTML='🔄 Llegaron '+n+' cambio(s) de tu otro aparato. <button type="button">Actualizar</button>';b.querySelector('button').onclick=function(){location.reload()}}
+function cuando(t){if(!t)return'nunca';var s=Math.round((Date.now()-t)/1000);return s<60?'hace un momento':s<3600?'hace '+Math.round(s/60)+' min':new Date(t).toLocaleString('es-AR',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'})}
+function abrirSync(){var c=cfg();
+  if(c&&c.on){var m=modal('<h3>🔄 Sincronizar PC y celular</h3><div class="ae4-ok">✅ Activado en este aparato (<b>'+esc(c.dev)+'</b>).<br>Última vez que trajo cambios: '+cuando(c.lastPull)+'<br>Última vez que subió cambios: '+cuando(c.lastPush)+'</div>'+(c.err?'<div class="ae4-warn">⚠️ '+esc(c.err)+'</div>':'')+
+      '<p>Para sumar otro aparato, abrí ÁNGELA ahí, entrá acá y poné <b>la misma clave</b>.</p><div class="ae4-row"><button class="quick text-cyan-300" id="ae4Now">🔄 Sincronizar ahora</button></div><div class="ae4-row"><button class="quick" id="ae4Off">Desactivar en este aparato</button><button class="quick" id="ae4X">Cerrar</button></div>');
+    m.querySelector('#ae4Now').onclick=function(){m.remove();sincronizar(true)};m.querySelector('#ae4X').onclick=function(){m.remove()};
+    m.querySelector('#ae4Off').onclick=function(){if(!confirm('¿Desactivar la sincronización en este aparato? Los datos quedan acá; solo deja de mandar y traer cambios.'))return;localStorage.removeItem(CFG);m.remove();toast('Sincronización desactivada en este aparato.');refrescar()};return}
+  var guess=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)?'Celular':'Computadora';
+  var m2=modal('<h3>🔄 Sincronizar PC y celular</h3><p>Así lo que cargás en un aparato aparece en el otro: familias, entregas, cocina, stock, donantes, recordatorios, eventos y todo lo de ÁNGELA.</p>'+
+   '<p>🔐 Elegí una <b>clave secreta</b> (una frase de 3 o 4 palabras, por ejemplo <i>olla grande merlo 2026</i>). Con ella los datos viajan <b>cifrados</b>: sin la clave nadie puede leerlos, ni siquiera la nube.</p>'+
+   '<input id="ae4K1" type="password" autocomplete="new-password" placeholder="Clave secreta (mínimo 10 letras)"><input id="ae4K2" type="password" autocomplete="new-password" placeholder="Repetí la clave"><input id="ae4D" value="'+guess+'" placeholder="Nombre de este aparato">'+
+   '<div class="ae4-warn">✍️ <b>Anotá la clave en un papel.</b> Si te la olvidás, no se puede recuperar la copia de la nube (los datos de cada aparato quedan igual).</div><div class="ae4-err" id="ae4E"></div>'+
+   '<div class="ae4-row"><button class="quick" id="ae4C">Cancelar</button><button class="quick text-cyan-300" id="ae4G">Activar</button></div>');
+  m2.querySelector('#ae4C').onclick=function(){m2.remove()};
+  m2.querySelector('#ae4G').onclick=async function(){var a=m2.querySelector('#ae4K1').value,b=m2.querySelector('#ae4K2').value,err=m2.querySelector('#ae4E'),btn=this;
+    if(a.trim().length<10)return err.textContent='La clave tiene que tener al menos 10 letras.';if(/^\d+$/.test(a.trim()))return err.textContent='Usá palabras, no solo números: es mucho más segura.';if(a!==b)return err.textContent='Las dos claves no coinciden.';
+    btn.disabled=true;err.textContent='⏳ Preparando el cifrado…';
+    try{var d=await deriva(a),nc={on:true,id:d.id,k:d.raw,dev:m2.querySelector('#ae4D').value.trim()||guess,since:Date.now()};
+      err.textContent='⏳ Buscando si ya hay una copia con esta clave…';var rem=await bajar(nc);
+      if(rem){if(!confirm('Encontré una copia hecha desde «'+(rem.dev||'otro aparato')+'». Se van a traer esos datos a este aparato (lo que solo existe acá se conserva y se suma). ¿Seguimos?')){btn.disabled=false;err.textContent='';return}
+        try{await window.AngelaDatos.snapshot('antes de sincronizar')}catch(e){}escanear(true);S(CFG,nc);var res=juntar(rem,true);nc=cfg();nc.lastPull=Date.now();S(CFG,nc);await subir(nc);m2.remove();refrescar();
+        modal('<h3>✅ ¡Listo!</h3><p>Traje '+res.n+' sección(es) desde «'+esc(rem.dev||'el otro aparato')+'». Hace falta actualizar la pantalla para ver todo.</p><div class="ae4-row"><button class="quick text-cyan-300" onclick="location.reload()">Actualizar ahora</button></div>')}
+      else{escanear();var M=J(META,{keys:{}});Object.keys(M.keys).forEach(function(k){if(!M.keys[k].del)M.keys[k].t=Date.now()});S(META,M);S(CFG,nc);err.textContent='⏳ Subiendo la primera copia cifrada…';await subir(nc);m2.remove();
+        modal('<h3>✅ Sincronización activada</h3><p>Subí la primera copia cifrada. Ahora abrí ÁNGELA en tu <b>otro aparato</b>, entrá en «🔄 Sincronizar» y poné la misma clave.</p><div class="ae4-row"><button class="quick" onclick="this.closest(\'.ae4-m\').remove()">Entendido</button></div>')}
+      refrescar()}catch(e){btn.disabled=false;err.textContent='⚠️ '+(e.message||e)}}}
+function cicloSync(){var c=cfg();if(!c||!c.on)return;var cambio=escanear();if(cambio||pendiente)sincronizar(false)}
+setInterval(cicloSync,45000);setInterval(function(){var c=cfg();if(c&&c.on&&!document.hidden)sincronizar(false)},120000);
+document.addEventListener('visibilitychange',function(){var c=cfg();if(!c||!c.on)return;if(document.hidden){escanear();if(pendiente||hayCambiosSinSubir())sincronizar(false,true)}else sincronizar(false)});
+window.addEventListener('online',function(){sincronizar(false)});
+function hayCambiosSinSubir(){var c=cfg(),M=J(META,{keys:{}});return !!c&&Object.keys(M.keys||{}).some(function(k){return M.keys[k].t>(c.lastPush||0)})}
+
+/* =====================================================================
+   🔔 AVISOS: notificaciones mientras ÁNGELA está abierta + pasarlos al calendario del celular
+   ===================================================================== */
+function proximos(dias){var M=J(MASTER,{})||{},C=J(COC,{})||{},now=Date.now(),lim=now+(dias||60)*86400000,L=[];
+  var en=function(f,h){var t=Date.parse(String(f).length<=10?f+'T'+(h||'09:00')+':00':f);return isNaN(t)?null:t};
+  (M.recordatorios||[]).forEach(function(r){var t=en(r.fecha);if(t&&t>now-3600000&&t<lim)L.push({id:'rec:'+(r.id||r.titulo+r.fecha),t:t,tit:'📅 '+(r.titulo||'Recordatorio'),txt:r.categoria||'',ant:30})});
+  (C.vencimientos||[]).forEach(function(v){var t=en(v.vence,'09:00');if(t&&t>now-86400000&&t<lim)L.push({id:'venc:'+(v.id||v.producto+v.vence),t:t,tit:'⏳ Vence: '+(v.producto||'alimento'),txt:'Vence el '+new Date(t).toLocaleDateString('es-AR'),ant:24*60})});
+  (M.documentos||[]).forEach(function(d){var t=en(d.vencimiento,'09:00');if(t&&t>now-86400000&&t<lim)L.push({id:'doc:'+(d.id||d.nombre),t:t,tit:'📁 Vence un papel: '+(d.nombre||d.tipo||''),txt:d.tipo||'',ant:7*24*60})});
+  (M.pedidos||[]).forEach(function(p){if(/entregad|listo/i.test(p.estado||''))return;var t=en(p.entrega,'10:00');if(t&&t>now-86400000&&t<lim)L.push({id:'ped:'+(p.id||p.cliente+p.entrega),t:t,tit:'📋 Entrega: '+(p.producto||'pedido')+' · '+(p.cliente||''),txt:p.cantidad?p.cantidad+' unidad(es)':'',ant:24*60})});
+  var ev=J(EVK,{})||{};if(ev.name&&ev.start){var te=Date.parse(ev.start.length===16?ev.start+':00-03:00':ev.start);if(te>now&&te<lim)L.push({id:'ev:'+ev.start,t:te,tit:'🎉 '+ev.name,txt:ev.when||'',ant:24*60})}
+  return L.sort(function(a,b){return a.t-b.t})}
+function permiso(){return 'Notification' in window?Notification.permission:'no'}
+async function notificar(tit,cuerpo,tag){try{if(permiso()==='granted'){var r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r&&r.showNotification)return r.showNotification(tit,{body:cuerpo,tag:tag,icon:'icon-192.png',badge:'icon-192.png',vibrate:[150,80,150]});return new Notification(tit,{body:cuerpo,tag:tag,icon:'icon-192.png'})}}catch(e){}toast(tit+(cuerpo?' · '+cuerpo:''))}
+function revisarAvisos(){var cf=J(NOTI,{on:true});if(cf.on===false)return;var hechos=J(NOTI+'_hechos',{}),now=Date.now(),cambio=false;
+  proximos(30).forEach(function(a){var cuando=a.t-a.ant*60000,k1=a.id+':antes',k2=a.id+':hora';
+    if(now>=cuando&&now<a.t&&!hechos[k1]){hechos[k1]=now;cambio=true;notificar(a.tit,(a.ant>=1440?'Mañana o en los próximos días':'En '+Math.round((a.t-now)/60000)+' minutos')+(a.txt?' · '+a.txt:''),k1)}
+    if(now>=a.t&&now<a.t+3*3600000&&!hechos[k2]&&!/^venc|^doc/.test(a.id)){hechos[k2]=now;cambio=true;notificar(a.tit,'Es ahora'+(a.txt?' · '+a.txt:''),k2)}});
+  if(cambio){Object.keys(hechos).forEach(function(k){if(now-hechos[k]>60*86400000)delete hechos[k]});S(NOTI+'_hechos',hechos)}}
+setInterval(revisarAvisos,60000);setTimeout(revisarAvisos,9000);
+function ics(L){var z=function(t){return new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'')},e=function(s){return String(s||'').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/([,;])/g,'\\$1')};
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//ANGELA//Avisos//ES','CALSCALE:GREGORIAN'].concat([].concat.apply([],L.map(function(a){return['BEGIN:VEVENT','UID:'+e(a.id).replace(/[^\w@.-]/g,'_')+'@angela','DTSTAMP:'+z(Date.now()),'DTSTART:'+z(a.t),'DTEND:'+z(a.t+30*60000),'SUMMARY:'+e(a.tit),a.txt?'DESCRIPTION:'+e(a.txt):'','BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+e(a.tit),'TRIGGER:-PT'+a.ant+'M','END:VALARM','END:VEVENT'].filter(Boolean)}))).concat(['END:VCALENDAR']).join('\r\n')}
+function abrirAvisos(){var L=proximos(60),p=permiso(),cf=J(NOTI,{on:true});
+  var m=modal('<h3>🔔 Avisos</h3><p>ÁNGELA te avisa de <b>recordatorios, vencimientos de alimentos, papeles que vencen, entregas de pedidos y eventos</b>.</p>'+
+   (p==='granted'?'<div class="ae4-ok">✅ Las notificaciones están permitidas. Te llegan mientras ÁNGELA esté abierta (aunque sea minimizada).</div>':p==='denied'?'<div class="ae4-warn">🔕 Las notificaciones están bloqueadas para ÁNGELA. Se habilitan en los ajustes del navegador (candadito al lado de la dirección).</div>':p==='no'?'<div class="ae4-warn">Este navegador no permite notificaciones.</div>':'<div class="ae4-row"><button class="quick text-cyan-300" id="ae4P">🔔 Permitir notificaciones</button></div>')+
+   '<div class="ae4-warn">📅 <b>Para que te avise aunque ÁNGELA esté cerrada</b>, pasá los avisos al calendario del celular: tocá el botón, abrí el archivo y elegí tu app de Calendario. Cada aviso trae su alarma.</div>'+
+   '<div class="ae4-row"><button class="quick text-cyan-300" id="ae4Ics">📅 Pasar '+L.length+' aviso(s) al calendario</button></div>'+
+   '<label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-top:10px"><input type="checkbox" id="ae4On"'+(cf.on!==false?' checked':'')+' style="width:auto;margin:0"> Avisarme dentro de ÁNGELA</label>'+
+   '<h4 style="margin:14px 0 4px;font-weight:700;font-size:13px">Próximos 60 días</h4>'+(L.length?'<table class="ae4-tbl">'+L.slice(0,25).map(function(a){return '<tr><td>'+new Date(a.t).toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'numeric'})+'</td><td>'+esc(a.tit)+'</td></tr>'}).join('')+'</table>':'<p>No hay nada cargado para los próximos días. Cargá recordatorios en Gestión → Recordatorios.</p>')+
+   '<div class="ae4-row"><button class="quick" id="ae4T">Probar un aviso</button><button class="quick" id="ae4X2">Cerrar</button></div>');
+  if(m.querySelector('#ae4P'))m.querySelector('#ae4P').onclick=async function(){try{var r=await Notification.requestPermission();m.remove();abrirAvisos();if(r==='granted')notificar('🔔 ÁNGELA','Listo: te voy a avisar acá.','prueba')}catch(e){}};
+  m.querySelector('#ae4Ics').onclick=function(){if(!L.length)return toast('No hay avisos para pasar.');var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics(L)],{type:'text/calendar;charset=utf-8'}));a.download='ANGELA_avisos.ics';document.body.appendChild(a);a.click();a.remove();toast('📅 Abrí el archivo descargado y elegí tu Calendario.')};
+  m.querySelector('#ae4On').onchange=function(){S(NOTI,{on:this.checked})};m.querySelector('#ae4T').onclick=function(){notificar('🔔 Aviso de prueba','Así te van a llegar los avisos de ÁNGELA.','prueba')};m.querySelector('#ae4X2').onclick=function(){m.remove()}}
+
+/* =====================================================================
+   🍲➡️📦 LA COCINA DESCUENTA EL STOCK
+   Al guardar las raciones del día con un plato que tiene receta, ÁNGELA propone descontar los ingredientes.
+   ===================================================================== */
+var TIPOS=['almuerzo','merienda','vianda','cena'];
+function totalR(r){return TIPOS.reduce(function(a,k){return a+num(r[k])},0)}
+function factor(uStock,uRec){var s=norm(uStock).replace(/\./g,''),r=norm(uRec);var kgS=/^(kg|kilo|kilos|kgs)$/.test(s)||s==='',gS=/^(g|gr|grs|gramo|gramos)$/.test(s),lS=/^(l|lt|lts|litro|litros)$/.test(s),mlS=/^(ml|cc|mililitros)$/.test(s),uS=/^(u|un|unid|unidad|unidades|paquete|paquetes|paq|caja|cajas|lata|latas|botella|botellas|bolsa|bolsas)$/.test(s);
+  if(r==='kg'){if(kgS)return 1;if(gS)return 1000}if(r==='l'){if(lS||s==='')return 1;if(mlS)return 1000}if(r==='u'&&(uS||s===''))return 1;return null}
+function buscarStock(st,nombre){var k=norm(nombre),best=null,bs=0;st.forEach(function(s){var p=norm(s.producto);if(!p)return;var sc=p===k?3:(k.indexOf(p)>=0&&p.length>2)?2:(p.indexOf(k)>=0&&k.length>2)?1.5:0;if(!sc){var w1=k.split(' ')[0];if(w1.length>3&&p.split(' ')[0]===w1)sc=1}if(sc>bs){bs=sc;best=s}});return best}
+function receta(C,plato){var p=norm(plato);if(!p)return null;var R=C.recetas||[];return R.find(function(r){return norm(r.nombre)===p})||R.find(function(r){var n=norm(r.nombre);return n.length>3&&(p.indexOf(n)>=0||n.indexOf(p)>=0)})||null}
+function plan(C,r){var rc=receta(C,r.plato),tot=totalR(r);if(!rc||!tot)return null;var M=J(MASTER,{})||{},st=M.stock||[],items=[];
+  (rc.ing||[]).forEach(function(i){var cant=num(i.q)*tot,s=buscarStock(st,i.n),f=s?factor(s.unidad,i.u):null;items.push({n:i.n,u:i.u,cant:cant,s:s,f:f,resta:s&&f?cant*f:0})});return{rc:rc,tot:tot,items:items}}
+var COC_SIG='';
+function vigilarCocina(){var raw=localStorage.getItem(COC)||'';if(raw===COC_SIG)return;var primera=!COC_SIG;COC_SIG=raw;var C=J(COC,{})||{},L=J(LEDG,{}),cambio=false;L.dias=L.dias||{};
+  if(primera&&!L.iniciado){(C.raciones||[]).forEach(function(r){L.dias[r.fecha]={plato:r.plato||'',tot:totalR(r),hecho:'previo'}});L.iniciado=Date.now();S(LEDG,L);return}
+  var lim=new Date(Date.now()-4*86400000).toISOString().slice(0,10);
+  (C.raciones||[]).forEach(function(r){if(!r.fecha||r.fecha<lim)return;var l=L.dias[r.fecha],tot=totalR(r);if(l&&l.plato===(r.plato||'')&&l.tot===tot)return;var pl=plan(C,r);
+    if(!pl){L.dias[r.fecha]={plato:r.plato||'',tot:tot,hecho:'sin-receta'};cambio=true;return}
+    if(document.querySelector('.ae4-m'))return;proponer(r,pl,l)});
+  if(cambio)S(LEDG,L)}
+function proponer(r,pl,prev){var dif=prev&&prev.hecho==='si'&&prev.plato===(r.plato||'')?pl.tot-prev.tot:pl.tot,ajuste=prev&&prev.hecho==='si'&&prev.plato===(r.plato||'');
+  if(ajuste&&dif===0)return;var k=ajuste?dif/pl.tot:1;
+  var ok=pl.items.filter(function(i){return i.s&&i.f}),no=pl.items.filter(function(i){return !(i.s&&i.f)});
+  var m=modal('<h3>🍲 ¿Descuento del stock lo que se usó?</h3><p>'+(ajuste?'Cambiaste las raciones del '+new Date(r.fecha+'T12:00').toLocaleDateString('es-AR')+' a <b>'+pl.tot+'</b>. Ajusto la diferencia ('+(dif>0?'+':'')+dif+' raciones):':'Cargaste <b>'+pl.tot+' raciones</b> de <b>'+esc(pl.rc.nombre)+'</b>. Según la receta se usó:')+'</p>'+
+   (ok.length?'<table class="ae4-tbl"><tr><th>Ingrediente</th><th>Se usó</th><th>Queda</th></tr>'+ok.map(function(i){var usa=i.resta*k,queda=num(i.s.cantidad)-usa;return '<tr><td>'+esc(i.s.producto)+'</td><td>'+(+usa.toFixed(2))+' '+esc(i.s.unidad||i.u)+'</td><td class="'+(queda<=num(i.s.minimo)?'text-amber-300':'')+'">'+(+queda.toFixed(2))+(queda<=num(i.s.minimo)?' ⚠️':'')+'</td></tr>'}).join('')+'</table>':'<div class="ae4-warn">Ninguno de los ingredientes está cargado en Inventario y Stock con una unidad que se pueda calcular (kg, g, l, ml o unidades).</div>')+
+   (no.length?'<p>No se descuenta (no está en el stock o está en otra unidad): '+esc(no.map(function(i){return i.n}).join(', '))+'.</p>':'')+
+   '<div class="ae4-row"><button class="quick" id="ae4No">Ahora no</button>'+(ok.length?'<button class="quick text-cyan-300" id="ae4Si">✅ Descontar</button>':'')+'</div>');
+  var L=J(LEDG,{});L.dias=L.dias||{};
+  m.querySelector('#ae4No').onclick=function(){L.dias[r.fecha]={plato:r.plato||'',tot:pl.tot,hecho:'no'};S(LEDG,L);m.remove()};
+  if(m.querySelector('#ae4Si'))m.querySelector('#ae4Si').onclick=function(){var M=J(MASTER,{})||{};M.stock=M.stock||[];ok.forEach(function(i){var s=M.stock.find(function(x){return x.id===i.s.id&&x.producto===i.s.producto});if(s)s.cantidad=String(+Math.max(0,num(s.cantidad)-i.resta*k).toFixed(3))});
+    S(MASTER,M);L.dias[r.fecha]={plato:r.plato||'',tot:pl.tot,hecho:'si'};S(LEDG,L);m.remove();refrescar();var bajos=ok.filter(function(i){var s=M.stock.find(function(x){return x.id===i.s.id});return s&&num(s.cantidad)<=num(s.minimo)});toast('📦 Stock actualizado'+(bajos.length?'. Quedan bajos: '+bajos.map(function(i){return i.s.producto}).join(', '):'')+'.')}}
+setInterval(vigilarCocina,3000);setTimeout(vigilarCocina,1500);
+
+/* ---------- botones: en el Centro de Gestión y en el tablero ---------- */
+function botones(){var bar=$('ae1Bar');if(bar&&!$('ae4SyncBtn')){var row=bar.querySelector('.ae1-bar');if(row){var b=document.createElement('button');b.id='ae4SyncBtn';b.className='quick text-xs';b.textContent='🔄 Sincronizar';b.onclick=function(e){e.stopPropagation();abrirSync()};row.appendChild(b);var b2=document.createElement('button');b2.id='ae4AvBtn';b2.className='quick text-xs ae1-free';b2.textContent='🔔 Avisos';b2.onclick=function(e){e.stopPropagation();abrirAvisos()};row.appendChild(b2)}}
+  var tb=document.querySelector('#ae3Tablero .ae3-tiles');if(tb&&!tb.querySelector('[data-ae4]')){var c=cfg(),L=proximos(7);
+    tb.insertAdjacentHTML('beforeend','<button type="button" class="ae3-tile '+(c&&c.on?(c.err?'warn':'ok'):'warn')+'" data-ae4="sync"><span class="t">🔄 PC y celular</span><b>'+(c&&c.on?(c.err?'Revisar':'Juntos'):'Separados')+'</b><small>'+(c&&c.on?(c.err?esc(c.err.slice(0,50)):'Última: '+cuando(c.lastPull)):'Tocá para sincronizar')+'</small></button>'+
+     '<button type="button" class="ae3-tile '+(L.length?'warn':'')+'" data-ae4="avisos"><span class="t">🔔 Avisos de la semana</span><b>'+L.length+'</b><small>'+(L.length?esc(L[0].tit.slice(0,40)):'Nada esta semana')+'</small></button>');
+    tb.querySelector('[data-ae4="sync"]').onclick=abrirSync;tb.querySelector('[data-ae4="avisos"]').onclick=abrirAvisos}}
+setInterval(botones,1500);
+setTimeout(function(){var c=cfg();if(c&&c.on)sincronizar(false)},5000);
+window.AngelaSync={abrir:abrirSync,ahora:function(){return sincronizar(true)},_deriva:deriva,_cifrar:cifrar,_descifrar:descifrar,_juntar:juntar,_escanear:escanear,_estado:estadoLocal};
+window.AngelaAvisos={abrir:abrirAvisos,proximos:proximos,revisar:revisarAvisos,_ics:ics};
+window.AngelaCocinaStock={revisar:vigilarCocina,plan:plan};
+console.info('[ÁNGELA] Etapa 4: sincronizar PC y celular, avisos y cocina que descuenta el stock');
+})();
+</script>
+<!-- ===== FIN ETAPA 4 ===== -->
+
+<!-- ===== ÁNGELA · REVISAR EL CELULAR + MÁS PARA EL LÁSER (grilla de prueba en G-code y calculadora de rotativo) =====
+     Agregado al final: no modifica nada existente. Aparece dentro de Herramientas.
+     Para quitarlo, borrá desde acá hasta "FIN CELULAR Y LÁSER". -->
+<style id="angela-cel-style">
+#celFs{position:fixed;inset:0;z-index:2147483600;background:#000;touch-action:none;user-select:none;-webkit-user-select:none}
+#celFs .x{position:absolute;right:12px;top:12px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:12px;padding:10px 14px;font:700 15px Arial}
+#celFs .msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;color:#fff;font:700 16px Arial;text-align:center;background:rgba(0,0,0,.55);padding:14px 18px;border-radius:14px;pointer-events:none;max-width:86vw}
+.cel-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
+.cel-res div{background:#141419;border:1px solid #272733;border-radius:10px;padding:10px;font-size:12.5px}.cel-res b{display:block;font-size:17px;color:#a5f3fc;margin-top:2px}
+.cel-meter{height:26px;border-radius:8px;background:#141419;border:1px solid #272733;overflow:hidden;margin-top:10px}.cel-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#eab308,#ef4444);transition:width .08s}
+.cel-level{width:220px;height:220px;border-radius:50%;border:2px solid #353545;margin:14px auto;position:relative;background:radial-gradient(circle,#1f1f29 0 30%,#141419 31%)}
+.cel-level i{position:absolute;width:34px;height:34px;border-radius:50%;background:#22d3ee;left:93px;top:93px;box-shadow:0 0 18px #22d3ee;transition:left .1s,top .1s}
+.cel-steps{counter-reset:p;margin:6px 0 0;padding:0;list-style:none}.cel-steps li{position:relative;padding:7px 0 7px 32px;font-size:13.5px;line-height:1.45;border-bottom:1px solid #24242e}.cel-steps li:before{counter-increment:p;content:counter(p);position:absolute;left:0;top:7px;width:22px;height:22px;border-radius:50%;background:#7c5cff;color:#fff;font-size:12px;display:grid;place-items:center;font-weight:700}
+.cel-q summary{cursor:pointer;font-weight:700;padding:10px 0;font-size:14px}
+</style>
+<script id="angela-cel-v1">
+(function(){'use strict';if(window.ANGELACel)return;
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function num(v,d){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:d}
+function saveBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+var RK='ANGELA_CEL_RESULTADOS_V1';function R(){try{return JSON.parse(localStorage.getItem(RK)||'{}')}catch(e){return{}}}function setR(k,v){var o=R();o[k]={v:v,t:Date.now()};try{localStorage.setItem(RK,JSON.stringify(o))}catch(e){}}
+var STREAM=null,AC=null,RAF=0,LIS=[];
+function stop(){try{STREAM&&STREAM.getTracks().forEach(function(t){t.stop()})}catch(e){}STREAM=null;cancelAnimationFrame(RAF);try{AC&&AC.close()}catch(e){}AC=null;LIS.forEach(function(l){window.removeEventListener(l[0],l[1])});LIS=[];var f=$('celFs');if(f)f.remove();try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}}
+function fs(){stop();var f=document.createElement('div');f.id='celFs';document.body.appendChild(f);try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(function(){})}catch(e){}return f}
+function resBtns(k,onok){return '<div class="herr-row"><span class="tpr-mini">¿Funcionó bien?</span><button class="herr-btn sm" data-r="'+k+'" data-v="ok">✅ Sí</button><button class="herr-btn sm" data-r="'+k+'" data-v="mal">❌ No</button></div>'}
+function bindRes(el){el.querySelectorAll('[data-r]').forEach(function(b){b.onclick=function(){setR(b.dataset.r,b.dataset.v);b.parentNode.innerHTML='<span class="tpr-mini">'+(b.dataset.v==='ok'?'✅ Anotado: funciona.':'❌ Anotado: tiene problemas. Mirá «Arreglos básicos».')+'</span>'}})}
+
+/* ---------- 👆 pantalla táctil ---------- */
+function vTactil(el){el.innerHTML='<div class="herr-card"><h3>👆 Probar la pantalla táctil</h3><p class="herr-sub">Se abre la pantalla completa con cuadritos. Pasá el dedo por <b>toda</b> la pantalla: cada cuadrito que tocás se pone verde. Si queda una zona que no se pinta, ahí la pantalla no responde.</p><button class="herr-btn grad" id="ctGo">▶️ Empezar</button><div id="ctR" class="herr-status"></div></div>';
+  $('ctGo').onclick=function(){var f=fs(),cv=document.createElement('canvas'),x=cv.getContext('2d'),W=innerWidth,H=innerHeight,dpr=devicePixelRatio||1,C=9,Rw=Math.round(C*H/W),cw=W/C,ch=H/Rw,ok=new Uint8Array(C*Rw),n=0;
+    cv.width=W*dpr;cv.height=H*dpr;cv.style.cssText='width:100%;height:100%;display:block';x.scale(dpr,dpr);f.appendChild(cv);f.insertAdjacentHTML('beforeend','<button class="x">Terminar</button><div class="msg" id="ctM">Pasá el dedo por toda la pantalla</div>');
+    function cell(i){var cx=i%C,cy=(i/C)|0;x.fillStyle=ok[i]?'#16a34a':'#7f1d1d';x.fillRect(cx*cw+1,cy*ch+1,cw-2,ch-2)}for(var i=0;i<ok.length;i++)cell(i);
+    function hit(px,py){var i=Math.min(C-1,Math.floor(px/cw))+Math.min(Rw-1,Math.floor(py/ch))*C;if(!ok[i]){ok[i]=1;n++;cell(i);var m=$('ctM');if(m)m.style.display=n>3?'none':''}}
+    cv.addEventListener('pointerdown',function(e){hit(e.clientX,e.clientY)});cv.addEventListener('pointermove',function(e){if(e.buttons||e.pointerType==='touch')hit(e.clientX,e.clientY)});
+    cv.addEventListener('touchmove',function(e){e.preventDefault();Array.prototype.forEach.call(e.touches,function(t){hit(t.clientX,t.clientY)})},{passive:false});
+    f.querySelector('.x').onclick=function(){var p=Math.round(n/ok.length*100);stop();setR('tactil',p===100?'ok':p+'%');$('ctR').innerHTML=p===100?'✅ <b>Toda la pantalla responde.</b>':'Tocaste el <b>'+p+'%</b> de la pantalla. '+(p>=90?'Si pasaste el dedo por todos lados y quedó algún cuadrito sin pintar, esa zona puede estar fallando.':'Probá de nuevo pasando por todos los rincones.')}}}
+
+/* ---------- 🟥 píxeles y colores ---------- */
+function vPixeles(el){el.innerHTML='<div class="herr-card"><h3>🟥 Píxeles muertos y manchas</h3><p class="herr-sub">La pantalla se pone de un solo color. Tocá para pasar al siguiente. Buscá <b>puntitos</b> que no cambian, <b>manchas</b>, líneas o zonas más oscuras.</p><button class="herr-btn grad" id="cpGo">▶️ Empezar</button>'+resBtns('pixeles')+'</div>';bindRes(el);
+  $('cpGo').onclick=function(){var f=fs(),C=['#ff0000','#00ff00','#0000ff','#ffffff','#000000','#808080','#ffff00'],N=['Rojo','Verde','Azul','Blanco','Negro','Gris','Amarillo'],i=0;f.style.background=C[0];f.insertAdjacentHTML('beforeend','<button class="x">Salir</button><div class="msg" id="cpM">Rojo · tocá para cambiar</div>');
+    setTimeout(function(){var m=$('cpM');if(m)m.style.opacity='0'},1600);f.addEventListener('click',function(e){if(e.target.classList.contains('x'))return stop();i=(i+1)%C.length;f.style.background=C[i];var m=$('cpM');if(m){m.textContent=N[i];m.style.opacity='1';clearTimeout(m.t);m.t=setTimeout(function(){m.style.opacity='0'},900)}})}}
+
+/* ---------- 🔊 parlantes ---------- */
+function vSonido(el){el.innerHTML='<div class="herr-card"><h3>🔊 Parlantes y auriculares</h3><p class="herr-sub">Subí el volumen. Con auriculares podés probar cada lado por separado.</p><div class="herr-row"><button class="herr-btn" data-s="-1">◀️ Izquierdo</button><button class="herr-btn" data-s="0">🔊 Los dos</button><button class="herr-btn" data-s="1">Derecho ▶️</button></div><div class="herr-row"><button class="herr-btn" id="csBarr">🎵 Barrido de graves a agudos</button><button class="herr-btn" id="csVoz">🗣️ Que ÁNGELA hable</button></div><p class="tpr-mini" style="margin-top:8px">Si se escucha cascado o con ruido, puede ser el parlante sucio o roto. Mirá «Arreglos básicos».</p>'+resBtns('sonido')+'</div>';bindRes(el);
+  function ctx(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC}
+  el.querySelectorAll('[data-s]').forEach(function(b){b.onclick=function(){var a=ctx(),o=a.createOscillator(),g=a.createGain(),p=a.createStereoPanner?a.createStereoPanner():null;o.frequency.value=440;g.gain.setValueAtTime(0,a.currentTime);g.gain.linearRampToValueAtTime(.35,a.currentTime+.05);g.gain.linearRampToValueAtTime(0,a.currentTime+1.2);if(p){p.pan.value=+b.dataset.s;o.connect(g).connect(p).connect(a.destination)}else o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+1.25)}});
+  $('csBarr').onclick=function(){var a=ctx(),o=a.createOscillator(),g=a.createGain();o.frequency.setValueAtTime(80,a.currentTime);o.frequency.exponentialRampToValueAtTime(12000,a.currentTime+5);g.gain.value=.25;o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+5)};
+  $('csVoz').onclick=function(){try{var u=new SpeechSynthesisUtterance('Hola, soy Ángela. Si me escuchás clarito, el parlante funciona bien.');u.lang='es-AR';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}}
+
+/* ---------- 🎙️ micrófono ---------- */
+function vMic(el){el.innerHTML='<div class="herr-card"><h3>🎙️ Micrófono</h3><p class="herr-sub">Hablá: la barra se tiene que mover. Después grabá unos segundos y escuchá cómo salió.</p><button class="herr-btn grad" id="cmGo">🎙️ Empezar a escuchar</button><div class="cel-meter"><i id="cmL"></i></div><div class="herr-row"><button class="herr-btn" id="cmRec" disabled>🔴 Grabar 5 segundos</button></div><div id="cmA" style="margin-top:8px"></div><div class="herr-status" id="cmS"></div>'+resBtns('mic')+'</div>';bindRes(el);
+  $('cmGo').onclick=async function(){stop();try{STREAM=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false}})}catch(e){$('cmS').textContent='⚠️ No pude usar el micrófono: dale permiso a ÁNGELA (candadito al lado de la dirección). Si ya lo diste y no anda, el micrófono puede estar tapado o roto.';setR('mic','sin permiso');return}
+    AC=new(window.AudioContext||window.webkitAudioContext)();var an=AC.createAnalyser();an.fftSize=512;AC.createMediaStreamSource(STREAM).connect(an);var d=new Uint8Array(an.fftSize),max=0;
+    (function loop(){an.getByteTimeDomainData(d);var s=0;for(var i=0;i<d.length;i++){var v=(d[i]-128)/128;s+=v*v}var l=Math.min(1,Math.sqrt(s/d.length)*4);max=Math.max(max,l);var b=$('cmL');if(!b)return;b.style.width=Math.round(l*100)+'%';RAF=requestAnimationFrame(loop)})();
+    $('cmRec').disabled=false;$('cmS').textContent='🟢 Escuchando. Hablá o aplaudí cerca del celular.'};
+  $('cmRec').onclick=function(){if(!STREAM||!window.MediaRecorder)return;var rc=new MediaRecorder(STREAM),ch=[];rc.ondataavailable=function(e){if(e.data.size)ch.push(e.data)};rc.onstop=function(){var u=URL.createObjectURL(new Blob(ch,{type:rc.mimeType}));$('cmA').innerHTML='<audio controls src="'+u+'" style="width:100%"></audio>';$('cmS').textContent='▶️ Escuchá la grabación: ¿se oye clara?'};rc.start();var t=5;$('cmS').textContent='🔴 Grabando… '+t;var iv=setInterval(function(){t--;if(t<=0){clearInterval(iv);rc.state==='recording'&&rc.stop()}else $('cmS').textContent='🔴 Grabando… '+t},1000)}}
+
+/* ---------- 📷 cámaras ---------- */
+function vCam(el){el.innerHTML='<div class="herr-card"><h3>📷 Cámaras</h3><div class="herr-row" style="margin-top:0"><button class="herr-btn" data-c="environment">📷 Cámara de atrás</button><button class="herr-btn" data-c="user">🤳 Cámara de adelante</button><button class="herr-btn" id="ccLz">🔦 Linterna</button></div><video id="ccV" playsinline muted style="width:100%;max-height:55vh;background:#000;border-radius:12px;margin-top:10px"></video><div class="herr-status" id="ccS"></div><p class="tpr-mini">Si se ve borroso: limpiá el vidrio de la cámara con un trapo suave. Si se ve negro: cerrá otras apps que usen la cámara y reiniciá.</p>'+resBtns('camara')+'</div>';bindRes(el);
+  el.querySelectorAll('[data-c]').forEach(function(b){b.onclick=async function(){stop();try{STREAM=await navigator.mediaDevices.getUserMedia({video:{facingMode:b.dataset.c,width:{ideal:1920},height:{ideal:1080}}});var v=$('ccV');v.srcObject=STREAM;await v.play();var s=STREAM.getVideoTracks()[0].getSettings();$('ccS').textContent='🟢 Funciona · '+(s.width||'?')+' × '+(s.height||'?')+' píxeles'}catch(e){$('ccS').textContent='⚠️ No pude abrir esa cámara: dale permiso a ÁNGELA o puede estar fallando.'}}});
+  $('ccLz').onclick=async function(){try{if(!STREAM){STREAM=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});$('ccV').srcObject=STREAM;await $('ccV').play()}var tr=STREAM.getVideoTracks()[0],cap=tr.getCapabilities?tr.getCapabilities():{};if(!cap.torch)return $('ccS').textContent='Este navegador no puede prender la linterna desde acá (probala desde el menú rápido del celular).';this.on=!this.on;await tr.applyConstraints({advanced:[{torch:this.on}]});$('ccS').textContent=this.on?'🔦 Linterna prendida':'Linterna apagada'}catch(e){$('ccS').textContent='No pude usar la linterna.'}}}
+
+/* ---------- 📳 vibración ---------- */
+function vVibra(el){var ok=!!navigator.vibrate;el.innerHTML='<div class="herr-card"><h3>📳 Vibración</h3>'+(ok?'<p class="herr-sub">Tocá y el celular tiene que vibrar. Si no vibra, revisá que no esté en «No molestar» y que la vibración esté activada en Ajustes → Sonidos y vibración.</p><div class="herr-row"><button class="herr-btn grad" id="cvGo">📳 Vibrar</button><button class="herr-btn" id="cvLargo">Vibración larga</button></div>'+resBtns('vibra'):'<div class="herr-info herr-warn">Este celular o navegador no deja que una página haga vibrar (pasa siempre en iPhone). Probala desde Ajustes → Sonidos.</div>')+'</div>';bindRes(el);
+  if(ok){$('cvGo').onclick=function(){navigator.vibrate([300,120,300])};$('cvLargo').onclick=function(){navigator.vibrate(1500)}}}
+
+/* ---------- 🔋 batería ---------- */
+async function vBat(el){el.innerHTML='<div class="herr-card"><h3>🔋 Batería</h3><div id="cbR" class="cel-res"></div><div class="herr-status" id="cbS"></div></div>'+consejo('bateria');
+  if(!navigator.getBattery){$('cbS').innerHTML='Este navegador no muestra la batería (pasa en iPhone y Firefox). En Android: Ajustes → Batería y cuidado del dispositivo.';return}
+  try{var b=await navigator.getBattery();var draw=function(){var t=function(s){if(!isFinite(s)||!s)return '—';var h=Math.floor(s/3600),m=Math.round(s%3600/60);return(h?h+' h ':'')+m+' min'};$('cbR').innerHTML='<div>Carga<b>'+Math.round(b.level*100)+'%</b></div><div>Estado<b>'+(b.charging?'⚡ Cargando':'🔌 Sin cargador')+'</b></div><div>'+(b.charging?'Se llena en':'Dura aprox.')+'<b>'+t(b.charging?b.chargingTime:b.dischargingTime)+'</b></div>';setR('bateria',Math.round(b.level*100)+'%'+(b.charging?' cargando':''))};draw();['levelchange','chargingchange','chargingtimechange','dischargingtimechange'].forEach(function(ev){b.addEventListener(ev,draw)});
+    $('cbS').textContent=b.charging?'Si el cargador está enchufado y no dice «Cargando», probá otro cable: es la falla más común.':'Enchufá el cargador para ver si detecta la carga.'}catch(e){$('cbS').textContent='No pude leer la batería.'}}
+
+/* ---------- 📶 Internet ---------- */
+function vNet(el){el.innerHTML='<div class="herr-card"><h3>📶 Internet</h3><div id="cnR" class="cel-res"></div><div class="herr-row"><button class="herr-btn grad" id="cnGo">⚡ Medir velocidad</button></div><div class="herr-status" id="cnS"></div></div>'+consejo('internet');
+  var c=navigator.connection||{};$('cnR').innerHTML='<div>Conexión<b>'+(navigator.onLine?'🟢 Conectado':'🔴 Sin Internet')+'</b></div>'+(c.effectiveType?'<div>Tipo<b>'+esc(String(c.effectiveType).toUpperCase())+'</b></div>':'')+(c.downlink?'<div>Estimado<b>'+c.downlink+' Mbps</b></div>':'')+(c.saveData?'<div>Ahorro de datos<b>Activado</b></div>':'');
+  $('cnGo').onclick=async function(){var b=this;b.disabled=true;var base=location.protocol==='file:'?'https://orion-ia-sooty.vercel.app':'',st=$('cnS');
+    try{st.textContent='⏳ Midiendo la demora…';var pings=[];for(var i=0;i<4;i++){var t0=performance.now();await fetch(base+'/manifest.json?p='+Math.random(),{cache:'no-store'});pings.push(performance.now()-t0)}pings.sort(function(a,z){return a-z});var ping=Math.round(pings[1]);
+      st.textContent='⏳ Midiendo la velocidad de descarga…';var t1=performance.now(),tot=0;for(var k=0;k<3;k++){var r=await fetch(base+'/index.html?d='+Math.random(),{cache:'no-store'});tot+=(await r.arrayBuffer()).byteLength}var s=(performance.now()-t1)/1000,mb=(tot*8/1e6)/s;
+      $('cnR').insertAdjacentHTML('beforeend','<div>Demora (ping)<b>'+ping+' ms</b></div><div>Descarga<b>'+mb.toFixed(1)+' Mbps</b></div>');setR('internet',mb.toFixed(1)+' Mbps · '+ping+' ms');
+      st.innerHTML=mb>=10?'✅ Anda bien: alcanza para videos y videollamadas.':mb>=3?'🟡 Anda regular: los videos pueden cortarse.':'🔴 Anda lento. Mirá los consejos de abajo.'}catch(e){st.textContent='⚠️ No pude medir: revisá que haya Internet.'}b.disabled=false}}
+
+/* ---------- 🧭 sensores, GPS y nivel ---------- */
+function vSens(el){el.innerHTML='<div class="herr-card"><h3>🧭 Sensores, GPS y nivel</h3><p class="herr-sub">Mové el celular: la bolita se tiene que mover. Apoyalo en una mesa: si queda en el centro, está nivelado (sirve también como <b>nivel de burbuja</b> para colgar cuadros o nivelar la máquina).</p><button class="herr-btn grad" id="csGo">▶️ Activar sensores</button><div class="cel-level"><i id="csB"></i></div><div id="csR" class="cel-res"></div><div class="herr-row"><button class="herr-btn" id="csGps">📍 Probar el GPS</button></div><div class="herr-status" id="csS"></div>'+resBtns('sensores')+'</div>';bindRes(el);
+  $('csGo').onclick=async function(){try{if(window.DeviceOrientationEvent&&DeviceOrientationEvent.requestPermission)await DeviceOrientationEvent.requestPermission()}catch(e){}var got=false;
+    var h=function(e){got=true;var bx=Math.max(-45,Math.min(45,e.gamma||0)),by=Math.max(-45,Math.min(45,e.beta||0)),b=$('csB');if(!b)return;b.style.left=(93+bx*2)+'px';b.style.top=(93+by*2)+'px';b.style.background=Math.abs(bx)<1.5&&Math.abs(by)<1.5?'#22c55e':'#22d3ee';$('csR').innerHTML='<div>Inclinación adelante/atrás<b>'+Math.round(e.beta||0)+'°</b></div><div>Inclinación costado<b>'+Math.round(e.gamma||0)+'°</b></div>'+(e.alpha!=null?'<div>Brújula<b>'+Math.round(e.alpha)+'°</b></div>':'')};
+    window.addEventListener('deviceorientation',h);LIS.push(['deviceorientation',h]);setTimeout(function(){if(!got)$('csS').textContent='No llegan datos de los sensores. En una computadora es normal; en el celular, puede que el navegador no los deje usar.'},2500)};
+  $('csGps').onclick=function(){if(!navigator.geolocation)return $('csS').textContent='Este navegador no tiene GPS.';$('csS').textContent='⏳ Buscando satélites… (afuera anda mejor)';var t0=Date.now();navigator.geolocation.getCurrentPosition(function(p){$('csS').innerHTML='✅ GPS funcionando: precisión de <b>'+Math.round(p.coords.accuracy)+' metros</b> en '+Math.round((Date.now()-t0)/1000)+' s. '+(p.coords.accuracy>100?'Es poca precisión: activá «Ubicación precisa» en Ajustes.':'');setR('gps',Math.round(p.coords.accuracy)+' m')},function(){$('csS').textContent='⚠️ No pude leer la ubicación: activá la Ubicación del celular y dale permiso a ÁNGELA.'},{enableHighAccuracy:true,timeout:25000,maximumAge:0})}}
+
+/* ---------- ℹ️ datos del celular ---------- */
+async function vInfo(el){var ua=navigator.userAgent,so=/Android ([\d.]+)/.exec(ua),io=/OS (\d+_\d+)/.exec(ua),mod=(/;\s*([^;)]+)\s+Build/.exec(ua)||[])[1]||'',br=/SamsungBrowser/.test(ua)?'Samsung Internet':/Edg\//.test(ua)?'Edge':/Chrome\//.test(ua)?'Chrome':/Firefox/.test(ua)?'Firefox':/Safari/.test(ua)?'Safari':'Otro';
+  var est=null;try{est=navigator.storage&&await navigator.storage.estimate()}catch(e){}
+  try{if(navigator.userAgentData&&navigator.userAgentData.getHighEntropyValues){var hv=await navigator.userAgentData.getHighEntropyValues(['model','platformVersion']);if(hv.model)mod=hv.model}}catch(e){}
+  el.innerHTML='<div class="herr-card"><h3>ℹ️ Datos de este celular</h3><div class="cel-res"><div>Sistema<b>'+(so?'Android '+so[1]:io?'iPhone iOS '+io[1].replace('_','.'):esc(navigator.platform||'—'))+'</b></div>'+(mod&&mod!=='K'?'<div>Modelo<b>'+esc(mod)+'</b></div>':'')+'<div>Navegador<b>'+br+'</b></div><div>Pantalla<b>'+screen.width+' × '+screen.height+'</b></div><div>Nitidez<b>'+(devicePixelRatio||1)+'×</b></div>'+(navigator.deviceMemory?'<div>Memoria RAM<b>~'+navigator.deviceMemory+' GB</b></div>':'')+(navigator.hardwareConcurrency?'<div>Procesador<b>'+navigator.hardwareConcurrency+' núcleos</b></div>':'')+'<div>Idioma<b>'+esc(navigator.language)+'</b></div><div>Modo oscuro<b>'+(matchMedia('(prefers-color-scheme: dark)').matches?'Sí':'No')+'</b></div>'+(est&&est.usage!=null?'<div>Lugar que usa ÁNGELA<b>'+(est.usage/1048576).toFixed(1)+' MB</b></div>':'')+'</div>'+
+   '<p class="tpr-mini" style="margin-top:10px">El espacio libre del celular no se puede ver desde una página: miralo en Ajustes → Batería y cuidado del dispositivo → Almacenamiento.</p></div>'}
+
+/* ---------- 🛠️ arreglos básicos ---------- */
+var GUIA={
+ espacio:['💾 Se quedó sin espacio',['Ajustes → Batería y cuidado del dispositivo → Almacenamiento: mirá qué ocupa más.','WhatsApp → Ajustes → Almacenamiento y datos → Administrar almacenamiento: borrá videos y archivos grandes o reenviados muchas veces.','Google Fotos → Biblioteca → Utilidades → «Liberar espacio»: borra del celular las fotos que ya están guardadas en la nube.','Borrá las apps que no usás (mantené apretado el ícono → Desinstalar).','Ajustes → Aplicaciones → elegí Chrome, Facebook o TikTok → Almacenamiento → «Borrar caché» (no borra tus datos).','Vaciá la Papelera de la Galería y de Mis archivos.']],
+ lento:['🐢 Anda lento o se tilda',['Reinicialo: apretá y mantené el botón de apagado → Reiniciar. Arregla la mayoría de los problemas.','Liberá espacio (mirá «Se quedó sin espacio»): con menos del 10% libre todo anda lento.','Cerrá las apps abiertas: botón de las tres rayitas abajo → «Cerrar todo».','Ajustes → Actualización de software → Descargar e instalar.','Sacá los fondos animados y los widgets que no usás.','Ajustes → Batería y cuidado del dispositivo → «Optimizar ahora».']],
+ bateria:['🔋 La batería dura poco o no carga',['Probá con otro cable y otro cargador: es la falla más común.','Limpiá el agujerito de carga con un escarbadientes de madera (con el celular apagado), sin meter metal.','Bajá el brillo y activá «Ahorro de energía».','Ajustes → Batería → Uso: mirá qué app gasta más y cerrala o desinstalala.','Si se hincha la tapa o se calienta mucho: dejá de usarlo y llevalo al técnico (es peligroso).']],
+ internet:['📶 No anda el Wi-Fi o los datos',['Activá y desactivá el Modo avión (10 segundos).','Apagá y prendé el router del Wi-Fi.','Ajustes → Conexiones → Wi-Fi: mantené apretada la red → «Olvidar», y volvé a conectarte con la clave.','Revisá que tengas saldo o datos en tu plan.','Ajustes → Administración general → Restablecer → «Restablecer ajustes de red» (no borra fotos, pero sí las claves de Wi-Fi).']],
+ sonido:['🔇 No se escucha o no me escuchan',['Fijate que no esté en silencio ni en «No molestar».','Limpiá la rejilla del parlante y del micrófono con un cepillo de dientes seco y suave.','Desconectá auriculares o Bluetooth: a veces el sonido se va para ahí.','Reiniciá el celular.','Probá el micrófono acá en «Micrófono»: si no se mueve la barra, puede ser hardware.']],
+ pantalla:['👆 La pantalla no responde bien',['Sacá el protector de pantalla si está despegado o con burbujas.','Limpiá la pantalla y secate las manos.','Reiniciá el celular.','Ajustes → Pantalla → «Sensibilidad táctil» (si usás protector, activala).','Probá la pantalla acá en «Pantalla táctil»: si siempre falla la misma zona, es el táctil (se cambia en el técnico).']],
+ apps:['📛 Una app se cierra o no abre',['Ajustes → Aplicaciones → elegí la app → «Forzar detención» y volvé a abrirla.','En la misma pantalla: Almacenamiento → «Borrar caché».','Actualizala en Play Store.','Desinstalala y volvé a instalarla (ojo: en WhatsApp, primero hacé copia de seguridad del chat).']],
+ virus:['🦠 Aparece publicidad o cosas raras',['No toques los avisos que dicen «tu celular tiene virus».','Ajustes → Aplicaciones: desinstalá apps que no reconocés o que instalaste justo antes de que empezara.','Play Store → tu foto → Play Protect → «Analizar».','Chrome → Ajustes del sitio → Notificaciones: bloqueá las páginas que te mandan avisos.','Nunca instales apps de archivos .apk que te mandan por WhatsApp.']],
+ calor:['🔥 Se calienta mucho',['Sacale la funda mientras carga.','No lo uses mientras carga, y menos con juegos o videos.','Cerrá apps abiertas y bajá el brillo.','No lo dejes al sol ni arriba de la almohada.','Si se calienta sin usarlo, revisá el uso de batería por app: puede haber una app trabada.']]};
+function consejo(k){var g=GUIA[k];return g?'<div class="herr-card"><h3>🛠️ '+g[0].slice(2)+'</h3><ol class="cel-steps">'+g[1].map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ol></div>':''}
+function vGuia(el){el.innerHTML='<div class="herr-card"><h3>🛠️ Arreglos básicos del celular</h3><p class="herr-sub">Pasos fáciles para los problemas más comunes. Están pensados para Samsung y otros Android (en otras marcas los menús se llaman parecido).</p>'+Object.keys(GUIA).map(function(k){return '<details class="cel-q"><summary>'+GUIA[k][0]+'</summary><ol class="cel-steps">'+GUIA[k][1].map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ol></details>'}).join('')+'<div class="herr-info herr-warn">⚠️ Antes de «Restablecer de fábrica» hacé copia de seguridad: borra todo. Y si se mojó o se golpeó fuerte, apagalo y llevalo al técnico.</div></div>'}
+/* ---------- 📄 informe ---------- */
+function vInforme(el){var r=R(),N={tactil:'Pantalla táctil',pixeles:'Píxeles y colores',sonido:'Parlantes',mic:'Micrófono',camara:'Cámaras',vibra:'Vibración',bateria:'Batería',internet:'Internet',sensores:'Sensores',gps:'GPS'};
+  var ks=Object.keys(N).filter(function(k){return r[k]}),txt='📱 Revisión del celular · ÁNGELA · '+new Date().toLocaleDateString('es-AR')+'\n'+ks.map(function(k){var v=r[k].v;return(v==='ok'?'✅ ':v==='mal'?'❌ ':'• ')+N[k]+': '+(v==='ok'?'funciona':v==='mal'?'tiene problemas':v)}).join('\n');
+  el.innerHTML='<div class="herr-card"><h3>📄 Informe de la revisión</h3>'+(ks.length?'<pre style="white-space:pre-wrap;font:13.5px/1.6 inherit;background:#141419;border-radius:10px;padding:12px">'+esc(txt)+'</pre><div class="herr-row"><a class="herr-btn grad" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(txt)+'">💬 Mandar por WhatsApp</a><button class="herr-btn" id="ciBorr">🧹 Empezar de nuevo</button></div>':'<p class="herr-sub">Todavía no probaste nada. Entrá en cada prueba y marcá si funcionó.</p>')+'</div>';
+  if($('ciBorr'))$('ciBorr').onclick=function(){localStorage.removeItem(RK);vInforme(el)}}
+var TILES=[['cel_tactil','👆','Pantalla táctil','Pasá el dedo por toda la pantalla y mirá qué zonas no responden.'],['cel_pixeles','🟥','Píxeles y manchas','Colores a pantalla completa para ver puntitos muertos o manchas.'],['cel_sonido','🔊','Parlantes','Izquierdo, derecho, graves y agudos.'],['cel_mic','🎙️','Micrófono','Barra que se mueve con tu voz y grabación de prueba.'],['cel_camara','📷','Cámaras y linterna','Adelante, atrás y la linterna.'],['cel_vibra','📳','Vibración','Que vibre para probarla.'],['cel_bateria','🔋','Batería','Carga, si detecta el cargador y cuánto dura.'],['cel_internet','📶','Velocidad de Internet','Mide la descarga y la demora.'],['cel_sensores','🧭','Sensores, GPS y nivel','Giroscopio, brújula, GPS y nivel de burbuja.'],['cel_info','ℹ️','Datos del celular','Sistema, modelo, pantalla, memoria.'],['cel_guia','🛠️','Arreglos básicos','Sin espacio, lento, batería, Wi-Fi, sonido, pantalla, virus, calor.'],['cel_informe','📄','Informe de la revisión','Resumen de todo lo que probaste, para mandar por WhatsApp.']];
+var V={cel_tactil:vTactil,cel_pixeles:vPixeles,cel_sonido:vSonido,cel_mic:vMic,cel_camara:vCam,cel_vibra:vVibra,cel_bateria:vBat,cel_internet:vNet,cel_sensores:vSens,cel_info:vInfo,cel_guia:vGuia,cel_informe:vInforme};
+window.ANGELACel={sec:'📱 Revisar y arreglar el celular',secId:'celSec',short:'Celular',tiles:TILES,has:function(k){return !!V[k]},view:function(k,el){stop();V[k](el)},stop:stop};
+
+/* =====================================================================
+   🔥 MÁS PARA EL LÁSER: grilla de prueba de material (G-code para LaserGRBL / AlgoLaser) y rotativo
+   ===================================================================== */
+function vGrilla(el){var sv={};try{sv=JSON.parse(localStorage.getItem('ANGELA_GRILLA_V1')||'{}')}catch(e){}
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>🧪 Grilla de prueba de material</h3><p class="herr-sub">Graba cuadraditos con distintas <b>velocidades</b> (filas) y <b>potencias</b> (columnas). Mirás cuál quedó mejor y anotás esos valores en Parámetros Láser. Sale un archivo <b>G-code</b> que abrís en <b>LaserGRBL</b> (o en LightBurn).</p>'+
+   '<label class="herr-lbl">Velocidades (mm/min, separadas por coma)</label><input class="herr-inp" id="tgV" value="'+(sv.v||'1000, 2000, 3000, 4000')+'">'+
+   '<label class="herr-lbl">Potencias (%, separadas por coma)</label><input class="herr-inp" id="tgP" value="'+(sv.p||'20, 40, 60, 80, 100')+'">'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Tamaño del cuadro (mm)</label><input class="herr-inp" id="tgS" type="number" min="2" step="0.5" value="'+(sv.s||5)+'"></div><div><label class="herr-lbl">Separación (mm)</label><input class="herr-inp" id="tgG" type="number" min="0.5" step="0.5" value="'+(sv.g||2)+'"></div><div><label class="herr-lbl">Líneas cada (mm)</label><input class="herr-inp" id="tgI" type="number" min="0.05" step="0.05" value="'+(sv.i||0.1)+'"></div><div><label class="herr-lbl">S máximo ($30)</label><input class="herr-inp" id="tgX" type="number" min="1" value="'+(sv.x||1000)+'"></div></div>'+
+   '<label class="herr-lbl">Modo</label><select class="herr-sel" id="tgM"><option value="M4">M4 · potencia dinámica (recomendado para diodo)</option><option value="M3">M3 · potencia fija</option></select>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="tgGo">✨ Armar la grilla</button></div><div class="herr-status" id="tgSt"></div></div>'+
+   '<div class="herr-card"><h3>Vista y archivos</h3><div class="tpr-prev" style="background:#f5f0e6"><canvas id="tgCv"></canvas></div><div class="herr-row"><button class="herr-btn grad" id="tgDl" disabled>⬇️ Descargar G-code</button><button class="herr-btn" id="tgLey" disabled>🖼️ Descargar la leyenda</button></div>'+
+   '<div class="herr-info herr-warn">⚠️ El cuadro de arriba a la izquierda es el más rápido y suave. Empieza donde está parado el láser (esquina de abajo a la izquierda). Grabá sobre un retazo del material, con anteojos de protección, ventilación y sin dejar la máquina sola.</div></div></div>';
+  var G='';
+  $('tgGo').onclick=function(){var V2=$('tgV').value.split(/[,;\s]+/).map(Number).filter(function(n){return n>0}),P=$('tgP').value.split(/[,;\s]+/).map(Number).filter(function(n){return n>0&&n<=100}),s=Math.max(2,num($('tgS').value,5)),g=Math.max(.5,num($('tgG').value,2)),it=Math.max(.05,num($('tgI').value,.1)),smax=Math.max(1,num($('tgX').value,1000)),mode=$('tgM').value;
+    if(!V2.length||!P.length)return $('tgSt').textContent='⚠️ Poné al menos una velocidad y una potencia.';if(V2.length*P.length>80)return $('tgSt').textContent='⚠️ Son demasiados cuadros: usá hasta 80.';
+    try{localStorage.setItem('ANGELA_GRILLA_V1',JSON.stringify({v:$('tgV').value,p:$('tgP').value,s:s,g:g,i:it,x:smax}))}catch(e){}
+    var L=['; Grilla de prueba de material · ÁNGELA · '+new Date().toLocaleString('es-AR'),'; Filas (de arriba a abajo) = velocidades mm/min: '+V2.join(', '),'; Columnas (de izquierda a derecha) = potencias %: '+P.join(', '),'G21 ; milímetros','G90 ; coordenadas absolutas',mode+' S0','G0 X0 Y0'],H=V2.length*(s+g)-g,f=function(n){return(+n.toFixed(3)).toString()};
+    V2.forEach(function(sp,r){var y0=H-(r+1)*(s+g)+g;P.forEach(function(pw,c){var x0=c*(s+g),S2=Math.round(pw/100*smax);L.push('; velocidad '+sp+' · potencia '+pw+'%');var dir=0;for(var y=y0;y<=y0+s+1e-9;y+=it){L.push('G0 X'+f(dir?x0+s:x0)+' Y'+f(y));L.push('G1 X'+f(dir?x0:x0+s)+' F'+sp+' S'+S2);dir=1-dir}L.push('S0')})});
+    L.push('M5 ; apagar el láser','G0 X0 Y0 ; volver al inicio');G=L.join('\n');
+    var cv=$('tgCv'),k=8,W=(P.length*(s+g)-g)*k+70,Hh=H*k+40,x=cv.getContext('2d');cv.width=W;cv.height=Hh;x.fillStyle='#f5f0e6';x.fillRect(0,0,W,Hh);x.font='12px Arial';x.fillStyle='#333';
+    var vmin=Math.min.apply(0,V2);V2.forEach(function(sp,r){x.fillStyle='#333';x.textAlign='right';x.fillText(sp,58,30+r*(s+g)*k+s*k/2+4);P.forEach(function(pw,c){var dark=Math.min(1,(pw/100)*(vmin/sp)*1.4);x.fillStyle='rgba(60,35,15,'+(.12+dark*.85)+')';x.fillRect(64+c*(s+g)*k,30+r*(s+g)*k,s*k,s*k)})});
+    x.textAlign='center';x.fillStyle='#333';P.forEach(function(pw,c){x.fillText(pw+'%',64+c*(s+g)*k+s*k/2,20)});
+    $('tgSt').textContent='✅ '+V2.length*P.length+' cuadros · ocupa '+(P.length*(s+g)-g).toFixed(1)+' × '+H.toFixed(1)+' mm · '+G.split('\n').length+' líneas de G-code.';$('tgDl').disabled=false;$('tgLey').disabled=false};
+  $('tgDl').onclick=function(){if(G)saveBlob(new Blob([G],{type:'text/plain'}),'ANGELA_grilla_prueba.gcode')};
+  $('tgLey').onclick=function(){$('tgCv').toBlob(function(b){saveBlob(b,'ANGELA_grilla_leyenda.png')})}}
+function vRot(el){el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>🧉 Calculadora del rotativo</h3><p class="herr-sub">Para grabar termos, vasos, mates y botellas.</p><label class="herr-lbl">Diámetro del objeto donde vas a grabar (mm)</label><input class="herr-inp" id="trD" type="number" min="5" value="70"><p class="tpr-mini">Medilo con un calibre, o medí la vuelta con un hilo y dividí por 3,1416.</p>'+
+   '<label class="herr-lbl">Tipo de rotativo</label><select class="herr-sel" id="trT"><option value="rod">Con rodillos (el objeto se apoya arriba)</option><option value="man">Con mandril / mordazas (el objeto se agarra de la punta)</option></select>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Pasos por vuelta del motor</label><input class="herr-inp" id="trP" type="number" value="3200"></div><div id="trRw"><label class="herr-lbl">Diámetro del rodillo (mm)</label><input class="herr-inp" id="trR" type="number" value="30"></div></div>'+
+   '<p class="tpr-mini">Pasos por vuelta = 200 × los micropasos del driver (casi siempre 16 → 3200).</p></div><div class="herr-card"><h3>Resultado</h3><div id="trOut"></div></div></div>';
+  function calc(){var d=num($('trD').value,70),t=$('trT').value,p=num($('trP').value,3200),rr=num($('trR').value,30),C=Math.PI*d;$('trRw').style.display=t==='rod'?'':'none';
+    var spm=t==='rod'?p/(Math.PI*rr):p/C;
+    $('trOut').innerHTML='<div class="cel-res"><div>Vuelta completa del objeto<b>'+C.toFixed(1)+' mm</b></div><div>Largo máximo del diseño<b>'+(C-3).toFixed(1)+' mm</b></div><div>Medio objeto (un lado)<b>'+(C/2).toFixed(1)+' mm</b></div><div>Pasos por mm para el eje Y ($101)<b>'+spm.toFixed(3)+'</b></div></div>'+
+     '<div class="herr-info">'+(t==='rod'?'Con <b>rodillos</b>, el valor de $101 depende del rodillo, no del objeto: lo configurás una vez. En LightBurn: Herramientas → Configuración del rotativo → tipo «Rodillo», diámetro del rodillo '+rr+' mm y '+p+' pasos por vuelta.':'Con <b>mandril</b>, cambiá $101 para cada objeto (depende del diámetro). En LightBurn: Configuración del rotativo → tipo «Mandril» y «Diámetro del objeto» '+d+' mm.')+' Si el termo es más angosto abajo, medí el diámetro justo donde va el grabado y achicá un poco el diseño.</div>'+
+     '<div class="herr-info herr-warn">Después de cambiar $101, grabá un cuadrado de prueba de 20 × 20 mm: si sale estirado o achatado, el diámetro o los pasos no son los correctos.</div>'}
+  ['trD','trT','trP','trR'].forEach(function(id){$(id).oninput=calc;$(id).onchange=calc});calc()}
+var T2=[['t2_grilla','🧪','Grilla de prueba de material','Cuadraditos de velocidad y potencia en G-code para LaserGRBL.'],['t2_rot','🧉','Calculadora del rotativo','Termos, vasos y mates: largo del diseño y pasos por mm.']];
+window.ANGELATaller2={sec:'🔥 Más para el láser',secId:'t2Sec',short:'Láser',tiles:T2,has:function(k){return k==='t2_grilla'||k==='t2_rot'},view:function(k,el){(k==='t2_grilla'?vGrilla:vRot)(el)},stop:function(){}};
+function accesos(){if(!$('celMenuBtn')){var ref=$('webMenuBtn')||$('tprMenuBtn')||$('herrMenuBtn');if(ref){var b=document.createElement('button');b.id='celMenuBtn';b.className='angela-photo-btn';b.innerHTML='<span class="ico">📱</span> Revisar el celular';b.onclick=function(){if(!window.ANGELAHerr)return;ANGELAHerr.open();ANGELAHerr.home();setTimeout(function(){var s=$('celSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})},80)};ref.parentNode.insertBefore(b,ref.nextSibling)}}
+  var q=$('tprLaserQ');if(q&&!q.querySelector('[data-t2]')){q.insertAdjacentHTML('beforeend','<button type="button" data-t2="1" onclick="ANGELAHerr&&ANGELAHerr.open(\'t2_grilla\')">🧪 Grilla de prueba</button><button type="button" data-t2="2" onclick="ANGELAHerr&&ANGELAHerr.open(\'t2_rot\')">🧉 Rotativo</button>')}}
+setTimeout(accesos,3200);setTimeout(accesos,6000);setTimeout(accesos,10000);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&$('celFs'))stop()});
+console.info('[ÁNGELA] Revisar el celular + grilla de prueba láser y rotativo');
+})();
+</script>
+<!-- ===== FIN CELULAR Y LÁSER ===== -->

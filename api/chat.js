@@ -130,7 +130,8 @@ function geminiSources(data){
 }
 function makeConv(body){
   const message=currentMessage(body),history=normalizeHistory(body),fresh=isFresh(body,message),docText=attachmentText(body),attachments=binaryAttachments(body);
-  return {message,history,fresh,docText,attachments,system:systemPrompt(body,fresh,Boolean(docText||attachments.length))};
+  const maxTokens=Math.max(256,Math.min(6000,Number(body?.maxTokens)||1500));
+  return {message,history,fresh,docText,attachments,maxTokens,system:systemPrompt(body,fresh,Boolean(docText||attachments.length))};
 }
 function geminiParts(conv,extra=""){
   let prompt=`${conv.system}\n\n`;
@@ -157,7 +158,7 @@ async function callGemini(conv,extra=""){
       try{
         const payload={
           contents:[{role:"user",parts:geminiParts(conv,extra)}],
-          generationConfig:{temperature:.32,topP:.9,maxOutputTokens:1500}
+          generationConfig:{temperature:.32,topP:.9,maxOutputTokens:conv.maxTokens||1500}
         };
 
         if(usarSearch)payload.tools=[{google_search:{}}];
@@ -232,7 +233,7 @@ async function callOpenRouter(conv,extra=""){
   let last=null;
   for(const model of openRouterModels()){
     try{
-      const payload={model,messages:[{role:"system",content:conv.system},...conv.history.map(m=>({role:m.role,content:m.content})),{role:"user",content:openRouterUserContent(conv,extra)}],temperature:.32,max_tokens:1500,provider:{allow_fallbacks:true}};
+      const payload={model,messages:[{role:"system",content:conv.system},...conv.history.map(m=>({role:m.role,content:m.content})),{role:"user",content:openRouterUserContent(conv,extra)}],temperature:.32,max_tokens:conv.maxTokens||1500,provider:{allow_fallbacks:true}};
       if(conv.fresh&&normalize(process.env.OPENROUTER_WEB)==="true")payload.plugins=[{id:"web",max_results:5}];
       const r=await fetchTimeout("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json","HTTP-Referer":clean(process.env.SITE_URL,1000)||"https://orion-ia-sooty.vercel.app","X-Title":"ÁNGELA Assistant"},body:JSON.stringify(payload)},35000);
       const raw=await r.text();let data={};try{data=JSON.parse(raw);}catch{}

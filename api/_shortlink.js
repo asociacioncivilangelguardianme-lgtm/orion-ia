@@ -182,3 +182,103 @@ module.exports.campaign = async function campaign(req, res) {
     return res.end(JSON.stringify({ error: 'Error leyendo la campaña' }));
   }
 };
+
+// ÁNGELA · Sincronización entre aparatos: devuelve la última copia CIFRADA guardada en sync/ID/
+// (/api/supabase-config?sync=ID). El servidor nunca ve los datos: llegan y salen cifrados con la clave del usuario.
+module.exports.sync = async function sync(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  const id = String((req.query && req.query.sync) || '').toLowerCase();
+  if (!/^[a-f0-9]{32}$/.test(id)) { res.statusCode = 400; return res.end(JSON.stringify({ error: 'Código no válido' })); }
+  const base = String(process.env.SUPABASE_URL || PROJECT_URL).replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+  try {
+    const l = await fetch(`${base}/storage/v1/object/list/${BUCKET}`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: `sync/${id}/`, limit: 1, offset: 0, sortBy: { column: 'name', order: 'desc' } })
+    });
+    const arr = l.ok ? await l.json() : [];
+    const name = Array.isArray(arr) && arr[0] && arr[0].name;
+    if (!name) { res.statusCode = 404; return res.end(JSON.stringify({ error: 'Todavía no hay copias con esta clave' })); }
+    const f = await fetch(`${base}/storage/v1/object/public/${BUCKET}/sync/${id}/${encodeURIComponent(name)}`, { cache: 'no-store' });
+    if (!f.ok) { res.statusCode = 502; return res.end(JSON.stringify({ error: 'No se pudo leer la copia' })); }
+    res.statusCode = 200;
+    return res.end(Buffer.from(await f.arrayBuffer()).toString('utf8'));
+  } catch (e) {
+    res.statusCode = 500;
+    return res.end(JSON.stringify({ error: 'Error leyendo la copia' }));
+  }
+};
+
+// ÁNGELA · Estudio Web: trae una página pública para revisarla (?page=URL) o controla enlaces (?checks=url1|url2…).
+// Solo http/https públicos: bloquea direcciones internas (localhost, redes privadas) para que no se pueda abusar.
+const dns = require('dns').promises;
+const net = require('net');
+function privada(ip) {
+  if (net.isIPv4(ip)) {
+    const p = ip.split('.').map(Number);
+    return p[0] === 10 || p[0] === 127 || p[0] === 0 || (p[0] === 169 && p[1] === 254) || (p[0] === 172 && p[1] >= 16 && p[1] <= 31) || (p[0] === 192 && p[1] === 168) || (p[0] === 100 && p[1] >= 64 && p[1] <= 127) || p[0] >= 224;
+  }
+  const s = ip.toLowerCase();
+  return s === '::1' || s === '::' || s.startsWith('fc') || s.startsWith('fd') || s.startsWith('fe80') || s.startsWith('::ffff:127.') || s.startsWith('::ffff:10.') || s.startsWith('::ffff:192.168.');
+}
+async function urlSegura(raw) {
+  let u;
+  try { u = new URL(String(raw || '').trim()); } catch (_) { throw new Error('La dirección no es válida'); }
+  if (!/^https?:$/.test(u.protocol)) throw new Error('Solo páginas http o https');
+  if (u.username || u.password) throw new Error('La dirección no puede tener usuario y clave');
+  const host = u.hostname.replace(/^\[|\]$/g, '');
+  if (/^(localhost|.*\.local|.*\.internal)$/i.test(host)) throw new Error('Esa dirección es interna');
+  const ips = net.isIP(host) ? [host] : (await dns.lookup(host, { all: true })).map(x => x.address);
+  if (!ips.length || ips.some(privada)) throw new Error('Esa dirección es interna');
+  return u;
+}
+async function traer(raw, opts, saltos) {
+  let u = await urlSegura(raw);
+  for (let i = 0; i <= (saltos == null ? 5 : saltos); i++) {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), opts.timeout || 12000);
+    let r;
+    try { r = await fetch(u.href, { method: opts.method || 'GET', redirect: 'manual', signal: ctl.signal, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ANGELA-EstudioWeb/1.0; +https://orion-ia-sooty.vercel.app)', 'Accept': 'text/html,application/xhtml+xml,*/*;q=0.8', 'Accept-Language': 'es-AR,es;q=0.9' } }); }
+    finally { clearTimeout(t); }
+    if (r.status >= 300 && r.status < 400 && r.headers.get('location')) { u = await urlSegura(new URL(r.headers.get('location'), u).href); continue; }
+    return { r, url: u.href };
+  }
+  throw new Error('Demasiadas redirecciones');
+}
+module.exports.page = async function page(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  const t0 = Date.now();
+  try {
+    const { r, url } = await traer(req.query.page, { timeout: 15000 });
+    const reader = r.body && r.body.getReader ? r.body.getReader() : null, MAX = 2500000;
+    let size = 0, chunks = [], cortado = false;
+    if (reader) { for (;;) { const { done, value } = await reader.read(); if (done) break; size += value.length; if (size > MAX) { cortado = true; try { reader.cancel(); } catch (_) {} break; } chunks.push(Buffer.from(value)); } }
+    const buf = Buffer.concat(chunks), ct = r.headers.get('content-type') || '';
+    const cs = (ct.match(/charset=([\w-]+)/i) || [])[1] || ((buf.slice(0, 3000).toString('latin1').match(/<meta[^>]+charset=["']?([\w-]+)/i) || [])[1]) || 'utf-8';
+    let html; try { html = new TextDecoder(cs.toLowerCase()).decode(buf); } catch (_) { html = buf.toString('utf8'); }
+    const h = {}; ['content-type', 'server', 'x-powered-by', 'cache-control', 'content-encoding', 'strict-transport-security', 'content-security-policy', 'x-frame-options'].forEach(k => { const v = r.headers.get(k); if (v) h[k] = v.slice(0, 300); });
+    res.statusCode = 200;
+    return res.end(JSON.stringify({ ok: true, url, status: r.status, ms: Date.now() - t0, size, cortado, headers: h, html }));
+  } catch (e) {
+    res.statusCode = 200;
+    return res.end(JSON.stringify({ ok: false, error: (e && e.name === 'AbortError') ? 'La página tardó demasiado en responder' : (e && e.message) || 'No se pudo abrir la página' }));
+  }
+};
+module.exports.checks = async function checks(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  const list = String(req.query.checks || '').split('|').map(s => s.trim()).filter(Boolean).slice(0, 15);
+  const out = await Promise.all(list.map(async u => {
+    const t0 = Date.now();
+    try {
+      let { r } = await traer(u, { method: 'HEAD', timeout: 8000 });
+      if (r.status === 405 || r.status === 403 || r.status === 501) { ({ r } = await traer(u, { method: 'GET', timeout: 8000 })); try { r.body && r.body.cancel && r.body.cancel(); } catch (_) {} }
+      return { url: u, status: r.status, ms: Date.now() - t0 };
+    } catch (e) { return { url: u, status: 0, error: (e && e.name === 'AbortError') ? 'tardó demasiado' : (e && e.message) || 'error' }; }
+  }));
+  res.statusCode = 200;
+  return res.end(JSON.stringify({ ok: true, results: out }));
+};
