@@ -14480,3 +14480,198 @@ window.angelaAbrirBiblioteca=abrirBiblioteca;
 })();
 </script>
 <!-- ===== FIN BIBLIOTECA DE LIBROS V1 ===== -->
+
+<!-- ===== ÁNGELA · ETAPA 3 · TABLERO DE HOY, GESTIÓN EN CUADRÍCULA Y ENTREGAS DEL DÍA =====
+     Agregado al final: no modifica nada existente. Guarda las entregas aparte (ANGELA_ENTREGAS_V1)
+     y además las marca en las raciones de Cocina. Para quitarlo, borrá desde acá hasta "FIN ETAPA 3". -->
+<style id="angela-etapa3-style">
+#ae3Tablero{color:#e2e8f0}
+#ae3Tablero .ae3-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+#ae3Tablero h2{font-weight:800;font-size:18px}
+#ae3Tablero .ae3-sub{font-size:12px;color:#94a3b8}
+.ae3-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.ae3-tile{text-align:left;background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:12px;min-height:96px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:.15s;color:#e2e8f0}
+.ae3-tile:hover{border-color:#22d3ee;transform:translateY(-1px)}
+.ae3-tile .t{font-size:12px;color:#94a3b8;font-weight:600}
+.ae3-tile b{font-size:24px;line-height:1.1;color:#67e8f9}
+.ae3-tile small{font-size:11.5px;color:#94a3b8;line-height:1.3}
+.ae3-tile.warn{border-color:rgba(245,158,11,.55);background:rgba(120,53,15,.18)}.ae3-tile.warn b{color:#fde68a}
+.ae3-tile.bad{border-color:rgba(248,113,113,.55);background:rgba(127,29,29,.18)}.ae3-tile.bad b{color:#fca5a5}
+.ae3-tile.ok b{color:#86efac}
+@media(max-width:767px){
+  .ae3-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .ae3-tile{min-height:88px;padding:10px}.ae3-tile b{font-size:21px}
+  #centroGestionAngela>.grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  #centroGestionAngela>.grid>.quick{width:100%;font-size:13px;line-height:1.25;padding:10px 6px;min-height:64px!important;display:flex;align-items:center;justify-content:center;text-align:center}
+}
+#centroGestionAngela>.grid>.quick.ae3-hide{display:none!important}
+.ae3-nomatch{font-size:12px;color:#94a3b8;margin-top:6px}
+/* entregas */
+.ae3{border:1px solid #334155;border-radius:16px;padding:14px;background:rgba(2,6,23,.45);color:#e2e8f0}
+.ae3 h3{font-weight:800;color:#67e8f9;font-size:16px}
+.ae3-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.ae3-tabs button{padding:8px 11px;border-radius:10px;background:#0f172a;border:1px solid #334155;font-size:12.5px;font-weight:600;color:#94a3b8}
+.ae3-tabs button.on{background:#0e7490;border-color:#22d3ee;color:#fff}
+.ae3 input,.ae3 select{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:9px 10px;font-size:14px;color:#e2e8f0}
+.ae3-kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.ae3-kpi div{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:9px;text-align:center}
+.ae3-kpi b{display:block;font-size:21px;color:#67e8f9}.ae3-kpi span{font-size:11px;color:#94a3b8}
+.ae3-row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:10px;margin-top:7px}
+.ae3-row.on{border-color:rgba(34,197,94,.55);background:rgba(20,83,45,.25)}
+.ae3-row .nm{flex:1;min-width:140px}.ae3-row .nm small{display:block;color:#94a3b8;font-size:11.5px}
+.ae3-row button{border-radius:10px;padding:9px 12px;font-weight:700;font-size:13px;background:#1e293b;border:1px solid #334155;color:#e2e8f0}
+.ae3-row button.go{background:linear-gradient(135deg,#0e7490,#7c3aed);border-color:transparent;color:#fff}
+.ae3-step{display:flex;align-items:center;gap:4px}.ae3-step button{padding:6px 10px}.ae3-step b{min-width:26px;text-align:center}
+.ae3-note{font-size:12px;color:#94a3b8;margin-top:6px}
+.ae3-flex{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
+<script id="angela-etapa3">
+(function(){'use strict';
+if(window.__angelaEtapa3)return;window.__angelaEtapa3=true;
+var MASTER='ANGELA_MASTER_LOCAL_V1',COC='ANGELA_COCINA_V1',ENT='ANGELA_ENTREGAS_V1',PIN_KEY='ANGELA_GESTION_PIN_V1',OK_KEY='ANGELA_GESTION_OK_V1',BK_LAST='ANGELA_BK_LAST_FILE_V1',EVK='ANGELA_eventos_qr_v2';
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function norm(s){return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim()}
+function num(v){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:0}
+function J(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function hoy(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function dias(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000)}
+function fdate(s){try{return new Date(s+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'numeric'})}catch(e){return s}}
+function money(n){return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(+n||0)}
+function toast(t){try{if(typeof window.showToast==='function')return window.showToast(t)}catch(e){}var d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:100000;background:#0b1220;color:#e2e8f0;border:1px solid #334155;border-radius:12px;padding:10px 14px;font-size:13px;max-width:90vw';document.body.appendChild(d);setTimeout(function(){d.remove()},3500)}
+function pinSet(){return !!J(PIN_KEY,null)}
+function unlocked(){if(!pinSet())return true;var t=+sessionStorage.getItem(OK_KEY)||0;return t&&Date.now()-t<15*60000}
+function master(){return J(MASTER,{})||{}}
+function edad(s){if(!s)return NaN;var d=new Date(s);if(isNaN(d))return NaN;var n=new Date(),e=n.getFullYear()-d.getFullYear();if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))e--;return e}
+
+/* ---------- familias agrupadas (por el campo «Familia / grupo») ---------- */
+function grupos(){var map={},list=[];(master().familias||[]).forEach(function(r){
+  var nombre=String(r.nombre||((r.apellido||'')+' '+(r.nombre||'')).trim()||r.titular||r.responsable||'').trim();
+  var g=String(r.familia||'').trim(),key=g?'g:'+norm(g):'p:'+(r.id||norm(nombre));if(!g&&!nombre)return;
+  var x=map[key];if(!x){x=map[key]={key:key,nombre:g?('Familia '+g.replace(/^familia\s+/i,'')):nombre,ids:[],personas:0,chicos:0,tel:''};list.push(x)}
+  if(r.id)x.ids.push(String(r.id));x.personas++;if(edad(r.nacimiento)<18)x.chicos++;if(!x.tel&&r.telefono)x.tel=String(r.telefono)});
+  list.sort(function(a,b){return a.nombre.localeCompare(b.nombre,'es')});return list}
+function waNum(t){var d=String(t||'').replace(/\D/g,'');if(!d)return'';if(d.indexOf('54')===0)return d.length===12?'549'+d.slice(2):d;d=d.replace(/^0/,'');if(d.length===10)return'549'+d;if(d.length===8)return'54911'+d;return d}
+
+/* ---------- datos de entregas ---------- */
+function E(){var e=J(ENT,{});e.dias=e.dias||{};return e}
+function saveE(e){try{localStorage.setItem(ENT,JSON.stringify(e))}catch(x){toast('No pude guardar: el navegador está lleno. Hacé una copia de seguridad.')}}
+function syncCocina(fecha,e,gs){var C=J(COC,{})||{};C.raciones=C.raciones||[];var r=C.raciones.find(function(x){return x.fecha===fecha});
+  var dia=e.dias[fecha]||{},todos={},marcados=[];gs.forEach(function(g){g.ids.forEach(function(i){todos[i]=1});if(dia[g.key])marcados=marcados.concat(g.ids)});
+  if(!r){if(!marcados.length)return;r={fecha:fecha,familias:[]};C.raciones.push(r)}
+  var otros=(r.familias||[]).filter(function(i){return !todos[i]});r.familias=otros.concat(marcados);
+  try{localStorage.setItem(COC,JSON.stringify(C))}catch(x){}}
+/* última vez que vino cada familia (incluye lo marcado antes desde Cocina) */
+function ultimas(gs){var e=E(),last={},vis={},byId={};gs.forEach(function(g){g.ids.forEach(function(i){byId[i]=g.key})});
+  Object.keys(e.dias).forEach(function(f){Object.keys(e.dias[f]).forEach(function(k){if(!last[k]||f>last[k])last[k]=f;vis[k]=vis[k]||{};vis[k][f]=1})});
+  ((J(COC,{})||{}).raciones||[]).forEach(function(r){(r.familias||[]).forEach(function(i){var k=byId[i];if(!k)return;if(!last[k]||r.fecha>last[k])last[k]=r.fecha;vis[k]=vis[k]||{};vis[k][r.fecha]=1})});
+  return{last:last,vis:vis}}
+
+/* ---------- ✅ ENTREGAS DEL DÍA ---------- */
+var ST={tab:'hoy',fecha:hoy(),q:'',umbral:14,mes:hoy().slice(0,7)};
+function box(){var b=$('angelaGestionContenido');if(b)b.classList.remove('hidden');return b}
+function abrir(tab){if(tab)ST.tab=tab;var b=box();if(!b)return;var T=[['hoy','✅ Entregas de hoy'],['faltan','🔔 No vienen hace rato'],['mes','📊 Resumen del mes']];
+  b.innerHTML='<div class="ae3"><div class="ae3-flex" style="justify-content:space-between"><h3>✅ Entregas del día</h3><button class="quick text-xs" onclick="document.getElementById(\'angelaGestionContenido\').classList.add(\'hidden\')">Cerrar</button></div>'+
+   '<div class="ae3-tabs">'+T.map(function(t){return '<button class="'+(ST.tab===t[0]?'on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div><div id="ae3Body"></div></div>';
+  b.querySelectorAll('.ae3-tabs button').forEach(function(x){x.onclick=function(){abrir(x.dataset.t)}});
+  var gs=grupos(),body=$('ae3Body');
+  if(!gs.length){body.innerHTML='<p class="ae3-note" style="font-size:13.5px">Todavía no hay familias cargadas. Cargalas en <b>«👨‍👩‍👧 Familias y Personas»</b> (podés subir tu planilla de Excel) y acá vas a poder marcar quién retiró la comida cada día.</p><button class="quick" onclick="angelaAbrirGestion(\'familias\')" style="margin-top:8px">👨‍👩‍👧 Ir a Familias y Personas</button>';return}
+  ({hoy:vHoy,faltan:vFaltan,mes:vMes}[ST.tab]||vHoy)(body,gs);
+  try{b.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}}
+function vHoy(el,gs){var e=E(),dia=e.dias[ST.fecha]||{},n=0,rac=0;gs.forEach(function(g){if(dia[g.key]){n++;rac+=num(dia[g.key].n)||1}});
+  el.innerHTML='<div class="ae3-flex"><input id="ae3F" type="date" value="'+ST.fecha+'"><input id="ae3Q" type="search" placeholder="🔎 Buscar familia…" value="'+esc(ST.q)+'" style="flex:1;min-width:160px"></div>'+
+   '<div class="ae3-kpi"><div><b>'+n+'</b><span>retiraron</span></div><div><b>'+(gs.length-n)+'</b><span>faltan</span></div><div><b>'+rac+'</b><span>raciones entregadas</span></div></div>'+
+   '<div id="ae3List"></div><p class="ae3-note">Tocá <b>«Retiró»</b> cuando la familia se lleva la comida. Con − y + ajustás cuántas raciones se llevó. Queda guardado solo y también se marca en Cocina → Raciones.</p>';
+  function draw(){var q=norm(ST.q),d=E().dias[ST.fecha]||{};var lst=gs.filter(function(g){return !q||norm(g.nombre).indexOf(q)>=0});
+    $('ae3List').innerHTML=lst.length?lst.map(function(g){var on=d[g.key];return '<div class="ae3-row'+(on?' on':'')+'"><div class="nm"><b>'+(on?'✅ ':'')+esc(g.nombre)+'</b><small>'+g.personas+' persona(s)'+(g.chicos?' · '+g.chicos+' chico(s)':'')+(on&&on.t?' · retiró '+new Date(on.t).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):'')+'</small></div>'+
+      (on?'<div class="ae3-step"><button data-m="'+esc(g.key)+'">−</button><b>'+(num(on.n)||1)+'</b><button data-p="'+esc(g.key)+'">+</button></div><button data-x="'+esc(g.key)+'">Deshacer</button>':'<button class="go" data-r="'+esc(g.key)+'">✅ Retiró</button>')+'</div>'}).join(''):'<p class="ae3-note">No hay ninguna familia con ese nombre.</p>';
+    function mod(k,fn){var e2=E();e2.dias[ST.fecha]=e2.dias[ST.fecha]||{};fn(e2.dias[ST.fecha],k);if(!Object.keys(e2.dias[ST.fecha]).length)delete e2.dias[ST.fecha];saveE(e2);syncCocina(ST.fecha,e2,gs);vHoy(el,gs);var s=$('ae3Q');if(s&&ST.q){s.focus();try{s.setSelectionRange(s.value.length,s.value.length)}catch(x){}}renderTablero()}
+    el.querySelectorAll('[data-r]').forEach(function(b){b.onclick=function(){var g=gs.find(function(x){return x.key===b.dataset.r});mod(b.dataset.r,function(dd,k){dd[k]={n:Math.max(1,g?g.personas:1),t:Date.now()}})}});
+    el.querySelectorAll('[data-x]').forEach(function(b){b.onclick=function(){mod(b.dataset.x,function(dd,k){delete dd[k]})}});
+    el.querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){mod(b.dataset.p,function(dd,k){dd[k].n=(num(dd[k].n)||1)+1})}});
+    el.querySelectorAll('[data-m]').forEach(function(b){b.onclick=function(){mod(b.dataset.m,function(dd,k){dd[k].n=Math.max(1,(num(dd[k].n)||1)-1)})}})}
+  draw();
+  $('ae3F').onchange=function(){ST.fecha=this.value||hoy();vHoy(el,gs)};
+  $('ae3Q').oninput=function(){ST.q=this.value;draw()}}
+function vFaltan(el,gs){var u=ultimas(gs),t=hoy(),hay=Object.keys(u.last).length;
+  var lst=gs.map(function(g){var l=u.last[g.key];return{g:g,l:l,d:l?dias(l,t):null}}).filter(function(x){return x.d===null?hay:x.d>=ST.umbral}).sort(function(a,b){return (b.d===null?1e9:b.d)-(a.d===null?1e9:a.d)});
+  el.innerHTML='<div class="ae3-flex"><span class="ae3-note" style="margin:0">Familias que no retiran hace</span><select id="ae3U">'+[7,14,21,30,60].map(function(n){return '<option value="'+n+'"'+(n===ST.umbral?' selected':'')+'>'+n+' días o más</option>'}).join('')+'</select></div>'+
+   (!hay?'<p class="ae3-note">Todavía no hay entregas marcadas. Cuando empieces a marcar en «Entregas de hoy», acá vas a ver quién dejó de venir.</p>':
+   lst.length?lst.map(function(x){var w=waNum(x.g.tel),msg='Hola! Te escribimos del Comedor Ángel Guardián 💛 Hace unos días que no te vemos por el comedor. ¿Está todo bien? Te esperamos.';
+     return '<div class="ae3-row"><div class="nm"><b>'+esc(x.g.nombre)+'</b><small>'+(x.l?'Última vez: '+esc(fdate(x.l))+' · hace '+x.d+' días':'Nunca retiró desde que se empezó a marcar')+'</small></div>'+(w?'<a class="quick text-xs" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/'+w+'?text='+encodeURIComponent(msg)+'">💬 Escribirle</a>':'<small class="ae3-note" style="margin:0">Sin teléfono</small>')+'</div>'}).join(''):'<p class="ae3-note">🎉 Todas las familias vinieron en los últimos '+ST.umbral+' días.</p>')+
+   '<p class="ae3-note">Sirve para saber si alguna familia necesita que la llamen o la visiten.</p>';
+  $('ae3U').onchange=function(){ST.umbral=+this.value;vFaltan(el,gs)}}
+function vMes(el,gs){var e=E(),u=ultimas(gs),m=ST.mes,fechas=Object.keys(e.dias).filter(function(f){return f.slice(0,7)===m}).sort();
+  var porFam=gs.map(function(g){var v=0,r=0;fechas.forEach(function(f){var x=e.dias[f][g.key];if(x){v++;r+=num(x.n)||1}});var legacy=Object.keys(u.vis[g.key]||{}).filter(function(f){return f.slice(0,7)===m&&!(e.dias[f]&&e.dias[f][g.key])}).length;return{g:g,v:v+legacy,r:r+legacy}});
+  var totR=porFam.reduce(function(a,x){return a+x.r},0),activas=porFam.filter(function(x){return x.v}).length;
+  var mesTxt=new Date(m+'-15T12:00:00').toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+  el.innerHTML='<div class="ae3-flex"><label class="ae3-note" style="margin:0">Mes <input id="ae3M" type="month" value="'+m+'"></label><button class="quick text-xs" id="ae3Csv">📥 Bajar planilla (Excel)</button></div>'+
+   '<div class="ae3-kpi"><div><b>'+activas+'</b><span>familias atendidas</span></div><div><b>'+fechas.length+'</b><span>días con entregas</span></div><div><b>'+totR+'</b><span>raciones entregadas</span></div></div>'+
+   porFam.filter(function(x){return x.v}).sort(function(a,b){return b.v-a.v}).map(function(x){return '<div class="ae3-row"><div class="nm"><b>'+esc(x.g.nombre)+'</b><small>'+x.g.personas+' persona(s)</small></div><span>'+x.v+' día(s) · '+x.r+' raciones</span></div>'}).join('')+
+   (activas?'':'<p class="ae3-note">No hay entregas marcadas en '+esc(mesTxt)+'.</p>');
+  $('ae3M').onchange=function(){ST.mes=this.value||hoy().slice(0,7);vMes(el,gs)};
+  $('ae3Csv').onclick=function(){var rows=[['Familia','Personas','Chicos','Días que retiró','Raciones','Última vez']].concat(porFam.map(function(x){return[x.g.nombre,x.g.personas,x.g.chicos,x.v,x.r,u.last[x.g.key]||'']}));rows.push(['TOTAL','','',fechas.length+' días',totR,'']);
+    var csv='﻿'+rows.map(function(r){return r.map(function(c){c=String(c);return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(';')}).join('\n');var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='ANGELA_entregas_'+m+'.csv';document.body.appendChild(a);a.click();a.remove()}}
+
+/* ---------- 📊 TABLERO DE HOY (en Inicio) ---------- */
+function tiles(){var M=master(),C=J(COC,{})||{},t=hoy(),out=[],locked=!unlocked();
+  var r=(C.raciones||[]).find(function(x){return x.fecha===t}),racHoy=r?['almuerzo','merienda','vianda','cena'].reduce(function(a,k){return a+num(r[k])},0):0;
+  out.push({id:'raciones',t:'🍽️ Raciones de hoy',v:racHoy||'—',s:racHoy?((r.plato||'Cargadas')+''):'Tocá para cargarlas',cls:racHoy?'ok':'',go:'cocina'});
+  var gs=grupos(),dia=(E().dias||{})[t]||{},ret=gs.filter(function(g){return dia[g.key]}).length;
+  out.push({id:'entregas',t:'✅ Entregas de hoy',v:gs.length?ret+' / '+gs.length:'—',s:gs.length?'familias retiraron':'Cargá las familias',cls:gs.length&&ret?'ok':'',go:'entregas'});
+  var bajo=(M.stock||[]).filter(function(s){return String(s.producto||'').trim()&&num(s.cantidad)<=num(s.minimo)});
+  out.push({id:'stock',t:'📦 Stock bajo',v:bajo.length,s:bajo.length?bajo.slice(0,3).map(function(s){return s.producto}).join(', ')+(bajo.length>3?'…':''):'Todo en orden',cls:bajo.length?'warn':'ok',go:'stock'});
+  var venc=(C.vencimientos||[]).filter(function(v){return v.vence&&dias(t,v.vence)<=7}),vencidos=venc.filter(function(v){return dias(t,v.vence)<0}).length;
+  out.push({id:'venc',t:'⏳ Vencimientos',v:venc.length,s:venc.length?(vencidos?vencidos+' vencido(s) · ':'')+'esta semana':'Nada por vencer',cls:vencidos?'bad':venc.length?'warn':'ok',go:'venc'});
+  var now=Date.now(),rec=(M.recordatorios||[]).filter(function(x){var d=Date.parse(x.fecha);return !isNaN(d)&&d>=now-3600000&&d<=now+7*86400000}).sort(function(a,b){return Date.parse(a.fecha)-Date.parse(b.fecha)});
+  var recHoy=rec.filter(function(x){return String(x.fecha).slice(0,10)===t}).length;
+  out.push({id:'rec',t:'📅 Recordatorios',v:rec.length,s:rec.length?(recHoy?recHoy+' para hoy · ':'')+'Próximo: '+String(rec[0].titulo||'').slice(0,40):'Nada en los próximos 7 días',cls:recHoy?'warn':'',go:'recordatorios'});
+  var docs=(M.documentos||[]).filter(function(d){return d.vencimiento&&dias(t,d.vencimiento)<=30});
+  if(docs.length)out.push({id:'docs',t:'📁 Papeles por vencer',v:docs.length,s:docs.filter(function(d){return dias(t,d.vencimiento)<0}).length?'Hay papeles vencidos':'En los próximos 30 días',cls:docs.some(function(d){return dias(t,d.vencimiento)<0})?'bad':'warn',go:'documentos'});
+  var mes=t.slice(0,7),ing=(M.finanzas||[]).filter(function(x){return x.tipo==='Ingreso'&&String(x.fecha||'').slice(0,7)===mes}).reduce(function(a,x){return a+num(x.monto)},0)+(M.donantes||[]).filter(function(x){return String(x.fecha||'').slice(0,7)===mes}).reduce(function(a,x){return a+num(x.monto)},0);
+  out.push({id:'plata',t:'💛 Donaciones del mes',v:locked?'🔒':money(ing),s:locked?'Tocá y poné el PIN para ver':'Ingresos y donantes cargados',cls:'',go:'finanzas'});
+  var ev=J(EVK,{})||{},evT=ev.start?Date.parse(ev.start.length===16?ev.start+':00-03:00':ev.start):NaN;
+  if(ev.name&&!isNaN(evT)&&evT>now-6*3600000){var dd=Math.ceil((evT-now)/86400000);out.push({id:'evento',t:'🎉 Próximo evento',v:dd<=0?'¡Hoy!':dd===1?'Mañana':'En '+dd+' días',s:String(ev.name).slice(0,40),cls:dd<=1?'warn':'',go:'evento'})}
+  var bk=+localStorage.getItem(BK_LAST)||0,bd=bk?Math.floor((now-bk)/86400000):null;
+  out.push({id:'copia',t:'🛡️ Copia de seguridad',v:bd===null?'Nunca':bd===0?'Hoy':'Hace '+bd+' d',s:bd===null||bd>=7?'Tocá para guardar una ahora':'Tus datos están a salvo',cls:bd===null||bd>=7?'warn':'ok',go:'copia'});
+  return out}
+function renderTablero(){var ini=$('inicio');if(!ini)return;var s=$('ae3Tablero');
+  if(!s){s=document.createElement('section');s.id='ae3Tablero';s.className='panel rounded-3xl p-5';ini.parentNode.insertBefore(s,ini.nextSibling)}
+  var fecha=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}),T=tiles();
+  s.innerHTML='<div class="ae3-head"><div><h2>📊 Así está el comedor hoy</h2><div class="ae3-sub">'+esc(fecha.charAt(0).toUpperCase()+fecha.slice(1))+' · tocá un cuadro para abrirlo</div></div><button class="quick text-xs" id="ae3Ref">🔄 Actualizar</button></div>'+
+   '<div class="ae3-tiles">'+T.map(function(x){return '<button type="button" class="ae3-tile '+(x.cls||'')+'" data-go="'+x.go+'"><span class="t">'+x.t+'</span><b>'+esc(x.v)+'</b><small>'+esc(x.s)+'</small></button>'}).join('')+'</div>';
+  $('ae3Ref').onclick=function(){renderTablero();toast('Tablero actualizado')};
+  s.querySelectorAll('[data-go]').forEach(function(b){b.onclick=function(){ir(b.dataset.go)}})}
+/* abre la sección pasando por el PIN del Centro de Gestión (si hay PIN) */
+function ir(k){
+  if(k==='evento'){try{window.ANGELARegalosQR&&ANGELARegalosQR.openEvents()}catch(e){}return}
+  var acc={cocina:'ae3Go_cocina',entregas:'ae3BtnEnt',venc:'ae3Go_venc',copia:'ae3Go_copia'}[k],btn=acc?$(acc):null;
+  if(!btn){var g=document.querySelector('#centroGestionAngela>.grid');if(g)btn=Array.from(g.querySelectorAll('button')).find(function(b){return (b.getAttribute('onclick')||'').indexOf("'"+k+"'")>=0})}
+  var sec=$('centroGestionAngela');if(sec){var y=sec.getBoundingClientRect().top+window.scrollY-66;window.scrollTo({top:y,behavior:'smooth'})}
+  if(btn)setTimeout(function(){btn.click()},250)}
+
+/* ---------- Gestión: botón Entregas, accesos ocultos y filtro de secciones ---------- */
+function prepGestion(){var sec=$('centroGestionAngela');if(!sec)return;var grid=sec.querySelector(':scope>.grid');if(!grid)return;
+  if(!$('ae3BtnEnt')){var b=document.createElement('button');b.id='ae3BtnEnt';b.className='quick';b.textContent='✅ Entregas del día';b.onclick=function(){abrir('hoy')};var coc=$('ac2Btn');if(coc&&coc.parentNode===grid)grid.insertBefore(b,coc.nextSibling);else grid.insertBefore(b,grid.firstChild)}
+  if(!$('ae3Hidden')){var h=document.createElement('div');h.id='ae3Hidden';h.style.display='none';
+    h.innerHTML='<button id="ae3Go_cocina" onclick="AngelaCocina&&AngelaCocina.open(\'raciones\')">Cocina raciones</button><button id="ae3Go_venc" onclick="AngelaCocina&&AngelaCocina.open(\'venc\')">Cocina vencimientos</button><button id="ae3Go_copia" onclick="AngelaDatos&&AngelaDatos.backups()">Copias</button>';sec.appendChild(h)}}
+function filtro(v){var sec=$('centroGestionAngela'),grid=sec&&sec.querySelector(':scope>.grid');if(!grid)return;var q=norm(v),vis=0;
+  grid.querySelectorAll(':scope>button,:scope>.quick').forEach(function(b){var ok=!q||q.length<2||norm(b.textContent).indexOf(q)>=0;b.classList.toggle('ae3-hide',!ok);if(ok)vis++})}
+document.addEventListener('input',function(e){if(e.target&&e.target.id==='ae1Q')filtro(e.target.value)},true);
+document.addEventListener('search',function(e){if(e.target&&e.target.id==='ae1Q')filtro(e.target.value)},true);
+/* el chat también entiende «entregas» y «tablero» */
+function hookChat(){if(window.__ae3Chat)return;var prev=window.procesarEntrada;if(typeof prev!=='function')return;
+  window.procesarEntrada=async function(texto){var t=norm(texto);if(/^(abrir |abri |mostrame |ver )?(las )?entregas( del dia| de hoy)?$/.test(t)){ir('entregas');try{window.agregarMensaje&&window.agregarMensaje('angela','✅ Abrí Entregas del día.')}catch(e){}return}
+    if(/^(abrir |abri |mostrame |ver )?(el )?tablero$/.test(t)){renderTablero();var s=$('ae3Tablero');if(s)s.scrollIntoView({behavior:'smooth'});return}return prev.apply(this,arguments)};window.__ae3Chat=true}
+function init(){prepGestion();renderTablero();hookChat()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,600)});else setTimeout(init,600);
+setTimeout(function(){prepGestion();renderTablero();hookChat()},3000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)renderTablero()});
+window.addEventListener('storage',function(){renderTablero()});
+setInterval(renderTablero,5*60000);
+var lastLock=unlocked();setInterval(function(){var u=unlocked();if(u!==lastLock){lastLock=u;renderTablero()}},4000);
+window.AngelaEntregas={open:abrir,tablero:renderTablero,ir:ir};
+console.info('[ÁNGELA] Etapa 3: tablero de hoy, gestión en cuadrícula y entregas del día');
+})();
+</script>
+<!-- ===== FIN ETAPA 3 ===== -->
