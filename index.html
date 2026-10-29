@@ -13115,13 +13115,13 @@ function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').tex
 function home(){
   stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
   var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
-  [window.ANGELACam,window.ANGELA3D,window.ANGELAPro].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
+  [window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELAPro].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
   h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
   $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
 }
 function go(k){
   stopAll();
-  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELAPro].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
+  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELAPro].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
   var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
   CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
   ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
@@ -14675,3 +14675,246 @@ console.info('[ÁNGELA] Etapa 3: tablero de hoy, gestión en cuadrícula y entre
 })();
 </script>
 <!-- ===== FIN ETAPA 3 ===== -->
+
+<!-- ===== ÁNGELA · TALLER PRO: VECTORIZAR, NOMBRES EN LOTE Y PLANTILLAS DE SUBLIMACIÓN CON MOCKUP =====
+     Agregado al final: no modifica nada existente. Aparece dentro de Herramientas y con accesos en Láser,
+     Sublimación y el editor de imágenes. Para quitarlo, borrá desde acá hasta "FIN TALLER PRO". -->
+<style id="angela-tallerpro-style">
+.tpr-prev{background:repeating-conic-gradient(#f1f5f9 0 25%,#e2e8f0 0 50%) 0 0/18px 18px;border-radius:10px;border:1px solid #272733;min-height:180px;display:grid;place-items:center;overflow:hidden;padding:8px}
+.tpr-prev img,.tpr-prev canvas{max-width:100%;max-height:60vh;display:block}
+.tpr-dark{background:#0d0d12}
+.tpr-range{display:flex;align-items:center;gap:8px}.tpr-range input{flex:1;accent-color:#7c5cff}.tpr-range output{min-width:46px;text-align:right;font-size:12.5px;color:#cfcfe0}
+.tpr-pages{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tpr-src{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tpr-mini{font-size:12px;color:#9b9bb2}
+.tpr-qbtns{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.tpr-qbtns button{border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;background:#1e293b;border:1px solid #334155;color:#e2e8f0}
+</style>
+<script id="angela-tallerpro-v1">
+(function(){'use strict';if(window.ANGELATaller)return;
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function num(v,d){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:d}
+function r2(n){return Math.round(n*100)/100}
+function slug(s){return String(s||'diseno').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'').slice(0,30)||'diseno'}
+function saveBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+function toast(m){var t=$('herrToast');if(!t){try{if(window.showToast)return window.showToast(m)}catch(e){}return}t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},3800)}
+function loadImg(src){return new Promise(function(res,rej){var i=new Image();i.onload=function(){res(i)};i.onerror=function(){rej(new Error('No pude abrir la imagen'))};i.src=src})}
+function fileToImg(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){loadImg(r.result).then(res,rej)};r.onerror=rej;r.readAsDataURL(f)})}
+function editorImg(){var c=$('canvasImagen');if(!c||!c.width||!c.height||c.width<8)return null;try{return c.toDataURL('image/png')}catch(e){return null}}
+var PEND=null; // imagen que llega desde el editor
+var FONTS=[['Arial','Arial (simple)'],['Georgia','Georgia (clásica)'],['Impact','Impact (gruesa)'],['Pacifico','Pacifico (redondeada)'],['Lobster','Lobster (cursiva gruesa)'],['Great Vibes','Great Vibes (cursiva fina)'],['Dancing Script','Dancing Script (a mano)'],['Bebas Neue','Bebas Neue (alta)'],['Anton','Anton (bloque)'],['Comic Neue','Comic Neue (infantil)']];
+var GF_DONE=false;function loadGF(){if(GF_DONE)return;GF_DONE=true;try{var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Pacifico&family=Lobster&family=Great+Vibes&family=Dancing+Script:wght@700&family=Bebas+Neue&family=Anton&family=Comic+Neue:wght@700&display=swap';document.head.appendChild(l)}catch(e){}}
+function fontReady(f){try{return Promise.race([document.fonts.load('700 40px "'+f+'"'),new Promise(function(r){setTimeout(r,2500)})])}catch(e){return Promise.resolve()}}
+function fontSel(id,val){return '<select class="herr-sel" id="'+id+'">'+FONTS.map(function(f){return '<option value="'+esc(f[0])+'"'+(f[0]===val?' selected':'')+'>'+esc(f[1])+'</option>'}).join('')+'</select>'}
+function range(id,label,min,max,step,val,suf){return '<label class="herr-lbl">'+label+'</label><div class="tpr-range"><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'"><output id="'+id+'O">'+val+(suf||'')+'</output></div>'}
+function bindRange(id,suf,fn){var e=$(id),o=$(id+'O');if(!e)return;e.oninput=function(){if(o)o.textContent=e.value+(suf||'');fn&&fn()}}
+
+/* ================= MOTOR DE VECTORIZADO (bordes de píxeles → curvas) ================= */
+function binarize(img,maxSide,thr,inv,blur){var s=Math.min(1,maxSide/Math.max(img.width,img.height)),W=Math.max(1,Math.round(img.width*s)),H=Math.max(1,Math.round(img.height*s));
+  var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);if(blur)x.filter='blur('+blur+'px)';x.drawImage(img,0,0,W,H);x.filter='none';
+  var d=x.getImageData(0,0,W,H).data,g=new Uint8Array(W*H),i;for(i=0;i<W*H;i++)g[i]=(d[i*4]*299+d[i*4+1]*587+d[i*4+2]*114)/1000;
+  if(thr==null)thr=otsu(g);var b=new Uint8Array(W*H);for(i=0;i<W*H;i++){var ink=g[i]<thr;b[i]=inv?(ink?0:1):(ink?1:0)}return{b:b,W:W,H:H,thr:thr}}
+function otsu(g){var h=new Array(256).fill(0),i,n=g.length;for(i=0;i<n;i++)h[g[i]]++;var sum=0;for(i=0;i<256;i++)sum+=i*h[i];var sB=0,wB=0,best=0,t=128;for(i=0;i<256;i++){wB+=h[i];if(!wB)continue;var wF=n-wB;if(!wF)break;sB+=i*h[i];var mB=sB/wB,mF=(sum-sB)/wF,v=wB*wF*(mB-mF)*(mB-mF);if(v>best){best=v;t=i}}return t+1}
+function traceLoops(b,W,H){var VW=W+1,S=[],E=[],x,y;
+  function ink(x,y){return x>=0&&y>=0&&x<W&&y<H&&b[y*W+x]===1}
+  function add(x1,y1,x2,y2){S.push(y1*VW+x1);E.push(y2*VW+x2)}
+  for(y=0;y<H;y++)for(x=0;x<W;x++){if(!b[y*W+x])continue;
+    if(!ink(x,y-1))add(x,y,x+1,y);if(!ink(x+1,y))add(x+1,y,x+1,y+1);if(!ink(x,y+1))add(x+1,y+1,x,y+1);if(!ink(x-1,y))add(x,y+1,x,y)}
+  var n=S.length,head=new Map(),nxt=new Int32Array(n),used=new Uint8Array(n),i;
+  for(i=0;i<n;i++){var h=head.get(S[i]);nxt[i]=h===undefined?-1:h;head.set(S[i],i)}
+  function take(v){var e=head.get(v);while(e!==undefined&&e>=0){if(!used[e])return e;e=nxt[e]}return -1}
+  var loops=[];for(i=0;i<n;i++){if(used[i])continue;var pts=[],e=i,guard=0;
+    while(e>=0&&!used[e]&&guard++<4e6){used[e]=1;var v=S[e];pts.push([v%VW,(v/VW)|0]);e=take(E[e])}
+    if(pts.length>2)loops.push(pts)}
+  return loops}
+function area(p){var a=0;for(var i=0,j=p.length-1;i<p.length;j=i++)a+=(p[j][0]+p[i][0])*(p[j][1]-p[i][1]);return a/2}
+function rdp(p,eps){if(p.length<4)return p;var keep=new Uint8Array(p.length);keep[0]=keep[p.length-1]=1;var st=[[0,p.length-1]];
+  while(st.length){var s=st.pop(),a=s[0],c=s[1],dx=p[c][0]-p[a][0],dy=p[c][1]-p[a][1],L=Math.hypot(dx,dy)||1,mx=0,mi=-1;
+    for(var k=a+1;k<c;k++){var d=Math.abs(dy*p[k][0]-dx*p[k][1]+p[c][0]*p[a][1]-p[c][1]*p[a][0])/L;if(d>mx){mx=d;mi=k}}
+    if(mx>eps&&mi>0){keep[mi]=1;st.push([a,mi],[mi,c])}}
+  return p.filter(function(_,i){return keep[i]})}
+function simplifyLoop(p,eps){if(p.length<8)return p;var far=0,fd=0;for(var i=1;i<p.length;i++){var d=Math.hypot(p[i][0]-p[0][0],p[i][1]-p[0][1]);if(d>fd){fd=d;far=i}}
+  var a=rdp(p.slice(0,far+1),eps),b=rdp(p.slice(far).concat([p[0]]),eps);return a.slice(0,-1).concat(b.slice(0,-1))}
+/* loops → texto "d" de un path; sc = escala, ox/oy = desplazamiento, smooth = curvas suaves */
+function loopsToD(loops,opt){var sc=opt.sc||1,ox=opt.ox||0,oy=opt.oy||0,eps=opt.eps==null?0.8:opt.eps,minA=opt.minA||0,smooth=opt.smooth!==false,out=[];
+  function P(q){return r2(ox+q[0]*sc)+' '+r2(oy+q[1]*sc)}
+  loops.forEach(function(l){if(Math.abs(area(l))<minA)return;var p=simplifyLoop(l,eps);if(p.length<3)return;
+    if(!smooth||p.length<4){out.push('M'+P(p[0])+p.slice(1).map(function(q){return 'L'+P(q)}).join('')+'Z');return}
+    var m=function(a,b){return[(a[0]+b[0])/2,(a[1]+b[1])/2]},n=p.length,s='M'+P(m(p[n-1],p[0]));
+    for(var i=0;i<n;i++){var a=p[i],b=p[(i+1)%n],len=Math.hypot(b[0]-a[0],b[1]-a[1]);
+      // esquinas marcadas (segmentos largos) quedan rectas, el resto se suaviza
+      s+=(len>opt.corner?'L'+P(a)+'L'+P(m(a,b)):'Q'+P(a)+' '+P(m(a,b)))}
+    out.push(s+'Z')});
+  return out.join('')}
+
+/* ================= 📐 VECTORIZAR ================= */
+var V={img:null,name:'diseno',svg:'',last:null};
+function vVector(el){loadGF();
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>1. Elegí la imagen</h3><p class="herr-sub">Funciona mejor con logos, dibujos, letras y siluetas en blanco y negro. Para fotos, primero pasala por <b>B/N</b> o <b>Line art</b> en el editor.</p>'+
+   '<div class="tpr-src"><label class="herr-btn pri" style="cursor:pointer">📁 Subir imagen<input type="file" id="tvF" accept="image/*" hidden></label><button class="herr-btn" id="tvEd">🎨 Usar la del editor</button></div>'+
+   range('tvT','Umbral (qué es negro y qué es blanco)',10,245,1,128,'')+'<div class="herr-row" style="margin-top:4px"><button class="herr-btn sm" id="tvAuto">✨ Umbral automático</button><label class="tpr-mini"><input type="checkbox" id="tvI"> Invertir (dibujo claro sobre fondo oscuro)</label></div>'+
+   range('tvD','Detalle (más alto = más fiel, más bajo = más suave)',1,10,1,6,'')+range('tvS','Borrar manchitas (puntos sueltos)',0,60,1,8,' px')+
+   '<label class="herr-lbl">Para qué lo vas a usar</label><select class="herr-sel" id="tvM"><option value="fill">🔥 Grabar (relleno negro)</option><option value="cut">✂️ Cortar (solo contorno rojo)</option></select>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Ancho final (mm)</label><input class="herr-inp" id="tvW" type="number" min="5" step="1" value="80"></div><div><label class="herr-lbl">Alto (mm)</label><input class="herr-inp" id="tvH" type="number" readonly></div></div>'+
+   '<div class="herr-status" id="tvSt">Subí una imagen para empezar.</div></div>'+
+   '<div class="herr-card"><h3>2. Así queda el vector</h3><div class="tpr-prev" id="tvP"><span class="tpr-mini">Acá vas a ver el resultado</span></div>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="tvDl" disabled>⬇️ Descargar SVG para LightBurn</button><button class="herr-btn" id="tvPng" disabled>🖼️ Descargar PNG</button></div>'+
+   '<div class="herr-info">En LightBurn: <b>Archivo → Importar</b> y elegí el .svg. Ya viene con la medida real en milímetros. Lo negro va como <b>relleno</b> (grabado) y lo rojo como <b>línea</b> (corte).</div></div></div>';
+  var tm=null;function later(){clearTimeout(tm);tm=setTimeout(run,180)}
+  bindRange('tvT','',later);bindRange('tvD','',later);bindRange('tvS',' px',later);$('tvI').onchange=later;$('tvM').onchange=later;$('tvW').oninput=later;
+  $('tvF').onchange=function(){var f=this.files[0];if(!f)return;V.name=slug(f.name.replace(/\.[^.]+$/,''));fileToImg(f).then(function(i){V.img=i;auto()}).catch(function(){$('tvSt').textContent='⚠️ No pude abrir esa imagen.'})};
+  $('tvEd').onclick=function(){var d=editorImg();if(!d){$('tvSt').textContent='⚠️ El editor de imágenes está vacío. Abrí una imagen en «Imágenes y Diseños» o subila acá.';return}loadImg(d).then(function(i){V.img=i;V.name='editor';auto()})};
+  $('tvAuto').onclick=auto;
+  $('tvDl').onclick=function(){if(V.svg)saveBlob(new Blob([V.svg],{type:'image/svg+xml'}),'ANGELA_'+V.name+'_'+num($('tvW').value,80)+'mm.svg')};
+  $('tvPng').onclick=function(){if(!V.svg)return;svgToPng(V.svg,V.last.wmm,V.last.hmm,600).then(function(b){saveBlob(b,'ANGELA_'+V.name+'_vector.png')})};
+  function auto(){if(!V.img)return;var b=binarize(V.img,900,null,$('tvI').checked,0);$('tvT').value=b.thr;$('tvTO').textContent=b.thr;run()}
+  if(PEND){var p=PEND;PEND=null;loadImg(p).then(function(i){V.img=i;V.name='editor';auto()})}
+  function run(){if(!V.img)return;var st=$('tvSt');st.textContent='⏳ Vectorizando…';
+    setTimeout(function(){try{var det=+$('tvD').value,B=binarize(V.img,1100,+$('tvT').value,$('tvI').checked,det<=3?1:0),loops=traceLoops(B.b,B.W,B.H);
+      var wmm=Math.max(5,num($('tvW').value,80)),hmm=r2(wmm*B.H/B.W);$('tvH').value=hmm;var cut=$('tvM').value==='cut',k=wmm/B.W;
+      var d=loopsToD(loops,{sc:k,eps:[0,2.2,1.8,1.5,1.2,1,.8,.6,.45,.3,.2][det],minA:+$('tvS').value,corner:det>=8?6:12});
+      if(!d){st.textContent='⚠️ No quedó nada negro. Mové el umbral o tocá «Invertir».';$('tvP').innerHTML='';return}
+      V.svg='<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="'+wmm+'mm" height="'+hmm+'mm" viewBox="0 0 '+wmm+' '+hmm+'">\n<path d="'+d+'" fill-rule="evenodd" '+(cut?'fill="none" stroke="#ff0000" stroke-width="0.1"':'fill="#000000"')+'/>\n</svg>';
+      V.last={wmm:wmm,hmm:hmm};$('tvP').innerHTML='<img alt="Vista previa del vector" src="data:image/svg+xml;charset=utf-8,'+encodeURIComponent(V.svg)+'">';
+      var nodes=(d.match(/[MLQ]/g)||[]).length;st.textContent='✅ Listo: '+loops.length+' forma(s), '+nodes+' puntos · '+wmm+' × '+hmm+' mm.';$('tvDl').disabled=false;$('tvPng').disabled=false}
+      catch(e){console.error(e);st.textContent='⚠️ No pude vectorizar: '+(e.message||e)}},20)}}
+function svgToPng(svg,wmm,hmm,dpi){var W=Math.min(6000,Math.round(wmm/25.4*dpi)),H=Math.min(6000,Math.round(hmm/25.4*dpi));return loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)).then(function(i){var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);x.drawImage(i,0,0,W,H);return new Promise(function(r){c.toBlob(r,'image/png')})})}
+
+/* ================= 🏷️ NOMBRES EN LOTE ================= */
+var SH={llavero:['🔑 Llavero (con agujero)',50,22],medalla:['🪙 Medalla redonda',40,40],etiqueta:['🏷️ Etiqueta / cartelito',60,25],solo:['🔤 Solo el texto (para grabar sobre un objeto)',50,15]};
+var L={plates:[],pi:0};
+function textPath(lines,font,boxW,boxH,cx,cy,ppm){ppm=ppm||12;var fs=200,c=document.createElement('canvas'),x=c.getContext('2d');
+  function measure(f){x.font='700 '+f+'px "'+font+'", Arial, sans-serif';var w=0;lines.forEach(function(l){w=Math.max(w,x.measureText(l).width)});return{w:w,h:f*1.15*lines.length}}
+  var m=measure(fs),k=Math.min(boxW*ppm/m.w,boxH*ppm/m.h);fs=Math.max(6,Math.floor(fs*k));m=measure(fs);
+  var W=Math.ceil(m.w+fs*.6),H=Math.ceil(m.h+fs*.5);c.width=W;c.height=H;x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle='#000';x.textAlign='center';x.textBaseline='middle';x.font='700 '+fs+'px "'+font+'", Arial, sans-serif';
+  lines.forEach(function(l,i){x.fillText(l,W/2,H/2+(i-(lines.length-1)/2)*fs*1.12)});
+  var d=x.getImageData(0,0,W,H).data,b=new Uint8Array(W*H),minx=W,miny=H,maxx=0,maxy=0;
+  for(var i=0;i<W*H;i++){if(d[i*4]<128){b[i]=1;var px=i%W,py=(i/W)|0;if(px<minx)minx=px;if(px>maxx)maxx=px;if(py<miny)miny=py;if(py>maxy)maxy=py}}
+  if(maxx<minx)return'';var tw=(maxx-minx+1),th=(maxy-miny+1),s=Math.min(boxW/tw,boxH/th);
+  return loopsToD(traceLoops(b,W,H),{sc:s,ox:cx-(minx+tw/2)*s,oy:cy-(miny+th/2)*s,eps:.7,minA:2,corner:14})}
+function vLote(el){loadGF();var sv={};try{sv=JSON.parse(localStorage.getItem('ANGELA_TALLER_LOTE_V1')||'{}')}catch(e){}
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>1. Nombres y forma</h3><p class="herr-sub">Escribí un nombre por renglón. Para dos renglones usá <b>|</b> (ej: <i>Sofía | 6° grado</i>).</p>'+
+   '<textarea class="herr-ta" id="tlN" placeholder="Sofía&#10;Mateo&#10;Valentina | Egresados 2026">'+esc(sv.names||'')+'</textarea>'+
+   '<label class="herr-lbl">Forma</label><select class="herr-sel" id="tlS">'+Object.keys(SH).map(function(k){return '<option value="'+k+'"'+(k===(sv.shape||'llavero')?' selected':'')+'>'+SH[k][0]+'</option>'}).join('')+'</select>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Ancho (mm)</label><input class="herr-inp" id="tlW" type="number" min="10" value="'+(sv.w||50)+'"></div><div><label class="herr-lbl">Alto (mm)</label><input class="herr-inp" id="tlH" type="number" min="8" value="'+(sv.h||22)+'"></div></div>'+
+   '<label class="herr-lbl">Letra</label>'+fontSel('tlF',sv.font||'Pacifico')+
+   '<div class="herr-cols"><div><label class="herr-lbl">Área de la máquina: ancho (mm)</label><input class="herr-inp" id="tlBW" type="number" min="50" value="'+(sv.bw||300)+'"></div><div><label class="herr-lbl">Área: alto (mm)</label><input class="herr-inp" id="tlBH" type="number" min="50" value="'+(sv.bh||300)+'"></div><div><label class="herr-lbl">Separación (mm)</label><input class="herr-inp" id="tlG" type="number" min="1" value="'+(sv.gap||3)+'"></div></div>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="tlGo">✨ Armar las planchas</button></div><div class="herr-status" id="tlSt"></div></div>'+
+   '<div class="herr-card"><h3>2. Planchas listas para el láser</h3><div class="tpr-prev" id="tlP" style="background:#fff"><span class="tpr-mini">Acá aparece la plancha</span></div><div class="tpr-pages" id="tlPg"></div>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="tlDl" disabled>⬇️ Descargar esta plancha (SVG)</button><button class="herr-btn" id="tlAll" disabled>⬇️ Todas las planchas</button></div>'+
+   '<div class="herr-info">🔴 Rojo = <b>corte</b> (contorno y agujero) · ⚫ Negro = <b>grabado</b> (el nombre). En LightBurn poné cada color en su capa con los parámetros del material. Si solo querés grabar, apagá la capa roja.</div></div></div>';
+  $('tlS').onchange=function(){var s=SH[this.value];$('tlW').value=s[1];$('tlH').value=s[2]};
+  $('tlGo').onclick=armar;
+  $('tlDl').onclick=function(){var p=L.plates[L.pi];if(p)saveBlob(new Blob([p],{type:'image/svg+xml'}),'ANGELA_nombres_plancha_'+(L.pi+1)+'.svg')};
+  $('tlAll').onclick=function(){L.plates.forEach(function(p,i){setTimeout(function(){saveBlob(new Blob([p],{type:'image/svg+xml'}),'ANGELA_nombres_plancha_'+(i+1)+'.svg')},i*700)})};
+  async function armar(){var st=$('tlSt'),names=$('tlN').value.split(/\n+/).map(function(s){return s.trim()}).filter(Boolean);
+    if(!names.length){st.textContent='⚠️ Escribí al menos un nombre.';return}
+    var shape=$('tlS').value,w=Math.max(8,num($('tlW').value,50)),h=Math.max(6,num($('tlH').value,22)),font=$('tlF').value,bw=num($('tlBW').value,300),bh=num($('tlBH').value,300),gap=Math.max(0,num($('tlG').value,3)),M=5;
+    if(shape==='medalla')h=w;
+    try{localStorage.setItem('ANGELA_TALLER_LOTE_V1',JSON.stringify({names:$('tlN').value,shape:shape,w:w,h:h,font:font,bw:bw,bh:bh,gap:gap}))}catch(e){}
+    var cols=Math.floor((bw-2*M+gap)/(w+gap)),rows=Math.floor((bh-2*M+gap)/(h+gap));if(cols<1||rows<1){st.textContent='⚠️ La pieza es más grande que el área de la máquina.';return}
+    st.textContent='⏳ Preparando la letra…';await fontReady(font);
+    var per=cols*rows,plates=[],hole=4,R=Math.min(3,h/4);
+    for(var pi=0;pi*per<names.length;pi++){var cut=[],eng=[],chunk=names.slice(pi*per,pi*per+per);
+      for(var i=0;i<chunk.length;i++){st.textContent='⏳ Armando '+(pi*per+i+1)+' de '+names.length+'…';if(i%4===0)await new Promise(function(r){setTimeout(r,0)});
+        var cx0=M+(i%cols)*(w+gap),cy0=M+Math.floor(i/cols)*(h+gap),lines=chunk[i].split('|').map(function(s){return s.trim()}).filter(Boolean),pad=Math.max(2,h*.14),tx,tw;
+        if(shape==='llavero'){cut.push('<rect x="'+r2(cx0)+'" y="'+r2(cy0)+'" width="'+w+'" height="'+h+'" rx="'+R+'" ry="'+R+'"/><circle cx="'+r2(cx0+hole/2+2.5)+'" cy="'+r2(cy0+h/2)+'" r="'+hole/2+'"/>');tx=cx0+hole+5;tw=w-hole-5-pad}
+        else if(shape==='medalla'){cut.push('<circle cx="'+r2(cx0+w/2)+'" cy="'+r2(cy0+h/2)+'" r="'+r2(w/2)+'"/><circle cx="'+r2(cx0+w/2)+'" cy="'+r2(cy0+hole/2+2.5)+'" r="'+hole/2+'"/>');tx=cx0+w*.16;tw=w*.68}
+        else if(shape==='etiqueta'){cut.push('<rect x="'+r2(cx0)+'" y="'+r2(cy0)+'" width="'+w+'" height="'+h+'" rx="'+R+'" ry="'+R+'"/>');tx=cx0+pad;tw=w-2*pad}
+        else{tx=cx0;tw=w;pad=0}
+        var th=shape==='medalla'?h*.5:h-2*pad,cy=shape==='medalla'?cy0+h*.56:cy0+h/2;
+        var d=textPath(lines,font,tw,th,tx+tw/2,cy);if(d)eng.push(d)}
+      plates.push('<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="'+bw+'mm" height="'+bh+'mm" viewBox="0 0 '+bw+' '+bh+'">\n<g id="grabado" fill="#000000" fill-rule="evenodd"><path d="'+eng.join('')+'"/></g>\n'+(cut.length?'<g id="corte" fill="none" stroke="#ff0000" stroke-width="0.1">'+cut.join('')+'</g>\n':'')+'</svg>')}
+    L.plates=plates;L.pi=0;show();st.textContent='✅ '+names.length+' nombre(s) en '+plates.length+' plancha(s) de '+bw+' × '+bh+' mm ('+per+' por plancha).';$('tlDl').disabled=false;$('tlAll').disabled=plates.length<2}
+  function show(){$('tlP').innerHTML='<img alt="Plancha" style="border:1px dashed #94a3b8" src="data:image/svg+xml;charset=utf-8,'+encodeURIComponent(L.plates[L.pi])+'">';
+    $('tlPg').innerHTML=L.plates.length>1?L.plates.map(function(_,i){return '<button class="herr-btn sm'+(i===L.pi?' pri':'')+'" data-pg="'+i+'">Plancha '+(i+1)+'</button>'}).join(''):'';
+    $('tlPg').querySelectorAll('[data-pg]').forEach(function(b){b.onclick=function(){L.pi=+b.dataset.pg;show()}})}}
+
+/* ================= 👕 PLANTILLAS DE SUBLIMACIÓN + MOCKUP ================= */
+var PR={taza11:['☕ Taza 11 oz (vuelta completa)',200,95,'taza'],taza15:['☕ Taza 15 oz (vuelta completa)',216,102,'taza'],mate:['🧉 Mate de cerámica',190,75,'taza'],
+  remeraA4:['👕 Remera · frente A4',210,297,'remera'],remeraA3:['👕 Remera · frente grande A3',297,420,'remera'],pecho:['👕 Remera · logo en el pecho',90,90,'remera'],
+  gorra:['🧢 Gorra · frente',110,65,'plano'],llavero:['🔑 Llavero',50,30,'plano'],almohadon:['🛋️ Almohadón 40 × 40',380,380,'plano'],mousepad:['🖱️ Mouse pad',220,180,'plano'],otro:['✏️ Otra medida',100,100,'plano']};
+var SB={img:null,txt:'',font:'Lobster',color:'#ffffff',pos:'abajo',z:100,ox:0,oy:0,fit:'cover',bg:'#ffffff',shirt:'#ffffff'};
+function vSub(el){loadGF();
+  el.innerHTML='<div class="herr-2"><div class="herr-card"><h3>1. Producto y diseño</h3><label class="herr-lbl">Producto</label><select class="herr-sel" id="tsP">'+Object.keys(PR).map(function(k){return '<option value="'+k+'">'+PR[k][0]+'</option>'}).join('')+'</select>'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Ancho (mm)</label><input class="herr-inp" id="tsW" type="number" min="10" value="200"></div><div><label class="herr-lbl">Alto (mm)</label><input class="herr-inp" id="tsH" type="number" min="10" value="95"></div><div><label class="herr-lbl">Sangrado (mm)</label><input class="herr-inp" id="tsB" type="number" min="0" step="0.5" value="2"></div></div>'+
+   '<p class="tpr-mini" style="margin-top:6px">Son medidas de referencia. Si tu producto es distinto, medilo y cambialas.</p>'+
+   '<div class="tpr-src" style="margin-top:10px"><label class="herr-btn pri" style="cursor:pointer">📁 Subir diseño o foto<input type="file" id="tsF" accept="image/*" hidden></label><button class="herr-btn" id="tsEd">🎨 Usar la del editor</button></div>'+
+   '<label class="herr-lbl">Cómo entra la imagen</label><select class="herr-sel" id="tsFit"><option value="cover">Llenar todo (puede recortar los bordes)</option><option value="contain">Que entre entera (puede quedar margen)</option></select>'+
+   range('tsZ','Tamaño',30,250,1,100,'%')+range('tsX','Mover a los costados',-100,100,1,0,'')+range('tsY','Mover arriba / abajo',-100,100,1,0,'')+
+   '<div class="herr-cols"><div><label class="herr-lbl">Color de fondo</label><input class="herr-inp" id="tsBg" type="color" value="#ffffff" style="height:42px;padding:4px"></div><div><label class="herr-lbl">Color de la remera (mockup)</label><input class="herr-inp" id="tsSh" type="color" value="#ffffff" style="height:42px;padding:4px"></div></div>'+
+   '<label class="herr-lbl">Texto (opcional)</label><input class="herr-inp" id="tsT" placeholder="Ej: Feliz día, mamá">'+
+   '<div class="herr-cols"><div><label class="herr-lbl">Letra</label>'+fontSel('tsTF','Lobster')+'</div><div><label class="herr-lbl">Color</label><input class="herr-inp" id="tsTC" type="color" value="#ffffff" style="height:42px;padding:4px"></div><div><label class="herr-lbl">Lugar</label><select class="herr-sel" id="tsTP"><option value="abajo">Abajo</option><option value="arriba">Arriba</option><option value="centro">Al medio</option></select></div></div>'+
+   '<label class="tpr-mini" style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="tsM" checked> Imprimir en espejo (lo normal para papel de sublimación)</label>'+
+   '<div class="herr-status" id="tsSt">Subí un diseño para empezar.</div></div>'+
+   '<div class="herr-card"><h3>2. Así queda</h3><div class="herr-row" style="margin-top:0"><button class="herr-btn sm pri" id="tsV1">🖼️ Plantilla</button><button class="herr-btn sm" id="tsV2">👀 Mockup</button></div>'+
+   '<div class="tpr-prev tpr-dark" id="tsPrev" style="margin-top:8px"><canvas id="tsCv"></canvas></div>'+
+   '<div class="herr-row"><button class="herr-btn grad" id="tsDl" disabled>⬇️ Plantilla para imprimir (PNG 300 DPI)</button><button class="herr-btn" id="tsPr" disabled>🖨️ Imprimir en tamaño real</button></div>'+
+   '<div class="herr-row"><button class="herr-btn" id="tsMk" disabled>⬇️ Mockup para el cliente</button><button class="herr-btn" id="tsSh2" disabled>📲 Mandar mockup por WhatsApp</button></div>'+
+   '<div class="herr-info">La plantilla sale con la medida justa más el sangrado, y en espejo si lo dejaste marcado. El mockup sale <b>sin espejo</b>, para que el cliente vea cómo le va a quedar.</div></div></div>';
+  var view='tpl';
+  function setP(){var p=PR[$('tsP').value];$('tsW').value=p[1];$('tsH').value=p[2];draw()}
+  $('tsP').onchange=setP;['tsW','tsH','tsB','tsT','tsBg','tsSh','tsTC'].forEach(function(id){$(id).oninput=draw});['tsFit','tsTF','tsTP','tsM'].forEach(function(id){$(id).onchange=function(){if(id==='tsTF')fontReady($('tsTF').value).then(draw);else draw()}});
+  bindRange('tsZ','%',draw);bindRange('tsX','',draw);bindRange('tsY','',draw);
+  $('tsF').onchange=function(){var f=this.files[0];if(!f)return;fileToImg(f).then(function(i){SB.img=i;SB.name=slug(f.name.replace(/\.[^.]+$/,''));draw()})};
+  $('tsEd').onclick=function(){var d=editorImg();if(!d){$('tsSt').textContent='⚠️ El editor de imágenes está vacío.';return}loadImg(d).then(function(i){SB.img=i;SB.name='editor';draw()})};
+  $('tsV1').onclick=function(){view='tpl';$('tsV1').classList.add('pri');$('tsV2').classList.remove('pri');draw()};
+  $('tsV2').onclick=function(){view='mock';$('tsV2').classList.add('pri');$('tsV1').classList.remove('pri');draw()};
+  $('tsDl').onclick=function(){var c=design(300,true,true);c.toBlob(function(b){saveBlob(b,'ANGELA_'+slug(PR[$('tsP').value][0])+'_'+num($('tsW').value)+'x'+num($('tsH').value)+'mm_300dpi.png')},'image/png')};
+  $('tsPr').onclick=printReal;
+  $('tsMk').onclick=function(){mockup(1080).toBlob(function(b){saveBlob(b,'ANGELA_mockup_'+(SB.name||'diseno')+'.png')},'image/png')};
+  $('tsSh2').onclick=function(){mockup(1080).toBlob(async function(b){var f=new File([b],'mockup.png',{type:'image/png'});try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:'Así va a quedar tu pedido 😊'});return}}catch(e){if(e&&e.name==='AbortError')return}saveBlob(b,'ANGELA_mockup.png');toast('Descargué el mockup: mandalo por WhatsApp como foto.')},'image/png')};
+  if(PEND){var p=PEND;PEND=null;loadImg(p).then(function(i){SB.img=i;SB.name='editor';draw()})}
+  fontReady('Lobster').then(draw);
+  /* diseño a una resolución dada (dpi). bleed: con sangrado. mirror: espejo según la casilla */
+  function design(dpi,bleed,mirror){var wmm=Math.max(10,num($('tsW').value,100)),hmm=Math.max(10,num($('tsH').value,100)),b=bleed?Math.max(0,num($('tsB').value,0)):0,pxmm=dpi/25.4;
+    var W=Math.round((wmm+2*b)*pxmm),H=Math.round((hmm+2*b)*pxmm),cap=6000/Math.max(W,H);if(cap<1){W=Math.round(W*cap);H=Math.round(H*cap);pxmm*=cap}
+    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.fillStyle=$('tsBg').value;x.fillRect(0,0,W,H);
+    if(mirror&&$('tsM').checked){x.translate(W,0);x.scale(-1,1)}
+    var i=SB.img;if(i){var cw=W,ch=H,s=($('tsFit').value==='cover'?Math.max(cw/i.width,ch/i.height):Math.min(cw/i.width,ch/i.height))*(+$('tsZ').value/100),dw=i.width*s,dh=i.height*s;
+      x.drawImage(i,(cw-dw)/2+(+$('tsX').value/100)*cw/2,(ch-dh)/2+(+$('tsY').value/100)*ch/2,dw,dh)}
+    var t=$('tsT').value.trim();if(t){var fs=Math.min(H*.22,W*.9/Math.max(4,t.length)*1.9);x.font='700 '+fs+'px "'+$('tsTF').value+'", Arial, sans-serif';x.textAlign='center';x.textBaseline='middle';
+      var y=$('tsTP').value==='arriba'?H*.16:$('tsTP').value==='centro'?H/2:H*.84;x.lineWidth=fs*.08;x.strokeStyle='rgba(0,0,0,.55)';x.strokeText(t,W/2,y);x.fillStyle=$('tsTC').value;x.fillText(t,W/2,y)}
+    if(bleed&&b>0&&dpi<100){x.setTransform(1,0,0,1,0,0);x.setLineDash([6,5]);x.strokeStyle='rgba(239,68,68,.9)';x.lineWidth=1.5;x.strokeRect(b*pxmm,b*pxmm,W-2*b*pxmm,H-2*b*pxmm)}
+    return c}
+  function mockup(S){var kind=PR[$('tsP').value][3],c=document.createElement('canvas');c.width=S;c.height=S;var x=c.getContext('2d'),g=x.createLinearGradient(0,0,0,S);g.addColorStop(0,'#e9eef5');g.addColorStop(1,'#c9d3e0');x.fillStyle=g;x.fillRect(0,0,S,S);
+    var d=design(Math.max(60,Math.min(200,S*0.9/Math.max(num($('tsW').value,100),1)*25.4)),false,false);
+    x.fillStyle='rgba(0,0,0,.18)';x.beginPath();x.ellipse(S/2,S*.86,S*.3,S*.04,0,0,7);x.fill();
+    if(kind==='taza'){var bw=S*.48,bh=bw*Math.min(1.15,num($('tsH').value,95)/(num($('tsW').value,200)/Math.PI)),L=S/2-bw/2-S*.04,T=S*.84-bh,r=bw/2;
+      x.lineWidth=S*.035;x.strokeStyle='#f8fafc';x.beginPath();x.ellipse(L+bw+S*.02,T+bh*.48,S*.09,bh*.28,0,-Math.PI/2,Math.PI/2);x.stroke();x.lineWidth=S*.012;x.strokeStyle='rgba(0,0,0,.12)';x.stroke();
+      x.fillStyle='#ffffff';x.fillRect(L,T,bw,bh);
+      var sw=d.width,steps=Math.round(bw);for(var k=0;k<steps;k++){var u=(k+.5)/steps*2-1,th=Math.asin(u),sx=(0.5+th/(2*Math.PI))*sw,sx2=(0.5+Math.asin(Math.min(1,u+2/steps))/(2*Math.PI))*sw;x.drawImage(d,sx,0,Math.max(1,sx2-sx),d.height,L+k,T+bh*.04,1.4,bh*.92)}
+      var sh=x.createLinearGradient(L,0,L+bw,0);sh.addColorStop(0,'rgba(0,0,0,.28)');sh.addColorStop(.22,'rgba(0,0,0,0)');sh.addColorStop(.38,'rgba(255,255,255,.35)');sh.addColorStop(.5,'rgba(255,255,255,0)');sh.addColorStop(.82,'rgba(0,0,0,.05)');sh.addColorStop(1,'rgba(0,0,0,.3)');x.fillStyle=sh;x.fillRect(L,T,bw,bh);
+      x.fillStyle='#f1f5f9';x.beginPath();x.ellipse(L+r,T,r,S*.025,0,0,7);x.fill();x.fillStyle='rgba(0,0,0,.18)';x.beginPath();x.ellipse(L+r,T+2,r*.9,S*.016,0,0,7);x.fill()}
+    else if(kind==='remera'){var cx=S/2,top=S*.16,col=$('tsSh').value;x.fillStyle=col;x.strokeStyle='rgba(0,0,0,.15)';x.lineWidth=S*.004;x.beginPath();
+      x.moveTo(cx-S*.12,top);x.quadraticCurveTo(cx,top+S*.07,cx+S*.12,top);x.lineTo(cx+S*.3,top+S*.05);x.lineTo(cx+S*.42,top+S*.24);x.lineTo(cx+S*.32,top+S*.3);x.lineTo(cx+S*.27,top+S*.22);x.lineTo(cx+S*.27,S*.86);x.lineTo(cx-S*.27,S*.86);x.lineTo(cx-S*.27,top+S*.22);x.lineTo(cx-S*.32,top+S*.3);x.lineTo(cx-S*.42,top+S*.24);x.lineTo(cx-S*.3,top+S*.05);x.closePath();x.fill();x.stroke();
+      var shirtMm=520,pw=S*.54*num($('tsW').value,210)/shirtMm,ph=pw*d.height/d.width,py=num($('tsW').value,210)<120?top+S*.14:top+S*.12;if(num($('tsW').value)<120){x.drawImage(d,cx+S*.06,py,pw,ph)}else{x.drawImage(d,cx-pw/2,py,pw,Math.min(ph,S*.86-py-S*.02))}
+      var sg=x.createLinearGradient(cx-S*.27,0,cx+S*.27,0);sg.addColorStop(0,'rgba(0,0,0,.12)');sg.addColorStop(.5,'rgba(255,255,255,.05)');sg.addColorStop(1,'rgba(0,0,0,.12)');x.fillStyle=sg;x.fillRect(cx-S*.27,top+S*.05,S*.54,S*.86-top-S*.05)}
+    else{var mw=S*.7,mh=mw*d.height/d.width;if(mh>S*.6){mh=S*.6;mw=mh*d.width/d.height}var lx=(S-mw)/2,ty=S*.82-mh;x.shadowColor='rgba(0,0,0,.25)';x.shadowBlur=S*.03;x.shadowOffsetY=S*.012;x.fillStyle='#fff';x.fillRect(lx,ty,mw,mh);x.shadowColor='transparent';x.drawImage(d,lx,ty,mw,mh)}
+    x.fillStyle='rgba(15,23,42,.55)';x.font='600 '+Math.round(S*.022)+'px Arial';x.textAlign='center';x.fillText('Vista de ejemplo · '+PR[$('tsP').value][0].replace(/^\S+\s/,''),S/2,S*.95);return c}
+  function draw(){var cv=$('tsCv');if(!cv)return;var src=view==='mock'?mockup(720):design(72,true,true);cv.width=src.width;cv.height=src.height;cv.getContext('2d').drawImage(src,0,0);
+    var ok=!!SB.img||!!$('tsT').value.trim();['tsDl','tsPr','tsMk','tsSh2'].forEach(function(id){$(id).disabled=!ok});
+    $('tsSt').textContent=ok?'✅ '+num($('tsW').value)+' × '+num($('tsH').value)+' mm + '+num($('tsB').value,0)+' mm de sangrado · '+($('tsM').checked?'en espejo':'sin espejo')+'. La línea roja punteada marca el borde real.':'Subí un diseño o escribí un texto para empezar.'}
+  function printReal(){var c=design(300,true,true),w=num($('tsW').value)+2*num($('tsB').value,0),h=num($('tsH').value)+2*num($('tsB').value,0),win=window.open('','_blank');if(!win){alert('Permití las ventanas emergentes para imprimir.');return}
+    win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Imprimir plantilla</title><style>@page{margin:8mm}body{margin:0}img{width:'+w+'mm;height:'+h+'mm;display:block}p{font:12px Arial;color:#555}@media print{p{display:none}}</style></head><body><p>En la ventana de impresión elegí <b>Escala: 100% / Tamaño real</b> (no «Ajustar a la página»).</p><img src="'+c.toDataURL('image/png')+'"><script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>');win.document.close()}}
+
+/* ================= registro dentro de Herramientas ================= */
+var TILES=[['tpr_vector','📐','Pasar imagen a vector (SVG)','Logo, dibujo o letras → archivo para LightBurn, con la medida real.'],['tpr_lote','🏷️','Nombres en lote','Lista de nombres → plancha de llaveros, medallas o etiquetas lista para cortar.'],['tpr_sub','👕','Plantillas de sublimación + mockup','Taza, remera, gorra… con la medida justa, espejo y vista de cómo queda.']];
+var VIEWS={tpr_vector:vVector,tpr_lote:vLote,tpr_sub:vSub};
+window.ANGELATaller={sec:'🔥 Taller láser y sublimación',secId:'tprSec',short:'Taller',tiles:TILES,has:function(k){return !!VIEWS[k]},view:function(k,el){VIEWS[k](el)},stop:function(){},
+  abrir:function(k,conEditor){if(conEditor){var d=editorImg();if(d)PEND=d}if(window.ANGELAHerr){ANGELAHerr.open(k)}},_trace:traceLoops,_d:loopsToD,_bin:binarize};
+/* accesos: menú lateral, Láser, Sublimación y editor de imágenes */
+function accesos(){
+  if(!$('tprMenuBtn')){var ref=$('camMenuBtn')||$('t3dMenuBtn')||$('herrMenuBtn');if(ref){var b=document.createElement('button');b.id='tprMenuBtn';b.className='angela-photo-btn';b.innerHTML='<span class="ico">🔥</span> Taller láser y sublimación';
+    b.onclick=function(){if(!window.ANGELAHerr)return;ANGELAHerr.open();ANGELAHerr.home();setTimeout(function(){var s=$('tprSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})},80)};ref.parentNode.insertBefore(b,ref.nextSibling)}}
+  function q(id,host,html){if($(id)||!host)return;var d=document.createElement('div');d.id=id;d.className='tpr-qbtns';d.innerHTML=html;var h=host.querySelector('h3');if(h&&h.nextSibling)host.insertBefore(d,h.nextSibling);else host.insertBefore(d,host.firstChild)}
+  q('tprLaserQ',$('laser'),'<button type="button" onclick="ANGELATaller.abrir(\'tpr_vector\',true)">📐 Imagen a vector (SVG)</button><button type="button" onclick="ANGELATaller.abrir(\'tpr_lote\')">🏷️ Nombres en lote</button>');
+  q('tprSubQ',$('sublimacion'),'<button type="button" onclick="ANGELATaller.abrir(\'tpr_sub\',true)">🖨️ Plantilla con medida exacta + mockup</button>');
+  var gp=document.querySelector('#imagenes button[onclick="guardarImagen()"]');if(gp&&!$('tprEdQ')){var w=document.createElement('span');w.id='tprEdQ';w.style.display='contents';
+    w.innerHTML='<button type="button" class="quick" onclick="ANGELATaller.abrir(\'tpr_vector\',true)">📐 Vectorizar (SVG)</button><button type="button" class="quick" onclick="ANGELATaller.abrir(\'tpr_sub\',true)">👕 Plantilla sublimación</button>';gp.parentNode.insertBefore(w,gp.nextSibling)}}
+setTimeout(accesos,2600);setTimeout(accesos,5000);setTimeout(accesos,9000);
+console.info('[ÁNGELA] Taller Pro: vectorizar, nombres en lote y plantillas de sublimación con mockup');
+})();
+</script>
+<!-- ===== FIN TALLER PRO ===== -->
