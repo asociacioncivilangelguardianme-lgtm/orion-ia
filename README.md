@@ -31,6 +31,12 @@ Todo lo que el comedor necesita organizar, guardado en la propia computadora:
 - ✨ **Cartas nivel 2**: 9 formas de abrirlas (sobre, raspadita, caja de regalo, velitas que se soplan, vela, candado con clave, rompecabezas, ventana retro Sí/No y botón), **álbum de fotos digital** tipo scrapbook, **cubo 3D** de 6 fotos, **caja explosiva**, foto que habla, chat simulado, vales, frasco de deseos, memotest, "¿Cuánto me conocés?", cielo con iniciales, firma a mano, pregunta con el "No" que se escapa, meta con plato que se llena y comprobante de agradecimiento. Link corto (`/r/…`) con vista previa linda en WhatsApp y QR con corazón, también en SVG para láser y PNG grande para sublimar.
 - 🎉 **Eventos QR**: ubicación con botón "Cómo llegar", confirmación por WhatsApp, cuenta regresiva, trivia, ruleta de premios, "Mis retos" con puntos y **carpeta de recuerdos (.zip)**.
 
+## 🧩 Crear y archivos (en Herramientas)
+- 🛠️ **Constructor de apps**: describila, pegá un link o subí una captura y la IA arma una app o página propia que funciona (calculadoras, agendas, catálogos, juegos). Plan, vista previa en celu y compu, **prueba automática de botones**, «Arreglar con IA», cambios por chat, versiones, editor de código, abrir un HTML propio y descargar.
+- 📄 **PDF**: unir varios PDF y fotos en uno, sacar páginas, separar cada hoja (ZIP) y rotar. Todo en el aparato, sin subir nada.
+- 🔄 **Convertir y achicar fotos** a JPG, PNG o WebP, en lote, con descarga en ZIP.
+- 🔎 **Buscador** y ⭐ **favoritos** en el inicio de Herramientas.
+
 ## 🧰 Herramientas del taller
 - 🖼️ **Editor de imágenes**: blanco y negro, line art, stencil, tramados para grabar, quitar fondo, recortar, mejorar nitidez y resolución.
 - 🔥 **Láser**: biblioteca de parámetros por material (madera, MDF, acero, aluminio, cuero, acrílico, mates, termos…) y máquinas personalizadas.

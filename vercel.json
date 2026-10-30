@@ -1,5 +1,13 @@
 {
   "rewrites": [
-    { "source": "/r/:code", "destination": "/api/supabase-config?r=:code" }
-  ]
+    {
+      "source": "/r/:code",
+      "destination": "/api/supabase-config?r=:code"
+    }
+  ],
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 300
+    }
+  }
 }

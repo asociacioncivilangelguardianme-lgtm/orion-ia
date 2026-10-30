@@ -261,6 +261,60 @@ async function cascade(conv,order,extra=""){
   return{result:null,errors};
 }
 
+// ===== Modo «código» (Constructor de apps): respuestas largas, sin las reglas del chat =====
+// El navegador manda {mode:"code", system, messages:[{role,content}], temperature}. content puede ser texto
+// o una lista [{type:"text",text},{type:"image_url",image_url:{url:"data:image/...;base64,..."}}].
+function codeParts(content){
+  if(typeof content==="string")return [{text:clean(content,400000)}];
+  if(!Array.isArray(content))return [{text:clean(String(content??""),400000)}];
+  const out=[];
+  for(const c of content.slice(0,8)){
+    if(c?.type==="text")out.push({text:clean(c.text,400000)});
+    else if(c?.type==="image_url"){const m=String(c.image_url?.url||c.image_url||"").match(/^data:(image\/[\w.+-]+);base64,(.+)$/);if(m&&m[2].length<4_000_000)out.push({inline_data:{mime_type:m[1],data:m[2]}});}
+  }
+  return out.length?out:[{text:""}];
+}
+async function codeMode(body,res){
+  const system=clean(body?.system,12000);
+  const msgs=(Array.isArray(body?.messages)?body.messages:[]).slice(-8);
+  const temperature=typeof body?.temperature==="number"?Math.max(0,Math.min(1,body.temperature)):.5;
+  const contents=msgs.map(m=>({role:m?.role==="assistant"?"model":"user",parts:codeParts(m?.content)}));
+  if(!contents.length)return res.status(400).json({ok:false,error:"Falta el pedido"});
+  const key=clean(process.env.GEMINI_API_KEY,700);let last="";const fin=Date.now()+280000,queda=()=>fin-Date.now();
+  if(key){
+    for(const model of geminiModels()){
+      if(queda()<20000)break;
+      try{
+        const payload={contents,generationConfig:{temperature,maxOutputTokens:32000}};
+        if(system)payload.systemInstruction={parts:[{text:system}]};
+        const r=await fetchTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(payload)},Math.min(150000,queda()-5000));
+        const data=await r.json().catch(()=>({}));
+        if(!r.ok){last=`Gemini ${r.status}`;if(r.status===401||r.status===403)break;continue;}
+        const text=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||"").join("");
+        if(text.trim())return res.status(200).json({ok:true,content:text,model});
+        last="Gemini respondió vacío";
+      }catch(e){last=e?.name==="AbortError"?"Gemini tardó demasiado":(e?.message||"error");}
+    }
+  }
+  const orKey=clean(process.env.OPENROUTER_API_KEY,900);
+  if(orKey){
+    const om=[...(system?[{role:"system",content:system}]:[]),...msgs.map(m=>({role:m?.role==="assistant"?"assistant":"user",content:m?.content}))];
+    for(const model of openRouterModels()){
+      if(queda()<20000)break;
+      try{
+        const r=await fetchTimeout("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${orKey}`},body:JSON.stringify({model,messages:om,temperature,max_tokens:16000})},Math.min(150000,queda()-5000));
+        const data=await r.json().catch(()=>({}));
+        const c=data?.choices?.[0]?.message?.content;const text=typeof c==="string"?c:Array.isArray(c)?c.map(x=>x?.text||"").join(""):"";
+        if(r.ok&&text.trim())return res.status(200).json({ok:true,content:text,model});
+        last=`OpenRouter ${r.status}`;
+      }catch(e){last=e?.message||"error";}
+    }
+  }
+  if(!key&&!orKey)return res.status(200).json({ok:false,error:"Falta la clave de la IA en Vercel (GEMINI_API_KEY)."});
+  console.error("ÁNGELA modo código:",last);
+  return res.status(200).json({ok:false,error:"La IA no pudo responder ahora. Probá de nuevo en un rato."});
+}
+
 export default async function handler(req,res){
   cors(req,res);
   if(req.method==="OPTIONS")return res.status(204).end();
@@ -281,6 +335,7 @@ export default async function handler(req,res){
       geminiOk:geminiConfigured,verified:geminiConfigured||openRouterConfigured,providers:providerOrder(),geminiModels:geminiModels(),openrouterModels:openRouterModels(),webGrounding:true,multimodal:true,documents:true,version:"6.2.0"
     });
 
+    if(body?.mode==="code")return await codeMode(body,res);
     const conv=makeConv(body);if(!conv.message)return res.status(400).json({error:"Falta el mensaje"});
     let order=providerOrder();if(body?.forceAlternate===true)order=[...order].reverse();
     const extra=body?.repair===true&&body?.badReply?`La respuesta anterior fue mala:\n${clean(body.badReply,2500)}\nRehacela correctamente.`:"";

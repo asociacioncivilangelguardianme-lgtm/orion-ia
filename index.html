@@ -11684,7 +11684,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 document.addEventListener('change',e=>{if(e.target.id!=='ags_referenceVideo')return;const f=e.target.files?.[0],v=el('ags_referencePreview');if(!v)return;if(videoURL)URL.revokeObjectURL(videoURL);if(f){videoURL=URL.createObjectURL(f);v.src=videoURL;v.style.display='block'}else{v.removeAttribute('src');v.style.display='none'}});
 new MutationObserver(()=>{if(el('ags_longPrompt')&&!el('ags_longPrompt').dataset.ready)initialize()}).observe(document.body,{childList:true,subtree:true});initialize();})();
 </script>
-<script>document.addEventListener("DOMContentLoaded",function(){var el=document.createElement("div");el.textContent="ÁNGELA V12.74 · PRUEBA · "+((location.protocol==="file:"||location.protocol==="content:")?"ARCHIVO LOCAL":"SITIO WEB");el.style.cssText="position:fixed;bottom:8px;right:8px;z-index:2147483647;background:#18233b;color:#fff;border:1px solid #a855f7;border-radius:10px;padding:7px 12px;font:700 12px Arial;box-shadow:0 2px 12px #0009;pointer-events:none";document.body.appendChild(el)});</script>
+<script>document.addEventListener("DOMContentLoaded",function(){var el=document.createElement("div");el.textContent="ÁNGELA V12.75 · PRUEBA · "+((location.protocol==="file:"||location.protocol==="content:")?"ARCHIVO LOCAL":"SITIO WEB");el.style.cssText="position:fixed;bottom:8px;right:8px;z-index:2147483647;background:#18233b;color:#fff;border:1px solid #a855f7;border-radius:10px;padding:7px 12px;font:700 12px Arial;box-shadow:0 2px 12px #0009;pointer-events:none";document.body.appendChild(el)});</script>
 <!-- V11.73: Laboratorio gratuito solo en Crear Video; eliminado botón duplicado autovideo y acceso flotante redundante. Sin cambios en motores ni editor. -->
 <!-- ANGELA V12.41 PILOTO MININOVELAS: modulo independiente, no modifica el editor previo -->
 <style>
@@ -13118,13 +13118,13 @@ function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').tex
 function home(){
   stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
   var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
-  [window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
+  [window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro,window.ANGELAPlus].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
   h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
   $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
 }
 function go(k){
   stopAll();
-  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
+  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro,window.ANGELAPlus].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
   var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
   CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
   ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
@@ -15712,3 +15712,524 @@ console.info('[ÁNGELA] Revisar el celular + grilla de prueba láser y rotativo'
 })();
 </script>
 <!-- ===== FIN CELULAR Y LÁSER ===== -->
+
+<!-- ===== ÁNGELA · Crear y archivos (Constructor de apps, PDF, fotos, buscador) ===== -->
+<style id="agpcss">
+.cb-wrap{display:flex;flex-direction:column;gap:14px}
+.cb-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cb-bar select{background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:8px 10px;min-width:180px;max-width:100%;color:var(--txt)}
+.cb-grid{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:14px;align-items:start}
+@media(max-width:900px){.cb-grid{grid-template-columns:1fr}}
+.cb-pn{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;min-width:0}
+.cb-pn h3{font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.cb-pn details>summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;display:flex;align-items:center;gap:8px}
+.cb-pn details>summary::-webkit-details-marker{display:none}
+.cb-pn details[open]>summary{margin-bottom:10px}
+.cb-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.cb-modes button{background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:8px 4px;font-size:12.5px;font-weight:600}
+.cb-modes button.on{background:var(--accbg);border-color:var(--acc);color:#fff}
+.cb-ta,.cb-in,.cb-sel{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 11px;color:var(--txt);font-size:13.5px}
+.cb-ta{min-height:110px;resize:vertical}
+.cb-lb{font-size:12px;color:var(--mut);margin:10px 0 4px;font-weight:600}
+.cb-row{display:flex;gap:6px;align-items:center}
+.cb-row>*{min-width:0}
+.cb-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cb-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cb-chips button{font-size:11.5px;background:var(--panel2);border:1px solid var(--line2);border-radius:20px;padding:4px 10px;color:var(--mut)}
+.cb-chips button:hover{color:#fff;border-color:var(--acc)}
+.cb-thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.cb-thumbs div{position:relative}
+.cb-thumbs img{width:76px;height:76px;object-fit:cover;border-radius:8px;border:1px solid var(--line2)}
+.cb-thumbs button{position:absolute;top:-6px;right:-6px;background:var(--bad);color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;line-height:20px}
+.cb-page{background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:9px 11px;margin-top:8px;font-size:12.5px;color:var(--mut)}
+.cb-page b{color:var(--txt)}
+.cb-sw{display:inline-block;width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,.2);vertical-align:middle;margin-right:3px}
+.cb-go{width:100%;margin-top:12px;padding:12px!important;font-size:14.5px!important}
+.cb-busy{display:none;align-items:center;gap:10px;background:var(--accbg);border:1px solid rgba(124,92,255,.35);border-radius:9px;padding:10px 12px;font-size:13px;color:#d6ccff}
+.cb-busy.on{display:flex}
+.cb-spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:cbspin .8s linear infinite;flex:none}
+@keyframes cbspin{to{transform:rotate(360deg)}}
+.cb-tool{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.cb-tool .btn{padding:7px 10px;font-size:12.5px}
+.cb-seg{display:inline-flex;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:2px}
+.cb-seg button{padding:5px 10px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--mut)}
+.cb-seg button.on{background:var(--acc);color:#fff}
+.cb-prev{background:repeating-conic-gradient(#15151b 0 25%,#1a1a22 0 50%) 0 0/20px 20px;border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:200px}
+.cb-scale{display:flex;justify-content:center;overflow:hidden}
+.cb-scale.pc{justify-content:flex-start}
+.cb-prev iframe{border:0;background:#fff;display:block;flex:none}
+.cb-scale:not(.pc) iframe{border-radius:14px;margin:0 auto;box-shadow:0 0 0 6px #0b0b0f}
+.cb-empty{padding:40px 20px;text-align:center;color:var(--mut)}
+.cb-empty .big{font-size:42px;margin-bottom:6px}
+.cb-tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin:14px 0 10px}
+.cb-tabs button{padding:8px 11px;font-size:12.5px;font-weight:600;color:var(--mut);border-bottom:2px solid transparent;white-space:nowrap}
+.cb-tabs button.on{color:#fff;border-bottom-color:var(--acc)}
+.cb-tabs .n{background:var(--bad);color:#fff;border-radius:10px;padding:0 6px;font-size:10.5px;margin-left:4px}
+.cb-tabs .n.ok{background:var(--ok)}
+.cb-chat{max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.cb-msg{padding:8px 11px;border-radius:10px;font-size:13px;max-width:92%;white-space:pre-wrap;word-break:break-word}
+.cb-msg.u{align-self:flex-end;background:var(--acc);color:#fff}
+.cb-msg.a{align-self:flex-start;background:var(--panel2);border:1px solid var(--line2)}
+.cb-list{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.cb-it{display:flex;gap:8px;align-items:flex-start;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.cb-it .t{flex:1;min-width:0;word-break:break-word}
+.cb-it small{color:var(--mut)}
+.cb-it.cur{border-color:var(--acc)}
+.cb-code{width:100%;min-height:340px;background:#0b0b10;color:#d4d4e0;border:1px solid var(--line2);border-radius:9px;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre;tab-size:2}
+.cb-h4{font-size:13px;font-weight:700;margin:12px 0 6px}
+.cb-note{font-size:12px;color:var(--mut);margin-top:8px}
+
+.agp{--bg:#0F0F12;--bg2:#141419;--panel:#18181f;--panel2:#1f1f29;--line:#272733;--line2:#353545;--txt:#ededf5;--mut:#9b9bb2;--acc:#7c5cff;--accbg:rgba(124,92,255,.14);--ok:#22c55e;--bad:#ef4444;--r:12px;color:var(--txt);font-size:14px;line-height:1.5}
+.agp button,.agp input,.agp select,.agp textarea{font:inherit;color:inherit}
+.agp button{cursor:pointer;border:0;background:none}
+.agp .sub{color:var(--mut);font-size:13px;margin-bottom:4px}
+.agp .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border-radius:9px;background:var(--panel2);border:1px solid var(--line2);font-weight:600;font-size:13px;white-space:nowrap;color:var(--txt);min-height:38px}
+.agp .btn:hover{border-color:var(--acc)}
+.agp .btn:disabled{opacity:.45;cursor:not-allowed}
+.agp .btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.agp .btn.grad{background:linear-gradient(135deg,#7c5cff,#b14cff);border:0;color:#fff;box-shadow:0 8px 24px rgba(124,92,255,.3)}
+.agp .cb-in,.agp .cb-sel,.agp .cb-ta{font-size:14px;width:100%;min-height:40px}
+.agp input[type=range]{accent-color:#7c5cff;height:auto;margin:0;width:100%}
+.agp .cb-pn{margin-bottom:14px}
+.agp-sbox{margin-bottom:6px}
+.agp-sbox .cb-in{background:#141419;border:1px solid #353545;border-radius:10px;padding:11px 13px;color:#ededf5;font-size:14px;width:100%}
+.herr-tile{position:relative}
+.agp-star{position:absolute;top:8px;right:10px;font-size:18px;color:#6c6c84;line-height:1;padding:4px;cursor:pointer}
+.agp-star.on{color:#ffd54a}
+#agpToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1f1f29;color:#fff;border:1px solid #353545;border-radius:10px;padding:10px 16px;font-size:13.5px;z-index:2147483000;opacity:0;pointer-events:none;transition:.2s;max-width:90vw;text-align:center}
+#agpToast.on{opacity:1;transform:translateX(-50%)}
+#agpToast.err{border-color:#ef4444;background:#2a1215}
+</style>
+<script id="agpjs">
+(function(){'use strict';if(window.ANGELAPlus)return;
+function api(){return location.protocol==='file:'?'https://orion-ia-sooty.vercel.app':''}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var tT;function toast(m,err){try{if(typeof window.showToast==='function'&&!err)return window.showToast(m)}catch(e){}var t=document.getElementById('agpToast');if(!t){t=document.createElement('div');t.id='agpToast';document.body.appendChild(t)}t.textContent=m;t.className=err?'err on':'on';clearTimeout(tT);tT=setTimeout(function(){t.className=''},err?5500:3000)}
+function ago(t){var s=Math.round((Date.now()-t)/1000);if(s<60)return 'recién';if(s<3600)return 'hace '+Math.round(s/60)+' min';if(s<86400)return 'hace '+Math.round(s/3600)+' h';return new Date(t).toLocaleDateString('es-AR')}
+function jsonDe(t){t=String(t||'').replace(/```json|```/g,'');var a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<0)throw new Error('La IA no devolvió datos válidos');t=t.slice(a,b+1);try{return JSON.parse(t)}catch(e){return JSON.parse(t.replace(/,\s*([}\]])/g,'$1').replace(/[“”]/g,'"'))}}
+/* la IA de Ángela en modo «código» (respuestas largas) */
+async function aiChat(messages,o){var sys=messages.filter(function(m){return m.role==='system'}).map(function(m){return m.content}).join('\n\n');var rest=messages.filter(function(m){return m.role!=='system'});
+  var r=await fetch(api()+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'code',system:sys,messages:rest,temperature:(o&&o.temp)||.5})});
+  var j=await r.json().catch(function(){return {}});if(j.ok&&j.content)return String(j.content);throw new Error(j.error||('La IA no respondió (HTTP '+r.status+'). Probá de nuevo en un rato.'))}
+/* =========================================================================
+   CONSTRUCTOR DE APPS Y PÁGINAS
+   Describí, pegá un link o subí una captura → la IA (Gemini, gratis) arma una
+   página/app propia en un solo archivo HTML. Vista previa en celu y compu,
+   errores en vivo, prueba automática de botones, cambios por chat, versiones,
+   editor de código y descarga. Todo se guarda en este navegador.
+   ========================================================================= */
+var q=function(s,r){return (r||document).querySelector(s)};
+var uidc=function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)};
+var B={list:[],sel:null,loaded:false};
+var R={mode:'desc',imgs:[],page:null,device:'cel',tab:'chat',errors:[],checks:null,test:null,busy:'',tok:'',style:'auto',kind:'web',desc:'',extra:'',url:''};
+
+/* ---------- guardado (IndexedDB: aguanta proyectos grandes) ---------- */
+var db=null;
+function idb(){return new Promise(function(ok,ko){try{var r=indexedDB.open('angela_constructor',1);r.onupgradeneeded=function(){r.result.createObjectStore('kv')};r.onsuccess=function(){db=r.result;ok(db)};r.onerror=function(){ko(r.error)}}catch(e){ko(e)}})}
+function dbGet(k){return new Promise(function(ok){try{var t=db.transaction('kv').objectStore('kv').get(k);t.onsuccess=function(){ok(t.result)};t.onerror=function(){ok(null)}}catch(e){ok(null)}})}
+function dbSet(k,v){return new Promise(function(ok){try{var t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=function(){ok(true)};t.onerror=function(){ok(false)}}catch(e){ok(false)}})}
+var loading=null;
+function loadAll(){if(loading)return loading;loading=(async function(){try{await idb();var d=await dbGet('data');if(d&&Array.isArray(d.list)){B.list=d.list;B.sel=d.sel}}catch(e){}B.loaded=true})();return loading}
+var saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(async function(){if(!db){toast('No pude guardar: este navegador no deja guardar datos',1);return}var ok=await dbSet('data',{list:B.list,sel:B.sel});if(!ok)toast('No pude guardar el proyecto en este navegador',1)},300)}
+
+function cur(){return B.list.find(function(p){return p.id===B.sel})||null}
+function curHtml(p){p=p||cur();return p&&p.versions[p.cur]?p.versions[p.cur].html:''}
+function newProject(name){var p={id:uidc(),name:name||'Proyecto nuevo',created:Date.now(),updated:Date.now(),versions:[],cur:-1,chat:[],plan:null};B.list.unshift(p);B.sel=p.id;save();return p}
+function addVersion(p,html,note){p.versions.push({html:html,note:note,at:Date.now()});if(p.versions.length>30)p.versions.splice(0,p.versions.length-30);p.cur=p.versions.length-1;p.updated=Date.now();R.test=null;save()}
+function slug(s){return String(s||'pagina').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'pagina'}
+
+/* ---------- lo que se le pide a la IA ---------- */
+var SYS=['Sos un programador web experto y diseñador. Creás páginas y aplicaciones COMPLETAS en UN SOLO archivo HTML (HTML, CSS y JavaScript juntos).',
+'REGLAS:',
+'1) Respondé SOLO con el código: empezá con <!DOCTYPE html> y terminá con </html>. Nada de explicaciones ni ```.',
+'2) Todo en español rioplatense (salvo que pidan otro idioma).',
+'3) Diseño moderno y prolijo, pensado primero para celular y que también se vea bien en computadora. Incluí <meta name="viewport" content="width=device-width, initial-scale=1">. Nada de scroll horizontal.',
+'4) Cada botón, menú, pestaña, buscador y formulario tiene que FUNCIONAR de verdad con JavaScript. Ningún botón decorativo. Si algo necesita un servidor real (pagos, cuentas, envío de mails), hacelo funcionar en la página como demo y mostrá un aviso claro que diga que es demo.',
+'5) Guardá lo que carga el usuario con localStorage, siempre dentro de try/catch (si falla, que siga andando en memoria).',
+'6) Imágenes: usá https://image.pollinations.ai/prompt/DESCRIPCION_EN_INGLES_CON_%20?width=800&height=600&nologo=true , o emojis y SVG propios. Nunca imágenes copiadas de otras webs.',
+'7) Librerías externas solo si de verdad hacen falta y solo desde cdnjs.cloudflare.com o cdn.jsdelivr.net. Podés usar Google Fonts.',
+'8) Identidad PROPIA: nombre, logo, textos y colores propios. Nunca copies marcas, logos, nombres comerciales ni textos de una referencia, y nunca hagas formularios que pidan contraseñas o tarjetas imitando a otra empresa.',
+'9) Código compacto y ordenado (idealmente menos de 700 líneas), con comentarios cortos en español. Botones con texto claro.'
+].join('\n');
+var STYLES={auto:'Elegí vos un estilo propio que quede lindo para este tema.',oscuro:'Estilo oscuro elegante, fondo casi negro, un color de acento.',claro:'Estilo claro, limpio y luminoso, mucho espacio en blanco.',colorido:'Estilo colorido y alegre, con degradados suaves y bordes redondeados.',neon:'Estilo neón: fondo oscuro con brillos cian, violeta y verde.',ev:'Estilo del Comedor Ángel Guardián: cálido y familiar, celeste cielo y dorado, con un toque de ángel, bordes redondeados.'};
+var KINDS={web:'una página web',app:'una app o herramienta',tienda:'una tienda o catálogo (pedidos por WhatsApp)',form:'un formulario o sistema de registro',juego:'un juego',panel:'un panel de gestión con tablas y estadísticas'};
+var IDEAS=['Página del comedor con historia, fotos, horarios y botón para donar','Calculadora de costos de sublimación (tazas, mates, remeras) con ganancia','Agenda de turnos con calendario y recordatorio por WhatsApp','Catálogo de productos con carrito que arma el pedido por WhatsApp','Lista de donantes con buscador, totales y exportar a Excel','Juego de preguntas sobre los Orixás con puntaje'];
+
+function extract(t){t=String(t||'').replace(/^\s*```(?:html)?\s*/i,'').replace(/```\s*$/,'');var a=t.search(/<!DOCTYPE html|<html[\s>]/i);if(a>0)t=t.slice(a);var b=t.toLowerCase().lastIndexOf('</html>');if(b>=0)t=t.slice(0,b+7);return t.trim()}
+function complete(t){return /<\/html>\s*$/i.test(t)}
+async function genHtml(msgs,label){
+  var out=await aiChat(msgs,{temp:.5});var txt=extract(out),n=0;
+  while(!complete(txt)&&n<3&&/^<!DOCTYPE|^<html/i.test(txt)){n++;setBusy(label+' (parte '+(n+1)+')…');
+    var more=await aiChat(msgs.concat([{role:'assistant',content:txt},{role:'user',content:'Se cortó. Seguí EXACTAMENTE desde el último carácter, sin repetir nada y sin explicaciones ni ```.'}]),{temp:.3});
+    more=String(more).replace(/^\s*```(?:html)?\s*/i,'').replace(/```\s*$/,'');
+    if(/^\s*(<!DOCTYPE|<html)/i.test(more))txt=extract(more);else txt=extract(txt+more)}
+  if(!/^<!DOCTYPE|^<html/i.test(txt))throw new Error('La IA no devolvió una página. Probá de nuevo.');
+  if(!complete(txt))txt+='\n</body></html>';
+  return txt}
+async function makePlan(content){
+  var ask='Antes de programar, armá el plan de esta app/página. Respondé SOLO JSON así: {"nombre":"nombre corto y propio","pantallas":["..."],"funciones":["funciones concretas, máximo 12"],"necesitaServidor":["lo que no puede ser real sin servidor, pago o clave; vacío si nada"],"colores":["#hex","#hex","#hex"]}';
+  var c=Array.isArray(content)?[{type:'text',text:ask}].concat(content):ask+'\n\nPEDIDO:\n'+content;
+  return jsonDe(await aiChat([{role:'system',content:'Sos un analista de software. Respondés solo JSON válido, en español.'},{role:'user',content:c}],{temp:.4}))}
+function planText(pl){var s='📋 Plan: '+(pl.nombre||'')+'\n';if(pl.pantallas&&pl.pantallas.length)s+='Pantallas: '+pl.pantallas.join(' · ')+'\n';if(pl.funciones&&pl.funciones.length)s+='Funciones:\n'+pl.funciones.map(function(f){return '• '+f}).join('\n');if(pl.necesitaServidor&&pl.necesitaServidor.length)s+='\n⚠️ Necesitan servidor o pago (van como demo): '+pl.necesitaServidor.join(', ');return s}
+
+function buildRequest(){
+  var kind=KINDS[R.kind]||KINDS.web,sty=STYLES[R.style]||STYLES.auto,extra=R.extra.trim();
+  if(R.mode==='desc'){var d=R.desc.trim();if(d.length<8){toast('Contame un poco más qué querés armar',1);return null}
+    return {label:d.slice(0,140),content:'Creá '+kind+'.\nDESCRIPCIÓN: '+d+'\nESTILO: '+sty+(extra?'\nDETALLES: '+extra:'')}}
+  if(R.mode==='url'){if(!R.page){toast('Primero tocá «Leer página»',1);return null}var p=R.page;
+    var ref={titulo:p.title,descripcion:p.description,secciones:p.sections,titulos:p.headings,menu:p.navLinks,botones:p.buttons,campos:p.inputs,formularios:p.forms,colores:p.colors,letras:p.fonts,imagenes:p.images,texto:p.text&&p.text.slice(0,2000)};
+    return {label:'Versión propia de '+p.url,content:'Creá '+kind+' tomando como REFERENCIA la estructura de una página pública (para inspirarte en sus secciones y funciones visibles). Hacé una versión PROPIA: otro nombre, otros textos escritos por vos, otra identidad visual. Reproducí las funciones que se ven (menús, buscadores, formularios, carritos, etc.) con código propio y que funcionen.\nREFERENCIA ('+p.url+'):\n'+JSON.stringify(ref)+'\nESTILO: '+sty+(p.littleText?'\nAVISO: la página casi no tenía texto (seguramente se arma con JavaScript); completá con criterio.':'')+(extra?'\nCAMBIOS QUE PIDE EL USUARIO: '+extra:'')}}
+  if(!R.imgs.length){toast('Subí al menos una captura o foto',1);return null}
+  var c=[{type:'text',text:'Creá '+kind+' reconstruyendo la interfaz que se ve en '+(R.imgs.length>1?'estas imágenes (son pantallas de la misma app)':'esta imagen')+': misma distribución, secciones, botones y funciones visibles, pero con identidad PROPIA (otro nombre y logo, textos propios). Que todo funcione de verdad.\nESTILO: '+(R.style==='auto'?'Respetá los colores y la distribución de la imagen.':sty)+(extra?'\nCAMBIOS QUE PIDE EL USUARIO: '+extra:'')}];
+  R.imgs.forEach(function(u){c.push({type:'image_url',image_url:{url:u}})});
+  return {label:'Reconstruir desde '+R.imgs.length+' imagen(es)',content:c}}
+
+async function create(){
+  if(R.busy)return;var req=buildRequest();if(!req)return;
+  var p=cur();if(!p||p.versions.length)p=newProject();
+  p.chat.push({r:'u',t:'✨ '+req.label});
+  try{
+    setBusy('Analizando y armando el plan…');var pl=null;
+    try{pl=await makePlan(req.content)}catch(e){}
+    if(pl){p.plan=pl;if(pl.nombre&&p.name==='Proyecto nuevo')p.name=String(pl.nombre).slice(0,40);p.chat.push({r:'a',t:planText(pl)})}
+    var hint=pl?'\n\nPLAN A SEGUIR (respetalo): '+JSON.stringify(pl):'';
+    var user=Array.isArray(req.content)?req.content.concat([{type:'text',text:hint}]):req.content+hint;
+    setBusy('Diseñando y escribiendo el código…');
+    var html=await genHtml([{role:'system',content:SYS},{role:'user',content:user}],'Escribiendo el código');
+    addVersion(p,html,'Creada con IA');
+    p.chat.push({r:'a',t:'✅ Listo. Mirá la vista previa. Tocá 🧪 Probar botones para revisar que todo ande, o pedime cambios acá abajo.'});
+  }catch(e){p.chat.push({r:'a',t:'⚠️ '+(e.message||e)});toast(e.message||String(e),1)}
+  setBusy('');save();R.tab='chat';draw()}
+
+async function edit(instr,note){
+  instr=String(instr||'').trim();if(!instr||R.busy)return;var p=cur(),html=curHtml(p);
+  if(!html){toast('Primero creá una página',1);return}
+  p.chat.push({r:'u',t:instr});R.tab='chat';draw();
+  try{setBusy('Haciendo el cambio…');
+    var nh=await genHtml([{role:'system',content:SYS},{role:'user',content:'Este es el código actual de la app:\n\n'+html+'\n\nHacé este cambio: '+instr+'\n\nDevolvé el archivo COMPLETO actualizado. No saques ni rompas nada que ya funcione, salvo que el cambio lo pida.'}],'Haciendo el cambio');
+    addVersion(p,nh,note||('Cambio: '+instr.slice(0,60)));p.chat.push({r:'a',t:'✅ Hecho (versión '+p.versions.length+'). Si no te gusta, volvé a la anterior en 🕘 Versiones.'})
+  }catch(e){p.chat.push({r:'a',t:'⚠️ '+(e.message||e)});toast(e.message||String(e),1)}
+  setBusy('');save();draw()}
+
+function problems(){var L=[],c=R.checks;
+  R.errors.forEach(function(e){L.push('Error en la consola: '+e)});
+  if(c){if(c.overflow)L.push('La página se sale de la pantalla a lo ancho (scroll horizontal) en '+(R.device==='cel'?'celular':'computadora')+'.');if(!c.viewport)L.push('Falta <meta name="viewport"> para celulares.');if(c.brokenImgs)L.push(c.brokenImgs+' imagen(es) no cargan.');if(c.emptyButtons)L.push(c.emptyButtons+' botón(es) sin texto ni ícono.')}
+  (R.test||[]).forEach(function(t){if(t.s==='err')L.push('Al tocar el botón «'+t.n+'» da error: '+t.e);else if(t.s==='form')L.push('El formulario del botón «'+t.n+'» recarga la página en vez de procesar los datos con JavaScript.');else if(t.s==='none'&&!t.h)L.push('El botón «'+t.n+'» no hace nada visible al tocarlo.')});
+  return L}
+function fixAll(){var L=problems();if(!L.length){toast('No hay problemas para arreglar 🎉');return}
+  edit('Arreglá estos problemas que encontraron las pruebas automáticas:\n- '+L.join('\n- '),'Arreglo automático')}
+
+/* ---------- vista previa con sensores (errores, revisión y prueba de botones) ---------- */
+function probe(TOK){
+  var P=function(t,m){try{parent.postMessage({__evb:1,t:t,m:m,tok:TOK},'*')}catch(e){}};
+  var TEST=null;
+  window.addEventListener('error',function(e){var tg=e.target;if(tg&&tg!==window&&tg.tagName){P('res',tg.tagName.toLowerCase()+' no cargó: '+String(tg.src||tg.href||'').slice(0,120));return}var msg=String(e.message||'Error')+(e.lineno?' (línea '+e.lineno+')':'');if(TEST)TEST.push(msg);P('err',msg)},true);
+  window.addEventListener('unhandledrejection',function(e){var r=e.reason;var msg='Error en tarea: '+String((r&&r.message)||r);if(TEST)TEST.push(msg);P('err',msg)});
+  var ce=console.error;console.error=function(){var a=[].slice.call(arguments).map(function(x){try{return typeof x==='string'?x:((x&&x.message)||JSON.stringify(x))}catch(e){return String(x)}}).join(' ');if(TEST)TEST.push(a);P('err',a.slice(0,300));return ce.apply(console,arguments)};
+  function sig(){var b=document.body;if(!b)return '';var t=b.innerText||'';var h=0;for(var i=0;i<t.length;i++){h=(h*31+t.charCodeAt(i))|0}var fv='';[].forEach.call(document.querySelectorAll('input,textarea,select'),function(x){fv+=(x.type==='checkbox'||x.type==='radio')?(x.checked?1:0):String(x.value).length});var v=0;var all=b.getElementsByTagName('*');for(var j=0;j<all.length&&j<3000;j++){if(all[j].offsetParent!==null)v++}return b.innerHTML.length+'|'+h+'|'+v+'|'+fv+'|'+location.hash+'|'+Math.round(window.scrollY)}
+  function check(){var r={};r.overflow=document.documentElement.scrollWidth>window.innerWidth+4;r.viewport=!!document.querySelector('meta[name=viewport]');r.buttons=document.querySelectorAll('button,[role=button],input[type=button],input[type=submit]').length;r.emptyButtons=[].filter.call(document.querySelectorAll('button'),function(b){return !b.textContent.trim()&&!b.getAttribute('aria-label')&&!b.title&&!b.querySelector('svg,img,i,span')}).length;r.imgs=document.images.length;r.brokenImgs=[].filter.call(document.images,function(i){return i.complete&&i.naturalWidth===0&&i.getAttribute('src')}).length;r.forms=document.forms.length;P('check',r)}
+  window.addEventListener('load',function(){setTimeout(check,2500)});
+  function label(el){return String(el.innerText||el.value||el.getAttribute('aria-label')||el.title||el.id||el.tagName).trim().replace(/\s+/g,' ').slice(0,40)}
+  function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  async function runTest(){var els=[].slice.call(document.querySelectorAll('button,[role=button],input[type=button],input[type=submit],a[href^="#"],a:not([href]),[onclick]'));var seen=[];els=els.filter(function(e){if(seen.indexOf(e)>=0)return false;seen.push(e);return true}).slice(0,60);
+    var oa=window.alert,oc=window.confirm,op=window.prompt,oo=window.open;var dlg=0;window.alert=function(){dlg++};window.confirm=function(){dlg++;return false};window.prompt=function(){dlg++;return null};window.open=function(){dlg++;return null};
+    var sub=function(e){if(!e.defaultPrevented){e.preventDefault();if(TEST)TEST.push('__nosubmit')}};window.addEventListener('submit',sub);
+    var res=[];
+    for(var i=0;i<els.length;i++){var el=els[i];if(!el.isConnected)continue;var name=label(el);
+      if(/borr|elimin|vaci|reset|reinici|delete|cerrar sesi|salir/i.test(name)){res.push({n:name,s:'skip'});continue}
+      var hid=el.offsetParent===null&&getComputedStyle(el).position!=='fixed';
+      TEST=[];var d0=dlg;var before=sig();try{el.click()}catch(err){TEST.push(String(err.message||err))}await wait(350);var after=sig();
+      var errs=TEST.filter(function(x){return x!=='__nosubmit'});var nosub=TEST.indexOf('__nosubmit')>=0;
+      res.push({n:name,s:errs.length?'err':(nosub?'form':((before!==after||dlg>d0)?'ok':'none')),e:errs.slice(0,2).join(' · ').slice(0,200),h:hid})}
+    TEST=null;window.alert=oa;window.confirm=oc;window.prompt=op;window.open=oo;window.removeEventListener('submit',sub);P('test',res)}
+  window.addEventListener('message',function(e){var d=e.data;if(d&&d.__evbcmd==='test'&&d.tok===TOK)runTest()});
+}
+function inject(html,tok){var s='<script>('+probe.toString().replace(/\n\s*/g,' ')+')('+JSON.stringify(tok)+');<\/script>';
+  if(/<head[^>]*>/i.test(html))return html.replace(/<head[^>]*>/i,function(m){return m+s});
+  if(/<html[^>]*>/i.test(html))return html.replace(/<html[^>]*>/i,function(m){return m+s});
+  return s+html}
+window.addEventListener('message',function(e){var d=e.data;if(!d||!d.__evb||d.tok!==R.tok)return;
+  if(d.t==='err'||d.t==='res'){var m=String(d.m||'').slice(0,300);if(R.errors.indexOf(m)<0&&R.errors.length<50){R.errors.push(m);paintTabs(true)}}
+  else if(d.t==='check'){R.checks=d.m;paintTabs(true)}
+  else if(d.t==='test'){R.test=d.m;R.testing=false;setBusy('');R.tab='pruebas';var keep=R.test;paintPreview();R.test=keep;paintTabs()}});
+
+function paintPreview(){var box=q('#cbPrev');if(!box)return;var p=cur(),html=p&&curHtml(p);
+  R.errors=[];R.checks=null;
+  if(!html){R.tok='';box.innerHTML='<div class="cb-empty"><div class="big">🛠️</div><b style="color:var(--txt)">Acá vas a ver tu página o app</b><p style="margin-top:6px">Describila, pegá un link o subí una captura, y tocá <b>Crear con IA</b>.</p></div>';return}
+  R.tok=uidc();
+  box.innerHTML='<div class="cb-scale'+(R.device==='pc'?' pc':'')+'"><iframe id="cbFrame" title="Vista previa" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe></div>';
+  var f=q('#cbFrame');fit();f.srcdoc=inject(html,R.tok)}
+function fit(){var box=q('#cbPrev'),f=q('#cbFrame');if(!box||!f)return;var sc=box.querySelector('.cb-scale'),W=box.clientWidth||360;
+  if(R.device==='cel'){var w=Math.min(390,W-16);f.style.width=w+'px';f.style.height='700px';f.style.transform='none';sc.style.height='716px';sc.style.paddingTop='8px'}
+  else{var s=Math.min(1,W/1280);f.style.width='1280px';f.style.height='800px';f.style.transform='scale('+s+')';f.style.transformOrigin='0 0';sc.style.height=Math.round(800*s)+'px';sc.style.paddingTop='0'}}
+var rzT;window.addEventListener('resize',function(){clearTimeout(rzT);rzT=setTimeout(fit,150)});
+
+function runTest(){var f=q('#cbFrame');if(!f){toast('Primero creá una página',1);return}R.testing=true;try{q('#cbPrev').scrollIntoView({block:'center'})}catch(e){}setBusy('Tocando cada botón para ver si funciona…');
+  try{f.contentWindow.postMessage({__evbcmd:'test',tok:R.tok},'*')}catch(e){}
+  setTimeout(function(){if(R.testing){R.testing=false;setBusy('');toast('La prueba no respondió (la página puede tener un error grave). Mirá 🧪 Pruebas.',1)}},40000)}
+
+/* ---------- pantalla ---------- */
+function setBusy(t){R.busy=t||'';var b=q('#cbBusy');if(b){b.className='cb-busy'+(R.busy?' on':'');b.innerHTML='<div class="cb-spin"></div><span>'+esc(R.busy)+'</span>'}document.querySelectorAll('[data-cbb]').forEach(function(x){x.disabled=!!R.busy})}
+var HOST=null;function draw(){if(HOST&&HOST.isConnected&&HOST.querySelector('.cb-wrap'))vCons(HOST)}
+
+function vCons(m){HOST=m;
+  if(!B.loaded){m.innerHTML='<div class="cb-empty"><div class="cb-spin" style="margin:0 auto"></div></div>';loadAll().then(draw);return}
+  var p=cur(),has=!!curHtml(p);
+  m.innerHTML='<div class="cb-wrap agp">'+
+   '<div class="sub">Describila, pegá un link o subí una captura: la IA arma una página o app propia que funciona de verdad (calculadoras, agendas, catálogos, juegos…). Para páginas informativas del comedor también está el 🌐 Estudio Web.</div>'+
+   '<div class="cb-bar"><select id="cbSel" aria-label="Proyecto">'+(B.list.length?'':'<option value="">Sin proyectos todavía</option>')+B.list.map(function(x){return '<option value="'+x.id+'"'+(x.id===B.sel?' selected':'')+'>'+esc(x.name)+' · '+x.versions.length+' v</option>'}).join('')+'</select>'+
+    '<button class="btn" id="cbNew" data-cbb>➕ Nuevo</button><button class="btn" id="cbImp" data-cbb>📂 Abrir un HTML</button>'+(p?'<button class="btn" id="cbRen">✏️ Nombre</button><button class="btn" id="cbDel">🗑️</button>':'')+
+    '<input type="file" id="cbImpF" accept=".html,.htm,text/html" hidden></div>'+
+   '<div class="cb-busy" id="cbBusy"></div>'+
+   '<div class="cb-grid">'+
+    '<div class="cb-pn"><details id="cbDet"'+(has&&!R.detOpen?'':' open')+'><summary>✨ '+(has?'Crear otra desde cero':'Crear con IA')+'</summary>'+
+     '<div class="cb-modes">'+[['desc','✍️ Describir'],['url','🔗 Link'],['img','📸 Captura']].map(function(x){return '<button data-md="'+x[0]+'" class="'+(R.mode===x[0]?'on':'')+'">'+x[1]+'</button>'}).join('')+'</div>'+
+     modeBody()+
+     '<div class="cb-two"><div><div class="cb-lb">¿Qué es?</div><select class="cb-sel" id="cbKind">'+Object.keys(KINDS).map(function(k){return '<option value="'+k+'"'+(R.kind===k?' selected':'')+'>'+KINDS[k].replace(/^una? /,'').replace(/^./,function(c){return c.toUpperCase()})+'</option>'}).join('')+'</select></div>'+
+     '<div><div class="cb-lb">Estilo</div><select class="cb-sel" id="cbSty">'+[['auto','Que elija la IA'],['oscuro','Oscuro elegante'],['claro','Claro y limpio'],['colorido','Colorido'],['neon','Neón'],['ev','Del comedor (celeste y dorado)']].map(function(x){return '<option value="'+x[0]+'"'+(R.style===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></div></div>'+
+     (R.mode!=='desc'?'<div class="cb-lb">Cambios o ideas (opcional)</div><textarea class="cb-ta" id="cbExtra" style="min-height:60px" placeholder="Ej: que sea para el comedor, con botón de WhatsApp">'+esc(R.extra)+'</textarea>':'')+
+     '<button class="btn grad cb-go" id="cbGo" data-cbb>✨ Crear con IA</button>'+
+     '<div class="cb-note">Usa la IA de Ángela (Gemini, gratis). Primero arma un plan y después escribe el código. Tarda entre 20 segundos y 2 minutos.</div>'+
+    '</details></div>'+
+    '<div class="cb-pn">'+
+     '<div class="cb-tool"><div class="cb-seg"><button data-dv="cel" class="'+(R.device==='cel'?'on':'')+'">📱 Celu</button><button data-dv="pc" class="'+(R.device==='pc'?'on':'')+'">💻 Compu</button></div>'+
+      '<button class="btn" id="cbRe" title="Recargar">↻</button><button class="btn" id="cbTest" data-cbb>🧪 Probar botones</button><button class="btn" id="cbDl">⬇️ Descargar</button><button class="btn" id="cbOpen">↗️ Abrir</button></div>'+
+     '<div class="cb-prev" id="cbPrev"></div>'+
+     '<div class="cb-tabs" id="cbTabs"></div><div id="cbTab"></div>'+
+    '</div>'+
+   '</div></div>';
+  bind(m);paintPreview();paintTabs();setBusy(R.busy)}
+
+function modeBody(){
+  if(R.mode==='desc')return '<div class="cb-lb">¿Qué querés que haga?</div><textarea class="cb-ta" id="cbDesc" placeholder="Ej: una app para anotar las donaciones del comedor, con buscador, total del mes y botón para pasar a Excel">'+esc(R.desc)+'</textarea>'+
+    '<div class="cb-row" style="margin-top:6px"><button class="btn" id="cbMic">🎤 Dictar</button></div>'+
+    '<div class="cb-chips">'+IDEAS.map(function(t,i){return '<button data-idea="'+i+'">'+esc(t)+'</button>'}).join('')+'</div>';
+  if(R.mode==='url'){var p=R.page;return '<div class="cb-lb">Link de una página pública</div><div class="cb-row"><input class="cb-in" id="cbUrl" placeholder="https://..." value="'+esc(R.url)+'" inputmode="url"><button class="btn" id="cbRead" data-cbb>Leer página</button></div>'+
+    (p?'<div class="cb-page"><b>'+esc(p.title||p.url)+'</b><br>'+(p.colors.length?'Colores: '+p.colors.slice(0,8).map(function(c){return '<span class="cb-sw" style="background:'+esc(c)+'"></span>'}).join('')+'<br>':'')+
+      (p.navLinks.length?'Menú: '+esc(p.navLinks.slice(0,8).join(' · '))+'<br>':'')+(p.headings.length?'Secciones: '+p.headings.length+' títulos':'')+(p.inputs.length?' · '+p.inputs.length+' campos':'')+(p.buttons.length?' · '+p.buttons.length+' botones':'')+
+      (p.littleText?'<br>⚠️ Casi no tiene texto (se arma con JavaScript). Para mejor resultado, subí también una captura.':'')+'</div>':'')+
+    '<div class="cb-note">Se lee solo lo que se ve públicamente. No se copia el código ni la marca: la IA hace una versión propia.</div>'}
+  return '<div class="cb-lb">Capturas o fotos del diseño (hasta 3)</div><input type="file" id="cbImg" accept="image/*" multiple hidden><button class="btn" id="cbPick" style="width:100%">📸 Elegir imágenes</button>'+
+    '<div class="cb-thumbs">'+R.imgs.map(function(u,i){return '<div><img src="'+u+'" alt=""><button data-rm="'+i+'">✕</button></div>'}).join('')+'</div>'}
+
+function paintTabs(light){var p=cur(),T=q('#cbTabs'),C=q('#cbTab');if(!T||!C)return;
+  var nProb=problems().length,tested=!!(R.test||R.checks);
+  T.innerHTML=[['chat','💬 Cambios'],['pruebas','🧪 Pruebas'+(tested||nProb?'<span class="n'+(nProb?'':' ok')+'">'+(nProb||'✓')+'</span>':'')],['codigo','‹/› Código'],['versiones','🕘 Versiones'],['plan','📋 Qué tiene']].map(function(x){return '<button data-tb="'+x[0]+'" class="'+(R.tab===x[0]?'on':'')+'">'+x[1]+'</button>'}).join('');
+  T.querySelectorAll('[data-tb]').forEach(function(b){b.onclick=function(){R.tab=b.dataset.tb;paintTabs()}});
+  if(light&&(R.tab==='chat'||R.tab==='codigo'))return; /* no borrar lo que el usuario está escribiendo */
+  if(!p){C.innerHTML='';return}
+  if(R.tab==='chat'){C.innerHTML='<div class="cb-chat" id="cbChat">'+(p.chat.length?p.chat.map(function(x){return '<div class="cb-msg '+x.r+'">'+esc(x.t)+'</div>'}).join(''):'<div class="cb-note">Cuando la página esté lista, pedí cambios con tus palabras.</div>')+'</div>'+
+    '<form id="cbEf" class="cb-row"><input class="cb-in" id="cbEi" placeholder="Ej: poné el botón de WhatsApp más grande" autocomplete="off"><button class="btn pri" data-cbb>Enviar</button></form>'+
+    '<div class="cb-chips">'+['Hacelo más lindo y moderno','Agregá modo oscuro','Agregá un buscador','Que guarde todo y se pueda exportar a Excel','Agregá botón de WhatsApp','Hacela instalable como app en el celu'].map(function(t){return '<button data-ed="'+esc(t)+'">'+esc(t)+'</button>'}).join('')+'</div>';
+    var ch=q('#cbChat');ch.scrollTop=ch.scrollHeight;
+    q('#cbEf').onsubmit=function(e){e.preventDefault();var i=q('#cbEi');var t=i.value;i.value='';edit(t)};
+    C.querySelectorAll('[data-ed]').forEach(function(b){b.onclick=function(){edit(b.dataset.ed)}})}
+  else if(R.tab==='pruebas'){var c=R.checks,h='';
+    h+='<div class="cb-tool"><button class="btn" id="cbT2" data-cbb>🧪 Probar todos los botones</button><button class="btn grad" id="cbFix" data-cbb'+(nProb?'':' disabled')+'>🛠️ Arreglar con IA'+(nProb?' ('+nProb+')':'')+'</button></div>';
+    h+='<div class="cb-h4">Revisión automática</div>';
+    if(!c)h+='<div class="cb-note">'+(curHtml(p)?'Revisando la página…':'Todavía no hay página.')+'</div>';
+    else h+='<div class="cb-list">'+[[!c.overflow,'Entra bien en la pantalla ('+(R.device==='cel'?'celular':'compu')+')','Se sale a lo ancho: hay que mover de costado'],[c.viewport,'Preparada para celulares','Le falta la etiqueta para celulares'],[!c.brokenImgs,c.imgs+' imagen(es) cargando bien',c.brokenImgs+' imagen(es) no cargan'],[!c.emptyButtons,c.buttons+' botones con texto o ícono',c.emptyButtons+' botón(es) vacíos']].map(function(x){return '<div class="cb-it"><span>'+(x[0]?'✅':'⚠️')+'</span><div class="t">'+esc(x[0]?x[1]:x[2])+'</div></div>'}).join('')+'</div>';
+    h+='<div class="cb-h4">Errores de la página</div>'+(R.errors.length?'<div class="cb-list">'+R.errors.map(function(e){return '<div class="cb-it"><span>❌</span><div class="t">'+esc(e)+'</div></div>'}).join('')+'</div>':'<div class="cb-note">'+(c?'✅ Sin errores al abrir la página.':'—')+'</div>');
+    h+='<div class="cb-h4">Prueba de botones</div>';
+    if(!R.test)h+='<div class="cb-note">Tocá «Probar todos los botones»: la app toca cada uno y se fija si hace algo. No toca los de borrar.</div>';
+    else{var ic2={ok:'✅',err:'❌',none:'⚠️',form:'⚠️',skip:'⏭️'},tx={ok:'Funciona',err:'Da error',none:'No se ve que haga nada',form:'El formulario recarga la página',skip:'No lo toqué (borra o reinicia)'};
+      var ok=R.test.filter(function(t){return t.s==='ok'}).length;
+      h+='<div class="cb-note" style="margin-bottom:6px">'+ok+' de '+R.test.length+' funcionan.</div><div class="cb-list">'+R.test.map(function(t){return '<div class="cb-it"><span>'+ic2[t.s]+'</span><div class="t"><b>'+esc(t.n||'(sin nombre)')+'</b> — '+tx[t.s]+(t.h&&t.s==='none'?' (está en una pantalla oculta; puede ser normal)':'')+(t.e?'<br><small>'+esc(t.e)+'</small>':'')+'</div></div>'}).join('')+'</div>'+
+      '<div class="cb-note">⚠️ puede ser un falso aviso si el botón solo suena, dibuja o copia algo.</div>'}
+    C.innerHTML=h;q('#cbT2').onclick=runTest;q('#cbFix').onclick=fixAll}
+  else if(R.tab==='codigo'){C.innerHTML=curHtml(p)?'<textarea class="cb-code" id="cbCode" spellcheck="false">'+esc(curHtml(p))+'</textarea><div class="cb-tool" style="margin-top:8px"><button class="btn pri" id="cbSaveC">💾 Guardar cambios</button><button class="btn" id="cbCopy">📋 Copiar código</button><span class="cb-note" style="margin:0">'+Math.round(curHtml(p).length/1024)+' KB · '+curHtml(p).split('\n').length+' líneas</span></div>':'<div class="cb-note">Todavía no hay código.</div>';
+    if(curHtml(p)){q('#cbSaveC').onclick=function(){var v=q('#cbCode').value;if(v===curHtml(p)){toast('No cambiaste nada');return}addVersion(p,v,'Editado a mano');toast('Guardado como versión '+p.versions.length);paintPreview();paintTabs()};
+      q('#cbCopy').onclick=function(){copy(curHtml(p))}}}
+  else if(R.tab==='versiones'){C.innerHTML=p.versions.length?'<div class="cb-list">'+p.versions.map(function(v,i){return {v:v,i:i}}).reverse().map(function(o){return '<div class="cb-it'+(o.i===p.cur?' cur':'')+'"><span>v'+(o.i+1)+'</span><div class="t">'+esc(o.v.note||'')+'<br><small>'+esc(ago(o.v.at))+' · '+Math.round(o.v.html.length/1024)+' KB</small></div>'+(o.i===p.cur?'<small>en uso</small>':'<button class="btn" data-vr="'+o.i+'">Usar esta</button>')+'</div>'}).join('')+'</div><div class="cb-note">Se guardan las últimas 30 versiones de cada proyecto, en este navegador.</div>':'<div class="cb-note">Todavía no hay versiones.</div>';
+    C.querySelectorAll('[data-vr]').forEach(function(b){b.onclick=function(){p.cur=+b.dataset.vr;R.test=null;save();paintPreview();paintTabs();toast('Volviste a la versión '+(p.cur+1))}})}
+  else{var pl=p.plan,h2='';
+    if(pl){h2+='<div class="cb-h4">'+esc(pl.nombre||p.name)+'</div>';if(pl.pantallas&&pl.pantallas.length)h2+='<div class="cb-note">Pantallas: '+esc(pl.pantallas.join(' · '))+'</div>';
+      var tOk=R.test?R.test.filter(function(t){return t.s==='ok'}).length:null;
+      h2+='<div class="cb-h4">Funciones planificadas</div><div class="cb-list">'+(pl.funciones||[]).map(function(f){return '<div class="cb-it"><span>•</span><div class="t">'+esc(f)+'</div></div>'}).join('')+'</div>';
+      if(pl.necesitaServidor&&pl.necesitaServidor.length)h2+='<div class="cb-h4">Van como demo (necesitan servidor, clave o pago)</div><div class="cb-list">'+pl.necesitaServidor.map(function(f){return '<div class="cb-it"><span>🟡</span><div class="t">'+esc(f)+'</div></div>'}).join('')+'</div>';
+      h2+='<div class="cb-note">'+(R.test?'Verificado: '+tOk+' de '+R.test.length+' botones funcionan (mirá 🧪 Pruebas).':'Todavía sin verificar: tocá 🧪 Probar botones.')+'</div>'}
+    else h2='<div class="cb-note">'+(curHtml(p)?'Este proyecto no tiene plan guardado (fue importado o editado a mano).':'Cuando crees la página, acá vas a ver sus pantallas y funciones.')+'</div>';
+    C.innerHTML=h2}
+  setBusy(R.busy)}
+
+function copy(t){try{navigator.clipboard.writeText(t).then(function(){toast('Código copiado')},function(){toast('No pude copiar',1)})}catch(e){toast('No pude copiar',1)}}
+function download(){var p=cur(),h=curHtml(p);if(!h){toast('Todavía no hay página',1);return}var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));a.download=slug(p.name)+'.html';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);toast('Descargando '+a.download)}
+function openTab(){var h=curHtml();if(!h){toast('Todavía no hay página',1);return}var u=URL.createObjectURL(new Blob([h],{type:'text/html'}));var w=window.open(u,'_blank');if(!w)toast('El navegador bloqueó la pestaña nueva',1)}
+function shrink(file){return new Promise(function(ok,ko){var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var k=Math.min(1,1400/Math.max(im.width,im.height));var c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.85))};im.onerror=function(){ko(new Error('No pude abrir esa imagen'))};im.src=fr.result};fr.onerror=function(){ko(fr.error)};fr.readAsDataURL(file)})}
+function grabInputs(){var d=q('#cbDesc');if(d)R.desc=d.value;var x=q('#cbExtra');if(x)R.extra=x.value;var u=q('#cbUrl');if(u)R.url=u.value;var k=q('#cbKind');if(k)R.kind=k.value;var s=q('#cbSty');if(s)R.style=s.value}
+
+function bind(m){
+  var on=function(id,fn){var e=q(id,m);if(e)e.onclick=fn};
+  var sel=q('#cbSel',m);if(sel)sel.onchange=function(){B.sel=sel.value||null;R.test=null;save();draw()};
+  on('#cbNew',function(){grabInputs();newProject();R.test=null;draw();var d=q('#cbDet');if(d)d.open=true});
+  on('#cbRen',function(){var p=cur();if(!p)return;var n=prompt('Nombre del proyecto',p.name);if(n&&n.trim()){p.name=n.trim().slice(0,60);save();draw()}});
+  on('#cbDel',function(){var p=cur();if(!p)return;if(!confirm('¿Borrar «'+p.name+'» y todas sus versiones? No se puede deshacer.'))return;B.list=B.list.filter(function(x){return x!==p});B.sel=B.list[0]?B.list[0].id:null;save();draw();toast('Proyecto borrado')});
+  on('#cbImp',function(){q('#cbImpF').click()});
+  var imf=q('#cbImpF',m);if(imf)imf.onchange=function(){var f=imf.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){var p=newProject(f.name.replace(/\.html?$/i,'').slice(0,40));addVersion(p,String(fr.result),'Importado desde «'+f.name+'»');p.chat.push({r:'a',t:'📂 Abrí «'+f.name+'». Pedime mejoras o tocá 🧪 Probar botones.'});save();draw()};fr.readAsText(f)};
+  m.querySelectorAll('[data-md]').forEach(function(b){b.onclick=function(){grabInputs();R.mode=b.dataset.md;draw();var d=q('#cbDet');if(d)d.open=true}});
+  m.querySelectorAll('[data-idea]').forEach(function(b){b.onclick=function(){R.desc=IDEAS[+b.dataset.idea];var d=q('#cbDesc');if(d)d.value=R.desc}});
+  m.querySelectorAll('[data-dv]').forEach(function(b){b.onclick=function(){R.device=b.dataset.dv;m.querySelectorAll('[data-dv]').forEach(function(x){x.classList.toggle('on',x===b)});var keep=R.test;paintPreview();R.test=keep;paintTabs()}});
+  m.querySelectorAll('[data-rm]').forEach(function(b){b.onclick=function(){grabInputs();R.imgs.splice(+b.dataset.rm,1);draw()}});
+  on('#cbPick',function(){q('#cbImg').click()});
+  var fi=q('#cbImg',m);if(fi)fi.onchange=async function(){grabInputs();var fs=[].slice.call(fi.files||[]).slice(0,3-R.imgs.length);for(var i=0;i<fs.length;i++){try{R.imgs.push(await shrink(fs[i]))}catch(e){toast(e.message,1)}}if(!fs.length&&R.imgs.length>=3)toast('Máximo 3 imágenes',1);draw()};
+  on('#cbRead',async function(){grabInputs();var u=R.url.trim();if(!u){toast('Pegá un link',1);return}
+    setBusy('Leyendo la página…');try{if(!/^https?:\/\//i.test(u))u='https://'+u;var r=await fetch(api()+'/api/supabase-config?page='+encodeURIComponent(u),{cache:'no-store'});var j=await r.json().catch(function(){return {}});
+      if(!j.ok)throw new Error(j.error||'No pude leer la página');R.page=analyze(j.html||'',j.url||u);toast('Página leída ✅')}catch(e){toast(e.message||String(e),1)}setBusy('');draw()});
+  var ui=q('#cbUrl',m);if(ui)ui.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();q('#cbRead').click()}};
+  on('#cbMic',function(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast('Este navegador no deja dictar. Probá con Chrome.',1);return}
+    var r=new SR();r.lang='es-AR';r.interimResults=false;var b=q('#cbMic');b.textContent='🔴 Escuchando…';
+    r.onresult=function(e){var t=[].map.call(e.results,function(x){return x[0].transcript}).join(' ');var d=q('#cbDesc');if(d){d.value=(d.value?d.value+' ':'')+t;R.desc=d.value}};
+    r.onend=function(){var bb=q('#cbMic');if(bb)bb.textContent='🎤 Dictar'};r.onerror=function(e){toast('No pude escuchar ('+e.error+')',1)};try{r.start()}catch(e){}});
+  var det=q('#cbDet',m);if(det)det.ontoggle=function(){R.detOpen=det.open};
+  on('#cbGo',function(){grabInputs();R.detOpen=false;create()});
+  on('#cbRe',function(){paintPreview();paintTabs()});
+  on('#cbTest',function(){runTest()});
+  on('#cbDl',download);on('#cbOpen',openTab);
+}
+
+/* ---------- leer la estructura de una página (en el navegador) ---------- */
+function analyze(html,url){
+  var d=new DOMParser().parseFromString(html,'text/html');
+  var tx=function(e){return String(e&&e.textContent||'').replace(/\s+/g,' ').trim()};
+  var uniq=function(a,n){var o=[];a.forEach(function(x){if(x&&o.indexOf(x)<0)o.push(x)});return o.slice(0,n)};
+  var css=[].map.call(d.querySelectorAll('style'),function(s){return s.textContent}).join('\n')+[].map.call(d.querySelectorAll('[style]'),function(e){return e.getAttribute('style')}).join(';');
+  var cc={};(css.match(/#([0-9a-f]{6}|[0-9a-f]{3})\b/gi)||[]).forEach(function(c){c=c.toLowerCase();cc[c]=(cc[c]||0)+1});
+  var colors=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a]}).slice(0,12);
+  var fonts=uniq((css.match(/font-family\s*:\s*([^;}{]+)/gi)||[]).map(function(f){return f.split(':')[1].split(',')[0].replace(/["']/g,'').trim()}),6);
+  ['script','style','noscript','svg','template'].forEach(function(t){d.querySelectorAll(t).forEach(function(e){e.remove()})});
+  var heads=[].map.call(d.querySelectorAll('h1,h2,h3'),function(h){return h.tagName+': '+tx(h)}).filter(function(t){return t.length>4}).slice(0,40);
+  var nav=uniq([].map.call(d.querySelectorAll('nav a'),tx),25);
+  var btns=uniq([].map.call(d.querySelectorAll('button,a.btn,a.button,[class*=cta]'),tx),30);
+  var inputs=uniq([].map.call(d.querySelectorAll('input,textarea,select'),function(i){var t=i.getAttribute('type')||i.tagName.toLowerCase();if(t==='hidden')return '';var l=i.getAttribute('placeholder')||i.getAttribute('aria-label')||i.getAttribute('name')||'';return t+(l?' «'+l+'»':'')}),25);
+  var secs=uniq([].map.call(d.querySelectorAll('section,header,footer,aside,main,article'),function(e){return e.tagName.toLowerCase()+(e.id?'#'+e.id:'')+(e.classList[0]?'.'+e.classList[0]:'')}),30);
+  var paras=[].map.call(d.querySelectorAll('p,li'),tx).filter(function(t){return t.length>25});
+  var text=paras.join('\n');if(text.length>3500)text=text.slice(0,3500)+'…';
+  var meta=d.querySelector('meta[name=description]');
+  return {url:url,title:tx(d.querySelector('title')),description:meta?meta.getAttribute('content')||'':'',colors:colors,fonts:fonts,sections:secs,headings:heads,navLinks:nav,buttons:btns,inputs:inputs,forms:d.forms.length,images:{count:d.images.length,alts:uniq([].map.call(d.images,function(i){return i.alt}),15)},littleText:paras.length<2&&heads.length<2,text:text}}
+
+/* ---------- cargar librerías gratis (solo cuando hacen falta) ---------- */
+var LIBS={};
+function lib(url,glob){if(window[glob])return Promise.resolve(window[glob]);if(!LIBS[url])LIBS[url]=new Promise(function(ok,ko){var s=document.createElement('script');s.src=url;s.onload=function(){window[glob]?ok(window[glob]):ko(new Error('No cargó '+glob))};s.onerror=function(){delete LIBS[url];ko(new Error('No pude descargar la herramienta (¿hay internet?)'))};document.head.appendChild(s)});return LIBS[url]}
+var PDFLIB='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',JSZIPU='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+function saveBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000)}
+function kb(n){return n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB'}
+function readBuf(f){return f.arrayBuffer?f.arrayBuffer():new Response(f).arrayBuffer()}
+function imgToJpeg(file){return new Promise(function(ok,ko){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);URL.revokeObjectURL(u);c.toBlob(function(b){b?b.arrayBuffer().then(function(a){ok({buf:a,w:c.width,h:c.height})}):ko(new Error('No pude convertir '+file.name))},'image/jpeg',.9)};im.onerror=function(){URL.revokeObjectURL(u);ko(new Error('No pude abrir '+file.name))};im.src=u})}
+/* "1-3, 5, 8-" → [0,1,2,4,7,8,…] */
+function ranges(txt,total){var out=[];String(txt||'').split(/[,;\s]+/).filter(Boolean).forEach(function(p){var m=p.match(/^(\d*)\s*-\s*(\d*)$/);if(m){var a=m[1]?+m[1]:1,b=m[2]?+m[2]:total;if(a>b){var t=a;a=b;b=t}for(var i=a;i<=b;i++)if(i>=1&&i<=total&&out.indexOf(i-1)<0)out.push(i-1)}else if(/^\d+$/.test(p)){var n=+p;if(n>=1&&n<=total&&out.indexOf(n-1)<0)out.push(n-1)}});return out}
+
+/* ================= 📄 PDF: unir, separar, rotar, fotos a PDF ================= */
+var P={tab:'unir',files:[],one:null,oneN:0,busy:false};
+function vPdf(el){HOSTP=el;
+  var h='<div class="agp"><div class="cb-modes">'+[['unir','➕ Unir'],['separar','✂️ Separar'],['rotar','🔄 Rotar']].map(function(x){return '<button data-pt="'+x[0]+'" class="'+(P.tab===x[0]?'on':'')+'">'+x[1]+'</button>'}).join('')+'</div>';
+  if(P.tab==='unir'){h+='<div class="cb-pn"><h3>Unir PDF y fotos en un solo PDF</h3><div class="sub">Elegí PDF, fotos o capturas. Ordenalos con las flechas y tocá «Unir». Las fotos quedan como páginas.</div>'+
+    '<input type="file" id="pfU" accept="application/pdf,image/*" multiple hidden><div class="cb-tool" style="margin-top:10px"><button class="btn" id="pfAdd">📂 Agregar archivos</button>'+(P.files.length?'<button class="btn" id="pfClr">🧹 Vaciar</button>':'')+'</div>'+
+    (P.files.length?'<div class="cb-list">'+P.files.map(function(f,i){return '<div class="cb-it"><span>'+(/pdf/i.test(f.type)?'📄':'🖼️')+'</span><div class="t">'+esc(f.name)+'<br><small>'+kb(f.size)+'</small></div><button class="btn" data-up="'+i+'" title="Subir"'+(i?'':' disabled')+'>↑</button><button class="btn" data-dn="'+i+'" title="Bajar"'+(i<P.files.length-1?'':' disabled')+'>↓</button><button class="btn" data-rmf="'+i+'" title="Quitar">✕</button></div>'}).join('')+'</div>':'<div class="cb-note">Todavía no agregaste archivos.</div>')+
+    '<div class="cb-lb">Nombre del PDF</div><input class="cb-in" id="pfName" value="'+esc(P.name||'unido')+'">'+
+    '<button class="btn grad cb-go" id="pfGo"'+(P.files.length?'':' disabled')+'>➕ Unir y descargar</button></div>'}
+  else{var lab=P.tab==='separar'?'Separar o sacar páginas':'Rotar páginas';
+    h+='<div class="cb-pn"><h3>'+lab+'</h3><input type="file" id="pfO" accept="application/pdf" hidden><button class="btn" id="pfPick" style="width:100%">📂 '+(P.one?'Cambiar PDF':'Elegir un PDF')+'</button>'+
+    (P.one?'<div class="cb-page"><b>'+esc(P.one.name)+'</b> · '+P.oneN+' páginas · '+kb(P.one.size)+'</div>':'');
+    if(P.tab==='separar')h+='<div class="cb-lb">¿Qué páginas?</div><input class="cb-in" id="pfR" placeholder="Ej: 1-3, 5, 8-10" value="'+esc(P.rng||'')+'">'+
+      '<div class="cb-tool" style="margin-top:12px"><button class="btn grad" id="pfSep"'+(P.one?'':' disabled')+'>✂️ Sacar esas páginas</button><button class="btn" id="pfAll"'+(P.one?'':' disabled')+'>📦 Cada página por separado (ZIP)</button></div>'+
+      '<div class="cb-note">Escribí números y rangos separados por comas. «8-» quiere decir de la 8 hasta el final.</div>';
+    else h+='<div class="cb-lb">¿Qué páginas?</div><input class="cb-in" id="pfR" placeholder="Vacío = todas · Ej: 2, 4-6" value="'+esc(P.rng||'')+'">'+
+      '<div class="cb-lb">Girar</div><div class="cb-seg" id="pfDeg">'+[[90,'↻ 90°'],[180,'180°'],[270,'↺ 90°']].map(function(x){return '<button data-dg="'+x[0]+'" class="'+((P.deg||90)===x[0]?'on':'')+'">'+x[1]+'</button>'}).join('')+'</div>'+
+      '<button class="btn grad cb-go" id="pfRot"'+(P.one?'':' disabled')+'>🔄 Rotar y descargar</button>';
+    h+='</div>'}
+  h+='<div class="cb-busy" id="pfBusy"></div><div class="cb-note">Todo se hace en tu compu o celu: los archivos no se suben a ningún lado.</div></div>';
+  el.innerHTML=h;bindPdf(el)}
+var HOSTP=null;function drawPdf(){if(HOSTP&&HOSTP.isConnected)vPdf(HOSTP)}
+function pBusy(t){P.busy=!!t;var b=document.getElementById('pfBusy');if(b){b.className='cb-busy'+(t?' on':'');b.innerHTML='<div class="cb-spin"></div><span>'+esc(t||'')+'</span>'}}
+async function pdfOf(file){var L=await lib(PDFLIB,'PDFLib');try{return await L.PDFDocument.load(await readBuf(file),{ignoreEncryption:true})}catch(e){throw new Error('No pude abrir «'+file.name+'» (¿está dañado o tiene clave?)')}}
+function bindPdf(el){var on=function(id,fn){var e=el.querySelector(id);if(e)e.onclick=fn};
+  el.querySelectorAll('[data-pt]').forEach(function(b){b.onclick=function(){grabP();P.tab=b.dataset.pt;drawPdf()}});
+  on('#pfAdd',function(){el.querySelector('#pfU').click()});
+  var u=el.querySelector('#pfU');if(u)u.onchange=function(){grabP();[].slice.call(u.files||[]).forEach(function(f){if(/pdf|image\//i.test(f.type)||/\.pdf$/i.test(f.name))P.files.push(f)});drawPdf()};
+  on('#pfClr',function(){P.files=[];drawPdf()});
+  el.querySelectorAll('[data-up]').forEach(function(b){b.onclick=function(){grabP();var i=+b.dataset.up;if(i>0){var t=P.files[i];P.files[i]=P.files[i-1];P.files[i-1]=t;drawPdf()}}});
+  el.querySelectorAll('[data-dn]').forEach(function(b){b.onclick=function(){grabP();var i=+b.dataset.dn;if(i<P.files.length-1){var t=P.files[i];P.files[i]=P.files[i+1];P.files[i+1]=t;drawPdf()}}});
+  el.querySelectorAll('[data-rmf]').forEach(function(b){b.onclick=function(){grabP();P.files.splice(+b.dataset.rmf,1);drawPdf()}});
+  on('#pfGo',async function(){if(P.busy)return;grabP();try{pBusy('Uniendo…');var L=await lib(PDFLIB,'PDFLib'),out=await L.PDFDocument.create();
+    for(var i=0;i<P.files.length;i++){var f=P.files[i];pBusy('Uniendo '+(i+1)+' de '+P.files.length+'…');
+      if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){var src=await pdfOf(f);var pages=await out.copyPages(src,src.getPageIndices());pages.forEach(function(p){out.addPage(p)})}
+      else{var j=await imgToJpeg(f),img=await out.embedJpg(j.buf);var W=595.28,H=841.89;if(j.w>j.h){W=841.89;H=595.28}var k=Math.min((W-40)/j.w,(H-40)/j.h,1);var pg=out.addPage([W,H]);pg.drawImage(img,{x:(W-j.w*k)/2,y:(H-j.h*k)/2,width:j.w*k,height:j.h*k})}}
+    var bytes=await out.save();saveBlob(new Blob([bytes],{type:'application/pdf'}),(slug(P.name||'unido'))+'.pdf');toast('Listo: '+out.getPageCount()+' páginas · '+kb(bytes.length))}catch(e){toast(e.message||String(e),1)}pBusy('')});
+  on('#pfPick',function(){el.querySelector('#pfO').click()});
+  var o=el.querySelector('#pfO');if(o)o.onchange=async function(){grabP();var f=o.files[0];if(!f)return;try{pBusy('Abriendo…');var d=await pdfOf(f);P.one=f;P.oneN=d.getPageCount()}catch(e){toast(e.message,1)}pBusy('');drawPdf()};
+  el.querySelectorAll('[data-dg]').forEach(function(b){b.onclick=function(){P.deg=+b.dataset.dg;el.querySelectorAll('[data-dg]').forEach(function(x){x.classList.toggle('on',x===b)})}});
+  var base=function(){return slug((P.one&&P.one.name||'pdf').replace(/\.pdf$/i,''))};
+  on('#pfSep',async function(){if(P.busy)return;grabP();try{var idx=ranges(P.rng,P.oneN);if(!idx.length)throw new Error('Escribí qué páginas querés (ej: 1-3, 5)');pBusy('Separando…');var L=await lib(PDFLIB,'PDFLib'),src=await pdfOf(P.one),out=await L.PDFDocument.create();(await out.copyPages(src,idx)).forEach(function(p){out.addPage(p)});var b=await out.save();saveBlob(new Blob([b],{type:'application/pdf'}),base()+'_paginas.pdf');toast('Listo: '+idx.length+' página(s)')}catch(e){toast(e.message||String(e),1)}pBusy('')});
+  on('#pfAll',async function(){if(P.busy)return;try{pBusy('Separando cada página…');var L=await lib(PDFLIB,'PDFLib'),Z=await lib(JSZIPU,'JSZip'),src=await pdfOf(P.one),zip=new Z();
+    for(var i=0;i<P.oneN;i++){var d=await L.PDFDocument.create();(await d.copyPages(src,[i])).forEach(function(p){d.addPage(p)});zip.file(base()+'_p'+String(i+1).padStart(3,'0')+'.pdf',await d.save())}
+    saveBlob(await zip.generateAsync({type:'blob'}),base()+'_separado.zip');toast('Listo: '+P.oneN+' PDF en un ZIP')}catch(e){toast(e.message||String(e),1)}pBusy('')});
+  on('#pfRot',async function(){if(P.busy)return;grabP();try{pBusy('Rotando…');var L=await lib(PDFLIB,'PDFLib'),d=await pdfOf(P.one),idx=P.rng&&P.rng.trim()?ranges(P.rng,P.oneN):d.getPageIndices();if(!idx.length)throw new Error('Esas páginas no existen');var g=P.deg||90;
+    idx.forEach(function(i){var p=d.getPage(i);p.setRotation(L.degrees(((p.getRotation().angle||0)+g)%360))});var b=await d.save();saveBlob(new Blob([b],{type:'application/pdf'}),base()+'_rotado.pdf');toast('Listo: '+idx.length+' página(s) rotadas')}catch(e){toast(e.message||String(e),1)}pBusy('')});}
+function grabP(){var n=document.getElementById('pfName');if(n)P.name=n.value;var r=document.getElementById('pfR');if(r)P.rng=r.value}
+
+/* ================= 🔄 Convertir y achicar imágenes ================= */
+var I={files:[],fmt:'image/jpeg',max:1600,q:.82,out:[],busy:false};
+var HOSTI=null;function drawImg(){if(HOSTI&&HOSTI.isConnected)vImg(HOSTI)}
+function vImg(el){HOSTI=el;var tot=I.files.reduce(function(a,f){return a+f.size},0),tot2=I.out.reduce(function(a,o){return a+o.blob.size},0);
+  el.innerHTML='<div class="agp"><div class="cb-pn"><h3>Convertir y achicar fotos</h3><div class="sub">Pasá fotos a JPG, PNG o WebP, achicalas para WhatsApp, redes o la web, todas de una vez.</div>'+
+   '<input type="file" id="icF" accept="image/*" multiple hidden><div class="cb-tool" style="margin-top:10px"><button class="btn" id="icAdd">📂 Elegir fotos</button>'+(I.files.length?'<button class="btn" id="icClr">🧹 Vaciar</button><span class="cb-note" style="margin:0">'+I.files.length+' foto(s) · '+kb(tot)+'</span>':'')+'</div>'+
+   '<div class="cb-two"><div><div class="cb-lb">Formato</div><select class="cb-sel" id="icFmt">'+[['image/jpeg','JPG (fotos, liviano)'],['image/webp','WebP (web, más liviano)'],['image/png','PNG (sin pérdida, transparencia)']].map(function(x){return '<option value="'+x[0]+'"'+(I.fmt===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></div>'+
+   '<div><div class="cb-lb">Tamaño máximo</div><select class="cb-sel" id="icMax">'+[[0,'Igual que la original'],[2400,'2400 px (impresión)'],[1600,'1600 px (redes)'],[1080,'1080 px (Instagram)'],[800,'800 px (WhatsApp, web)'],[400,'400 px (miniatura)']].map(function(x){return '<option value="'+x[0]+'"'+(I.max===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></div></div>'+
+   (I.fmt!=='image/png'?'<div class="cb-lb">Calidad: <b id="icQv">'+Math.round(I.q*100)+'%</b></div><input type="range" id="icQ" min="40" max="100" value="'+Math.round(I.q*100)+'" style="width:100%">':'')+
+   '<button class="btn grad cb-go" id="icGo"'+(I.files.length?'':' disabled')+'>🔄 Convertir</button><div class="cb-busy" id="icBusy"></div>'+
+   (I.out.length?'<div class="cb-h4">Resultado · '+kb(tot)+' → '+kb(tot2)+(tot?' ('+(tot2<=tot?'−':'+')+Math.abs(Math.round((1-tot2/tot)*100))+'%)':'')+'</div><div class="cb-tool"><button class="btn pri" id="icZip">📦 Descargar todas (ZIP)</button></div><div class="cb-list">'+I.out.map(function(o,i){return '<div class="cb-it"><img src="'+o.url+'" alt="" style="width:46px;height:46px;object-fit:cover;border-radius:6px"><div class="t">'+esc(o.name)+'<br><small>'+o.w+'×'+o.h+' · '+kb(o.src)+' → <b>'+kb(o.blob.size)+'</b></small></div><button class="btn" data-dl="'+i+'">⬇️</button></div>'}).join('')+'</div>':'')+
+   '<div class="cb-note">Se hace todo en tu aparato: las fotos no se suben a ningún lado.</div></div></div>';
+  var on=function(id,fn){var e=el.querySelector(id);if(e)e.onclick=fn};
+  on('#icAdd',function(){el.querySelector('#icF').click()});
+  el.querySelector('#icF').onchange=function(){gI();[].slice.call(this.files||[]).forEach(function(f){if(/^image\//.test(f.type))I.files.push(f)});drawImg()};
+  on('#icClr',function(){I.files=[];I.out.forEach(function(o){URL.revokeObjectURL(o.url)});I.out=[];drawImg()});
+  var qq=el.querySelector('#icQ');if(qq)qq.oninput=function(){el.querySelector('#icQv').textContent=this.value+'%'};
+  el.querySelector('#icFmt').onchange=function(){gI();drawImg()};
+  on('#icGo',convertAll);
+  on('#icZip',async function(){try{var Z=await lib(JSZIPU,'JSZip'),z=new Z();I.out.forEach(function(o){z.file(o.name,o.blob)});saveBlob(await z.generateAsync({type:'blob'}),'fotos_convertidas.zip')}catch(e){toast(e.message,1)}});
+  el.querySelectorAll('[data-dl]').forEach(function(b){b.onclick=function(){var o=I.out[+b.dataset.dl];saveBlob(o.blob,o.name)}})}
+function gI(){var f=document.getElementById('icFmt');if(f)I.fmt=f.value;var m=document.getElementById('icMax');if(m)I.max=+m.value;var q=document.getElementById('icQ');if(q)I.q=(+q.value)/100}
+function conv1(file){return new Promise(function(ok,ko){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var w=im.naturalWidth,h=im.naturalHeight,k=I.max&&Math.max(w,h)>I.max?I.max/Math.max(w,h):1;var c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));var x=c.getContext('2d');if(I.fmt==='image/jpeg'){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)}x.imageSmoothingQuality='high';x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+  c.toBlob(function(b){if(!b)return ko(new Error('No pude convertir '+file.name));var ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[I.fmt];if(b.type!==I.fmt)ext=b.type.split('/')[1];ok({blob:b,w:c.width,h:c.height,src:file.size,name:file.name.replace(/\.[^.]+$/,'')+'.'+ext,url:URL.createObjectURL(b)})},I.fmt,I.fmt==='image/png'?undefined:I.q)};im.onerror=function(){URL.revokeObjectURL(u);ko(new Error('No pude abrir '+file.name+' (formato no compatible)'))};im.src=u})}
+async function convertAll(){if(I.busy)return;gI();I.busy=true;I.out.forEach(function(o){URL.revokeObjectURL(o.url)});I.out=[];var b=document.getElementById('icBusy'),err=0;
+  for(var i=0;i<I.files.length;i++){if(b){b.className='cb-busy on';b.innerHTML='<div class="cb-spin"></div><span>Convirtiendo '+(i+1)+' de '+I.files.length+'…</span>'}try{I.out.push(await conv1(I.files[i]))}catch(e){err++;toast(e.message,1)}}
+  I.busy=false;drawImg();if(!err)toast('Listo: '+I.out.length+' foto(s)')}
+
+/* ================= 🔎 Buscador y ⭐ favoritos en Herramientas ================= */
+var FK='angela_herr_favs';
+function favs(){try{return JSON.parse(localStorage.getItem(FK)||'[]')}catch(e){return []}}
+function setFavs(a){try{localStorage.setItem(FK,JSON.stringify(a))}catch(e){}}
+function keyOf(t){var m=String(t.getAttribute('onclick')||'').match(/go\('([^']+)'\)/);return m?m[1]:''}
+function decorate(body){if(!body||body.querySelector('#agpSearch'))return;var tiles=[].slice.call(body.querySelectorAll('.herr-tile'));if(!tiles.length)return;
+  var F=favs();
+  tiles.forEach(function(t){var k=keyOf(t);if(!k||t.querySelector('.agp-star'))return;var s=document.createElement('span');s.className='agp-star'+(F.indexOf(k)>=0?' on':'');s.textContent=F.indexOf(k)>=0?'★':'☆';s.title='Favorito';s.setAttribute('role','button');
+    s.onclick=function(e){e.stopPropagation();e.preventDefault();var f=favs(),i=f.indexOf(k);if(i>=0)f.splice(i,1);else f.push(k);setFavs(f);redoFav(body);toast(i>=0?'Quitado de favoritos':'Agregado a favoritos ⭐')};t.appendChild(s)});
+  var box=document.createElement('div');box.className='agp-sbox';box.innerHTML='<input id="agpSearch" class="cb-in" type="search" placeholder="🔎 Buscar herramienta (ej: pdf, qr, láser, voz)…" autocomplete="off"><div id="agpFav"></div><div id="agpNone" class="cb-note" style="display:none">No encontré herramientas con esa palabra.</div>';
+  body.insertBefore(box,body.firstChild);redoFav(body);
+  var inp=box.querySelector('#agpSearch');inp.oninput=function(){var w=norm(inp.value).split(/\s+/).filter(Boolean),n=0;
+    body.querySelectorAll('.herr-grid').forEach(function(g){if(g.id==='agpFavG')return;var any=0;g.querySelectorAll('.herr-tile').forEach(function(t){var ok=!w.length||w.every(function(x){return norm(t.textContent).indexOf(x)>=0});t.style.display=ok?'':'none';if(ok){any++;n++}});g.style.display=any?'':'none';var sec=g.previousElementSibling;if(sec&&sec.classList.contains('herr-sec'))sec.style.display=any?'':'none'});
+    var fv=box.querySelector('#agpFav');fv.style.display=w.length?'none':'';box.querySelector('#agpNone').style.display=n?'none':''}}
+function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
+function redoFav(body){var fv=body.querySelector('#agpFav');if(!fv)return;var F=favs(),all=[].slice.call(body.querySelectorAll('.herr-grid:not(#agpFavG) .herr-tile'));
+  all.forEach(function(t){var s=t.querySelector('.agp-star'),on=F.indexOf(keyOf(t))>=0;if(s){s.className='agp-star'+(on?' on':'');s.textContent=on?'★':'☆'}});
+  var pick=F.map(function(k){return all.filter(function(t){return keyOf(t)===k})[0]}).filter(Boolean);
+  fv.innerHTML=pick.length?'<div class="herr-sec">⭐ Mis favoritas</div><div class="herr-grid" id="agpFavG"></div>':'';
+  var g=fv.querySelector('#agpFavG');pick.forEach(function(t){var c=t.cloneNode(true);var s=c.querySelector('.agp-star');if(s)s.remove();g.appendChild(c)})}
+function watch(){var b=document.getElementById('herrBody');if(!b){setTimeout(watch,1500);return}
+  var go=function(){var ov=document.getElementById('herrOverlay');if(ov&&ov.classList.contains('inTool'))return;decorate(b)};
+  new MutationObserver(function(){clearTimeout(watch.t);watch.t=setTimeout(go,30)}).observe(b,{childList:true});go()}
+
+/* ================= registro en Herramientas ================= */
+var TILES=[['plus_app','🛠️','Constructor de apps','Describila, pegá un link o subí una captura: la IA arma una app o página propia que funciona, y prueba sus botones.'],
+ ['plus_pdf','📄','PDF: unir, separar y rotar','Uní varios PDF y fotos en uno, sacá páginas, separá cada hoja o girá páginas. Sin subir nada.'],
+ ['plus_img','🔄','Convertir y achicar fotos','Pasá fotos a JPG, PNG o WebP y achicalas para WhatsApp o redes, todas juntas.']];
+window.ANGELAPlus={sec:'🧩 Crear y archivos',secId:'plusSec',short:'Crear y archivos',tiles:TILES,
+  has:function(k){return k==='plus_app'||k==='plus_pdf'||k==='plus_img'},
+  view:function(k,el){if(k==='plus_app')vCons(el);else if(k==='plus_pdf')vPdf(el);else vImg(el)},
+  stop:function(){},decorate:decorate,_R:R,_B:B,_P:P,_I:I,_ranges:ranges,_analyze:analyze};
+loadAll();watch();
+console.info('[ÁNGELA] Crear y archivos: Constructor de apps, PDF, convertir fotos, buscador y favoritos');
+})();
+</script>
+<!-- ===== FIN CREAR Y ARCHIVOS ===== -->
