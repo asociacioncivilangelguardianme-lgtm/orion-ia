@@ -287,9 +287,10 @@ async function codeMode(body,res){
       try{
         const payload={contents,generationConfig:{temperature,maxOutputTokens:32000}};
         if(system)payload.systemInstruction={parts:[{text:system}]};
+        if(body?.search===true&&!body.__noSearch)payload.tools=[{google_search:{}}];
         const r=await fetchTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(payload)},Math.min(150000,queda()-5000));
         const data=await r.json().catch(()=>({}));
-        if(!r.ok){last=`Gemini ${r.status}`;if(r.status===401||r.status===403)break;continue;}
+        if(!r.ok){last=`Gemini ${r.status}`;if(r.status===401||r.status===403)break;if(r.status===400&&payload.tools)body.__noSearch=true;continue;}
         const text=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||"").join("");
         if(text.trim())return res.status(200).json({ok:true,content:text,model});
         last="Gemini respondió vacío";
