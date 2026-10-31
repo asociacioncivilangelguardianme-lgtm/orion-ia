@@ -9,6 +9,7 @@
   --bg:#141414; --card:#1f1f1f; --rojo:#e50914; --texto:#fff; --gris:#b3b3b3;
   --verde:#2e9e5b; --azul:#2f6fd6;
 }
+[hidden]{display:none!important}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
 body{background:var(--bg);color:var(--texto);padding-bottom:50px}
 button{font:inherit;cursor:pointer}
@@ -41,6 +42,7 @@ header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-
 .etiqueta.dp{background:var(--verde)}
 .etiqueta.tr{background:var(--azul)}
 .etiqueta.cc{background:#c77a12}
+.etiqueta.of{background:#b31217}
 .info{padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .texto{cursor:pointer;overflow:hidden;min-width:0}
 .t-titulo{font-size:15px;font-weight:bold;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -141,6 +143,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
 <div class="categorias">
   <button class="cat activa" data-cat="todas">🏠 Inicio</button>
   <button class="cat cat-explorar" data-cat="explorar">🌐 Explorar miles</button>
+  <button class="cat" data-cat="youtube" style="background:#b31217">📺 En colores (canales oficiales)</button>
   <button class="cat" data-cat="peliculas">🍿 Películas completas</button>
   <button class="cat" data-cat="dibujitos">🧸 Dibujitos animados</button>
   <button class="cat" data-cat="animacion">🎨 Animación libre</button>
@@ -377,6 +380,69 @@ const peliculas = [
     descripcion: "Una joven rica contrata como mayordomo a un hombre que vivía en la calle, y él termina dándole una lección a toda la familia."
   },
   {
+    id: 30, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "UU9dGn8uPQL5T-6GyK0UXMfw", emoji: "🇪🇸", c1: "#b31217", c2: "#3a0a0c",
+    titulo: "Popcornflix en Español", anio: "Varias",
+    idioma: "En español", genero: "Películas variadas",
+    descripcion: "Canal oficial en español de Popcornflix, la distribuidora dueña de las películas. Son películas enteras en colores. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 31, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "PLsZQnDqnebk4kN-oGYb2JmTU0ofZHqZTg", emoji: "💥", c1: "#d35400", c2: "#2c0f00",
+    titulo: "Popcornflix: Acción", anio: "Varias",
+    idioma: "En inglés", genero: "Acción",
+    descripcion: "Películas de acción enteras del canal oficial de Popcornflix. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 32, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "PLsZQnDqnebk5HQZ7Wh5dblxRumNWbzJJC", emoji: "🎭", c1: "#c9a227", c2: "#2b2105",
+    titulo: "Popcornflix: Comedia", anio: "Varias",
+    idioma: "En inglés", genero: "Comedia",
+    descripcion: "Comedias enteras del canal oficial de Popcornflix. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 33, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "PLsZQnDqnebk4ag9hhJd2AWerYn0CTzK5L", emoji: "😱", c1: "#5b2c83", c2: "#160a22",
+    titulo: "Popcornflix: Suspenso", anio: "Varias",
+    idioma: "En inglés", genero: "Suspenso",
+    descripcion: "Películas de suspenso enteras del canal oficial de Popcornflix. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 34, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "PLsZQnDqnebk6N7EchSMbmLXkGTFguhUba", emoji: "🎬", c1: "#1f618d", c2: "#07192a",
+    titulo: "Popcornflix: Drama", anio: "Varias",
+    idioma: "En inglés", genero: "Drama",
+    descripcion: "Dramas enteros del canal oficial de Popcornflix. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 35, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "PLdJA0S19kmeY83L8N2deSMyiVjOlp9n9W", emoji: "🧸", c1: "#16a085", c2: "#04281f",
+    titulo: "Popcornflix Kids: Aventura", anio: "Varias",
+    idioma: "En inglés", genero: "Infantil / Aventura",
+    descripcion: "Películas infantiles de aventura del canal oficial Popcornflix Kids. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 36, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "UU8IHAQMuiJdY6ALuhG7iU8Q", emoji: "🍿", c1: "#c0392b", c2: "#1e0705",
+    titulo: "FilmRise Movies", anio: "Varias",
+    idioma: "En inglés", genero: "Películas variadas",
+    descripcion: "Canal oficial del estudio FilmRise, con cientos de películas enteras en colores. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 37, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "UUtAddMIPhKMbLED3KEQiJGw", emoji: "🎞️", c1: "#2471a3", c2: "#071a29",
+    titulo: "FilmRise Features", anio: "Varias",
+    idioma: "En inglés", genero: "Películas variadas",
+    descripcion: "Otro canal oficial de FilmRise con películas enteras. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
+    id: 38, categoria: "youtube", fuente: "ytlista", color: true,
+    codigo: "UUv60jacPSiFH49SAT6nu7hQ", emoji: "👻", c1: "#4a4a4a", c2: "#0b0b0b",
+    titulo: "FilmRise Terror", anio: "Varias",
+    idioma: "En inglés", genero: "Terror",
+    descripcion: "Películas de terror enteras del canal oficial FilmRise Horror. Tocá el ☰ arriba a la derecha del video para elegir otra de la lista."
+  },
+  {
     id: 5, categoria: "trailers", fuente: "youtube",
     codigo: "WUBQdC__fC4",
     titulo: "Duna: Parte Dos", anio: "2024",
@@ -429,12 +495,18 @@ function mostrarPlataformas(){
 }
 
 /* ---------- Direcciones de imagen y video según la fuente ---------- */
+function portadaLista(p){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${p.c1}"/><stop offset="1" stop-color="${p.c2}"/></linearGradient></defs><rect width="480" height="300" fill="url(#g)"/><text x="40" y="150" font-size="96">${p.emoji}</text><text x="40" y="235" font-family="Arial" font-weight="bold" font-size="34" fill="#fff">${p.titulo.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</text><text x="40" y="272" font-family="Arial" font-size="22" fill="#ffffffcc">Películas enteras · ${p.idioma}</text></svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
 function imagen(p){
+  if(p.fuente === "ytlista") return portadaLista(p);
   return p.fuente === "archive"
     ? `https://archive.org/services/img/${p.codigo}`
     : `https://img.youtube.com/vi/${p.codigo}/hqdefault.jpg`;
 }
 function paginaOriginal(p){
+  if(p.fuente === "ytlista") return `https://www.youtube.com/playlist?list=${p.codigo}`;
   return p.fuente === "archive"
     ? `https://archive.org/details/${p.codigo}`
     : `https://www.youtube.com/watch?v=${p.codigo}`;
@@ -466,7 +538,7 @@ function tarjetaEl(p){
   const tarjeta = document.createElement("div");
   tarjeta.className = "tarjeta";
   tarjeta.innerHTML = `
-    <span class="etiqueta ${p.fuente === "archive" ? "dp" : p.licencia === "cc" ? "cc" : "tr"}">${p.fuente === "archive" ? "COMPLETA · DOMINIO PÚBLICO" : p.licencia === "cc" ? "COMPLETA · LICENCIA LIBRE" : "SOLO TRÁILER"}</span>
+    <span class="etiqueta ${p.fuente === "archive" ? "dp" : p.fuente === "ytlista" ? "of" : p.licencia === "cc" ? "cc" : "tr"}">${p.fuente === "archive" ? "COMPLETA · DOMINIO PÚBLICO" : p.fuente === "ytlista" ? "COMPLETAS · CANAL OFICIAL" : p.licencia === "cc" ? "COMPLETA · LICENCIA LIBRE" : "SOLO TRÁILER"}</span>
     <img src="${imagen(p)}" alt="" loading="lazy">
     <div class="info">
       <div class="texto">
@@ -639,16 +711,18 @@ function inicioCine(){
   grilla.innerHTML = "";
   tituloSeccion.hidden = true;
   // destacadas del cartel grande: las completas en colores, mezcladas
-  heroLista = peliculas.filter(p => p.color && p.categoria !== "trailers").sort(() => Math.random() - .5).slice(0, 6);
+  heroLista = peliculas.filter(p => p.color && p.categoria !== "trailers" && p.fuente !== "ytlista").sort(() => Math.random() - .5).slice(0, 6);
   heroIdx = 0;
   grilla.appendChild(heroEl());
-  const completas = peliculas.filter(p => p.categoria !== "trailers");
+  const completas = peliculas.filter(p => p.categoria !== "trailers" && p.fuente !== "ytlista");
+  const oficiales = peliculas.filter(p => p.fuente === "ytlista");
   const gen = t => completas.filter(p => p.genero.toLowerCase().includes(t));
   const enCurso = Object.values(progreso).sort((a,b) => b.cuando - a.cuando).map(x => x.p).filter(Boolean).slice(0, 12);
   const mios = favoritos.map(buscarPeli).filter(Boolean);
   [
     filaEl("▶ Seguir viendo", enCurso, ""),
     filaEl("❤️ Mi lista", mios, "favoritos"),
+    filaEl("📺 Películas en colores · canales oficiales", oficiales, "youtube"),
     filaEl("🎨 En colores", completas.filter(p => p.color), "color"),
     filaEl("🧸 Dibujitos animados", completas.filter(p => p.categoria === "dibujitos"), "dibujitos"),
     filaEl("👻 Terror", gen("terror"), "g:terror"),
@@ -851,6 +925,7 @@ function abrir(id){
   document.getElementById("mAviso").hidden = !esArchive;
   marcarCalidad();
   if(esArchive) ponerVideoArchive(p);
+  else if(p.fuente === "ytlista") video.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${p.codigo}&rel=0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
   else video.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${p.codigo}?autoplay=1" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
   modal.classList.add("abierto");
   document.body.style.overflow = "hidden";
