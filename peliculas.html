@@ -28,6 +28,7 @@ header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-
 .categorias{display:flex;gap:10px;padding:14px 4%;background:#1a1a1a;overflow-x:auto;white-space:nowrap;border-bottom:1px solid #282828}
 .cat{background:var(--borde);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:14px;transition:background .3s}
 .cat:hover,.cat.activa{background:var(--rojo)}
+.cat-gratis{background:#1f6b3d}
 
 /* =============== PANEL DE LA LLAVE =============== */
 .panel{margin:20px 4%;background:var(--card);border:1px solid var(--borde);border-radius:10px;padding:20px;max-width:640px;line-height:1.55}
@@ -106,6 +107,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
 </header>
 
 <div class="categorias" id="categorias">
+  <button class="cat cat-gratis" data-cat="gratis">🆓 Completas gratis</button>
   <button class="cat activa" data-cat="populares">🔥 Populares</button>
   <button class="cat" data-cat="tendencia">📈 Tendencia</button>
   <button class="cat" data-cat="28">💥 Acción</button>
@@ -133,7 +135,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
   <small>La llave queda guardada solo en este navegador.</small>
 </div>
 
-<div class="aviso-trailers">🎬 Acá ves <b>tráileres oficiales</b>. Al tocar una película te mostramos también <b>dónde verla completa de forma legal</b> en Argentina.</div>
+<div class="aviso-trailers">🎬 Acá ves <b>tráileres oficiales</b>. Para ver películas <b>enteras gratis</b>, tocá <b>🆓 Completas gratis</b>: elegís una y abajo del tráiler te aparece la plataforma gratis donde se ve completa.</div>
 
 <div class="contenedor" id="zonaCatalogo">
   <h2 class="titulo-seccion" id="tituloSeccion">Películas populares</h2>
@@ -282,6 +284,9 @@ async function cargar(agregar = false){
     if(vista === "busqueda"){
       tituloSeccion.textContent = `Resultados para "${textoBusqueda}"`;
       datos = await tmdb("/search/movie", {query:textoBusqueda, page:pagina, include_adult:false});
+    }else if(vista === "gratis"){
+      tituloSeccion.textContent = "Completas y gratis en Argentina";
+      datos = await tmdb("/discover/movie", {watch_region:REGION, with_watch_monetization_types:"free|ads", sort_by:"popularity.desc", include_adult:false, page:pagina});
     }else if(vista === "tendencia"){
       tituloSeccion.textContent = "En tendencia esta semana";
       datos = await tmdb("/trending/movie/week", {page:pagina});
@@ -418,7 +423,8 @@ async function dondeVer(id){
       grupos.forEach(([k,nombre]) => {
         const lista = ar[k] || [];
         if(!lista.length) return;
-        html += `<div class="grupo">${nombre}</div><div class="prov">` + lista.map(pv =>
+        const gratis = k === "free" || k === "ads";
+        html += `<div class="grupo">${gratis ? "✅ " + nombre + " · tocá para verla completa" : nombre}</div><div class="prov">` + lista.map(pv =>
           `<a href="${ar.link}" target="_blank" rel="noopener"><img src="${IMG}w92${pv.logo_path}" alt="">${escapar(pv.provider_name)}</a>`).join("") + "</div>";
       });
     }
