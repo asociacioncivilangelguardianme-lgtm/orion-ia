@@ -29,6 +29,12 @@ header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-
 .cat{background:var(--borde);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:14px;transition:background .3s}
 .cat:hover,.cat.activa{background:var(--rojo)}
 .cat-gratis{background:#1f6b3d}
+.cat-ar{background:#2a5a86}
+.generos{padding-top:10px;padding-bottom:10px;background:#161616}
+.generos .cat{font-size:13px;padding:6px 13px;background:#242424}
+.tipos{display:flex;gap:8px;padding:12px 4% 0;background:#1a1a1a}
+.tipo{flex:1;max-width:200px;background:#222;color:#fff;border:1px solid #333;border-radius:8px;padding:10px;font-weight:bold}
+.tipo.activa{background:#fff;color:#111;border-color:#fff}
 
 /* =============== PANEL DE LA LLAVE =============== */
 .panel{margin:20px 4%;background:var(--card);border:1px solid var(--borde);border-radius:10px;padding:20px;max-width:640px;line-height:1.55}
@@ -106,16 +112,18 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
   </div>
 </header>
 
+<div class="tipos" id="tipos">
+  <button class="tipo activa" data-tipo="movie">🎬 Películas</button>
+  <button class="tipo" data-tipo="tv">📺 Series</button>
+</div>
 <div class="categorias" id="categorias">
   <button class="cat cat-gratis" data-cat="gratis">🆓 Completas gratis</button>
   <button class="cat activa" data-cat="populares">🔥 Populares</button>
   <button class="cat" data-cat="tendencia">📈 Tendencia</button>
-  <button class="cat" data-cat="28">💥 Acción</button>
-  <button class="cat" data-cat="35">🎭 Comedia</button>
-  <button class="cat" data-cat="878">🚀 Ciencia Ficción</button>
-  <button class="cat" data-cat="27">👻 Terror</button>
+  <button class="cat cat-ar" data-cat="argentinas">🇦🇷 Argentinas</button>
   <button class="cat" data-cat="favoritos">❤️ Mi Lista</button>
 </div>
+<div class="categorias generos" id="generos"></div>
 
 <!-- Panel para pegar la llave de TMDB -->
 <div class="panel" id="panelLlave" hidden>
@@ -135,7 +143,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
   <small>La llave queda guardada solo en este navegador.</small>
 </div>
 
-<div class="aviso-trailers">🎬 Acá ves <b>tráileres oficiales</b>. Para ver películas <b>enteras gratis</b>, tocá <b>🆓 Completas gratis</b>: elegís una y abajo del tráiler te aparece la plataforma gratis donde se ve completa.</div>
+<div class="aviso-trailers">🎬 Acá ves <b>tráileres oficiales</b>. Para ver películas o series <b>enteras gratis</b>, tocá <b>🆓 Completas gratis</b>: elegís una y abajo del tráiler te aparece la plataforma gratis donde se ve completa.</div>
 
 <div class="contenedor" id="zonaCatalogo">
   <h2 class="titulo-seccion" id="tituloSeccion">Películas populares</h2>
@@ -177,14 +185,30 @@ let LLAVE_TMDB = "";
 const IDIOMA = "es-MX";          // idioma de títulos y sinopsis
 const REGION = "AR";             // región para estrenos
 const IMG = "https://image.tmdb.org/t/p/";
-const GENEROS = {28:"Acción", 35:"Comedia", 878:"Ciencia Ficción", 27:"Terror"};
+/* Todos los géneros oficiales de TMDB (son distintos para películas y series) */
+const GENEROS = {
+  movie: [[28,"💥 Acción"],[12,"🗺️ Aventura"],[16,"🧸 Animación"],[35,"🎭 Comedia"],[80,"🕵️ Crimen"],[99,"🎥 Documental"],
+          [18,"🎬 Drama"],[10751,"👨‍👩‍👧 Familia"],[14,"🧙 Fantasía"],[36,"📜 Historia"],[27,"👻 Terror"],[10402,"🎵 Música"],
+          [9648,"🔎 Misterio"],[10749,"❤️ Romance"],[878,"🚀 Ciencia ficción"],[53,"😱 Suspenso"],[10752,"🪖 Bélica"],
+          [37,"🤠 Western"],[10770,"📺 Película de TV"]],
+  tv:    [[10759,"💥 Acción y aventura"],[16,"🧸 Animación"],[35,"🎭 Comedia"],[80,"🕵️ Crimen"],[99,"🎥 Documental"],
+          [18,"🎬 Drama"],[10751,"👨‍👩‍👧 Familia"],[10762,"🧒 Infantil"],[9648,"🔎 Misterio"],[10765,"🚀 Ciencia ficción y fantasía"],
+          [10766,"💔 Telenovela"],[10764,"📸 Reality"],[10768,"🪖 Guerra y política"],[37,"🤠 Western"],[10767,"🎙️ Talk show"],[10763,"📰 Noticias"]]
+};
+let tipo = "movie";   // movie = películas · tv = series
+const NOMBRE = {movie:{uno:"película", varios:"películas", Varios:"Películas"}, tv:{uno:"serie", varios:"series", Varios:"Series"}};
+function nombreGenero(id){ const g = GENEROS[tipo].find(x => String(x[0]) === String(id)); return g ? g[1].replace(/^\S+\s/,"") : ""; }
+function dibujarGeneros(){
+  document.getElementById("generos").innerHTML = GENEROS[tipo].map(g => `<button class="cat" data-cat="gen${g[0]}">${g[1]}</button>`).join("");
+}
 
 /* Guardar y leer en el navegador (protegido por si no deja) */
 function leer(clave, porDefecto){ try{ const v = localStorage.getItem(clave); return v ? JSON.parse(v) : porDefecto; }catch(e){ return porDefecto; } }
 function guardar(clave, valor){ try{ localStorage.setItem(clave, JSON.stringify(valor)); }catch(e){} }
 
 if(!LLAVE_TMDB) LLAVE_TMDB = leer("cineapp_llave", "");
-let favoritos = leer("cineapp_favs_tmdb", []);   // guarda la película completa
+let favoritos = leer("cineapp_favs_tmdb", []);   // guarda la película o serie
+favoritos.forEach(f => { if(!f.tipo) f.tipo = "movie"; if(!f.k) f.k = f.tipo + "-" + f.id; });   // favoritos viejos
 
 /* =========================================================
    2) CONEXIÓN CON TMDB
@@ -203,11 +227,11 @@ async function tmdb(ruta, parametros = {}){
 }
 
 /* Deja cada película con solo lo que usamos */
-function limpiar(x){
+function limpiar(x, t = tipo){
   return {
-    id: x.id,
+    id: x.id, tipo: t, k: t + "-" + x.id,
     titulo: x.title || x.name || "Sin título",
-    anio: (x.release_date || "").slice(0,4),
+    anio: (x.release_date || x.first_air_date || "").slice(0,4),
     nota: x.vote_average ? x.vote_average.toFixed(1) : "",
     sinopsis: x.overview || "Todavía no hay sinopsis en español.",
     poster: x.poster_path || "",
@@ -234,20 +258,20 @@ let pedidoActual = 0;      // evita que una respuesta vieja pise a una nueva
    4) DIBUJAR TARJETAS
    ========================================================= */
 function tarjetaHTML(p){
-  cache[p.id] = p;
-  const esFav = favoritos.some(f => f.id === p.id);
+  cache[p.k] = p;
+  const esFav = favoritos.some(f => f.k === p.k);
   const img = p.poster
-    ? `<img class="poster" src="${IMG}w342${p.poster}" alt="" loading="lazy" data-abrir="${p.id}">`
-    : `<div class="sin-poster" data-abrir="${p.id}">${escapar(p.titulo)}</div>`;
+    ? `<img class="poster" src="${IMG}w342${p.poster}" alt="" loading="lazy" data-abrir="${p.k}">`
+    : `<div class="sin-poster" data-abrir="${p.k}">${escapar(p.titulo)}</div>`;
   return `<div class="tarjeta">
     ${p.nota ? `<span class="nota">★ ${p.nota}</span>` : ""}
     ${img}
     <div class="info">
-      <div class="texto" data-abrir="${p.id}">
+      <div class="texto" data-abrir="${p.k}">
         <div class="t-titulo">${escapar(p.titulo)}</div>
-        <div class="t-anio">${p.anio || "—"}</div>
+        <div class="t-anio">${p.anio || "—"}${p.tipo === "tv" ? " · Serie" : ""}</div>
       </div>
-      <button class="fav ${esFav ? "activa" : ""}" data-fav="${p.id}" aria-label="Mi Lista">❤️</button>
+      <button class="fav ${esFav ? "activa" : ""}" data-fav="${p.k}" aria-label="Mi Lista">❤️</button>
     </div>
   </div>`;
 }
@@ -257,9 +281,9 @@ function estado(texto){ grilla.innerHTML = `<p class="estado">${texto}</p>`; btn
 /* Un solo "escuchador" para todos los clics de la grilla */
 grilla.addEventListener("click", e => {
   const fav = e.target.closest("[data-fav]");
-  if(fav){ cambiarFavorito(+fav.dataset.fav); return; }
+  if(fav){ cambiarFavorito(fav.dataset.fav); return; }
   const abrirEl = e.target.closest("[data-abrir]");
-  if(abrirEl) abrir(+abrirEl.dataset.abrir);
+  if(abrirEl) abrir(abrirEl.dataset.abrir);
 });
 
 /* =========================================================
@@ -269,7 +293,7 @@ async function cargar(agregar = false){
   if(vista === "favoritos"){
     tituloSeccion.textContent = "Mi Lista";
     btnMas.hidden = true;
-    if(!favoritos.length) return estado("Todavía no guardaste películas.<br>Tocá el ❤️ de cualquier tarjeta para sumarla acá.");
+    if(!favoritos.length) return estado("Todavía no guardaste nada.<br>Tocá el ❤️ de cualquier película o serie para sumarla acá.");
     grilla.innerHTML = favoritos.map(tarjetaHTML).join("");
     return;
   }
@@ -281,27 +305,32 @@ async function cargar(agregar = false){
 
   try{
     let datos;
+    const N = NOMBRE[tipo];
+    const base = {sort_by:"popularity.desc", include_adult:false, page:pagina};
     if(vista === "busqueda"){
-      tituloSeccion.textContent = `Resultados para "${textoBusqueda}"`;
-      datos = await tmdb("/search/movie", {query:textoBusqueda, page:pagina, include_adult:false});
+      tituloSeccion.textContent = `${N.Varios}: resultados para "${textoBusqueda}"`;
+      datos = await tmdb(`/search/${tipo}`, {query:textoBusqueda, page:pagina, include_adult:false});
     }else if(vista === "gratis"){
-      tituloSeccion.textContent = "Completas y gratis en Argentina";
-      datos = await tmdb("/discover/movie", {watch_region:REGION, with_watch_monetization_types:"free|ads", sort_by:"popularity.desc", include_adult:false, page:pagina});
+      tituloSeccion.textContent = `${N.Varios} completas y gratis en Argentina`;
+      datos = await tmdb(`/discover/${tipo}`, {...base, watch_region:REGION, with_watch_monetization_types:"free|ads"});
+    }else if(vista === "argentinas"){
+      tituloSeccion.textContent = `${N.Varios} argentinas`;
+      datos = await tmdb(`/discover/${tipo}`, {...base, with_origin_country:"AR"});
     }else if(vista === "tendencia"){
-      tituloSeccion.textContent = "En tendencia esta semana";
-      datos = await tmdb("/trending/movie/week", {page:pagina});
-    }else if(GENEROS[vista]){
-      tituloSeccion.textContent = "Género: " + GENEROS[vista];
-      datos = await tmdb("/discover/movie", {with_genres:vista, sort_by:"popularity.desc", include_adult:false, page:pagina});
+      tituloSeccion.textContent = `${N.Varios} en tendencia esta semana`;
+      datos = await tmdb(`/trending/${tipo}/week`, {page:pagina});
+    }else if(vista.startsWith("gen")){
+      tituloSeccion.textContent = `${N.Varios} · ${nombreGenero(vista.slice(3))}`;
+      datos = await tmdb(`/discover/${tipo}`, {...base, with_genres:vista.slice(3)});
     }else{
-      tituloSeccion.textContent = "Películas populares";
-      datos = await tmdb("/movie/popular", {page:pagina, region:REGION});
+      tituloSeccion.textContent = `${N.Varios} populares`;
+      datos = tipo === "movie" ? await tmdb("/movie/popular", {page:pagina, region:REGION}) : await tmdb("/tv/popular", {page:pagina});
     }
     if(miPedido !== pedidoActual) return;   // llegó tarde, ya se pidió otra cosa
 
     totalPaginas = Math.min(datos.total_pages || 1, 500);
-    const lista = (datos.results || []).map(limpiar);
-    if(!agregar && !lista.length) return estado("No encontré películas con ese nombre.");
+    const lista = (datos.results || []).map(x => limpiar(x));
+    if(!agregar && !lista.length) return estado(`No encontré ${NOMBRE[tipo].varios} acá.`);
     const html = lista.map(tarjetaHTML).join("");
     if(agregar) grilla.insertAdjacentHTML("beforeend", html); else grilla.innerHTML = html;
     btnMas.hidden = pagina >= totalPaginas;
@@ -322,10 +351,23 @@ btnMas.addEventListener("click", () => { pagina++; cargar(true); });
 function marcarCategoria(cat){
   document.querySelectorAll(".cat").forEach(b => b.classList.toggle("activa", b.dataset.cat === cat));
 }
-document.getElementById("categorias").addEventListener("click", e => {
+function clickCategoria(e){
   const b = e.target.closest(".cat"); if(!b) return;
   vista = b.dataset.cat; buscador.value = ""; marcarCategoria(vista); cargar();
+}
+document.getElementById("categorias").addEventListener("click", clickCategoria);
+document.getElementById("generos").addEventListener("click", clickCategoria);
+document.getElementById("tipos").addEventListener("click", e => {
+  const b = e.target.closest(".tipo"); if(!b || b.dataset.tipo === tipo) return;
+  tipo = b.dataset.tipo;
+  document.querySelectorAll(".tipo").forEach(x => x.classList.toggle("activa", x === b));
+  buscador.placeholder = tipo === "movie" ? "Buscar película..." : "Buscar serie...";
+  dibujarGeneros();
+  if(vista.startsWith("gen")) vista = "populares";   // los géneros cambian entre películas y series
+  if(vista === "busqueda" && !buscador.value.trim()) vista = "populares";
+  marcarCategoria(vista); cargar();
 });
+dibujarGeneros();
 
 let espera;
 buscador.addEventListener("input", () => {
@@ -342,7 +384,7 @@ buscador.addEventListener("input", () => {
    7) MI LISTA (favoritos)
    ========================================================= */
 function cambiarFavorito(id){
-  const i = favoritos.findIndex(f => f.id === id);
+  const i = favoritos.findIndex(f => f.k === id);
   if(i > -1) favoritos.splice(i, 1);
   else if(cache[id]) favoritos.unshift(cache[id]);
   guardar("cineapp_favs_tmdb", favoritos);
@@ -361,7 +403,7 @@ let idModal = null;
 
 function actualizarBotonFavModal(id){
   if(id !== idModal) return;
-  const esFav = favoritos.some(f => f.id === id);
+  const esFav = favoritos.some(f => f.k === id);
   document.getElementById("mFav").textContent = esFav ? "💔 Quitar de Mi Lista" : "❤️ Agregar a Mi Lista";
 }
 
@@ -376,21 +418,21 @@ async function abrir(id){
   modal.classList.add("abierto");
   document.body.style.overflow = "hidden";
   if(!history.state || !history.state.cineModal) history.pushState({cineModal:true}, "");
-  dondeVer(id);
+  dondeVer(id, p);
 
-  const clave = await buscarTrailer(id);
+  const clave = await buscarTrailer(p);
   if(idModal !== id) return;   // ya cerró o abrió otra
   if(clave){
     video.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${clave}?autoplay=1&rel=0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
   }else{
     const q = encodeURIComponent(`${p.titulo} ${p.anio} tráiler oficial`);
-    video.innerHTML = `<div style="padding:20px">No hay tráiler cargado en TMDB para esta película.<br><br>
+    video.innerHTML = `<div style="padding:20px">No hay tráiler cargado en TMDB para esta ${NOMBRE[p.tipo].uno}.<br><br>
       <a class="btn btn-rojo" style="display:inline-block;text-decoration:none" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">Buscar en YouTube</a></div>`;
   }
 }
 
 /* Busca primero en español; si no hay, en inglés. Prefiere los oficiales. */
-async function buscarTrailer(id){
+async function buscarTrailer(p){
   const elegir = lista => {
     const yt = lista.filter(v => v.site === "YouTube");
     return yt.find(v => v.type === "Trailer" && v.official)
@@ -399,10 +441,10 @@ async function buscarTrailer(id){
         || null;
   };
   try{
-    let r = await tmdb(`/movie/${id}/videos`);
+    let r = await tmdb(`/${p.tipo}/${p.id}/videos`);
     let v = elegir(r.results || []);
     if(!v){
-      r = await tmdb(`/movie/${id}/videos`, {language:"en-US"});
+      r = await tmdb(`/${p.tipo}/${p.id}/videos`, {language:"en-US"});
       v = elegir(r.results || []);
     }
     return v ? v.key : null;
@@ -410,11 +452,11 @@ async function buscarTrailer(id){
 }
 
 /* Dónde ver la película completa, legal, en Argentina (datos de JustWatch vía TMDB) */
-async function dondeVer(id){
+async function dondeVer(id, p){
   const caja = document.getElementById("mDonde");
   caja.innerHTML = "<small>Buscando dónde verla completa...</small>";
   try{
-    const r = await tmdb(`/movie/${id}/watch/providers`);
+    const r = await tmdb(`/${p.tipo}/${p.id}/watch/providers`);
     if(idModal !== id) return;
     const ar = (r.results || {})[REGION];
     const grupos = [["free","Gratis"],["ads","Gratis con publicidad"],["flatrate","Con suscripción"],["rent","Alquiler"],["buy","Compra"]];
