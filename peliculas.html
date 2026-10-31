@@ -192,10 +192,11 @@ const GENEROS = {
           [9648,"🔎 Misterio"],[10749,"❤️ Romance"],[878,"🚀 Ciencia ficción"],[53,"😱 Suspenso"],[10752,"🪖 Bélica"],
           [37,"🤠 Western"],[10770,"📺 Película de TV"]],
   tv:    [[10759,"💥 Acción y aventura"],[16,"🧸 Animación"],[35,"🎭 Comedia"],[80,"🕵️ Crimen"],[99,"🎥 Documental"],
-          [18,"🎬 Drama"],[10751,"👨‍👩‍👧 Familia"],[10762,"🧒 Infantil"],[9648,"🔎 Misterio"],[10765,"🚀 Ciencia ficción y fantasía"],
+          [18,"🎬 Drama"],[10751,"👨‍👩‍👧 Familia"],[10762,"🧒 Infantil"],[9648,"👻 Misterio y terror"],[10765,"🚀 Ciencia ficción y fantasía"],
           [10766,"💔 Telenovela"],[10764,"📸 Reality"],[10768,"🪖 Guerra y política"],[37,"🤠 Western"],[10767,"🎙️ Talk show"],[10763,"📰 Noticias"]]
 };
 let tipo = "movie";   // movie = películas · tv = series
+let soloAR = false;   // 🇦🇷 Argentinas: se puede combinar con géneros y con Completas gratis
 const NOMBRE = {movie:{uno:"película", varios:"películas", Varios:"Películas"}, tv:{uno:"serie", varios:"series", Varios:"Series"}};
 function nombreGenero(id){ const g = GENEROS[tipo].find(x => String(x[0]) === String(id)); return g ? g[1].replace(/^\S+\s/,"") : ""; }
 function dibujarGeneros(){
@@ -307,11 +308,13 @@ async function cargar(agregar = false){
     let datos;
     const N = NOMBRE[tipo];
     const base = {sort_by:"popularity.desc", include_adult:false, page:pagina};
+    if(soloAR) base.with_origin_country = "AR";
+    const ar = soloAR ? " argentinas" : "";
     if(vista === "busqueda"){
       tituloSeccion.textContent = `${N.Varios}: resultados para "${textoBusqueda}"`;
       datos = await tmdb(`/search/${tipo}`, {query:textoBusqueda, page:pagina, include_adult:false});
     }else if(vista === "gratis"){
-      tituloSeccion.textContent = `${N.Varios} completas y gratis en Argentina`;
+      tituloSeccion.textContent = `${N.Varios}${ar} completas y gratis`;
       datos = await tmdb(`/discover/${tipo}`, {...base, watch_region:REGION, with_watch_monetization_types:"free|ads"});
     }else if(vista === "argentinas"){
       tituloSeccion.textContent = `${N.Varios} argentinas`;
@@ -320,7 +323,7 @@ async function cargar(agregar = false){
       tituloSeccion.textContent = `${N.Varios} en tendencia esta semana`;
       datos = await tmdb(`/trending/${tipo}/week`, {page:pagina});
     }else if(vista.startsWith("gen")){
-      tituloSeccion.textContent = `${N.Varios} · ${nombreGenero(vista.slice(3))}`;
+      tituloSeccion.textContent = `${N.Varios}${ar} · ${nombreGenero(vista.slice(3))}`;
       datos = await tmdb(`/discover/${tipo}`, {...base, with_genres:vista.slice(3)});
     }else{
       tituloSeccion.textContent = `${N.Varios} populares`;
@@ -349,11 +352,21 @@ btnMas.addEventListener("click", () => { pagina++; cargar(true); });
    6) CATEGORÍAS Y BUSCADOR
    ========================================================= */
 function marcarCategoria(cat){
-  document.querySelectorAll(".cat").forEach(b => b.classList.toggle("activa", b.dataset.cat === cat));
+  document.querySelectorAll(".cat").forEach(b => b.classList.toggle("activa", b.dataset.cat === cat || (b.dataset.cat === "argentinas" && soloAR)));
 }
 function clickCategoria(e){
   const b = e.target.closest(".cat"); if(!b) return;
-  vista = b.dataset.cat; buscador.value = ""; marcarCategoria(vista); cargar();
+  const cat = b.dataset.cat;
+  buscador.value = "";
+  if(cat === "argentinas"){
+    // prende o apaga el filtro argentino; si hay un género o "gratis" elegido, lo mantiene
+    soloAR = !soloAR;
+    if(!(vista.startsWith("gen") || vista === "gratis")) vista = soloAR ? "argentinas" : "populares";
+  }else{
+    vista = cat;
+    if(!(cat.startsWith("gen") || cat === "gratis")) soloAR = false;
+  }
+  marcarCategoria(vista); cargar();
 }
 document.getElementById("categorias").addEventListener("click", clickCategoria);
 document.getElementById("generos").addEventListener("click", clickCategoria);
@@ -374,9 +387,9 @@ buscador.addEventListener("input", () => {
   clearTimeout(espera);
   const q = buscador.value.trim();
   espera = setTimeout(() => {
-    if(!q){ vista = "populares"; marcarCategoria(vista); cargar(); return; }
+    if(!q){ vista = "populares"; soloAR = false; marcarCategoria(vista); cargar(); return; }
     if(q.length < 2) return;
-    vista = "busqueda"; textoBusqueda = q; marcarCategoria(""); cargar();
+    vista = "busqueda"; soloAR = false; textoBusqueda = q; marcarCategoria(""); cargar();
   }, 450);
 });
 
