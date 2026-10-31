@@ -90,7 +90,21 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
   #buscador{width:100%}
   .grilla{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 }
+/* seguir viendo y reproductor */
+.seguir{grid-column:1/-1}
+.seguir h3{font-size:1.1rem;margin:0 0 10px}
+.fila-seguir{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}
+.fila-seguir .tarjeta{flex:0 0 160px}
+.barra-prog{height:4px;background:#333}
+.barra-prog i{display:block;height:100%;background:var(--rojo)}
+.aviso-sigue{position:absolute;left:12px;bottom:58px;z-index:5;background:rgba(0,0,0,.85);color:#fff;border-radius:6px;padding:8px 10px;font-size:13px;display:flex;gap:10px;align-items:center}
+.aviso-sigue button{background:#fff;color:#111;border:none;border-radius:4px;padding:4px 8px;font-size:12px;font-weight:bold}
+.video{position:relative}
+.video .plyr{height:100%}
+.plyr--video{--plyr-color-main:#e50914}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.js" defer></script>
 </head>
 <body>
 
@@ -115,6 +129,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
   <button class="cat" data-cat="g:drama">🎬 Drama</button>
   <button class="cat" data-cat="g:romance">❤️ Romance</button>
   <button class="cat" data-cat="g:animación">🧸 Animación</button>
+  <button class="cat" data-cat="color">🎨 En colores</button>
   <button class="cat" data-cat="favoritos">❤️ Mi lista</button>
   <button class="cat" data-cat="plataformas">🌐 Ver más gratis</button>
 </div>
@@ -219,7 +234,7 @@ const peliculas = [
   },
   {
     id: 10, categoria: "peliculas", fuente: "archive",
-    codigo: "la35ca-Cinema_35_-_Charade_1963",
+    codigo: "la35ca-Cinema_35_-_Charade_1963", color: true,
     titulo: "Charada (Charade)", anio: "1963",
     idioma: "En inglés", genero: "Comedia / Suspenso",
     descripcion: "Audrey Hepburn y Cary Grant en una mezcla de romance, humor y misterio en París. Quedó en dominio público porque se estrenó sin el aviso de derechos de autor."
@@ -247,35 +262,35 @@ const peliculas = [
   },
   {
     id: 14, categoria: "animacion", fuente: "youtube", licencia: "cc",
-    codigo: "_cMxraX_5RE",
+    codigo: "_cMxraX_5RE", color: true,
     titulo: "Sprite Fright", anio: "2021",
     idioma: "Cortometraje · Blender Studio", genero: "Animación / Terror",
     descripcion: "Un grupo de adolescentes va de campamento al bosque y se cruza con unas criaturitas que no son tan adorables como parecen. Licencia libre Creative Commons (CC BY), Blender Foundation."
   },
   {
     id: 15, categoria: "animacion", fuente: "youtube", licencia: "cc",
-    codigo: "u9lj-c29dxI",
+    codigo: "u9lj-c29dxI", color: true,
     titulo: "Wing It!", anio: "2023",
     idioma: "Cortometraje · Blender Studio", genero: "Animación / Comedia",
     descripcion: "Un gato y un perro intentan construir un cohete con lo que encuentran en el granero. Licencia libre Creative Commons (CC BY), Blender Foundation."
   },
   {
     id: 16, categoria: "animacion", fuente: "youtube", licencia: "cc",
-    codigo: "1kiLnmov0XI",
+    codigo: "1kiLnmov0XI", color: true,
     titulo: "Sintel", anio: "2010",
     idioma: "Cortometraje · Blender Studio", genero: "Animación / Aventura",
     descripcion: "Una joven guerrera recorre tierras peligrosas buscando a su amigo, un pequeño dragón. Licencia libre Creative Commons (CC BY), Blender Foundation."
   },
   {
     id: 17, categoria: "dibujitos", fuente: "archive",
-    codigo: "Gullivers_Travels-1939",
+    codigo: "Gullivers_Travels-1939", color: true,
     titulo: "Los viajes de Gulliver", anio: "1939",
     idioma: "En inglés", genero: "Animación / Aventura",
     descripcion: "Película animada completa de los hermanos Fleischer. Gulliver naufraga y llega a Liliput, un reino de gente diminuta en plena guerra con sus vecinos."
   },
   {
     id: 18, categoria: "dibujitos", fuente: "archive",
-    codigo: "PopeyeTheSailorMeetsSindbadTheSailor_540",
+    codigo: "PopeyeTheSailorMeetsSindbadTheSailor_540", color: true,
     titulo: "Popeye contra Simbad el marino", anio: "1936",
     idioma: "En inglés", genero: "Animación / Aventura",
     descripcion: "Popeye, Olivia y Pilo desembarcan en la isla de Simbad, que se cree el marino más fuerte del mundo. Uno de los cortos más famosos de Popeye, en colores."
@@ -310,7 +325,7 @@ const peliculas = [
   },
   {
     id: 23, categoria: "peliculas", fuente: "archive",
-    codigo: "Mclintock.avi",
+    codigo: "Mclintock.avi", color: true,
     titulo: "McLintock!", anio: "1963",
     idioma: "En inglés", genero: "Western / Comedia",
     descripcion: "John Wayne es un ganadero poderoso que tiene que lidiar con su esposa que vuelve después de años. Western con mucho humor y peleas a las piñas."
@@ -407,6 +422,8 @@ function guardar(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(
 let favoritos = leer("cineapp_favs", []);          // ids
 let favExtra  = leer("cineapp_favs_extra", {});    // películas de "Explorar" guardadas
 let calidad   = leer("cineapp_calidad", "liviana"); // liviana | normal
+let progreso  = leer("cineapp_progreso", {});      // id -> {t, dur, p, cuando}  "seguir viendo"
+function fmtTiempo(t){ t = Math.floor(t||0); const h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = t%60; return (h ? h + ":" + String(m).padStart(2,"0") : m) + ":" + String(s).padStart(2,"0"); }
 
 let categoriaActual = "todas";
 const grilla = document.getElementById("grilla");
@@ -416,7 +433,7 @@ const modal = document.getElementById("modal");
 const video = document.getElementById("video");
 const extra = {};   // películas traídas de Internet Archive, por id
 
-function buscarPeli(id){ return peliculas.find(x => x.id === id) || extra[id] || favExtra[id]; }
+function buscarPeli(id){ return peliculas.find(x => x.id === id) || extra[id] || favExtra[id] || (progreso[id] && progreso[id].p); }
 
 /* ---------- Dibujar tarjetas ---------- */
 function tarjetaEl(p){
@@ -433,6 +450,8 @@ function tarjetaEl(p){
       </div>
       <button class="fav ${esFav ? "activa" : ""}" aria-label="Favorito">❤️</button>
     </div>`;
+  const pr = progreso[p.id];
+  if(pr && pr.dur) tarjeta.querySelector("img").insertAdjacentHTML("afterend", `<div class="barra-prog"><i style="width:${Math.min(100, pr.t / pr.dur * 100).toFixed(1)}%"></i></div>`);
   tarjeta.querySelector("img").onclick = () => abrir(p.id);
   tarjeta.querySelector(".texto").onclick = () => abrir(p.id);
   tarjeta.querySelector(".fav").onclick = (e) => { e.stopPropagation(); cambiarFavorito(p.id); e.currentTarget.classList.toggle("activa", favoritos.includes(p.id)); };
@@ -465,7 +484,7 @@ const GEN_IA = [
   ["musical","🎵 Musical","musical"],
   ["dibujitos","🧸 Dibujitos",""]
 ];
-let ia = {gen:"todos", espanol:false, pagina:1, total:0, pedido:0};
+let ia = {gen:"todos", espanol:false, color:false, pagina:1, total:0, pedido:0};
 
 function consultaIA(q){
   const g = GEN_IA.find(x => x[0] === ia.gen);
@@ -474,6 +493,8 @@ function consultaIA(q){
     : 'collection:(feature_films) AND mediatype:(movies)';
   if(g && g[2]) base += ` AND subject:(${g[2]})`;
   if(ia.espanol) base += ' AND language:(spa OR spanish OR español OR castellano)';
+  // en colores: el campo "color" de Archive o palabras como Technicolor (sin las versiones coloreadas por terceros)
+  if(ia.color) base += ' AND (color:(color OR colour OR "en color") OR subject:(technicolor OR eastmancolor OR color)) AND NOT title:(colorized OR coloreada OR colorizada)';
   if(q) base += ` AND title:(${q.replace(/[():"\\]/g," ")})`;
   return base;
 }
@@ -499,7 +520,8 @@ function deIA(doc){
 function barraExplorar(){
   return `<div class="explorar-barra" id="barraIA">` +
     GEN_IA.map(g => `<button type="button" data-ig="${g[0]}" class="${g[0]===ia.gen?"on":""}">${g[1]}</button>`).join("") +
-    `<label><input type="checkbox" id="chkEsp" ${ia.espanol?"checked":""}> Solo en español</label></div>
+    `<label><input type="checkbox" id="chkColor" ${ia.color?"checked":""}> 🎨 Solo en colores</label>
+    <label style="margin-left:0"><input type="checkbox" id="chkEsp" ${ia.espanol?"checked":""}> Solo en español</label></div>
     <div class="aviso-explorar">🌐 Miles de películas completas de dominio público de <b>Internet Archive</b>. Se ven acá mismo. La mayoría están en inglés; marcá <b>Solo en español</b> para filtrar (hay menos).</div>`;
 }
 async function explorar(agregar){
@@ -538,6 +560,7 @@ function conectarBarra(){
   const b = document.getElementById("barraIA"); if(!b) return;
   b.addEventListener("click", e => { const x = e.target.closest("[data-ig]"); if(!x) return; ia.gen = x.dataset.ig; explorar(false); });
   document.getElementById("chkEsp").onchange = e => { ia.espanol = e.target.checked; explorar(false); };
+  document.getElementById("chkColor").onchange = e => { ia.color = e.target.checked; explorar(false); };
 }
 
 /* ---------- Filtros de las destacadas ---------- */
@@ -550,9 +573,21 @@ function filtrar(){
     const lista = favoritos.map(buscarPeli).filter(Boolean).filter(p => (p.titulo + " " + p.genero).toLowerCase().includes(q));
     return mostrar(lista);
   }
+  if(categoriaActual === "todas" && !q){
+    mostrar(peliculas);
+    const enCurso = Object.values(progreso).sort((a,b) => b.cuando - a.cuando).map(x => x.p).filter(Boolean).slice(0, 12);
+    if(enCurso.length){
+      const caja = document.createElement("div"); caja.className = "seguir";
+      caja.innerHTML = `<h3>▶ Seguir viendo</h3><div class="fila-seguir"></div>`;
+      enCurso.forEach(p => caja.querySelector(".fila-seguir").appendChild(tarjetaEl(p)));
+      grilla.prepend(caja);
+    }
+    return;
+  }
   const lista = peliculas.filter(p => {
     const coincide = (p.titulo + " " + p.genero).toLowerCase().includes(q);
     if(categoriaActual.startsWith("g:")) return p.genero.toLowerCase().includes(categoriaActual.slice(2)) && coincide;
+    if(categoriaActual === "color") return p.color && coincide;
     const todas = categoriaActual === "todas" || categoriaActual === "plataformas";
     return (todas || p.categoria === categoriaActual) && coincide;
   });
@@ -579,6 +614,8 @@ function cambiarFavorito(id){
   guardar("cineapp_favs", favoritos); guardar("cineapp_favs_extra", favExtra);
   if(categoriaActual === "favoritos") filtrar();
 }
+/* al volver de una película, refresca "Seguir viendo" y las barras */
+function refrescar(){ if(categoriaActual !== "explorar" && categoriaActual !== "plataformas") filtrar(); }
 
 /* =========================================================
    REPRODUCTOR
@@ -590,17 +627,54 @@ let abierta = null, pedidoVideo = 0;
 function ponerIframe(p){
   video.innerHTML = `<iframe src="https://archive.org/embed/${p.codigo}" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
 }
+let plyr = null, guardarCada = 0;
+function soltarPlyr(){ try{ if(plyr) plyr.destroy(); }catch(e){} plyr = null; }
+
+/* SRT -> VTT (el navegador solo entiende VTT) */
+function srtAVtt(t){
+  return "WEBVTT\n\n" + String(t).replace(/\r/g,"").replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g,"$1.$2").replace(/^\uFEFF/,"");
+}
+async function subtitulos(p, archivos){
+  const subs = archivos.filter(f => /\.(srt|vtt)$/i.test(f.name || ""));
+  if(!subs.length) return [];
+  const esp = f => /(spa|span|esp|español|espanol|castellano|latino|\bes\b|[._-]es[._-])/i.test(f.name);
+  const eng = f => /(eng|english|\ben\b|[._-]en[._-])/i.test(f.name);
+  const elegidos = [subs.find(esp), subs.find(eng) || (!subs.find(esp) ? subs[0] : null)].filter(Boolean);
+  const pistas = [];
+  for(const f of elegidos){
+    try{
+      const r = await fetch(`https://archive.org/download/${encodeURIComponent(p.codigo)}/${f.name.split("/").map(encodeURIComponent).join("/")}`);
+      if(!r.ok) continue;
+      let txt = await r.text();
+      if(/\.srt$/i.test(f.name)) txt = srtAVtt(txt);
+      pistas.push({src: URL.createObjectURL(new Blob([txt], {type:"text/vtt"})), es: esp(f), etiqueta: esp(f) ? "Español" : "Inglés"});
+    }catch(e){}
+  }
+  return pistas;
+}
+
+function guardarProgreso(p, v){
+  if(!v || !v.duration || !isFinite(v.duration)) return;
+  if(v.currentTime > v.duration * 0.95){ delete progreso[p.id]; }          // terminó: sale de "Seguir viendo"
+  else if(v.currentTime > 30){ progreso[p.id] = {t: v.currentTime, dur: v.duration, p, cuando: Date.now()}; }
+  guardar("cineapp_progreso", progreso);
+}
+
 async function ponerVideoArchive(p){
   const mio = ++pedidoVideo;
+  soltarPlyr();
   video.innerHTML = `<div class="cargando">Preparando la película...</div>`;
   try{
     const r = await fetch(`https://archive.org/metadata/${encodeURIComponent(p.codigo)}`);
     const meta = await r.json();
     if(mio !== pedidoVideo) return;
-    const mp4 = (meta.files || []).filter(f => /\.mp4$/i.test(f.name || "") && !/sample|trailer/i.test(f.name || ""));
+    const archivos = meta.files || [];
+    // duración (idea tomada de ArchiveFlix)
+    const dur = meta.metadata && meta.metadata.runtime;
+    if(dur && abierta === p){ const d = document.getElementById("mDato"); if(!/⏱/.test(d.textContent)) d.textContent += ` · ⏱ ${dur}`; }
+    const mp4 = archivos.filter(f => /\.mp4$/i.test(f.name || "") && !/sample|trailer/i.test(f.name || ""));
     if(!mp4.length) return ponerIframe(p);
     const tam = f => +f.size || 0;
-    // liviana: el MP4 más chico (por ejemplo el "512Kb"); normal: el más grande que no pase de ~1,5 GB
     let elegido;
     if(calidad === "liviana"){
       elegido = mp4.find(f => /512kb/i.test(f.name) || /512Kb MPEG4/i.test(f.format || "")) || mp4.slice().sort((a,b) => tam(a)-tam(b))[0];
@@ -609,10 +683,49 @@ async function ponerVideoArchive(p){
       elegido = ok[0] || mp4[0];
     }
     const src = `https://archive.org/download/${encodeURIComponent(p.codigo)}/${elegido.name.split("/").map(encodeURIComponent).join("/")}`;
-    video.innerHTML = `<video controls playsinline autoplay preload="metadata" poster="${imagen(p)}"></video>`;
+    const pistas = await subtitulos(p, archivos);
+    if(mio !== pedidoVideo) return;
+    video.innerHTML = `<video playsinline preload="metadata" poster="${imagen(p)}">
+      ${pistas.map(t => `<track kind="subtitles" src="${t.src}" srclang="${t.es ? "es" : "en"}" label="${t.etiqueta}" ${t.es ? "default" : ""}>`).join("")}
+    </video>`;
     const v = video.querySelector("video");
-    v.onerror = () => { if(mio === pedidoVideo) ponerIframe(p); };
+    let fallo = false;
+    v.onerror = () => {
+      if(mio !== pedidoVideo || fallo) return;
+      fallo = true; soltarPlyr(); ponerIframe(p);
+    };
     v.src = src;
+
+    // controles cómodos (Plyr) si cargó la librería; si no, los del navegador
+    if(window.Plyr){
+      plyr = new Plyr(v, {
+        controls: ["play-large","rewind","play","fast-forward","progress","current-time","duration","mute","volume","captions","settings","fullscreen"],
+        settings: ["captions","speed"], seekTime: 10, speed: {selected:1, options:[0.75,1,1.25,1.5,2]},
+        captions: {active: pistas.some(t => t.es), language: "es"},
+        i18n: {restart:"Reiniciar", rewind:"Atrasar 10 s", play:"Reproducir", pause:"Pausa", fastForward:"Adelantar 10 s", seek:"Buscar",
+               played:"Visto", buffered:"Cargado", currentTime:"Tiempo", duration:"Duración", volume:"Volumen", mute:"Silenciar", unmute:"Activar sonido",
+               enableCaptions:"Activar subtítulos", disableCaptions:"Sacar subtítulos", enterFullscreen:"Pantalla completa", exitFullscreen:"Salir de pantalla completa",
+               captions:"Subtítulos", settings:"Ajustes", speed:"Velocidad", normal:"Normal", disabled:"Sin subtítulos", quality:"Calidad"}
+      });
+    }else{
+      v.controls = true;
+    }
+
+    // seguir donde la dejaste
+    const pr = progreso[p.id];
+    v.addEventListener("loadedmetadata", () => {
+      if(pr && pr.t > 30 && pr.t < v.duration - 60){
+        v.currentTime = pr.t;
+        const aviso = document.createElement("div"); aviso.className = "aviso-sigue";
+        aviso.innerHTML = `Seguís desde ${fmtTiempo(pr.t)} <button type="button">Empezar de nuevo</button>`;
+        aviso.querySelector("button").onclick = () => { v.currentTime = 0; aviso.remove(); };
+        video.appendChild(aviso); setTimeout(() => aviso.remove(), 8000);
+      }
+      const intento = v.play(); if(intento && intento.catch) intento.catch(() => {});
+    }, {once:true});
+    v.addEventListener("timeupdate", () => { const ahora = Date.now(); if(ahora - guardarCada > 5000){ guardarCada = ahora; guardarProgreso(p, v); } });
+    v.addEventListener("pause", () => guardarProgreso(p, v));
+    v.addEventListener("ended", () => guardarProgreso(p, v));
   }catch(e){
     if(mio === pedidoVideo) ponerIframe(p);
   }
@@ -648,10 +761,14 @@ function cerrar(desdeAtras){
   if(!modal.classList.contains("abierto")) return;
   if(!desdeAtras && history.state && history.state.cineModal){ history.back(); return; }
   modal.classList.remove("abierto");
+  const v = video.querySelector("video");
+  if(v && abierta) guardarProgreso(abierta, v);
   pedidoVideo++; abierta = null;
-  const v = video.querySelector("video"); if(v){ v.pause(); v.removeAttribute("src"); v.load(); }
+  soltarPlyr();
+  const v2 = video.querySelector("video"); if(v2){ v2.pause(); v2.removeAttribute("src"); v2.load(); }
   video.innerHTML = "";               // corta el video al cerrar
   document.body.style.overflow = "";
+  refrescar();
 }
 document.getElementById("btnCerrar").onclick = () => cerrar();
 /* botón "atrás" del celu: cierra la película en vez de salir */
@@ -660,7 +777,7 @@ modal.addEventListener("click", e => { if(e.target === modal) cerrar(); });
 document.addEventListener("keydown", e => { if(e.key === "Escape") cerrar(); });
 
 tituloSeccion.textContent = "Destacadas";
-mostrar(peliculas);
+filtrar();
 </script>
 </body>
 </html>
