@@ -68,6 +68,7 @@ header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-
 .detalle h3{margin-bottom:6px;font-size:22px}
 .detalle .t-dato{margin-bottom:10px}
 .detalle p{color:var(--gris);font-size:14px;line-height:1.55}
+.aviso-corte{margin-top:12px;font-size:13px!important;color:#e9d48a!important;background:#2a2410;border:1px solid #5a4a12;border-radius:6px;padding:8px 10px}
 .fuente{display:inline-block;margin-top:12px;font-size:13px;color:#8ab4ff}
 
 footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:center}
@@ -123,6 +124,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
       <h3 id="mTitulo"></h3>
       <div class="t-dato" id="mDato"></div>
       <p id="mDescripcion"></p>
+      <p class="aviso-corte" id="mAviso">💡 Si se corta mucho, tocá ▶ y esperá unos segundos a que cargue, o abrila directo en Internet Archive con el link de abajo (anda más fluido).</p>
       <a class="fuente" id="mFuente" target="_blank" rel="noopener">Ver la fuente original ↗</a>
     </div>
   </div>
@@ -336,7 +338,7 @@ function mostrar(lista){
     const tarjeta = document.createElement("div");
     tarjeta.className = "tarjeta";
     tarjeta.innerHTML = `
-      <span class="etiqueta ${p.fuente === "archive" ? "dp" : p.licencia === "cc" ? "cc" : "tr"}">${p.fuente === "archive" ? "DOMINIO PÚBLICO" : p.licencia === "cc" ? "LICENCIA LIBRE" : "TRÁILER"}</span>
+      <span class="etiqueta ${p.fuente === "archive" ? "dp" : p.licencia === "cc" ? "cc" : "tr"}">${p.fuente === "archive" ? "COMPLETA · DOMINIO PÚBLICO" : p.licencia === "cc" ? "COMPLETA · LICENCIA LIBRE" : "SOLO TRÁILER"}</span>
       <img src="${imagen(p)}" alt="${p.titulo}" loading="lazy">
       <div class="info">
         <div class="texto">
@@ -395,13 +397,19 @@ function abrir(id){
   video.innerHTML = `<iframe src="${reproductor(p)}" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
   modal.classList.add("abierto");
   document.body.style.overflow = "hidden";
+  if(!history.state || !history.state.cineModal) history.pushState({cineModal:true}, "");
+  document.getElementById("mAviso").hidden = p.fuente !== "archive";
 }
-function cerrar(){
+function cerrar(desdeAtras){
+  if(!modal.classList.contains("abierto")) return;
+  if(!desdeAtras && history.state && history.state.cineModal){ history.back(); return; }
   modal.classList.remove("abierto");
   video.innerHTML = "";               // corta el video al cerrar
   document.body.style.overflow = "";
 }
-document.getElementById("btnCerrar").onclick = cerrar;
+document.getElementById("btnCerrar").onclick = () => cerrar();
+/* botón "atrás" del celu: cierra la película en vez de salir */
+window.addEventListener("popstate", () => cerrar(true));
 modal.addEventListener("click", e => { if(e.target === modal) cerrar(); });
 document.addEventListener("keydown", e => { if(e.key === "Escape") cerrar(); });
 

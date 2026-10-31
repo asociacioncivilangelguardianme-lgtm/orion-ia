@@ -77,6 +77,15 @@ header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-
 .detalle p{color:#ccc;font-size:14px;line-height:1.55}
 .acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 
+.aviso-trailers{margin:14px 4% 0;padding:10px 14px;border-radius:8px;background:#1d2533;border:1px solid #2c3a52;color:#cfd8e6;font-size:14px;line-height:1.45}
+.etiqueta-tr{display:inline-block;background:#2f6fd6;color:#fff;font-size:11px;font-weight:bold;padding:3px 8px;border-radius:4px;margin-bottom:8px;letter-spacing:.3px}
+.donde{margin-top:16px;padding-top:14px;border-top:1px solid #2b2b2b}
+.donde h4{font-size:15px;margin-bottom:8px}
+.prov{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}
+.prov a{display:flex;flex-direction:column;align-items:center;gap:4px;width:70px;text-decoration:none;color:#ddd;font-size:11px;text-align:center}
+.prov img{width:46px;height:46px;border-radius:10px;background:#222}
+.grupo{font-size:12px;color:var(--gris);text-transform:uppercase;letter-spacing:.5px}
+.donde small{color:#777;font-size:11px}
 footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:1.5}
 
 @media(max-width:600px){
@@ -124,6 +133,8 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
   <small>La llave queda guardada solo en este navegador.</small>
 </div>
 
+<div class="aviso-trailers">🎬 Acá ves <b>tráileres oficiales</b>. Al tocar una película te mostramos también <b>dónde verla completa de forma legal</b> en Argentina.</div>
+
 <div class="contenedor" id="zonaCatalogo">
   <h2 class="titulo-seccion" id="tituloSeccion">Películas populares</h2>
   <div class="grilla" id="grilla"></div>
@@ -141,12 +152,14 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
     <button class="cerrar" id="btnCerrar" aria-label="Cerrar">×</button>
     <div class="video" id="video"></div>
     <div class="detalle">
+      <span class="etiqueta-tr">TRÁILER OFICIAL</span>
       <h3 id="mTitulo"></h3>
       <div class="datos" id="mDatos"></div>
       <p id="mSinopsis"></p>
       <div class="acciones">
         <button class="btn btn-gris" id="mFav"></button>
       </div>
+      <div class="donde" id="mDonde"></div>
     </div>
   </div>
 </div>
@@ -357,6 +370,8 @@ async function abrir(id){
   video.innerHTML = p.fondo ? `<img src="${IMG}w780${p.fondo}" alt="">` : "Buscando tráiler...";
   modal.classList.add("abierto");
   document.body.style.overflow = "hidden";
+  if(!history.state || !history.state.cineModal) history.pushState({cineModal:true}, "");
+  dondeVer(id);
 
   const clave = await buscarTrailer(id);
   if(idModal !== id) return;   // ya cerró o abrió otra
@@ -389,14 +404,42 @@ async function buscarTrailer(id){
   }catch(e){ return null; }
 }
 
-function cerrar(){
+/* Dónde ver la película completa, legal, en Argentina (datos de JustWatch vía TMDB) */
+async function dondeVer(id){
+  const caja = document.getElementById("mDonde");
+  caja.innerHTML = "<small>Buscando dónde verla completa...</small>";
+  try{
+    const r = await tmdb(`/movie/${id}/watch/providers`);
+    if(idModal !== id) return;
+    const ar = (r.results || {})[REGION];
+    const grupos = [["free","Gratis"],["ads","Gratis con publicidad"],["flatrate","Con suscripción"],["rent","Alquiler"],["buy","Compra"]];
+    let html = "";
+    if(ar){
+      grupos.forEach(([k,nombre]) => {
+        const lista = ar[k] || [];
+        if(!lista.length) return;
+        html += `<div class="grupo">${nombre}</div><div class="prov">` + lista.map(pv =>
+          `<a href="${ar.link}" target="_blank" rel="noopener"><img src="${IMG}w92${pv.logo_path}" alt="">${escapar(pv.provider_name)}</a>`).join("") + "</div>";
+      });
+    }
+    caja.innerHTML = `<h4>📺 Dónde verla completa (legal)</h4>` +
+      (html || `<small>No figura en ninguna plataforma de Argentina por ahora.</small><br>`) +
+      `<small>Datos de JustWatch.</small>`;
+  }catch(e){ if(idModal === id) caja.innerHTML = ""; }
+}
+
+function cerrar(desdeAtras){
+  if(!modal.classList.contains("abierto")) return;
+  if(!desdeAtras && history.state && history.state.cineModal){ history.back(); return; }
   modal.classList.remove("abierto");
   video.innerHTML = "";          // corta el video
   idModal = null;
   document.body.style.overflow = "";
 }
-document.getElementById("btnCerrar").onclick = cerrar;
+document.getElementById("btnCerrar").onclick = () => cerrar();
 modal.addEventListener("click", e => { if(e.target === modal) cerrar(); });
+/* botón "atrás" del celu: cierra el tráiler en vez de salir de la página */
+window.addEventListener("popstate", () => cerrar(true));
 document.addEventListener("keydown", e => { if(e.key === "Escape") cerrar(); });
 document.getElementById("mFav").onclick = () => { if(idModal) cambiarFavorito(idModal); };
 

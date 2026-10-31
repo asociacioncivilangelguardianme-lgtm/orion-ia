@@ -16414,10 +16414,10 @@ console.info('[ÁNGELA] Crear y archivos: Constructor de apps, PDF, convertir fo
    - cine.html: películas completas de dominio público, animación libre y plataformas legales
    No toca nada de lo demás. */
 (function(){'use strict';if(window.ANGELACine)return;
-var APPS={cine_tmdb:{url:'peliculas.html',nombre:'Películas y estrenos'},cine_libre:{url:'cine.html',nombre:'Cine libre'}};
+var APPS={cine_libre:{url:'cine.html',nombre:'Películas completas'},cine_tmdb:{url:'peliculas.html',nombre:'Tráileres y estrenos'}};
 var TILES=[
- ['cine_tmdb','🍿','Películas y estrenos','Miles de películas reales con pósters, buscador, géneros y tráileres oficiales (TMDB).'],
- ['cine_libre','🎬','Cine libre','Películas completas de dominio público, animación con licencia libre y plataformas legales gratis.']];
+ ['cine_libre','🎬','Películas completas','Películas enteras y legales: clásicos de dominio público, animación libre y plataformas gratis.'],
+ ['cine_tmdb','🍿','Tráileres y estrenos','Miles de películas reales con tráileres oficiales y dónde verlas completas de forma legal.']];
 function vista(k,el){
   var a=APPS[k]||APPS.cine_tmdb;
   el.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
@@ -16429,7 +16429,31 @@ function vista(k,el){
     'style="width:100%;height:78vh;min-height:520px;border:0;border-radius:12px;background:#141414"></iframe></div>';
   el.querySelectorAll('[data-cine]').forEach(function(b){b.onclick=function(){if(window.ANGELAHerr)ANGELAHerr.go(b.getAttribute('data-cine'))}});
 }
-function abrirCine(){if(!window.ANGELAHerr)return;try{if(window.AGM)AGM.menu(false)}catch(e){}ANGELAHerr.open();ANGELAHerr.go('cine_tmdb')}
+function abrirCine(){if(!window.ANGELAHerr)return;try{if(window.AGM)AGM.menu(false)}catch(e){}DIRECTO=true;ANGELAHerr.open();ANGELAHerr.go('cine_libre')}
+
+/* ===== Botón "atrás" del celu en Herramientas =====
+   Antes, tocar atrás te sacaba de ÁNGELA. Ahora:
+   - dentro de una herramienta → vuelve a la lista de Herramientas
+     (o cierra, si entraste directo con el botón 🍿 Cine)
+   - en la lista de Herramientas → la cierra y quedás en ÁNGELA */
+var DIRECTO=false,PD=0,IGNORAR=0;
+function nivel(){var o=document.getElementById('herrOverlay');if(!o||!o.classList.contains('on'))return 0;return o.classList.contains('inTool')?2:1}
+function sincronizar(){
+  var n=nivel();if(n===0)DIRECTO=false;
+  if(n>PD){while(PD<n){history.pushState({angHerr:PD+1},'');PD++}}
+  else if(n<PD){var d=PD-n;PD=n;IGNORAR++;history.go(-d)}
+}
+window.addEventListener('popstate',function(){
+  if(IGNORAR>0){IGNORAR--;return}
+  if(PD===0||!window.ANGELAHerr)return;
+  PD--;
+  var n=nivel();
+  if(n===2&&PD>=1&&!DIRECTO){ANGELAHerr.home()}
+  else if(n>0){var extra=PD;PD=0;if(extra>0){IGNORAR++;history.go(-extra)}ANGELAHerr.close()}
+});
+function vigilar(){var o=document.getElementById('herrOverlay');if(!o){setTimeout(vigilar,1500);return}
+  new MutationObserver(function(){clearTimeout(vigilar.t);vigilar.t=setTimeout(sincronizar,40)}).observe(o,{attributes:true,attributeFilter:['class']})}
+vigilar();
 window.ANGELACine={sec:'🎬 Cine',secId:'cineSec',short:'Cine',tiles:TILES,
   has:function(k){return !!APPS[k]},view:vista,stop:function(){},abrir:abrirCine};
 
