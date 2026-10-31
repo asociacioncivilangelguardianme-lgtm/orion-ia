@@ -16398,23 +16398,61 @@ console.info('[ÁNGELA] Crear y archivos: Constructor de apps, PDF, convertir fo
 </script>
 <!-- ===== FIN CREAR Y ARCHIVOS ===== -->
 
-<!-- ===== ÁNGELA · Cine libre (V12.97) ===== -->
+<!-- ===== ÁNGELA · Cine (V12.98) ===== -->
+<style>
+/* botón Cine en el menú lateral, bien a la vista */
+#cineMenuBtn{background:linear-gradient(135deg,#b20710,#e50914)!important;color:#fff!important;border-color:transparent!important;font-weight:700}
+#cineMenuBtn:hover{filter:brightness(1.12)}
+#agmNav button[data-k="cine"] .i{filter:drop-shadow(0 0 4px rgba(229,9,20,.7))}
+.cine-pestanas{display:flex;gap:8px;flex-wrap:wrap}
+.cine-pestanas button{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:inherit;border-radius:999px;padding:8px 14px;font:inherit;cursor:pointer}
+.cine-pestanas button.on{background:#e50914;border-color:#e50914;color:#fff}
+</style>
 <script>
-/* Cine libre: películas de dominio público, animación con licencia libre,
-   tráileres oficiales y plataformas legales gratis. La app vive en cine.html
-   y se muestra adentro de Herramientas. No toca nada de lo demás. */
+/* Cine: dos apps dentro de Herramientas y accesos bien visibles en la pantalla principal.
+   - peliculas.html: catálogo real de TMDB con tráileres oficiales (usa la llave de TMDB del usuario)
+   - cine.html: películas completas de dominio público, animación libre y plataformas legales
+   No toca nada de lo demás. */
 (function(){'use strict';if(window.ANGELACine)return;
-var TILES=[['cine_libre','🎬','Cine libre','Películas completas de dominio público, animación con licencia libre, tráileres oficiales y plataformas legales gratis.']];
+var APPS={cine_tmdb:{url:'peliculas.html',nombre:'Películas y estrenos'},cine_libre:{url:'cine.html',nombre:'Cine libre'}};
+var TILES=[
+ ['cine_tmdb','🍿','Películas y estrenos','Miles de películas reales con pósters, buscador, géneros y tráileres oficiales (TMDB).'],
+ ['cine_libre','🎬','Cine libre','Películas completas de dominio público, animación con licencia libre y plataformas legales gratis.']];
+function vista(k,el){
+  var a=APPS[k]||APPS.cine_tmdb;
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'+
+      '<div class="cine-pestanas">'+Object.keys(APPS).map(function(x){return '<button type="button" data-cine="'+x+'"'+(x===k?' class="on"':'')+'>'+(x==='cine_tmdb'?'🍿 ':'🎬 ')+APPS[x].nombre+'</button>'}).join('')+'</div>'+
+      '<a href="'+a.url+'" target="_blank" rel="noopener" style="font-size:13px;color:inherit;opacity:.8">Pantalla completa ↗</a>'+
+    '</div>'+
+    '<iframe src="'+a.url+'" title="'+a.nombre+'" allow="autoplay; fullscreen; encrypted-media" allowfullscreen '+
+    'style="width:100%;height:78vh;min-height:520px;border:0;border-radius:12px;background:#141414"></iframe></div>';
+  el.querySelectorAll('[data-cine]').forEach(function(b){b.onclick=function(){if(window.ANGELAHerr)ANGELAHerr.go(b.getAttribute('data-cine'))}});
+}
+function abrirCine(){if(!window.ANGELAHerr)return;try{if(window.AGM)AGM.menu(false)}catch(e){}ANGELAHerr.open();ANGELAHerr.go('cine_tmdb')}
 window.ANGELACine={sec:'🎬 Cine',secId:'cineSec',short:'Cine',tiles:TILES,
-  has:function(k){return k==='cine_libre'},
-  view:function(k,el){
-    el.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
-      '<a href="cine.html" target="_blank" rel="noopener" style="align-self:flex-end;font-size:13px;color:inherit;opacity:.8">Abrir en pantalla completa ↗</a>'+
-      '<iframe src="cine.html" title="Cine libre" allow="autoplay; fullscreen; encrypted-media" allowfullscreen '+
-      'style="width:100%;height:78vh;min-height:520px;border:0;border-radius:12px;background:#141414"></iframe></div>';
-  },
-  stop:function(){}};
-console.info('[ÁNGELA] Cine libre');
+  has:function(k){return !!APPS[k]},view:vista,stop:function(){},abrir:abrirCine};
+
+/* Accesos visibles: menú lateral, barra de abajo del celu y accesos rápidos */
+function accesos(){
+  // 1) menú lateral: arriba de todo, después de Studio
+  if(!document.getElementById('cineMenuBtn')){
+    var ref=document.getElementById('agStudioMainBtn')||document.getElementById('herrMenuBtn');
+    if(ref&&ref.parentNode){var b=document.createElement('button');b.id='cineMenuBtn';b.type='button';b.className='angela-photo-btn';
+      b.innerHTML='<span class="ico">🍿</span> Cine y películas';b.onclick=abrirCine;ref.parentNode.insertBefore(b,ref.nextSibling)}
+  }
+  // 2) barra de abajo del celular
+  var nav=document.getElementById('agmNav');
+  if(nav&&!nav.querySelector('[data-k="cine"]')){var c=document.createElement('button');c.setAttribute('data-k','cine');c.type='button';
+    c.innerHTML='<span class="i">🍿</span>Cine';c.onclick=abrirCine;var g=nav.querySelector('[data-k="gestion"]');nav.insertBefore(c,g||null)}
+  // 3) accesos rápidos (al lado de YouTube, WhatsApp, etc.)
+  var grid=document.querySelector('#angelaRightUtilities .aru-grid');
+  if(grid&&!grid.querySelector('[data-cine-q]')){var q=document.createElement('button');q.type='button';q.setAttribute('data-cine-q','1');
+    q.textContent='🍿 Cine';q.onclick=abrirCine;grid.insertBefore(q,grid.firstChild)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){accesos();setTimeout(accesos,1500)});else{accesos();setTimeout(accesos,1500)}
+setTimeout(accesos,4000);
+console.info('[ÁNGELA] Cine: películas TMDB y cine libre');
 })();
 </script>
-<!-- ===== FIN CINE LIBRE ===== -->
+<!-- ===== FIN CINE ===== -->
