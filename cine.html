@@ -90,6 +90,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
 <div class="categorias">
   <button class="cat activa" data-cat="todas">Todas</button>
   <button class="cat" data-cat="peliculas">🍿 Películas completas</button>
+  <button class="cat" data-cat="dibujitos">🧸 Dibujitos animados</button>
   <button class="cat" data-cat="animacion">🎨 Animación libre</button>
   <button class="cat" data-cat="trailers">🎬 Tráileres oficiales</button>
   <button class="cat" data-cat="g:terror">👻 Terror</button>
@@ -97,6 +98,9 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
   <button class="cat" data-cat="g:suspenso">🔎 Suspenso / Cine negro</button>
   <button class="cat" data-cat="g:ciencia">🚀 Ciencia ficción</button>
   <button class="cat" data-cat="g:aventura">🗺️ Aventura</button>
+  <button class="cat" data-cat="g:western">🤠 Western</button>
+  <button class="cat" data-cat="g:drama">🎬 Drama</button>
+  <button class="cat" data-cat="g:romance">❤️ Romance</button>
   <button class="cat" data-cat="g:animación">🧸 Animación</button>
   <button class="cat" data-cat="favoritos">❤️ Mi lista</button>
   <button class="cat" data-cat="plataformas">🌐 Ver más gratis</button>
@@ -244,6 +248,76 @@ const peliculas = [
     titulo: "Sintel", anio: "2010",
     idioma: "Cortometraje · Blender Studio", genero: "Animación / Aventura",
     descripcion: "Una joven guerrera recorre tierras peligrosas buscando a su amigo, un pequeño dragón. Licencia libre Creative Commons (CC BY), Blender Foundation."
+  },
+  {
+    id: 17, categoria: "dibujitos", fuente: "archive",
+    codigo: "Gullivers_Travels-1939",
+    titulo: "Los viajes de Gulliver", anio: "1939",
+    idioma: "En inglés", genero: "Animación / Aventura",
+    descripcion: "Película animada completa de los hermanos Fleischer. Gulliver naufraga y llega a Liliput, un reino de gente diminuta en plena guerra con sus vecinos."
+  },
+  {
+    id: 18, categoria: "dibujitos", fuente: "archive",
+    codigo: "PopeyeTheSailorMeetsSindbadTheSailor_540",
+    titulo: "Popeye contra Simbad el marino", anio: "1936",
+    idioma: "En inglés", genero: "Animación / Aventura",
+    descripcion: "Popeye, Olivia y Pilo desembarcan en la isla de Simbad, que se cree el marino más fuerte del mundo. Uno de los cortos más famosos de Popeye, en colores."
+  },
+  {
+    id: 19, categoria: "dibujitos", fuente: "archive",
+    codigo: "superman_1941",
+    titulo: "Superman: el primer dibujito", anio: "1941",
+    idioma: "En inglés", genero: "Animación / Acción",
+    descripcion: "El primer dibujito de Superman, de los estudios Fleischer: un científico loco amenaza la ciudad con un rayo y Superman sale a detenerlo."
+  },
+  {
+    id: 20, categoria: "dibujitos", fuente: "archive",
+    codigo: "superman_the_mechanical_monsters",
+    titulo: "Superman y los monstruos mecánicos", anio: "1941",
+    idioma: "En inglés", genero: "Animación / Acción",
+    descripcion: "Robots gigantes roban bancos y joyerías, y Luisa Lane termina en problemas. Uno de los dibujitos más recordados de Superman."
+  },
+  {
+    id: 21, categoria: "dibujitos", fuente: "archive",
+    codigo: "SnowWhiteWithBettyBoop1933",
+    titulo: "Betty Boop en Blancanieves", anio: "1933",
+    idioma: "En inglés", genero: "Animación / Comedia",
+    descripcion: "La versión de Blancanieves con Betty Boop, llena de música y humor. Está en el Registro Nacional de Cine de Estados Unidos."
+  },
+  {
+    id: 22, categoria: "dibujitos", fuente: "archive",
+    codigo: "FelixTheCatFelixInHollywood1923",
+    titulo: "El gato Félix en Hollywood", anio: "1923",
+    idioma: "Mudo", genero: "Animación / Comedia",
+    descripcion: "El gato Félix viaja a Hollywood buscando ser estrella de cine. Uno de los primeros personajes de dibujitos de la historia."
+  },
+  {
+    id: 23, categoria: "peliculas", fuente: "archive",
+    codigo: "Mclintock.avi",
+    titulo: "McLintock!", anio: "1963",
+    idioma: "En inglés", genero: "Western / Comedia",
+    descripcion: "John Wayne es un ganadero poderoso que tiene que lidiar con su esposa que vuelve después de años. Western con mucho humor y peleas a las piñas."
+  },
+  {
+    id: 24, categoria: "peliculas", fuente: "archive",
+    codigo: "angel_and_the_badman",
+    titulo: "El ángel y el pistolero", anio: "1947",
+    idioma: "En inglés", genero: "Western / Romance",
+    descripcion: "John Wayne es un pistolero herido que cuida una familia cuáquera, y el amor por la hija lo hace pensar en dejar las armas."
+  },
+  {
+    id: 25, categoria: "peliculas", fuente: "archive",
+    codigo: "meet_john_doe",
+    titulo: "Juan Nadie (Meet John Doe)", anio: "1941",
+    idioma: "En inglés", genero: "Drama",
+    descripcion: "Frank Capra dirige a Gary Cooper como un hombre común convertido en símbolo nacional por una carta inventada en un diario. Un drama sobre la gente sencilla."
+  },
+  {
+    id: 26, categoria: "peliculas", fuente: "archive",
+    codigo: "MyManGodfrey1936",
+    titulo: "Al servicio de las damas (My Man Godfrey)", anio: "1936",
+    idioma: "En inglés", genero: "Comedia / Romance",
+    descripcion: "Una joven rica contrata como mayordomo a un hombre que vivía en la calle, y él termina dándole una lección a toda la familia."
   },
   {
     id: 5, categoria: "trailers", fuente: "youtube",
