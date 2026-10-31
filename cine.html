@@ -102,6 +102,31 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
 .video{position:relative}
 .video .plyr{height:100%}
 .plyr--video{--plyr-color-main:#e50914}
+/* ===== Inicio estilo streaming: destacada + filas ===== */
+.hero{grid-column:1/-1;position:relative;border-radius:12px;overflow:hidden;min-height:240px;background:#000;display:flex;align-items:flex-end;margin-bottom:6px}
+.hero-fondo{position:absolute;inset:-20px;background:center/cover no-repeat;filter:blur(18px) brightness(.55);transform:scale(1.1)}
+.hero-poster{position:absolute;right:18px;top:50%;transform:translateY(-50%);height:78%;max-width:40%;object-fit:contain;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.35) 60%,rgba(0,0,0,0) 100%)}
+.hero-txt{position:relative;z-index:1;padding:22px;max-width:62%;display:flex;flex-direction:column;gap:8px}
+.hero-chip{align-self:flex-start;background:#2e9e5b;color:#fff;font-size:11px;font-weight:bold;padding:3px 8px;border-radius:4px;letter-spacing:.5px}
+.hero h2{font-size:clamp(1.4rem,5vw,2.6rem);line-height:1.08;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.hero-datos{color:#ddd;font-size:13px}
+.hero p{color:#ddd;font-size:14px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.hero-btns button{border:none;border-radius:6px;padding:11px 18px;font-weight:bold;font-size:15px}
+.hb-play{background:#fff;color:#111}.hb-info{background:rgba(109,109,110,.75);color:#fff}
+.hero-puntos{position:absolute;right:16px;bottom:12px;display:flex;gap:6px;z-index:2}
+.hero-puntos i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35)}.hero-puntos i.on{background:#fff}
+.fila{grid-column:1/-1;min-width:0}
+.fila-cab{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 8px}
+.fila-cab h3{font-size:1.1rem}
+.fila-cab button{background:none;border:none;color:#8ab4ff;font-size:13px}
+.fila-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.fila-scroll::-webkit-scrollbar{height:5px}.fila-scroll::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+.fila-scroll .tarjeta{flex:0 0 150px;scroll-snap-align:start}
+.fila-scroll .etiqueta{font-size:9px;padding:2px 6px}
+@media(max-width:600px){.hero-txt{max-width:100%}.hero-poster{display:none}}
+@media(min-width:900px){.fila-scroll .tarjeta{flex-basis:190px}.hero{min-height:340px}.hero-txt{padding:34px}}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.js" defer></script>
@@ -114,8 +139,8 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
 </header>
 
 <div class="categorias">
+  <button class="cat activa" data-cat="todas">🏠 Inicio</button>
   <button class="cat cat-explorar" data-cat="explorar">🌐 Explorar miles</button>
-  <button class="cat activa" data-cat="todas">Destacadas</button>
   <button class="cat" data-cat="peliculas">🍿 Películas completas</button>
   <button class="cat" data-cat="dibujitos">🧸 Dibujitos animados</button>
   <button class="cat" data-cat="animacion">🎨 Animación libre</button>
@@ -134,7 +159,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
   <button class="cat" data-cat="plataformas">🌐 Ver más gratis</button>
 </div>
 
-<div class="portada">
+<div class="portada" hidden>
   <h1>Streaming Seguro</h1>
   <p>Clásicos completos de dominio público desde Internet Archive y tráileres oficiales de los estudios.</p>
 </div>
@@ -563,6 +588,88 @@ function conectarBarra(){
   document.getElementById("chkColor").onchange = e => { ia.color = e.target.checked; explorar(false); };
 }
 
+/* =========================================================
+   INICIO estilo streaming: destacada grande + filas por tema
+   ========================================================= */
+let heroLista = [], heroIdx = 0, heroTimer = null;
+function filaEl(titulo, lista, ir){
+  if(!lista || !lista.length) return null;
+  const sec = document.createElement("section"); sec.className = "fila";
+  sec.innerHTML = `<div class="fila-cab"><h3>${titulo}</h3>${ir ? `<button type="button">Ver todo ›</button>` : ""}</div><div class="fila-scroll"></div>`;
+  const cont = sec.querySelector(".fila-scroll");
+  lista.forEach(p => cont.appendChild(tarjetaEl(p)));
+  if(ir) sec.querySelector(".fila-cab button").onclick = () => irA(ir);
+  return sec;
+}
+function irA(cat){
+  const b = document.querySelector(`.cat[data-cat="${cat}"]`);
+  if(b){ window.scrollTo({top:0, behavior:"smooth"}); b.click(); }
+}
+function heroEl(){
+  const p = heroLista[heroIdx]; if(!p) return document.createElement("div");
+  const d = document.createElement("div"); d.className = "hero"; d.id = "hero";
+  const img = imagen(p);
+  d.innerHTML = `<div class="hero-fondo" style="background-image:url('${img}')"></div>
+    <img class="hero-poster" src="${img}" alt="">
+    <div class="hero-txt">
+      <span class="hero-chip">${p.licencia === "cc" ? "COMPLETA · LICENCIA LIBRE" : "PELÍCULA COMPLETA"}</span>
+      <h2>${escapar(p.titulo)}</h2>
+      <div class="hero-datos">${escapar([p.anio, p.genero, p.idioma].filter(Boolean).join(" · "))}</div>
+      <p>${escapar(p.descripcion)}</p>
+      <div class="hero-btns">
+        <button type="button" class="hb-play">▶ Reproducir</button>
+        <button type="button" class="hb-info">${favoritos.includes(p.id) ? "✓ En Mi lista" : "＋ Mi lista"}</button>
+      </div>
+    </div>
+    <div class="hero-puntos">${heroLista.map((_, i) => `<i class="${i === heroIdx ? "on" : ""}"></i>`).join("")}</div>`;
+  d.querySelector(".hb-play").onclick = () => abrir(p.id);
+  d.querySelector(".hb-info").onclick = e => { cambiarFavorito(p.id); e.currentTarget.textContent = favoritos.includes(p.id) ? "✓ En Mi lista" : "＋ Mi lista"; };
+  return d;
+}
+function rotarHero(){
+  clearInterval(heroTimer);
+  heroTimer = setInterval(() => {
+    const h = document.getElementById("hero");
+    if(!h || categoriaActual !== "todas" || modal.classList.contains("abierto")) return;
+    heroIdx = (heroIdx + 1) % heroLista.length;
+    h.replaceWith(heroEl());
+  }, 9000);
+}
+function inicioCine(){
+  grilla.innerHTML = "";
+  tituloSeccion.hidden = true;
+  // destacadas del cartel grande: las completas en colores, mezcladas
+  heroLista = peliculas.filter(p => p.color && p.categoria !== "trailers").sort(() => Math.random() - .5).slice(0, 6);
+  heroIdx = 0;
+  grilla.appendChild(heroEl());
+  const completas = peliculas.filter(p => p.categoria !== "trailers");
+  const gen = t => completas.filter(p => p.genero.toLowerCase().includes(t));
+  const enCurso = Object.values(progreso).sort((a,b) => b.cuando - a.cuando).map(x => x.p).filter(Boolean).slice(0, 12);
+  const mios = favoritos.map(buscarPeli).filter(Boolean);
+  [
+    filaEl("▶ Seguir viendo", enCurso, ""),
+    filaEl("❤️ Mi lista", mios, "favoritos"),
+    filaEl("🎨 En colores", completas.filter(p => p.color), "color"),
+    filaEl("🧸 Dibujitos animados", completas.filter(p => p.categoria === "dibujitos"), "dibujitos"),
+    filaEl("👻 Terror", gen("terror"), "g:terror"),
+    filaEl("🎭 Comedia", gen("comedia"), "g:comedia"),
+    filaEl("🤠 Western y aventura", completas.filter(p => /western|aventura/i.test(p.genero)), "g:western"),
+    filaEl("🎨 Animación libre (moderna)", completas.filter(p => p.categoria === "animacion"), "animacion"),
+    filaEl("🍿 Clásicos del cine", completas.filter(p => p.categoria === "peliculas"), "peliculas")
+  ].forEach(f => f && grilla.appendChild(f));
+  rotarHero();
+  // fila con lo más visto de Internet Archive (se carga aparte)
+  const lugar = document.createElement("div"); lugar.className = "fila"; grilla.appendChild(lugar);
+  fetch("https://archive.org/advancedsearch.php?q=" + encodeURIComponent("collection:(feature_films) AND mediatype:(movies)") +
+        "&fl[]=identifier&fl[]=title&fl[]=year&fl[]=description&fl[]=subject&fl[]=language&sort[]=downloads+desc&rows=20&page=1&output=json")
+    .then(r => r.json()).then(d => {
+      if(categoriaActual !== "todas") return;
+      const lista = ((d.response && d.response.docs) || []).map(deIA);
+      const f = filaEl("🔥 Las más vistas de Internet Archive", lista, "explorar");
+      if(f) lugar.replaceWith(f);
+    }).catch(() => {});
+}
+
 /* ---------- Filtros de las destacadas ---------- */
 let esperaBusq;
 function filtrar(){
@@ -573,17 +680,8 @@ function filtrar(){
     const lista = favoritos.map(buscarPeli).filter(Boolean).filter(p => (p.titulo + " " + p.genero).toLowerCase().includes(q));
     return mostrar(lista);
   }
-  if(categoriaActual === "todas" && !q){
-    mostrar(peliculas);
-    const enCurso = Object.values(progreso).sort((a,b) => b.cuando - a.cuando).map(x => x.p).filter(Boolean).slice(0, 12);
-    if(enCurso.length){
-      const caja = document.createElement("div"); caja.className = "seguir";
-      caja.innerHTML = `<h3>▶ Seguir viendo</h3><div class="fila-seguir"></div>`;
-      enCurso.forEach(p => caja.querySelector(".fila-seguir").appendChild(tarjetaEl(p)));
-      grilla.prepend(caja);
-    }
-    return;
-  }
+  tituloSeccion.hidden = categoriaActual === "todas" && !q;
+  if(categoriaActual === "todas" && !q) return inicioCine();
   const lista = peliculas.filter(p => {
     const coincide = (p.titulo + " " + p.genero).toLowerCase().includes(q);
     if(categoriaActual.startsWith("g:")) return p.genero.toLowerCase().includes(categoriaActual.slice(2)) && coincide;
@@ -597,6 +695,7 @@ function filtrar(){
 document.querySelectorAll(".cat").forEach(btn => {
   btn.onclick = () => {
     categoriaActual = btn.dataset.cat;
+    tituloSeccion.hidden = categoriaActual === "todas";
     document.querySelectorAll(".cat").forEach(b => b.classList.remove("activa"));
     btn.classList.add("activa");
     tituloSeccion.textContent = categoriaActual === "todas" ? "Destacadas" : btn.textContent.replace(/^\S+\s/, "");

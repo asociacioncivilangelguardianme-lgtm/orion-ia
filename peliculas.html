@@ -93,6 +93,27 @@ header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-
 .prov img{width:46px;height:46px;border-radius:10px;background:#222}
 .grupo{font-size:12px;color:var(--gris);text-transform:uppercase;letter-spacing:.5px}
 .donde small{color:#777;font-size:11px}
+/* ===== Inicio estilo streaming: destacada + filas ===== */
+.hero{grid-column:1/-1;position:relative;border-radius:12px;overflow:hidden;min-height:260px;background:#000 center/cover no-repeat;display:flex;align-items:flex-end;margin-bottom:6px}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 45%,rgba(0,0,0,.1) 100%),linear-gradient(0deg,rgba(20,20,20,1) 0%,rgba(20,20,20,0) 45%)}
+.hero-txt{position:relative;padding:22px;max-width:620px;display:flex;flex-direction:column;gap:8px}
+.hero-chip{align-self:flex-start;background:var(--rojo);color:#fff;font-size:11px;font-weight:bold;padding:3px 8px;border-radius:4px;letter-spacing:.5px}
+.hero h2{font-size:clamp(1.6rem,5vw,2.8rem);line-height:1.05;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.hero-datos{color:#ddd;font-size:14px}.hero-datos b{color:var(--dorado)}
+.hero p{color:#ddd;font-size:14px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.hero-btns button{border:none;border-radius:6px;padding:11px 18px;font-weight:bold;font-size:15px}
+.hb-play{background:#fff;color:#111}.hb-info{background:rgba(109,109,110,.75);color:#fff}
+.hero-puntos{position:absolute;right:16px;bottom:16px;display:flex;gap:6px;z-index:2}
+.hero-puntos i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35)}.hero-puntos i.on{background:#fff}
+.fila{grid-column:1/-1;min-width:0}
+.fila-cab{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 8px}
+.fila-cab h3{font-size:1.1rem}
+.fila-cab button{background:none;border:none;color:#8ab4ff;font-size:13px}
+.fila-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.fila-scroll::-webkit-scrollbar{height:5px}.fila-scroll::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+.fila-scroll .tarjeta{flex:0 0 140px;scroll-snap-align:start}
+@media(min-width:900px){.fila-scroll .tarjeta{flex-basis:170px}.hero{min-height:380px}.hero-txt{padding:36px}}
 footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:1.5}
 
 @media(max-width:600px){
@@ -117,8 +138,9 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
   <button class="tipo" data-tipo="tv">📺 Series</button>
 </div>
 <div class="categorias" id="categorias">
+  <button class="cat activa" data-cat="inicio">🏠 Inicio</button>
   <button class="cat cat-gratis" data-cat="gratis">🆓 Completas gratis</button>
-  <button class="cat activa" data-cat="populares">🔥 Populares</button>
+  <button class="cat" data-cat="populares">🔥 Populares</button>
   <button class="cat" data-cat="tendencia">📈 Tendencia</button>
   <button class="cat cat-ar" data-cat="argentinas">🇦🇷 Argentinas</button>
   <button class="cat" data-cat="favoritos">❤️ Mi Lista</button>
@@ -143,7 +165,7 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:
   <small>La llave queda guardada solo en este navegador.</small>
 </div>
 
-<div class="aviso-trailers">🎬 Acá ves <b>tráileres oficiales</b>. Para ver películas o series <b>enteras gratis</b>, tocá <b>🆓 Completas gratis</b>: elegís una y abajo del tráiler te aparece la plataforma gratis donde se ve completa.</div>
+<div class="aviso-trailers" id="avisoTr" hidden>🎬 Acá ves <b>tráileres oficiales</b>. Para ver películas o series <b>enteras gratis</b>, tocá <b>🆓 Completas gratis</b>: elegís una y abajo del tráiler te aparece la plataforma gratis donde se ve completa.</div>
 
 <div class="contenedor" id="zonaCatalogo">
   <h2 class="titulo-seccion" id="tituloSeccion">Películas populares</h2>
@@ -250,7 +272,7 @@ const btnMas = document.getElementById("btnMas");
 const panelLlave = document.getElementById("panelLlave");
 const zonaCatalogo = document.getElementById("zonaCatalogo");
 
-let vista = "populares";   // populares | tendencia | favoritos | id de género | busqueda
+let vista = "inicio";   // populares | tendencia | favoritos | id de género | busqueda
 let pagina = 1, totalPaginas = 1, textoBusqueda = "";
 let cache = {};            // películas mostradas, por id
 let pedidoActual = 0;      // evita que una respuesta vieja pise a una nueva
@@ -299,6 +321,9 @@ async function cargar(agregar = false){
     return;
   }
   if(!LLAVE_TMDB){ mostrarPanel(true); return estado("Cargá tu llave de TMDB arriba para ver el catálogo."); }
+  tituloSeccion.hidden = vista === "inicio";
+  document.getElementById("avisoTr").hidden = vista === "inicio" || vista === "favoritos";
+  if(vista === "inicio") return inicio();
 
   const miPedido = ++pedidoActual;
   if(!agregar){ pagina = 1; estado("Cargando..."); }
@@ -349,6 +374,90 @@ async function cargar(agregar = false){
 btnMas.addEventListener("click", () => { pagina++; cargar(true); });
 
 /* =========================================================
+   INICIO estilo streaming: una destacada grande arriba
+   y filas que se deslizan de costado
+   ========================================================= */
+const FILAS_GEN = {
+  movie: [[28,"💥 Acción"],[35,"🎭 Comedia"],[27,"👻 Terror"],[16,"🧸 Animación"],[10749,"❤️ Romance"],[878,"🚀 Ciencia ficción"]],
+  tv:    [[10759,"💥 Acción y aventura"],[35,"🎭 Comedia"],[9648,"👻 Misterio y terror"],[16,"🧸 Animación"],[10766,"💔 Telenovelas"],[18,"🎬 Drama"]]
+};
+let heroLista = [], heroIdx = 0, heroTimer = null;
+function filaHTML(titulo, lista, ir){
+  if(!lista || !lista.length) return "";
+  return `<section class="fila"><div class="fila-cab"><h3>${titulo}</h3>${ir ? `<button type="button" data-ir="${ir}">Ver todo ›</button>` : ""}</div>
+    <div class="fila-scroll">${lista.map(tarjetaHTML).join("")}</div></section>`;
+}
+function heroHTML(){
+  const p = heroLista[heroIdx]; if(!p) return "";
+  cache[p.k] = p;
+  const esFav = favoritos.some(f => f.k === p.k);
+  return `<div class="hero" id="hero" style="background-image:url('${IMG}w1280${p.fondo}')">
+    <div class="hero-txt">
+      <span class="hero-chip">${p.tipo === "tv" ? "SERIE DESTACADA" : "PELÍCULA DESTACADA"}</span>
+      <h2>${escapar(p.titulo)}</h2>
+      <div class="hero-datos">${p.nota ? `<b>★ ${p.nota}</b> · ` : ""}${p.anio || ""}</div>
+      <p>${escapar(p.sinopsis)}</p>
+      <div class="hero-btns">
+        <button type="button" class="hb-play" data-abrir="${p.k}">▶ Ver tráiler</button>
+        <button type="button" class="hb-info" data-abrir="${p.k}">📺 Dónde verla</button>
+        <button type="button" class="hb-info" data-fav="${p.k}">${esFav ? "✓ En Mi Lista" : "＋ Mi Lista"}</button>
+      </div>
+    </div>
+    <div class="hero-puntos">${heroLista.map((_, i) => `<i class="${i === heroIdx ? "on" : ""}"></i>`).join("")}</div>
+  </div>`;
+}
+function rotarHero(){
+  clearInterval(heroTimer);
+  heroTimer = setInterval(() => {
+    const h = document.getElementById("hero");
+    if(!h || vista !== "inicio" || modal.classList.contains("abierto")) return;
+    heroIdx = (heroIdx + 1) % heroLista.length;
+    h.outerHTML = heroHTML();
+  }, 9000);
+}
+async function inicio(){
+  const miPedido = ++pedidoActual;
+  estado("Cargando...");
+  const N = NOMBRE[tipo];
+  const base = {include_adult:false, sort_by:"popularity.desc"};
+  const filas = [
+    ["🔥 En tendencia esta semana", `/trending/${tipo}/week`, {}, "tendencia"],
+    [`⭐ ${N.Varios} populares`, tipo === "movie" ? "/movie/popular" : "/tv/popular", tipo === "movie" ? {region:REGION} : {}, "populares"],
+    [`🆓 ${N.Varios} completas gratis`, `/discover/${tipo}`, {...base, watch_region:REGION, with_watch_monetization_types:"free|ads"}, "gratis"],
+    [`🇦🇷 ${N.Varios} argentinas`, `/discover/${tipo}`, {...base, with_origin_country:"AR"}, "argentinas"],
+    ...FILAS_GEN[tipo].map(g => [g[1], `/discover/${tipo}`, {...base, with_genres:g[0]}, "gen" + g[0]])
+  ];
+  let res;
+  try{
+    res = await Promise.all(filas.map(f => tmdb(f[1], f[2]).catch(e => { if(e.message === "LLAVE") throw e; return null; })));
+  }catch(e){
+    if(miPedido !== pedidoActual) return;
+    mostrarPanel(true, "La llave no funciona. Revisá que esté bien copiada.", "error");
+    return estado("La llave de TMDB no es válida.");
+  }
+  if(miPedido !== pedidoActual) return;
+  const listas = res.map(r => r ? (r.results || []).map(x => limpiar(x)) : []);
+  if(!listas.some(l => l.length)) return estado("No se pudo conectar con TMDB. Revisá tu internet y probá de nuevo.");
+  heroLista = listas[0].filter(p => p.fondo).slice(0, 6);
+  heroIdx = 0;
+  const mios = favoritos.filter(f => f.tipo === tipo);
+  grilla.innerHTML = heroHTML() +
+    filaHTML("❤️ Mi Lista", mios, "") +
+    filas.map((f, i) => filaHTML(f[0], listas[i], f[3])).join("");
+  btnMas.hidden = true;
+  rotarHero();
+}
+/* "Ver todo ›" de cada fila: abre la grilla completa de ese tema */
+grilla.addEventListener("click", e => {
+  const b = e.target.closest("[data-ir]"); if(!b) return;
+  const ir = b.dataset.ir;
+  if(ir === "argentinas"){ soloAR = true; vista = "argentinas"; }
+  else { soloAR = false; vista = ir; }
+  window.scrollTo({top:0, behavior:"smooth"});
+  marcarCategoria(vista); cargar();
+});
+
+/* =========================================================
    6) CATEGORÍAS Y BUSCADOR
    ========================================================= */
 function marcarCategoria(cat){
@@ -361,7 +470,7 @@ function clickCategoria(e){
   if(cat === "argentinas"){
     // prende o apaga el filtro argentino; si hay un género o "gratis" elegido, lo mantiene
     soloAR = !soloAR;
-    if(!(vista.startsWith("gen") || vista === "gratis")) vista = soloAR ? "argentinas" : "populares";
+    if(!(vista.startsWith("gen") || vista === "gratis")) vista = soloAR ? "argentinas" : "inicio";
   }else{
     vista = cat;
     if(!(cat.startsWith("gen") || cat === "gratis")) soloAR = false;
@@ -376,8 +485,8 @@ document.getElementById("tipos").addEventListener("click", e => {
   document.querySelectorAll(".tipo").forEach(x => x.classList.toggle("activa", x === b));
   buscador.placeholder = tipo === "movie" ? "Buscar película..." : "Buscar serie...";
   dibujarGeneros();
-  if(vista.startsWith("gen")) vista = "populares";   // los géneros cambian entre películas y series
-  if(vista === "busqueda" && !buscador.value.trim()) vista = "populares";
+  if(vista.startsWith("gen")) vista = "inicio";   // los géneros cambian entre películas y series
+  if(vista === "busqueda" && !buscador.value.trim()) vista = "inicio";
   marcarCategoria(vista); cargar();
 });
 dibujarGeneros();
@@ -387,7 +496,7 @@ buscador.addEventListener("input", () => {
   clearTimeout(espera);
   const q = buscador.value.trim();
   espera = setTimeout(() => {
-    if(!q){ vista = "populares"; soloAR = false; marcarCategoria(vista); cargar(); return; }
+    if(!q){ vista = "inicio"; soloAR = false; marcarCategoria(vista); cargar(); return; }
     if(q.length < 2) return;
     vista = "busqueda"; soloAR = false; textoBusqueda = q; marcarCategoria(""); cargar();
   }, 450);
@@ -402,7 +511,7 @@ function cambiarFavorito(id){
   else if(cache[id]) favoritos.unshift(cache[id]);
   guardar("cineapp_favs_tmdb", favoritos);
   // actualiza los corazones sin recargar todo
-  document.querySelectorAll(`[data-fav="${id}"]`).forEach(b => b.classList.toggle("activa", i === -1));
+  document.querySelectorAll(`[data-fav="${id}"]`).forEach(b => { b.classList.toggle("activa", i === -1); if(b.closest(".hero-btns")) b.textContent = i === -1 ? "✓ En Mi Lista" : "＋ Mi Lista"; });
   if(vista === "favoritos") cargar();
   actualizarBotonFavModal(id);
 }
@@ -525,7 +634,7 @@ document.getElementById("btnGuardar").onclick = async () => {
     guardar("cineapp_llave", LLAVE_TMDB);
     mostrarPanel(true, "¡Listo! La llave funciona.", "ok");
     setTimeout(() => { panelLlave.hidden = true; }, 1200);
-    vista = "populares"; marcarCategoria(vista); cargar();
+    vista = "inicio"; marcarCategoria(vista); cargar();
   }catch(e){
     mostrarPanel(true, e.message === "LLAVE" ? "La llave no funciona. Revisá que esté bien copiada." : "No se pudo conectar con TMDB. Probá de nuevo.", "error");
   }
