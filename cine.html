@@ -64,6 +64,18 @@ header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-
 .cerrar{position:absolute;top:12px;right:12px;background:#333;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;z-index:10}
 .video{width:100%;aspect-ratio:16/9;background:#000}
 .video iframe{width:100%;height:100%;border:none;display:block}
+.video video{width:100%;height:100%;display:block;background:#000}
+.video .cargando{color:#aaa;display:flex;align-items:center;justify-content:center;height:100%;font-size:14px;text-align:center;padding:16px}
+.calidad{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:10px 0 0;font-size:13px;color:var(--gris)}
+.calidad button{background:#2b2b2b;color:#fff;border:1px solid #3a3a3a;border-radius:16px;padding:5px 12px;font-size:12px}
+.calidad button.on{background:var(--rojo);border-color:var(--rojo)}
+.explorar-barra{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px}
+.explorar-barra button{background:#242424;color:#fff;border:1px solid #333;border-radius:16px;padding:6px 12px;font-size:13px}
+.explorar-barra button.on{background:#2f6fd6;border-color:#2f6fd6}
+.explorar-barra label{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--gris);margin-left:auto}
+.aviso-explorar{grid-column:1/-1;font-size:13px;color:#cfd8e6;background:#1d2533;border:1px solid #2c3a52;border-radius:8px;padding:9px 12px;line-height:1.45}
+#btnMasIA{grid-column:1/-1;justify-self:center;background:#2b2b2b;color:#fff;border:none;border-radius:6px;padding:12px 26px;margin-top:10px}
+.cat-explorar{background:#2f6fd6!important}
 .detalle{padding:20px}
 .detalle h3{margin-bottom:6px;font-size:22px}
 .detalle .t-dato{margin-bottom:10px}
@@ -88,7 +100,8 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
 </header>
 
 <div class="categorias">
-  <button class="cat activa" data-cat="todas">Todas</button>
+  <button class="cat cat-explorar" data-cat="explorar">🌐 Explorar miles</button>
+  <button class="cat activa" data-cat="todas">Destacadas</button>
   <button class="cat" data-cat="peliculas">🍿 Películas completas</button>
   <button class="cat" data-cat="dibujitos">🧸 Dibujitos animados</button>
   <button class="cat" data-cat="animacion">🎨 Animación libre</button>
@@ -130,7 +143,11 @@ footer{margin:40px 4% 0;color:#777;font-size:12px;line-height:1.5;text-align:cen
       <h3 id="mTitulo"></h3>
       <div class="t-dato" id="mDato"></div>
       <p id="mDescripcion"></p>
-      <p class="aviso-corte" id="mAviso">💡 Si se corta mucho, tocá ▶ y esperá unos segundos a que cargue, o abrila directo en Internet Archive con el link de abajo (anda más fluido).</p>
+      <div class="calidad" id="mCalidad" hidden>Calidad:
+        <button type="button" data-cal="liviana">📶 Liviana (datos del celu)</button>
+        <button type="button" data-cal="normal">🖥️ Mejor imagen (wifi)</button>
+      </div>
+      <p class="aviso-corte" id="mAviso">💡 Si se corta, elegí calidad <b>Liviana</b>: usa menos internet y anda más fluido con datos.</p>
       <a class="fuente" id="mFuente" target="_blank" rel="noopener">Ver la fuente original ↗</a>
     </div>
   </div>
@@ -377,23 +394,19 @@ function imagen(p){
     ? `https://archive.org/services/img/${p.codigo}`
     : `https://img.youtube.com/vi/${p.codigo}/hqdefault.jpg`;
 }
-function reproductor(p){
-  return p.fuente === "archive"
-    ? `https://archive.org/embed/${p.codigo}`
-    : `https://www.youtube-nocookie.com/embed/${p.codigo}?autoplay=1`;
-}
 function paginaOriginal(p){
   return p.fuente === "archive"
     ? `https://archive.org/details/${p.codigo}`
     : `https://www.youtube.com/watch?v=${p.codigo}`;
 }
+function escapar(t){ return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-/* ---------- Favoritos (protegido por si el navegador no deja guardar) ---------- */
-let favoritos = [];
-try { favoritos = JSON.parse(localStorage.getItem("cineapp_favs")) || []; } catch(e) { favoritos = []; }
-function guardarFavoritos(){
-  try { localStorage.setItem("cineapp_favs", JSON.stringify(favoritos)); } catch(e) {}
-}
+/* ---------- Guardar en el navegador (protegido) ---------- */
+function leer(k, def){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; }catch(e){ return def; } }
+function guardar(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+let favoritos = leer("cineapp_favs", []);          // ids
+let favExtra  = leer("cineapp_favs_extra", {});    // películas de "Explorar" guardadas
+let calidad   = leer("cineapp_calidad", "liviana"); // liviana | normal
 
 let categoriaActual = "todas";
 const grilla = document.getElementById("grilla");
@@ -401,42 +414,144 @@ const buscador = document.getElementById("buscador");
 const tituloSeccion = document.getElementById("tituloSeccion");
 const modal = document.getElementById("modal");
 const video = document.getElementById("video");
+const extra = {};   // películas traídas de Internet Archive, por id
+
+function buscarPeli(id){ return peliculas.find(x => x.id === id) || extra[id] || favExtra[id]; }
 
 /* ---------- Dibujar tarjetas ---------- */
+function tarjetaEl(p){
+  const esFav = favoritos.includes(p.id);
+  const tarjeta = document.createElement("div");
+  tarjeta.className = "tarjeta";
+  tarjeta.innerHTML = `
+    <span class="etiqueta ${p.fuente === "archive" ? "dp" : p.licencia === "cc" ? "cc" : "tr"}">${p.fuente === "archive" ? "COMPLETA · DOMINIO PÚBLICO" : p.licencia === "cc" ? "COMPLETA · LICENCIA LIBRE" : "SOLO TRÁILER"}</span>
+    <img src="${imagen(p)}" alt="" loading="lazy">
+    <div class="info">
+      <div class="texto">
+        <div class="t-titulo">${escapar(p.titulo)}</div>
+        <div class="t-dato">${escapar(p.anio || "—")}${p.genero ? " · " + escapar(p.genero) : ""}</div>
+      </div>
+      <button class="fav ${esFav ? "activa" : ""}" aria-label="Favorito">❤️</button>
+    </div>`;
+  tarjeta.querySelector("img").onclick = () => abrir(p.id);
+  tarjeta.querySelector(".texto").onclick = () => abrir(p.id);
+  tarjeta.querySelector(".fav").onclick = (e) => { e.stopPropagation(); cambiarFavorito(p.id); e.currentTarget.classList.toggle("activa", favoritos.includes(p.id)); };
+  return tarjeta;
+}
 function mostrar(lista){
   grilla.innerHTML = "";
   if(!lista.length){
     grilla.innerHTML = `<p class="vacio">No se encontraron elementos en esta sección.</p>`;
     return;
   }
-  lista.forEach(p => {
-    const esFav = favoritos.includes(p.id);
-    const tarjeta = document.createElement("div");
-    tarjeta.className = "tarjeta";
-    tarjeta.innerHTML = `
-      <span class="etiqueta ${p.fuente === "archive" ? "dp" : p.licencia === "cc" ? "cc" : "tr"}">${p.fuente === "archive" ? "COMPLETA · DOMINIO PÚBLICO" : p.licencia === "cc" ? "COMPLETA · LICENCIA LIBRE" : "SOLO TRÁILER"}</span>
-      <img src="${imagen(p)}" alt="${p.titulo}" loading="lazy">
-      <div class="info">
-        <div class="texto">
-          <div class="t-titulo">${p.titulo}</div>
-          <div class="t-dato">${p.anio} · ${p.genero}</div>
-        </div>
-        <button class="fav ${esFav ? "activa" : ""}" aria-label="Favorito">❤️</button>
-      </div>`;
-    tarjeta.querySelector("img").onclick = () => abrir(p.id);
-    tarjeta.querySelector(".texto").onclick = () => abrir(p.id);
-    tarjeta.querySelector(".fav").onclick = (e) => { e.stopPropagation(); cambiarFavorito(p.id); };
-    grilla.appendChild(tarjeta);
-  });
+  lista.forEach(p => grilla.appendChild(tarjetaEl(p)));
 }
 
-/* ---------- Filtros ---------- */
+/* =========================================================
+   EXPLORAR MILES: catálogo de películas completas de
+   Internet Archive (colección "Feature Films", dominio público)
+   ========================================================= */
+const GEN_IA = [
+  ["todos","Todo",""],
+  ["terror","👻 Terror","horror OR terror"],
+  ["comedia","🎭 Comedia","comedy OR comedia"],
+  ["western","🤠 Western","western"],
+  ["policial","🕵️ Policial / Negro","noir OR crime OR mystery"],
+  ["drama","🎬 Drama","drama"],
+  ["romance","❤️ Romance","romance OR romantic"],
+  ["ciencia","🚀 Ciencia ficción","\"science fiction\" OR sci-fi"],
+  ["aventura","🗺️ Aventura","adventure"],
+  ["guerra","🪖 Guerra","war"],
+  ["musical","🎵 Musical","musical"],
+  ["dibujitos","🧸 Dibujitos",""]
+];
+let ia = {gen:"todos", espanol:false, pagina:1, total:0, pedido:0};
+
+function consultaIA(q){
+  const g = GEN_IA.find(x => x[0] === ia.gen);
+  let base = ia.gen === "dibujitos"
+    ? 'collection:(animationandcartoons) AND mediatype:(movies) AND licenseurl:(*publicdomain*)'
+    : 'collection:(feature_films) AND mediatype:(movies)';
+  if(g && g[2]) base += ` AND subject:(${g[2]})`;
+  if(ia.espanol) base += ' AND language:(spa OR spanish OR español OR castellano)';
+  if(q) base += ` AND title:(${q.replace(/[():"\\]/g," ")})`;
+  return base;
+}
+function limpiarTexto(html){
+  const d = document.createElement("div"); d.innerHTML = String(html || ""); 
+  const t = (d.textContent || "").replace(/\s+/g," ").trim();
+  return t.length > 420 ? t.slice(0,420) + "…" : t;
+}
+function deIA(doc){
+  const id = "ia:" + doc.identifier;
+  const subj = [].concat(doc.subject || []).slice(0,3).join(", ");
+  const p = {
+    id, categoria: "explorar", fuente: "archive", codigo: doc.identifier,
+    titulo: [].concat(doc.title || doc.identifier)[0],
+    anio: doc.year ? String(doc.year).slice(0,4) : "",
+    idioma: [].concat(doc.language || [])[0] || "",
+    genero: subj,
+    descripcion: limpiarTexto([].concat(doc.description || [])[0]) || "Película completa de dominio público del archivo de Internet Archive."
+  };
+  extra[id] = p;
+  return p;
+}
+function barraExplorar(){
+  return `<div class="explorar-barra" id="barraIA">` +
+    GEN_IA.map(g => `<button type="button" data-ig="${g[0]}" class="${g[0]===ia.gen?"on":""}">${g[1]}</button>`).join("") +
+    `<label><input type="checkbox" id="chkEsp" ${ia.espanol?"checked":""}> Solo en español</label></div>
+    <div class="aviso-explorar">🌐 Miles de películas completas de dominio público de <b>Internet Archive</b>. Se ven acá mismo. La mayoría están en inglés; marcá <b>Solo en español</b> para filtrar (hay menos).</div>`;
+}
+async function explorar(agregar){
+  const q = buscador.value.trim();
+  const miPedido = ++ia.pedido;
+  if(!agregar){
+    ia.pagina = 1;
+    grilla.innerHTML = barraExplorar() + `<p class="vacio">Cargando películas...</p>`;
+    conectarBarra();
+  }
+  const url = "https://archive.org/advancedsearch.php?q=" + encodeURIComponent(consultaIA(q)) +
+    "&fl[]=identifier&fl[]=title&fl[]=year&fl[]=description&fl[]=subject&fl[]=language" +
+    "&sort[]=downloads+desc&rows=24&page=" + ia.pagina + "&output=json";
+  try{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error(r.status);
+    const datos = await r.json();
+    if(miPedido !== ia.pedido) return;
+    const docs = (datos.response && datos.response.docs) || [];
+    ia.total = (datos.response && datos.response.numFound) || 0;
+    const viejo = document.getElementById("btnMasIA"); if(viejo) viejo.remove();
+    const espera = grilla.querySelector(".vacio"); if(espera) espera.remove();
+    if(!agregar && !docs.length){ grilla.insertAdjacentHTML("beforeend", `<p class="vacio">No encontré películas con eso. Probá otra palabra (muchas están con su nombre en inglés).</p>`); return; }
+    docs.forEach(d => grilla.appendChild(tarjetaEl(deIA(d))));
+    if(ia.pagina * 24 < ia.total){
+      grilla.insertAdjacentHTML("beforeend", `<button id="btnMasIA" type="button">Cargar más (${ia.total.toLocaleString("es-AR")} en total)</button>`);
+      document.getElementById("btnMasIA").onclick = () => { ia.pagina++; explorar(true); };
+    }
+  }catch(e){
+    if(miPedido !== ia.pedido) return;
+    const espera = grilla.querySelector(".vacio"); if(espera) espera.remove();
+    grilla.insertAdjacentHTML("beforeend", `<p class="vacio">No se pudo conectar con Internet Archive. Revisá tu internet y probá de nuevo.</p>`);
+  }
+}
+function conectarBarra(){
+  const b = document.getElementById("barraIA"); if(!b) return;
+  b.addEventListener("click", e => { const x = e.target.closest("[data-ig]"); if(!x) return; ia.gen = x.dataset.ig; explorar(false); });
+  document.getElementById("chkEsp").onchange = e => { ia.espanol = e.target.checked; explorar(false); };
+}
+
+/* ---------- Filtros de las destacadas ---------- */
+let esperaBusq;
 function filtrar(){
   const q = buscador.value.toLowerCase().trim();
+  if(categoriaActual === "explorar"){ clearTimeout(esperaBusq); esperaBusq = setTimeout(() => explorar(false), 450); return; }
   if(categoriaActual === "plataformas" && !q) return mostrarPlataformas();
+  if(categoriaActual === "favoritos"){
+    const lista = favoritos.map(buscarPeli).filter(Boolean).filter(p => (p.titulo + " " + p.genero).toLowerCase().includes(q));
+    return mostrar(lista);
+  }
   const lista = peliculas.filter(p => {
     const coincide = (p.titulo + " " + p.genero).toLowerCase().includes(q);
-    if(categoriaActual === "favoritos") return favoritos.includes(p.id) && coincide;
     if(categoriaActual.startsWith("g:")) return p.genero.toLowerCase().includes(categoriaActual.slice(2)) && coincide;
     const todas = categoriaActual === "todas" || categoriaActual === "plataformas";
     return (todas || p.categoria === categoriaActual) && coincide;
@@ -449,7 +564,9 @@ document.querySelectorAll(".cat").forEach(btn => {
     categoriaActual = btn.dataset.cat;
     document.querySelectorAll(".cat").forEach(b => b.classList.remove("activa"));
     btn.classList.add("activa");
-    tituloSeccion.textContent = categoriaActual === "todas" ? "Catálogo completo" : btn.textContent.replace(/^\S+\s/, "");
+    tituloSeccion.textContent = categoriaActual === "todas" ? "Destacadas" : btn.textContent.replace(/^\S+\s/, "");
+    buscador.placeholder = categoriaActual === "explorar" ? "Buscar entre miles (en inglés funciona mejor)..." : "Buscar...";
+    if(categoriaActual === "explorar") return explorar(false);
     filtrar();
   };
 });
@@ -457,29 +574,82 @@ buscador.addEventListener("input", filtrar);
 
 function cambiarFavorito(id){
   const i = favoritos.indexOf(id);
-  if(i > -1) favoritos.splice(i, 1); else favoritos.push(id);
-  guardarFavoritos();
-  filtrar();
+  if(i > -1){ favoritos.splice(i, 1); delete favExtra[id]; }
+  else { favoritos.push(id); if(String(id).startsWith("ia:") && extra[id]) favExtra[id] = extra[id]; }
+  guardar("cineapp_favs", favoritos); guardar("cineapp_favs_extra", favExtra);
+  if(categoriaActual === "favoritos") filtrar();
 }
 
-/* ---------- Abrir y cerrar el reproductor ---------- */
+/* =========================================================
+   REPRODUCTOR
+   Las películas de Internet Archive se reproducen con el
+   reproductor propio (archivo MP4 directo): carga más rápido
+   y se corta menos. Si no se puede, usa el de Archive.
+   ========================================================= */
+let abierta = null, pedidoVideo = 0;
+function ponerIframe(p){
+  video.innerHTML = `<iframe src="https://archive.org/embed/${p.codigo}" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
+}
+async function ponerVideoArchive(p){
+  const mio = ++pedidoVideo;
+  video.innerHTML = `<div class="cargando">Preparando la película...</div>`;
+  try{
+    const r = await fetch(`https://archive.org/metadata/${encodeURIComponent(p.codigo)}`);
+    const meta = await r.json();
+    if(mio !== pedidoVideo) return;
+    const mp4 = (meta.files || []).filter(f => /\.mp4$/i.test(f.name || "") && !/sample|trailer/i.test(f.name || ""));
+    if(!mp4.length) return ponerIframe(p);
+    const tam = f => +f.size || 0;
+    // liviana: el MP4 más chico (por ejemplo el "512Kb"); normal: el más grande que no pase de ~1,5 GB
+    let elegido;
+    if(calidad === "liviana"){
+      elegido = mp4.find(f => /512kb/i.test(f.name) || /512Kb MPEG4/i.test(f.format || "")) || mp4.slice().sort((a,b) => tam(a)-tam(b))[0];
+    }else{
+      const ok = mp4.filter(f => !tam(f) || tam(f) < 1.6e9).sort((a,b) => tam(b)-tam(a));
+      elegido = ok[0] || mp4[0];
+    }
+    const src = `https://archive.org/download/${encodeURIComponent(p.codigo)}/${elegido.name.split("/").map(encodeURIComponent).join("/")}`;
+    video.innerHTML = `<video controls playsinline autoplay preload="metadata" poster="${imagen(p)}"></video>`;
+    const v = video.querySelector("video");
+    v.onerror = () => { if(mio === pedidoVideo) ponerIframe(p); };
+    v.src = src;
+  }catch(e){
+    if(mio === pedidoVideo) ponerIframe(p);
+  }
+}
+function marcarCalidad(){
+  document.querySelectorAll("#mCalidad [data-cal]").forEach(b => b.classList.toggle("on", b.dataset.cal === calidad));
+}
+document.getElementById("mCalidad").addEventListener("click", e => {
+  const b = e.target.closest("[data-cal]"); if(!b || b.dataset.cal === calidad) return;
+  calidad = b.dataset.cal; guardar("cineapp_calidad", calidad); marcarCalidad();
+  if(abierta && abierta.fuente === "archive") ponerVideoArchive(abierta);
+});
+
 function abrir(id){
-  const p = peliculas.find(x => x.id === id);
+  const p = buscarPeli(id);
   if(!p) return;
+  abierta = p;
   document.getElementById("mTitulo").textContent = p.titulo;
-  document.getElementById("mDato").textContent = `${p.anio} · ${p.genero} · ${p.idioma}`;
+  document.getElementById("mDato").textContent = [p.anio, p.genero, p.idioma].filter(Boolean).join(" · ");
   document.getElementById("mDescripcion").textContent = p.descripcion;
   document.getElementById("mFuente").href = paginaOriginal(p);
-  video.innerHTML = `<iframe src="${reproductor(p)}" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
+  const esArchive = p.fuente === "archive";
+  document.getElementById("mCalidad").hidden = !esArchive;
+  document.getElementById("mAviso").hidden = !esArchive;
+  marcarCalidad();
+  if(esArchive) ponerVideoArchive(p);
+  else video.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${p.codigo}?autoplay=1" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
   modal.classList.add("abierto");
   document.body.style.overflow = "hidden";
   if(!history.state || !history.state.cineModal) history.pushState({cineModal:true}, "");
-  document.getElementById("mAviso").hidden = p.fuente !== "archive";
 }
 function cerrar(desdeAtras){
   if(!modal.classList.contains("abierto")) return;
   if(!desdeAtras && history.state && history.state.cineModal){ history.back(); return; }
   modal.classList.remove("abierto");
+  pedidoVideo++; abierta = null;
+  const v = video.querySelector("video"); if(v){ v.pause(); v.removeAttribute("src"); v.load(); }
   video.innerHTML = "";               // corta el video al cerrar
   document.body.style.overflow = "";
 }
@@ -489,6 +659,7 @@ window.addEventListener("popstate", () => cerrar(true));
 modal.addEventListener("click", e => { if(e.target === modal) cerrar(); });
 document.addEventListener("keydown", e => { if(e.key === "Escape") cerrar(); });
 
+tituloSeccion.textContent = "Destacadas";
 mostrar(peliculas);
 </script>
 </body>
