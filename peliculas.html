@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineApp</title>
+<style>
+/* =============== COLORES =============== */
+:root{
+  --bg:#141414; --card:#1f1f1f; --rojo:#e50914; --texto:#fff; --gris:#b3b3b3;
+  --borde:#2b2b2b; --dorado:#f5c518;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+body{background:var(--bg);color:var(--texto);padding-bottom:50px;min-height:100vh}
+button{font:inherit;cursor:pointer}
+a{color:inherit}
+
+/* =============== MENÚ SUPERIOR =============== */
+header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:16px 4%;background:rgba(20,20,20,.96);position:sticky;top:0;z-index:100;border-bottom:1px solid #282828}
+.logo{font-size:24px;font-weight:bold;color:var(--rojo);letter-spacing:1px}
+.logo span{color:#fff}
+.derecha{display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end;min-width:0}
+#buscador{padding:10px 15px;width:260px;max-width:100%;border-radius:4px;border:1px solid #333;background:#222;color:#fff;font-size:14px}
+#buscador:focus{outline:none;border-color:var(--rojo)}
+#btnAjustes{background:#222;border:1px solid #333;color:#fff;border-radius:4px;padding:9px 12px}
+
+/* =============== CATEGORÍAS =============== */
+.categorias{display:flex;gap:10px;padding:14px 4%;background:#1a1a1a;overflow-x:auto;white-space:nowrap;border-bottom:1px solid #282828}
+.cat{background:var(--borde);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:14px;transition:background .3s}
+.cat:hover,.cat.activa{background:var(--rojo)}
+
+/* =============== PANEL DE LA LLAVE =============== */
+.panel{margin:20px 4%;background:var(--card);border:1px solid var(--borde);border-radius:10px;padding:20px;max-width:640px;line-height:1.55}
+.panel h2{margin-bottom:8px}
+.panel ol{margin:10px 0 12px 20px;color:#ddd}
+.panel input{width:100%;padding:11px;border-radius:6px;border:1px solid #333;background:#222;color:#fff;margin:8px 0}
+.panel small{color:var(--gris)}
+.fila-btn{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn{border:none;border-radius:6px;padding:10px 16px;font-weight:bold;color:#fff}
+.btn-rojo{background:var(--rojo)}
+.btn-gris{background:#333}
+.mensaje{margin-top:8px;font-size:14px}
+.mensaje.error{color:#ff6b6b}
+.mensaje.ok{color:#5fd38d}
+
+/* =============== GRILLA =============== */
+.contenedor{padding:22px 4% 0}
+.titulo-seccion{margin-bottom:20px;font-size:1.5rem;border-left:4px solid var(--rojo);padding-left:10px}
+.grilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:20px}
+.tarjeta{background:var(--card);border-radius:8px;overflow:hidden;transition:transform .3s,box-shadow .3s;position:relative}
+.tarjeta:hover{transform:scale(1.04);box-shadow:0 10px 20px rgba(0,0,0,.5)}
+.poster{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;cursor:pointer;background:#222}
+.sin-poster{width:100%;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;background:linear-gradient(160deg,#2a2a2a,#111);color:var(--gris);cursor:pointer;font-size:14px}
+.nota{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.75);color:var(--dorado);font-size:12px;font-weight:bold;padding:3px 7px;border-radius:4px}
+.info{padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.texto{cursor:pointer;overflow:hidden;min-width:0}
+.t-titulo{font-size:14px;font-weight:bold;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-anio{font-size:12px;color:var(--gris)}
+.fav{background:none;border:none;font-size:20px;filter:grayscale(1) opacity(.5);transition:filter .2s;flex-shrink:0}
+.fav.activa{filter:none}
+.estado{color:var(--gris);grid-column:1/-1;padding:30px 0;text-align:center;line-height:1.6}
+#btnMas{display:block;margin:28px auto 0;background:#2b2b2b;color:#fff;border:none;border-radius:6px;padding:12px 26px}
+#btnMas:hover{background:var(--rojo)}
+
+/* =============== REPRODUCTOR FLOTANTE =============== */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;justify-content:center;align-items:flex-start;padding:20px;overflow-y:auto}
+.modal.abierto{display:flex}
+.caja{background:#181818;width:100%;max-width:820px;border-radius:8px;overflow:hidden;position:relative;box-shadow:0 5px 15px rgba(0,0,0,.5);margin:auto 0}
+.cerrar{position:absolute;top:12px;right:12px;background:#333;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;z-index:10}
+.video{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;color:var(--gris);text-align:center;padding:0}
+.video iframe{width:100%;height:100%;border:none;display:block}
+.video img{width:100%;height:100%;object-fit:cover}
+.detalle{padding:20px}
+.detalle h3{margin-bottom:6px;font-size:22px}
+.datos{color:var(--gris);font-size:14px;margin-bottom:12px}
+.datos b{color:var(--dorado)}
+.detalle p{color:#ccc;font-size:14px;line-height:1.55}
+.acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+footer{margin:40px 4% 0;color:#777;font-size:12px;text-align:center;line-height:1.5}
+
+@media(max-width:600px){
+  .derecha{width:100%}
+  #buscador{flex:1;width:auto}
+  .grilla{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CINE<span>APP</span></div>
+  <div class="derecha">
+    <input type="search" id="buscador" placeholder="Buscar película..." autocomplete="off">
+    <button id="btnAjustes" title="Configurar llave de TMDB">⚙</button>
+  </div>
+</header>
+
+<div class="categorias" id="categorias">
+  <button class="cat activa" data-cat="populares">🔥 Populares</button>
+  <button class="cat" data-cat="tendencia">📈 Tendencia</button>
+  <button class="cat" data-cat="28">💥 Acción</button>
+  <button class="cat" data-cat="35">🎭 Comedia</button>
+  <button class="cat" data-cat="878">🚀 Ciencia Ficción</button>
+  <button class="cat" data-cat="27">👻 Terror</button>
+  <button class="cat" data-cat="favoritos">❤️ Mi Lista</button>
+</div>
+
+<!-- Panel para pegar la llave de TMDB -->
+<div class="panel" id="panelLlave" hidden>
+  <h2>🔑 Tu llave de TMDB</h2>
+  <p>Es gratis y sirve para traer pósters, datos y tráileres reales.</p>
+  <ol>
+    <li>Creá una cuenta en <a href="https://www.themoviedb.org/signup" target="_blank" rel="noopener">themoviedb.org</a>.</li>
+    <li>Entrá a tu perfil → <b>Ajustes</b> → <b>API</b> y pedí una llave (uso personal).</li>
+    <li>Copiá la <b>Clave de la API</b> o el <b>Token de lectura</b> y pegala acá.</li>
+  </ol>
+  <input type="text" id="campoLlave" placeholder="Pegá tu llave acá" autocomplete="off">
+  <div class="fila-btn">
+    <button class="btn btn-rojo" id="btnGuardar">Guardar y probar</button>
+    <button class="btn btn-gris" id="btnBorrar">Borrar llave</button>
+  </div>
+  <div class="mensaje" id="mensajeLlave"></div>
+  <small>La llave queda guardada solo en este navegador.</small>
+</div>
+
+<div class="contenedor" id="zonaCatalogo">
+  <h2 class="titulo-seccion" id="tituloSeccion">Películas populares</h2>
+  <div class="grilla" id="grilla"></div>
+  <button id="btnMas" hidden>Cargar más</button>
+</div>
+
+<footer>
+  Datos e imágenes de TMDB. Este producto usa la API de TMDB pero no está avalado ni certificado por TMDB.<br>
+  Los tráileres son videos oficiales publicados en YouTube.
+</footer>
+
+<!-- Reproductor flotante -->
+<div class="modal" id="modal">
+  <div class="caja">
+    <button class="cerrar" id="btnCerrar" aria-label="Cerrar">×</button>
+    <div class="video" id="video"></div>
+    <div class="detalle">
+      <h3 id="mTitulo"></h3>
+      <div class="datos" id="mDatos"></div>
+      <p id="mSinopsis"></p>
+      <div class="acciones">
+        <button class="btn btn-gris" id="mFav"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1) TU LLAVE DE TMDB
+   Podés pegarla acá entre las comillas, o (más fácil)
+   tocar el botón ⚙ de arriba y pegarla ahí.
+   ========================================================= */
+let LLAVE_TMDB = "";
+
+const IDIOMA = "es-MX";          // idioma de títulos y sinopsis
+const REGION = "AR";             // región para estrenos
+const IMG = "https://image.tmdb.org/t/p/";
+const GENEROS = {28:"Acción", 35:"Comedia", 878:"Ciencia Ficción", 27:"Terror"};
+
+/* Guardar y leer en el navegador (protegido por si no deja) */
+function leer(clave, porDefecto){ try{ const v = localStorage.getItem(clave); return v ? JSON.parse(v) : porDefecto; }catch(e){ return porDefecto; } }
+function guardar(clave, valor){ try{ localStorage.setItem(clave, JSON.stringify(valor)); }catch(e){} }
+
+if(!LLAVE_TMDB) LLAVE_TMDB = leer("cineapp_llave", "");
+let favoritos = leer("cineapp_favs_tmdb", []);   // guarda la película completa
+
+/* =========================================================
+   2) CONEXIÓN CON TMDB
+   Acepta la llave corta (API Key) o el token largo.
+   ========================================================= */
+async function tmdb(ruta, parametros = {}){
+  const url = new URL("https://api.themoviedb.org/3" + ruta);
+  url.searchParams.set("language", IDIOMA);
+  for(const k in parametros) url.searchParams.set(k, parametros[k]);
+  const esToken = LLAVE_TMDB.length > 60;
+  if(!esToken) url.searchParams.set("api_key", LLAVE_TMDB);
+  const r = await fetch(url, esToken ? {headers:{Authorization:"Bearer " + LLAVE_TMDB}} : {});
+  if(r.status === 401) throw new Error("LLAVE");
+  if(!r.ok) throw new Error("TMDB respondió " + r.status);
+  return r.json();
+}
+
+/* Deja cada película con solo lo que usamos */
+function limpiar(x){
+  return {
+    id: x.id,
+    titulo: x.title || x.name || "Sin título",
+    anio: (x.release_date || "").slice(0,4),
+    nota: x.vote_average ? x.vote_average.toFixed(1) : "",
+    sinopsis: x.overview || "Todavía no hay sinopsis en español.",
+    poster: x.poster_path || "",
+    fondo: x.backdrop_path || ""
+  };
+}
+
+/* =========================================================
+   3) ESTADO DE LA PANTALLA
+   ========================================================= */
+const grilla = document.getElementById("grilla");
+const buscador = document.getElementById("buscador");
+const tituloSeccion = document.getElementById("tituloSeccion");
+const btnMas = document.getElementById("btnMas");
+const panelLlave = document.getElementById("panelLlave");
+const zonaCatalogo = document.getElementById("zonaCatalogo");
+
+let vista = "populares";   // populares | tendencia | favoritos | id de género | busqueda
+let pagina = 1, totalPaginas = 1, textoBusqueda = "";
+let cache = {};            // películas mostradas, por id
+let pedidoActual = 0;      // evita que una respuesta vieja pise a una nueva
+
+/* =========================================================
+   4) DIBUJAR TARJETAS
+   ========================================================= */
+function tarjetaHTML(p){
+  cache[p.id] = p;
+  const esFav = favoritos.some(f => f.id === p.id);
+  const img = p.poster
+    ? `<img class="poster" src="${IMG}w342${p.poster}" alt="" loading="lazy" data-abrir="${p.id}">`
+    : `<div class="sin-poster" data-abrir="${p.id}">${escapar(p.titulo)}</div>`;
+  return `<div class="tarjeta">
+    ${p.nota ? `<span class="nota">★ ${p.nota}</span>` : ""}
+    ${img}
+    <div class="info">
+      <div class="texto" data-abrir="${p.id}">
+        <div class="t-titulo">${escapar(p.titulo)}</div>
+        <div class="t-anio">${p.anio || "—"}</div>
+      </div>
+      <button class="fav ${esFav ? "activa" : ""}" data-fav="${p.id}" aria-label="Mi Lista">❤️</button>
+    </div>
+  </div>`;
+}
+function escapar(t){ return String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function estado(texto){ grilla.innerHTML = `<p class="estado">${texto}</p>`; btnMas.hidden = true; }
+
+/* Un solo "escuchador" para todos los clics de la grilla */
+grilla.addEventListener("click", e => {
+  const fav = e.target.closest("[data-fav]");
+  if(fav){ cambiarFavorito(+fav.dataset.fav); return; }
+  const abrirEl = e.target.closest("[data-abrir]");
+  if(abrirEl) abrir(+abrirEl.dataset.abrir);
+});
+
+/* =========================================================
+   5) CARGAR PELÍCULAS SEGÚN LA VISTA
+   ========================================================= */
+async function cargar(agregar = false){
+  if(vista === "favoritos"){
+    tituloSeccion.textContent = "Mi Lista";
+    btnMas.hidden = true;
+    if(!favoritos.length) return estado("Todavía no guardaste películas.<br>Tocá el ❤️ de cualquier tarjeta para sumarla acá.");
+    grilla.innerHTML = favoritos.map(tarjetaHTML).join("");
+    return;
+  }
+  if(!LLAVE_TMDB){ mostrarPanel(true); return estado("Cargá tu llave de TMDB arriba para ver el catálogo."); }
+
+  const miPedido = ++pedidoActual;
+  if(!agregar){ pagina = 1; estado("Cargando..."); }
+  btnMas.disabled = true;
+
+  try{
+    let datos;
+    if(vista === "busqueda"){
+      tituloSeccion.textContent = `Resultados para "${textoBusqueda}"`;
+      datos = await tmdb("/search/movie", {query:textoBusqueda, page:pagina, include_adult:false});
+    }else if(vista === "tendencia"){
+      tituloSeccion.textContent = "En tendencia esta semana";
+      datos = await tmdb("/trending/movie/week", {page:pagina});
+    }else if(GENEROS[vista]){
+      tituloSeccion.textContent = "Género: " + GENEROS[vista];
+      datos = await tmdb("/discover/movie", {with_genres:vista, sort_by:"popularity.desc", include_adult:false, page:pagina});
+    }else{
+      tituloSeccion.textContent = "Películas populares";
+      datos = await tmdb("/movie/popular", {page:pagina, region:REGION});
+    }
+    if(miPedido !== pedidoActual) return;   // llegó tarde, ya se pidió otra cosa
+
+    totalPaginas = Math.min(datos.total_pages || 1, 500);
+    const lista = (datos.results || []).map(limpiar);
+    if(!agregar && !lista.length) return estado("No encontré películas con ese nombre.");
+    const html = lista.map(tarjetaHTML).join("");
+    if(agregar) grilla.insertAdjacentHTML("beforeend", html); else grilla.innerHTML = html;
+    btnMas.hidden = pagina >= totalPaginas;
+  }catch(err){
+    if(miPedido !== pedidoActual) return;
+    if(err.message === "LLAVE"){ mostrarPanel(true, "La llave no funciona. Revisá que esté bien copiada.", "error"); estado("La llave de TMDB no es válida."); }
+    else estado("No se pudo conectar con TMDB. Revisá tu internet y probá de nuevo.");
+  }finally{
+    btnMas.disabled = false;
+  }
+}
+
+btnMas.addEventListener("click", () => { pagina++; cargar(true); });
+
+/* =========================================================
+   6) CATEGORÍAS Y BUSCADOR
+   ========================================================= */
+function marcarCategoria(cat){
+  document.querySelectorAll(".cat").forEach(b => b.classList.toggle("activa", b.dataset.cat === cat));
+}
+document.getElementById("categorias").addEventListener("click", e => {
+  const b = e.target.closest(".cat"); if(!b) return;
+  vista = b.dataset.cat; buscador.value = ""; marcarCategoria(vista); cargar();
+});
+
+let espera;
+buscador.addEventListener("input", () => {
+  clearTimeout(espera);
+  const q = buscador.value.trim();
+  espera = setTimeout(() => {
+    if(!q){ vista = "populares"; marcarCategoria(vista); cargar(); return; }
+    if(q.length < 2) return;
+    vista = "busqueda"; textoBusqueda = q; marcarCategoria(""); cargar();
+  }, 450);
+});
+
+/* =========================================================
+   7) MI LISTA (favoritos)
+   ========================================================= */
+function cambiarFavorito(id){
+  const i = favoritos.findIndex(f => f.id === id);
+  if(i > -1) favoritos.splice(i, 1);
+  else if(cache[id]) favoritos.unshift(cache[id]);
+  guardar("cineapp_favs_tmdb", favoritos);
+  // actualiza los corazones sin recargar todo
+  document.querySelectorAll(`[data-fav="${id}"]`).forEach(b => b.classList.toggle("activa", i === -1));
+  if(vista === "favoritos") cargar();
+  actualizarBotonFavModal(id);
+}
+
+/* =========================================================
+   8) REPRODUCTOR FLOTANTE CON TRÁILER OFICIAL
+   ========================================================= */
+const modal = document.getElementById("modal");
+const video = document.getElementById("video");
+let idModal = null;
+
+function actualizarBotonFavModal(id){
+  if(id !== idModal) return;
+  const esFav = favoritos.some(f => f.id === id);
+  document.getElementById("mFav").textContent = esFav ? "💔 Quitar de Mi Lista" : "❤️ Agregar a Mi Lista";
+}
+
+async function abrir(id){
+  const p = cache[id]; if(!p) return;
+  idModal = id;
+  document.getElementById("mTitulo").textContent = p.titulo;
+  document.getElementById("mDatos").innerHTML = `${p.nota ? `<b>★ ${p.nota}</b> · ` : ""}${p.anio || ""}`;
+  document.getElementById("mSinopsis").textContent = p.sinopsis;
+  actualizarBotonFavModal(id);
+  video.innerHTML = p.fondo ? `<img src="${IMG}w780${p.fondo}" alt="">` : "Buscando tráiler...";
+  modal.classList.add("abierto");
+  document.body.style.overflow = "hidden";
+
+  const clave = await buscarTrailer(id);
+  if(idModal !== id) return;   // ya cerró o abrió otra
+  if(clave){
+    video.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${clave}?autoplay=1&rel=0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`;
+  }else{
+    const q = encodeURIComponent(`${p.titulo} ${p.anio} tráiler oficial`);
+    video.innerHTML = `<div style="padding:20px">No hay tráiler cargado en TMDB para esta película.<br><br>
+      <a class="btn btn-rojo" style="display:inline-block;text-decoration:none" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">Buscar en YouTube</a></div>`;
+  }
+}
+
+/* Busca primero en español; si no hay, en inglés. Prefiere los oficiales. */
+async function buscarTrailer(id){
+  const elegir = lista => {
+    const yt = lista.filter(v => v.site === "YouTube");
+    return yt.find(v => v.type === "Trailer" && v.official)
+        || yt.find(v => v.type === "Trailer")
+        || yt.find(v => v.type === "Teaser")
+        || null;
+  };
+  try{
+    let r = await tmdb(`/movie/${id}/videos`);
+    let v = elegir(r.results || []);
+    if(!v){
+      r = await tmdb(`/movie/${id}/videos`, {language:"en-US"});
+      v = elegir(r.results || []);
+    }
+    return v ? v.key : null;
+  }catch(e){ return null; }
+}
+
+function cerrar(){
+  modal.classList.remove("abierto");
+  video.innerHTML = "";          // corta el video
+  idModal = null;
+  document.body.style.overflow = "";
+}
+document.getElementById("btnCerrar").onclick = cerrar;
+modal.addEventListener("click", e => { if(e.target === modal) cerrar(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") cerrar(); });
+document.getElementById("mFav").onclick = () => { if(idModal) cambiarFavorito(idModal); };
+
+/* =========================================================
+   9) PANEL DE LA LLAVE
+   ========================================================= */
+const mensajeLlave = document.getElementById("mensajeLlave");
+function mostrarPanel(mostrar, texto = "", tipo = ""){
+  panelLlave.hidden = !mostrar;
+  document.getElementById("campoLlave").value = LLAVE_TMDB;
+  mensajeLlave.textContent = texto;
+  mensajeLlave.className = "mensaje " + tipo;
+}
+document.getElementById("btnAjustes").onclick = () => mostrarPanel(panelLlave.hidden);
+
+document.getElementById("btnGuardar").onclick = async () => {
+  LLAVE_TMDB = document.getElementById("campoLlave").value.trim();
+  if(!LLAVE_TMDB){ mostrarPanel(true, "Pegá la llave antes de guardar.", "error"); return; }
+  mensajeLlave.textContent = "Probando la llave..."; mensajeLlave.className = "mensaje";
+  try{
+    await tmdb("/configuration");
+    guardar("cineapp_llave", LLAVE_TMDB);
+    mostrarPanel(true, "¡Listo! La llave funciona.", "ok");
+    setTimeout(() => { panelLlave.hidden = true; }, 1200);
+    vista = "populares"; marcarCategoria(vista); cargar();
+  }catch(e){
+    mostrarPanel(true, e.message === "LLAVE" ? "La llave no funciona. Revisá que esté bien copiada." : "No se pudo conectar con TMDB. Probá de nuevo.", "error");
+  }
+};
+document.getElementById("btnBorrar").onclick = () => {
+  LLAVE_TMDB = ""; guardar("cineapp_llave", "");
+  mostrarPanel(true, "Llave borrada.", "ok"); cargar();
+};
+
+/* =========================================================
+   10) ARRANQUE
+   ========================================================= */
+cargar();
+</script>
+</body>
+</html>
