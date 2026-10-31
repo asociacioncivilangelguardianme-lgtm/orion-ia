@@ -16414,10 +16414,10 @@ console.info('[ÁNGELA] Crear y archivos: Constructor de apps, PDF, convertir fo
    - cine.html: películas completas de dominio público, animación libre y plataformas legales
    No toca nada de lo demás. */
 (function(){'use strict';if(window.ANGELACine)return;
-var APPS={cine_libre:{url:'cine.html',nombre:'Películas completas'},cine_tmdb:{url:'peliculas.html',nombre:'Tráileres y estrenos'}};
+var APPS={cine_tmdb:{url:'peliculas.html',nombre:'Estrenos y tráileres'},cine_libre:{url:'cine.html',nombre:'Películas completas'}};
 var TILES=[
- ['cine_libre','🎬','Películas completas','Películas enteras y legales: clásicos de dominio público, animación libre y plataformas gratis.'],
- ['cine_tmdb','🍿','Tráileres y estrenos','Miles de películas reales con tráileres oficiales y dónde verlas completas de forma legal.']];
+ ['cine_tmdb','🍿','Estrenos y tráileres','Miles de películas reales con tráileres oficiales y dónde verlas completas de forma legal.'],
+ ['cine_libre','🎬','Películas completas','Películas enteras y legales: clásicos de dominio público, animación libre y plataformas gratis.']];
 function vista(k,el){
   var a=APPS[k]||APPS.cine_tmdb;
   el.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
@@ -16429,7 +16429,7 @@ function vista(k,el){
     'style="width:100%;height:78vh;min-height:520px;border:0;border-radius:12px;background:#141414"></iframe></div>';
   el.querySelectorAll('[data-cine]').forEach(function(b){b.onclick=function(){if(window.ANGELAHerr)ANGELAHerr.go(b.getAttribute('data-cine'))}});
 }
-function abrirCine(){if(!window.ANGELAHerr)return;try{if(window.AGM)AGM.menu(false)}catch(e){}DIRECTO=true;ANGELAHerr.open();ANGELAHerr.go('cine_libre')}
+function abrirCine(){if(!window.ANGELAHerr)return;try{if(window.AGM)AGM.menu(false)}catch(e){}DIRECTO=true;ANGELAHerr.open();ANGELAHerr.go('cine_tmdb')}
 
 /* ===== Botón "atrás" del celu en Herramientas =====
    Antes, tocar atrás te sacaba de ÁNGELA. Ahora:
