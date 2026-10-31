@@ -845,12 +845,18 @@ async function ponerVideoArchive(p){
     // duración (idea tomada de ArchiveFlix)
     const dur = meta.metadata && meta.metadata.runtime;
     if(dur && abierta === p){ const d = document.getElementById("mDato"); if(!/⏱/.test(d.textContent)) d.textContent += ` · ⏱ ${dur}`; }
-    const mp4 = archivos.filter(f => /\.mp4$/i.test(f.name || "") && !/sample|trailer/i.test(f.name || ""));
+    const todos = archivos.filter(f => /\.mp4$/i.test(f.name || "") && !/sample|trailer/i.test(f.name || ""));
+    // Solo formatos que el celu puede mostrar: H.264 (los ".ia.mp4" de Archive lo son).
+    // El viejo "512Kb MPEG4" a veces queda en negro, por eso va último.
+    const compatible = f => /h\.?264/i.test(f.format || "") || /\.ia\.mp4$/i.test(f.name);
+    const viejo = f => /512kb/i.test(f.name) || /512Kb MPEG4/i.test(f.format || "") || /^MPEG4$/i.test(f.format || "");
+    const buenos = todos.filter(compatible);
+    const mp4 = buenos.length ? buenos : todos.filter(f => !viejo(f)).concat(todos.filter(viejo));
     if(!mp4.length) return ponerIframe(p);
     const tam = f => +f.size || 0;
     let elegido;
     if(calidad === "liviana"){
-      elegido = mp4.find(f => /512kb/i.test(f.name) || /512Kb MPEG4/i.test(f.format || "")) || mp4.slice().sort((a,b) => tam(a)-tam(b))[0];
+      elegido = mp4.slice().sort((a,b) => (tam(a) || 9e12) - (tam(b) || 9e12))[0];     // el más liviano compatible
     }else{
       const ok = mp4.filter(f => !tam(f) || tam(f) < 1.6e9).sort((a,b) => tam(b)-tam(a));
       elegido = ok[0] || mp4[0];
@@ -868,6 +874,12 @@ async function ponerVideoArchive(p){
       fallo = true; soltarPlyr(); ponerIframe(p);
     };
     v.src = src;
+    // Si en 15 segundos no muestra imagen (formato raro o servidor lento), pasa al reproductor de Archive
+    const vigia = setTimeout(() => { if(mio === pedidoVideo && !fallo && (v.readyState < 2 || !v.videoWidth)){ fallo = true; soltarPlyr(); ponerIframe(p); } }, 15000);
+    v.addEventListener("loadeddata", () => {
+      if(!v.videoWidth && mio === pedidoVideo && !fallo){ clearTimeout(vigia); fallo = true; soltarPlyr(); ponerIframe(p); }   // solo audio: no sirve
+      else clearTimeout(vigia);
+    }, {once:true});
 
     // controles cómodos (Plyr) si cargó la librería; si no, los del navegador
     if(window.Plyr){
@@ -920,6 +932,7 @@ function abrir(id){
   document.getElementById("mDato").textContent = [p.anio, p.genero, p.idioma].filter(Boolean).join(" · ");
   document.getElementById("mDescripcion").textContent = p.descripcion;
   document.getElementById("mFuente").href = paginaOriginal(p);
+  document.getElementById("mFuente").textContent = p.fuente === "ytlista" ? "¿No carga? Abrir la lista en YouTube ↗" : p.fuente === "archive" ? "¿No carga? Verla en Internet Archive ↗" : "Ver la fuente original ↗";
   const esArchive = p.fuente === "archive";
   document.getElementById("mCalidad").hidden = !esArchive;
   document.getElementById("mAviso").hidden = !esArchive;
