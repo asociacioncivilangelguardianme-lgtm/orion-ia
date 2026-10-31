@@ -13118,13 +13118,13 @@ function setHead(ico,title,sub){$('herrLogo').textContent=ico;$('herrTitle').tex
 function home(){
   stopAll();CUR='';$('herrOverlay').classList.remove('inTool');setHead('🧰','Herramientas','Para el comedor, la radio y el día a día · gratis');
   var h='';TOOLS.forEach(function(g){h+='<div class="herr-sec">'+esc(g[0])+'</div><div class="herr-grid">'+g[1].map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
-  [window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro,window.ANGELAPlus].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
+  [window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro,window.ANGELAPlus,window.ANGELACine].forEach(function(X){if(!X)return;h+='<div class="herr-sec" id="'+X.secId+'">'+esc(X.sec)+'</div><div class="herr-grid">'+X.tiles.map(function(t){return '<button class="herr-tile" onclick="ANGELAHerr.go(\''+t[0]+'\')"><div class="i">'+t[1]+'</div><b>'+esc(t[2])+'</b><span>'+esc(t[3])+'</span></button>'}).join('')+'</div>'});
   h+='<div class="herr-info" style="margin-top:18px">💡 Las <b>raciones</b>, el <b>menú y la lista de compras</b>, los <b>vencimientos</b> y la <b>copia de seguridad</b> ya están en el <b>Centro de Gestión</b>. Lo que guardes acá también entra en esa copia.</div>';
   $('herrBody').innerHTML=h;$('herrOverlay').scrollTop=0;
 }
 function go(k){
   stopAll();
-  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro,window.ANGELAPlus].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
+  var EX=[window.ANGELACam,window.ANGELA3D,window.ANGELATaller,window.ANGELATaller2,window.ANGELAWeb,window.ANGELACel,window.ANGELAPro,window.ANGELAPlus,window.ANGELACine].filter(function(X){return X&&X.has(k)})[0];if(EX){var t3=EX.tiles.filter(function(x){return x[0]===k})[0];CUR=k;$('herrOverlay').classList.add('inTool');setHead(t3[1],t3[2],EX.short+' · '+t3[3]);$('herrOverlay').scrollTop=0;EX.view(k,$('herrBody'));return}
   var t=null;TOOLS.forEach(function(g){g[1].forEach(function(x){if(x[0]===k)t=x})});if(!t)return home();
   CUR=k;$('herrOverlay').classList.add('inTool');setHead(t[1],t[2],t[3]);$('herrOverlay').scrollTop=0;
   ({musica:vMusica,grilla:vGrilla,voz:vVoz,textos:vTextos,olla:vOlla,cartel:vCartel,ocr:vOcr,notas:vNotas,traductor:vTrad})[k]($('herrBody'));
@@ -16397,3 +16397,24 @@ console.info('[ÁNGELA] Crear y archivos: Constructor de apps, PDF, convertir fo
 })();
 </script>
 <!-- ===== FIN CREAR Y ARCHIVOS ===== -->
+
+<!-- ===== ÁNGELA · Cine libre (V12.97) ===== -->
+<script>
+/* Cine libre: películas de dominio público, animación con licencia libre,
+   tráileres oficiales y plataformas legales gratis. La app vive en cine.html
+   y se muestra adentro de Herramientas. No toca nada de lo demás. */
+(function(){'use strict';if(window.ANGELACine)return;
+var TILES=[['cine_libre','🎬','Cine libre','Películas completas de dominio público, animación con licencia libre, tráileres oficiales y plataformas legales gratis.']];
+window.ANGELACine={sec:'🎬 Cine',secId:'cineSec',short:'Cine',tiles:TILES,
+  has:function(k){return k==='cine_libre'},
+  view:function(k,el){
+    el.innerHTML='<div style="display:flex;flex-direction:column;gap:10px">'+
+      '<a href="cine.html" target="_blank" rel="noopener" style="align-self:flex-end;font-size:13px;color:inherit;opacity:.8">Abrir en pantalla completa ↗</a>'+
+      '<iframe src="cine.html" title="Cine libre" allow="autoplay; fullscreen; encrypted-media" allowfullscreen '+
+      'style="width:100%;height:78vh;min-height:520px;border:0;border-radius:12px;background:#141414"></iframe></div>';
+  },
+  stop:function(){}};
+console.info('[ÁNGELA] Cine libre');
+})();
+</script>
+<!-- ===== FIN CINE LIBRE ===== -->
